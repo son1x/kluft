@@ -1,0 +1,58 @@
+name: Deploy auf Netcup-Webspace
+
+# Lädt die Seite bei jedem Push auf diesen Branch automatisch per SFTP auf
+# den Webspace hoch. Kann zusätzlich manuell über den "Actions"-Tab in
+# GitHub gestartet werden (Run workflow).
+#
+# Wichtig: lftp "mirror --reverse --delete" spiegelt den Webspace also exakt
+# auf den Stand dieses Branches – Dateien, die hier gelöscht wurden,
+# verschwinden dadurch auch auf dem Server.
+#
+# lftp spricht ausschließlich SFTP und braucht auf dem Server keine
+# zusätzliche Software (kein rsync-Binary nötig, wie es bei Shared-Hosting
+# ohne SSH-Zugriff auf Zusatztools üblich ist).
+#
+# Voraussetzung: In den Repository-Einstellungen unter
+# "Settings" → "Secrets and variables" → "Actions" müssen folgende Secrets
+# angelegt sein:
+#   FTP_SERVER      – SFTP-Host, z. B. eine IP-Adresse oder ein Hostname
+#   FTP_USERNAME    – Benutzername
+#   FTP_PASSWORD    – Passwort
+#   FTP_SERVER_DIR  – Zielverzeichnis auf dem Webspace, z. B. "/" oder "/httpdocs/"
+#
+# Hinweis: Trotz der Secret-Namen "FTP_*" wird hier SFTP (Port 22) verwendet
+# – FTP und SFTP nutzen bei den meisten Hostern dieselben Zugangsdaten.
+
+on:
+  push:
+    branches:
+      - claude/dpsg-trier-homepage-design-jwdgs4
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repository auschecken
+        uses: actions/checkout@v4
+
+      - name: lftp installieren
+        run: sudo apt-get update && sudo apt-get install -y lftp
+
+      - name: Per lftp über SFTP synchronisieren (inkl. Löschen entfernter Dateien)
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_SERVER_DIR: ${{ secrets.FTP_SERVER_DIR }}
+        run: |
+          lftp -u "$FTP_USERNAME","$FTP_PASSWORD" -p 22 "sftp://$FTP_SERVER" <<EOF
+          set sftp:auto-confirm yes
+          set net:max-retries 2
+          set mirror:parallel-transfer-count 3
+          mirror --reverse --delete --verbose \
+            --exclude-glob .git/ \
+            --exclude-glob .github/ \
+            ./ "$FTP_SERVER_DIR"
+          bye
+          EOF

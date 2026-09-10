@@ -101,4 +101,16 @@ Einfach `index.html` im Browser öffnen, oder z. B. mit:
 python3 -m http.server 8000
 ```
 
+## Deployment
+
+Die Seite wird automatisch per **GitHub Actions** per SFTP hochgeladen
+(`.github/workflows/deploy.yml`) – bei jedem Push auf den Branch
+`claude/dpsg-trier-homepage-design-jwdgs4`, oder manuell über den
+**Actions**-Tab (Workflow „Deploy auf Netcup-Webspace" → **Run workflow**).
+
+Voraussetzung sind die Repository-Secrets `FTP_SERVER`, `FTP_USERNAME`,
+`FTP_PASSWORD` und `FTP_SERVER_DIR` unter **Settings → Secrets and
+variables → Actions** (siehe Kommentar im Workflow für Details – dieselbe
+Namenskonvention wie im [Bezirk-Repo](https://github.com/son1x/dpsg-homepage)).
+
 und dann `http://localhost:8000` aufrufen.

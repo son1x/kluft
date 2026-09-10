@@ -404,6 +404,144 @@ p {
 
 .stufe--biber .stufe-icon-wrap { border: 2px solid var(--stufe-biber-ink); }
 
+/* ---------- Stufe-Detailseite ---------- */
+
+.stufe-hero {
+  background: linear-gradient(135deg, var(--stufe-color) 0%, color-mix(in srgb, var(--stufe-color) 70%, #000) 100%);
+  color: #fff;
+  position: relative;
+}
+
+.stufe--biber.stufe-hero {
+  background: linear-gradient(135deg, #ffffff 0%, #eef1f5 100%);
+  color: var(--stufe-biber-ink);
+  border-bottom: 3px solid var(--stufe-biber-ink);
+}
+
+.stufe-hero .container {
+  padding: 56px 24px;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  flex-wrap: wrap;
+}
+
+.stufe-hero .stufe-icon-wrap {
+  width: 110px;
+  height: 110px;
+  flex: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid rgba(255, 255, 255, 0.5);
+}
+
+.stufe--biber.stufe-hero .stufe-icon-wrap {
+  background: var(--color-bg-alt);
+  border-color: var(--stufe-biber-ink);
+}
+
+.stufe-hero .stufe-icon {
+  width: 64px;
+  height: 64px;
+  color: #fff;
+}
+
+.stufe--biber.stufe-hero .stufe-icon {
+  color: var(--stufe-biber-ink);
+}
+
+.stufe-hero .stufe-icon-wrap.has-photo {
+  width: 150px;
+  height: 150px;
+  overflow: hidden;
+}
+
+.stufe-hero .stufe-icon-wrap.has-photo .stufe-icon-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: bottom center;
+  padding: 6px;
+}
+
+.mascot-credit {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  margin-top: 8px;
+}
+
+.stufe-hero h1 {
+  color: inherit;
+  margin-bottom: 6px;
+}
+
+.stufe-badge {
+  display: inline-block;
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.03em;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.25);
+  margin-bottom: 10px;
+}
+
+.stufe--biber .stufe-badge {
+  background: var(--stufe-biber-ink);
+  color: #fff;
+}
+
+.stufe-breadcrumb {
+  font-size: 0.85rem;
+}
+
+.stufe-breadcrumb a {
+  color: inherit;
+  opacity: 0.85;
+}
+
+.stufe-nav-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  padding: 18px 0;
+  background: var(--color-bg-alt);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.stufe-nav-strip a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+.stufe-nav-strip a[aria-current="page"] {
+  background: var(--stufe-color);
+  color: var(--stufe-ink, #fff);
+  border-color: transparent;
+}
+
+.stufe-nav-strip .stufe-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--stufe-color);
+  border: 1px solid var(--color-border);
+  flex: none;
+}
+
 /* ---------- Bezirke / Karten-Grid ---------- */
 
 .card-grid {
@@ -811,6 +949,42 @@ form.contact-form {
   padding: 2px 6px;
   border-radius: 4px;
   font-style: normal;
+}
+
+/* ---------- Chronik ---------- */
+
+.chronik-block {
+  margin-bottom: 40px;
+}
+
+.chronik-block h3 {
+  font-size: 1.15rem;
+  margin-bottom: 14px;
+}
+
+.chronik-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.chronik-table td {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.95rem;
+}
+
+.chronik-table tr:last-child td {
+  border-bottom: none;
+}
+
+.chronik-table td:last-child {
+  text-align: right;
+  color: var(--color-text-muted);
+  white-space: nowrap;
 }
 
 /* ---------- Baustellen-Hinweis ---------- */

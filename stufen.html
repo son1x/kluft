@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Stufen – DPSG Diözesanverband Trier</title>
+<meta name="description" content="Von Biber bis Rover: die fünf Altersstufen der DPSG im Diözesanverband Trier." />
+<link rel="icon" href="assets/favicon.png" type="image/png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&family=Suez+One&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/style.css?v=20260910c" />
+</head>
+<body>
+<div class="site-notice-overlay" id="siteNotice">
+  <div class="site-notice-card">
+    <span class="site-notice-icon" aria-hidden="true">🚧</span>
+    <p><strong>Dies ist ein Gestaltungsentwurf</strong>Die Inhalte orientieren sich an dpsg-trier.de, sind aber teils noch Platzhalter und vom Diözesanvorstand zu prüfen.</p>
+    <button class="site-notice-close" aria-label="Hinweis schließen">×</button>
+  </div>
+</div>
+<script>
+(function () {
+  try {
+    var KEY = "dpsgDvNoticeShownAt";
+    var last = localStorage.getItem(KEY);
+    var now = Date.now();
+    if (last && now - Number(last) < 60 * 60 * 1000) {
+      document.getElementById("siteNotice").classList.add("is-hidden");
+    } else {
+      localStorage.setItem(KEY, String(now));
+    }
+  } catch (e) {}
+})();
+</script>
+
+<header class="site-header">
+  <nav class="nav">
+    <a class="brand" href="index.html">
+      <img class="brand-logo" src="assets/logo-dv-trier.png" alt="DPSG Diözesanverband Trier" />
+    </a>
+    <button class="nav-toggle" aria-label="Menü öffnen" aria-expanded="false"><span></span></button>
+    <ul class="nav-links">
+      <li><a href="index.html">Startseite</a></li>
+      <li><a href="dioezesanverband.html">Diözesanverband</a></li>
+      <li><a href="stufen.html" aria-current="page">Stufen</a></li>
+      <li><a href="aktuelles.html">Aktuelles</a></li>
+      <li><a href="kontakt.html">Kontakt</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main>
+
+  <section class="section" style="padding-bottom: 24px;">
+    <div class="container">
+      <div class="section-header">
+        <span class="eyebrow">Für jedes Alter</span>
+        <h1>Die Stufen bei der DPSG</h1>
+        <p>Pfadfinder*innen schließen sich in altersgemäßer Form zusammen – vom Kindergartenalter bis zum jungen Erwachsenenalter.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top: 0;">
+    <div class="container">
+      <div class="stufen-grid">
+        <a class="stufe-card stufe--biber" href="stufen-biber.html">
+          <span class="stufe-icon-wrap has-photo">
+            <img class="stufe-icon-photo" src="assets/mascots/biber.png" alt="Maskottchen Biber" loading="lazy" />
+          </span>
+          <h3>Biber</h3>
+          <p class="stufe-alter">4 bis 7 Jahre</p>
+          <span class="stufe-mehr">Mehr erfahren →</span>
+        </a>
+        <a class="stufe-card stufe--woelflinge" href="stufen-woelflinge.html">
+          <span class="stufe-icon-wrap has-photo">
+            <img class="stufe-icon-photo" src="assets/mascots/woelfi.png" alt="Maskottchen Wölfi" loading="lazy" />
+          </span>
+          <h3>Wölflinge</h3>
+          <p class="stufe-alter">6 bis 10 Jahre</p>
+          <span class="stufe-mehr">Mehr erfahren →</span>
+        </a>
+        <a class="stufe-card stufe--jungpfadfinder" href="stufen-jungpfadfinder.html">
+          <span class="stufe-icon-wrap has-photo">
+            <img class="stufe-icon-photo" src="assets/mascots/kobold.png" alt="Maskottchen Kobold" loading="lazy" />
+          </span>
+          <h3>Jungpfadfinder*innen</h3>
+          <p class="stufe-alter">10 bis 13 Jahre</p>
+          <span class="stufe-mehr">Mehr erfahren →</span>
+        </a>
+        <a class="stufe-card stufe--pfadfinder" href="stufen-pfadfinder.html">
+          <span class="stufe-icon-wrap has-photo">
+            <img class="stufe-icon-photo" src="assets/mascots/handlogo-pfadfinder.png" alt="Handlogo der Pfadfinderstufe" loading="lazy" />
+          </span>
+          <h3>Pfadfinder*innen</h3>
+          <p class="stufe-alter">13 bis 15 Jahre</p>
+          <span class="stufe-mehr">Mehr erfahren →</span>
+        </a>
+        <a class="stufe-card stufe--rover" href="stufen-rover.html">
+          <span class="stufe-icon-wrap">
+            <svg class="stufe-icon" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M6 46 L22 20 L30 34 L38 16 L58 46 Z" fill="currentColor"/>
+              <circle cx="46" cy="16" r="5" fill="currentColor" opacity="0.7"/>
+            </svg>
+          </span>
+          <h3>Rover</h3>
+          <p class="stufe-alter">15 bis 20 Jahre</p>
+          <span class="stufe-mehr">Mehr erfahren →</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-alt">
+    <div class="container two-col">
+      <div>
+        <h2>Gemeinsam unterwegs</h2>
+        <p>In der Deutschen Pfadfinderschaft Sankt Georg sind Mädchen und Jungen, Frauen und Männer gemeinsam unterwegs. Sie wagen Abenteuer und lernen, für sich und für andere in der Gruppe Verantwortung zu übernehmen. Sie entwickeln eine lebendige Beziehung zu Gott. „Duty to myself", „Duty to others" und „Duty to god" hat der Gründer der Weltpfadfinderbewegung, Lord Robert Baden-Powell, das genannt.</p>
+        <p>Das pädagogische Prinzip des Pfadfindens ist erstaunlich schlicht: Kinder und Jugendliche erziehen sich mit Unterstützung der erwachsenen Leiter*innen selbst. Jede und jeder bringt seine Fähigkeiten ein, gelernt wird während des gemeinsamen Handelns.</p>
+      </div>
+      <ul class="fact-list">
+        <li><span class="dot"></span><div><strong>Die Altersstufen</strong><br>machen die Selbsterziehung einfacher und fordern jede und jeden</div></li>
+        <li><span class="dot"></span><div><strong>Unterschiedliche Schwerpunkte</strong><br>Wölflinge entdecken spielerisch, Jungpfadfinder*innen erleben Abenteuer, Pfadfinder*innen finden ihren Lebensstil, Rover stehen an der Schwelle zum Erwachsenwerden</div></li>
+        <li><span class="dot"></span><div><strong>Volljährige Mitglieder</strong><br>können sich jederzeit als Leiter*innen engagieren</div></li>
+      </ul>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <h4>DPSG Diözesanverband Trier</h4>
+        <p>Der Diözesanverband Trier der Deutschen Pfadfinderschaft Sankt Georg – katholische Pfadfinder*innen im gesamten Bistum Trier, von der Mosel bis ins Saarland.</p>
+        <p style="margin-top:14px;">Weberbach 71, 54290 Trier<br />
+        <a href="tel:+4965146298290">0651 4 629 829 0</a><br />
+        <a href="mailto:info@dpsg-trier.de">info@dpsg-trier.de</a></p>
+      </div>
+      <div>
+        <h4>Navigation</h4>
+        <ul>
+          <li><a href="dioezesanverband.html">Diözesanverband</a></li>
+          <li><a href="stufen.html">Stufen</a></li>
+          <li><a href="aktuelles.html">Aktuelles</a></li>
+          <li><a href="kontakt.html">Kontakt</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Rechtliches &amp; mehr</h4>
+        <ul>
+          <li><a href="impressum.html">Impressum</a></li>
+          <li><a href="datenschutz.html">Datenschutz</a></li>
+          <li><a href="https://www.dpsg.de" target="_blank" rel="noopener">DPSG Bundesebene</a></li>
+          <li><a href="https://www.bistum-trier.de" target="_blank" rel="noopener">Bistum Trier</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© <span id="year"></span> DPSG Diözesanverband Trier</span>
+      <span>Pfadfinden. Leben. Glauben.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>

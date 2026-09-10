@@ -27,11 +27,12 @@ aktuelle Meldungen, Georgsbrief).
   (Cache-Busting nach Änderungen – Datum bei inhaltlichen CSS-Änderungen auf
   allen Seiten aktualisieren)
 - `js/main.js` – mobile Navigation, Baustellen-Hinweis, Fußzeilen-Jahr
-- `assets/logo-dv-trier.svg` – **selbst gestaltetes Platzhalter-Logo**
-  (Lilie + Schriftzug in den Verbandsfarben) – durch das offizielle Logo des
-  Diözesanverbands ersetzen, sobald verfügbar
-- `assets/favicon.png` – Favicon, übernommen aus dem Bezirks-Repo (Lilie auf
-  cremefarbenem Kreis)
+- `assets/logo-dv-trier.png` – **offizielles Logo** des Diözesanverbands
+  (Flamme/Pfingstfeuer mit DPSG-Kreuz, Schriftzug „Diözesanverband Trier" und
+  „dpsg"), übernommen von dpsg-trier.de (Theme-Asset, 300×223px, keine
+  höhere Auflösung auf der Originalseite verfügbar)
+- `assets/favicon.png` – aus dem echten Logo zugeschnittenes Icon (nur die
+  Flamme, ohne Schriftzug)
 - `assets/mascots/` – offizielle DPSG-Stufenmaskottchen (Biber, Wölfi, Kobold)
   und das offizielle Handlogo der Pfadfinderstufe, Quelle: dpsg.de
 
@@ -59,18 +60,25 @@ Dieser Entwurf wurde mit öffentlich recherchierbaren Basisdaten von
 dpsg-trier.de befüllt. Folgende Punkte sind **Platzhalter** und sollten vom
 Diözesanvorstand geprüft/ergänzt werden:
 
-1. **Logo** – `assets/logo-dv-trier.svg` ist ein selbst gestaltetes
-   Platzhalter-Logo, kein offizielles Verbandslogo. Durch das echte Logo des
-   Diözesanverbands ersetzen.
-2. **Bezirke-Übersicht** (`index.html`, `dioezesanverband.html#bezirke`) –
-   nur der Bezirk Saar-Hochwald ist mit echten Daten befüllt (aus dessen
-   eigener Homepage). Die weiteren Bezirke des Diözesanverbands (u. a. im
-   rheinland-pfälzischen Teil des Bistums) müssen namentlich ergänzt werden,
-   inkl. Gebiet, Kontakt und ggf. Link zur eigenen Bezirks-Homepage.
-3. **Diözesanleitung** (`dioezesanverband.html`) – aktuell nur Rollen-Platzhalter
-   ohne Namen, da keine gesicherten Namen recherchierbar waren. Mit echten
-   Personen (Diözesanvorsitzende*r, Kurat*in, Referent*innen) befüllen –
-   analog zur Anleitung "Leitungsteam pflegen" im Bezirks-Repo.
+1. **Bezirke-Übersicht** (`index.html`, `dioezesanverband.html#bezirke`) –
+   alle 10 Bezirke sind namentlich gelistet (bestätigt über die
+   Termine-Struktur von dpsg-trier.de sowie die Angabe „10 Bezirken" auf
+   dessen „Wir über uns"-Seite), nur Saar-Hochwald ist mit echten Kontakt-
+   /Homepage-Daten befüllt. Für die übrigen 9 Bezirke fehlen noch Stämme,
+   Kontaktdaten und Homepage-Links.
+2. **Stämme im Diözesanverband** – laut dpsg-trier.de gibt es „über 60
+   Stämme und Siedlungen", mit einer eigenen Seite
+   (dpsg-trier.de/downloads/staemme-im-dioezesanverband/). Diese Liste
+   liegt dort als interaktive Karte (Plugin „WP Google Maps") vor, deren
+   Markerdaten sich nicht öffentlich auslesen ließen (die REST-Schnittstelle
+   liefert nur einen Platzhalter-Marker zurück). Eine einzelne, namentliche
+   Stämme-Liste je Bezirk ist auf dieser Seite daher **noch nicht enthalten**
+   – ein Datenbank-Export der Original-Homepage (z. B. der `wp_wpgmza_maps`-
+   Tabelle) würde das direkt lösen.
+3. **Diözesanleitung** (`dioezesanverband.html`) – mit den echten, öffentlich
+   auf dpsg-trier.de genannten Personen und Rollen befüllt (Stand siehe
+   Commit-Historie). E-Mail-Adressen, die dort nicht einzeln aufgeführt
+   waren, verweisen auf die allgemeine Diözesanbüro-Adresse.
 4. **Impressum** (`impressum.html`) – vertretungsberechtigte Person(en) der
    Diözesanleitung eintragen.
 5. **Datenschutzerklärung** (`datenschutz.html`) – Hosting-Anbieter,
@@ -101,6 +109,8 @@ Einfach `index.html` im Browser öffnen, oder z. B. mit:
 python3 -m http.server 8000
 ```
 
+und dann `http://localhost:8000` aufrufen.
+
 ## Deployment
 
 Die Seite wird automatisch per **GitHub Actions** per SFTP hochgeladen
@@ -112,5 +122,3 @@ Voraussetzung sind die Repository-Secrets `FTP_SERVER`, `FTP_USERNAME`,
 `FTP_PASSWORD` und `FTP_SERVER_DIR` unter **Settings → Secrets and
 variables → Actions** (siehe Kommentar im Workflow für Details – dieselbe
 Namenskonvention wie im [Bezirk-Repo](https://github.com/son1x/dpsg-homepage)).
-
-und dann `http://localhost:8000` aufrufen.

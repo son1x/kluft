@@ -76,9 +76,13 @@ Diözesanvorstand geprüft/ergänzt werden:
 5. **Datenschutzerklärung** (`datenschutz.html`) – Hosting-Anbieter,
    Telefonnummer der/des Datenschutzbeauftragten und Details zum
    Georgsbrief-Versand ergänzen; im Zweifel rechtlich prüfen lassen.
-6. **Aktuelles** (`aktuelles.html`, Startseite) – die Meldungen sind ein
-   Abbild der zuletzt auf dpsg-trier.de/aktuell veröffentlichten Beiträge und
-   müssen redaktionell laufend gepflegt werden.
+6. **Aktuelles** (`aktuelles.html`, Startseite) – enthält alle 24 seit Januar
+   2025 auf dpsg-trier.de/aktuell veröffentlichten Beiträge (Georgsbrief,
+   Georgsbote, Einzelmeldungen), jeweils mit Kurzbeschreibung und
+   „Weiterlesen"-Link zum Originalbeitrag. Muss redaktionell laufend gepflegt
+   werden; der Eintrag **„Nachruf Monika Groß"** konnte inhaltlich nicht
+   automatisiert ausgelesen werden (Bildformat) und sollte vor Veröffentlichung
+   geprüft/vervollständigt werden.
 7. **Georgsbrief-Anmeldung** – aktuell verlinkt auf die Aktuelles-Seite von
    dpsg-trier.de; bei Bedarf durch ein eigenes Anmeldeformular ersetzen.
 8. **Fotos** – aktuell werden nur einfache SVG-Illustrationen, offizielle

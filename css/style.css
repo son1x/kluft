@@ -563,6 +563,35 @@ p {
   margin-bottom: 0;
 }
 
+.news-card .read-more {
+  margin-top: auto;
+  padding-top: 6px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+  color: var(--color-primary);
+}
+
+.news-card .read-more:hover {
+  color: var(--color-accent);
+}
+
+.news-year-header {
+  margin: 40px 0 20px;
+  font-size: 1.1rem;
+  color: var(--color-accent-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-family: var(--font-body);
+  font-weight: 700;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 8px;
+}
+
+.news-year-header:first-child {
+  margin-top: 0;
+}
+
 /* ---------- Newsletter ---------- */
 
 .newsletter-band {

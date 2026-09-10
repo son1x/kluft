@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Der Diözesanverband – DPSG Diözesanverband Trier</title>
+<meta name="description" content="Struktur, Bezirke und Leitung des DPSG Diözesanverbands Trier im Bistum Trier." />
+<link rel="icon" href="assets/favicon.png" type="image/png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&family=Suez+One&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/style.css?v=20260910" />
+</head>
+<body>
+<div class="site-notice-overlay" id="siteNotice">
+  <div class="site-notice-card">
+    <span class="site-notice-icon" aria-hidden="true">🚧</span>
+    <p><strong>Dies ist ein Gestaltungsentwurf</strong>Die Inhalte orientieren sich an dpsg-trier.de, sind aber teils noch Platzhalter und vom Diözesanvorstand zu prüfen.</p>
+    <button class="site-notice-close" aria-label="Hinweis schließen">×</button>
+  </div>
+</div>
+<script>
+(function () {
+  try {
+    var KEY = "dpsgDvNoticeShownAt";
+    var last = localStorage.getItem(KEY);
+    var now = Date.now();
+    if (last && now - Number(last) < 60 * 60 * 1000) {
+      document.getElementById("siteNotice").classList.add("is-hidden");
+    } else {
+      localStorage.setItem(KEY, String(now));
+    }
+  } catch (e) {}
+})();
+</script>
+
+<header class="site-header">
+  <nav class="nav">
+    <a class="brand" href="index.html">
+      <img class="brand-logo" src="assets/logo-dv-trier.svg" alt="DPSG Diözesanverband Trier" />
+    </a>
+    <button class="nav-toggle" aria-label="Menü öffnen" aria-expanded="false"><span></span></button>
+    <ul class="nav-links">
+      <li><a href="index.html">Startseite</a></li>
+      <li><a href="dioezesanverband.html" aria-current="page">Diözesanverband</a></li>
+      <li><a href="aktuelles.html">Aktuelles</a></li>
+      <li><a href="kontakt.html">Kontakt</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main>
+
+  <section class="section" style="padding-bottom: 24px;">
+    <div class="container">
+      <div class="section-header">
+        <span class="eyebrow">Über uns</span>
+        <h1>Der Diözesanverband Trier</h1>
+        <p>Katholische Pfadfinder*innenarbeit im gesamten Bistum Trier – gemeinsam mit unseren Bezirken und Stämmen gestalten wir Kindern und Jugendlichen einen Ort zum Wachsen.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-alt">
+    <div class="container two-col">
+      <div>
+        <h2>Was ist die DPSG?</h2>
+        <p>Die Deutsche Pfadfinderschaft Sankt Georg (DPSG) ist mit über 80.000 Mitgliedern einer der größten katholischen Jugendverbände Deutschlands. Sie versteht sich als Gemeinschaft, in der Kinder und Jugendliche Verantwortung übernehmen, Gemeinschaft erleben und ihren Glauben leben – nach den Grundsätzen der internationalen Pfadfinderbewegung.</p>
+        <p>Organisiert ist die DPSG in Stämmen vor Ort, die sich zu Bezirken zusammenschließen. Mehrere Bezirke bilden einen Diözesanverband – für das Bistum Trier ist das der Diözesanverband Trier, einer von 24 Diözesanverbänden bundesweit.</p>
+      </div>
+      <ul class="fact-list">
+        <li><span class="dot"></span><div><strong>Diözesanverband Trier</strong><br>einer von 24 Diözesanverbänden der DPSG bundesweit</div></li>
+        <li><span class="dot"></span><div><strong>Diözesanbüro</strong><br>Weberbach 71, 54290 Trier</div></li>
+        <li><span class="dot"></span><div><strong>Ehrenamtlich getragen</strong><br>von Leiter*innen, Vorständen und der Diözesanleitung</div></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section" id="bezirke">
+    <div class="container">
+      <div class="section-header">
+        <span class="eyebrow">Struktur</span>
+        <h2>Unsere Bezirke</h2>
+        <p>Der Diözesanverband Trier erstreckt sich über das gesamte Bistum Trier. Bekannt sind unter anderem drei Bezirke im Saarland – weitere Bezirke im rheinland-pfälzischen Teil des Bistums folgen hier, sobald ihre Daten und eigenen Homepages angebunden sind.</p>
+      </div>
+      <div class="card-grid">
+        <article class="bezirk-card">
+          <h3>Bezirk Saar-Hochwald</h3>
+          <p class="bezirk-ort">📍 Landkreis Saarlouis &amp; Merzig-Wadern</p>
+          <p>Fünf Stämme zwischen Saarlouis und Perl.</p>
+          <div class="bezirk-card-actions">
+            <a class="more-link" href="https://www.dpsg-saar-hochwald.de" target="_blank" rel="noopener">Zur Bezirks-Homepage →</a>
+          </div>
+        </article>
+        <article class="bezirk-card is-placeholder">
+          <h3>Bezirk Schaumberg-Blies</h3>
+          <p class="bezirk-ort">📍 Saarland</p>
+          <p>Angaben zu Stämmen, Kontakt und Homepage werden ergänzt. <span class="placeholder">Platzhalter</span></p>
+        </article>
+        <article class="bezirk-card is-placeholder">
+          <h3>Bezirk Saarbrücken</h3>
+          <p class="bezirk-ort">📍 Saarland</p>
+          <p>Angaben zu Stämmen, Kontakt und Homepage werden ergänzt. <span class="placeholder">Platzhalter</span></p>
+        </article>
+        <article class="bezirk-card is-placeholder">
+          <h3>Bezirke Trier, Eifel, Hunsrück &amp; Mosel</h3>
+          <p class="bezirk-ort">📍 Rheinland-Pfalz</p>
+          <p>Namen, Gebiete und Kontaktdaten der Bezirke im rheinland-pfälzischen Teil des Bistums bitte hier ergänzen. <span class="placeholder">Platzhalter</span></p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-alt">
+    <div class="container">
+      <div class="section-header">
+        <span class="eyebrow">Diözesanleitung</span>
+        <h2>Wer den Diözesanverband trägt</h2>
+        <p>Der Diözesanverband wird von einer ehrenamtlichen Diözesanleitung geführt – unterstützt von Kurat*in, Fach- und Stufenreferent*innen sowie dem Diözesanbüro.</p>
+      </div>
+
+      <!--
+        LEITUNGSTEAM-VORLAGE
+        Pro Person einen .team-card-Block kopieren/anpassen (Name, Rolle, Mail),
+        sobald die Diözesanleitung final feststeht. Foto optional: Platzhalter-
+        Kreis (Initialen) durch <img class="team-photo" src="assets/team/name.jpg"
+        alt="Vor- und Nachname" /> ersetzen. Nur mit Einverständnis der
+        abgebildeten Person veröffentlichen.
+      -->
+      <div class="team-grid">
+        <article class="team-card">
+          <div class="team-photo">DL</div>
+          <h3>Diözesanvorsitzende*r</h3>
+          <p class="team-role">Diözesanleitung <span class="placeholder">Name folgt</span></p>
+          <a class="mail" href="mailto:info@dpsg-trier.de">info@dpsg-trier.de</a>
+        </article>
+        <article class="team-card">
+          <div class="team-photo">DL</div>
+          <h3>Diözesanvorsitzende*r</h3>
+          <p class="team-role">Diözesanleitung <span class="placeholder">Name folgt</span></p>
+          <a class="mail" href="mailto:info@dpsg-trier.de">info@dpsg-trier.de</a>
+        </article>
+        <article class="team-card">
+          <div class="team-photo">DK</div>
+          <h3>Diözesankurat*in</h3>
+          <p class="team-role">Geistliche Begleitung <span class="placeholder">Name folgt</span></p>
+          <a class="mail" href="mailto:info@dpsg-trier.de">info@dpsg-trier.de</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <h4>DPSG Diözesanverband Trier</h4>
+        <p>Der Diözesanverband Trier der Deutschen Pfadfinderschaft Sankt Georg – katholische Pfadfinder*innen im gesamten Bistum Trier, von der Mosel bis ins Saarland.</p>
+        <p style="margin-top:14px;">Weberbach 71, 54290 Trier<br />
+        <a href="tel:+4965146298290">0651 4 629 829 0</a><br />
+        <a href="mailto:info@dpsg-trier.de">info@dpsg-trier.de</a></p>
+      </div>
+      <div>
+        <h4>Navigation</h4>
+        <ul>
+          <li><a href="dioezesanverband.html">Diözesanverband</a></li>
+          <li><a href="aktuelles.html">Aktuelles</a></li>
+          <li><a href="kontakt.html">Kontakt</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Rechtliches &amp; mehr</h4>
+        <ul>
+          <li><a href="impressum.html">Impressum</a></li>
+          <li><a href="datenschutz.html">Datenschutz</a></li>
+          <li><a href="https://www.dpsg.de" target="_blank" rel="noopener">DPSG Bundesebene</a></li>
+          <li><a href="https://www.bistum-trier.de" target="_blank" rel="noopener">Bistum Trier</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© <span id="year"></span> DPSG Diözesanverband Trier</span>
+      <span>Pfadfinden. Leben. Glauben.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>

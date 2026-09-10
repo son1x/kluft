@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DPSG Diözesanverband Trier – Pfadfinden im Bistum Trier</title>
+<meta name="description" content="Der DPSG Diözesanverband Trier vereint die Bezirke und Stämme der Deutschen Pfadfinderschaft Sankt Georg im Bistum Trier – von der Mosel über Eifel und Hunsrück bis ins Saarland." />
+<link rel="icon" href="assets/favicon.png" type="image/png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&family=Suez+One&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/style.css?v=20260910" />
+</head>
+<body>
+<div class="site-notice-overlay" id="siteNotice">
+  <div class="site-notice-card">
+    <span class="site-notice-icon" aria-hidden="true">🚧</span>
+    <p><strong>Dies ist ein Gestaltungsentwurf</strong>Die Inhalte orientieren sich an dpsg-trier.de, sind aber teils noch Platzhalter und vom Diözesanvorstand zu prüfen.</p>
+    <button class="site-notice-close" aria-label="Hinweis schließen">×</button>
+  </div>
+</div>
+<script>
+(function () {
+  try {
+    var KEY = "dpsgDvNoticeShownAt";
+    var last = localStorage.getItem(KEY);
+    var now = Date.now();
+    if (last && now - Number(last) < 60 * 60 * 1000) {
+      document.getElementById("siteNotice").classList.add("is-hidden");
+    } else {
+      localStorage.setItem(KEY, String(now));
+    }
+  } catch (e) {}
+})();
+</script>
+
+<header class="site-header">
+  <nav class="nav">
+    <a class="brand" href="index.html">
+      <img class="brand-logo" src="assets/logo-dv-trier.svg" alt="DPSG Diözesanverband Trier" />
+    </a>
+    <button class="nav-toggle" aria-label="Menü öffnen" aria-expanded="false"><span></span></button>
+    <ul class="nav-links">
+      <li><a href="index.html" aria-current="page">Startseite</a></li>
+      <li><a href="dioezesanverband.html">Diözesanverband</a></li>
+      <li><a href="aktuelles.html">Aktuelles</a></li>
+      <li><a href="kontakt.html">Kontakt</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main>
+
+  <section class="hero">
+    <div class="hero-decor" aria-hidden="true"></div>
+    <div class="container">
+      <div class="hero-copy">
+        <span class="hero-eyebrow">DPSG Diözesanverband Trier</span>
+        <h1>Pfadfinden im ganzen Bistum Trier</h1>
+        <p>Von der Mosel über Eifel und Hunsrück bis ins Saarland: Der Diözesanverband Trier verbindet die Bezirke und Stämme der Deutschen Pfadfinderschaft Sankt Georg – katholisch, bunt und immer draußen unterwegs.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="dioezesanverband.html#bezirke">Bezirke entdecken</a>
+          <a class="btn btn-outline" href="kontakt.html">Mitmachen &amp; Kontakt</a>
+        </div>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <svg viewBox="0 0 420 320" width="100%" role="img" aria-hidden="true">
+          <polygon points="60,260 130,110 200,260" fill="#2c4a7c"/>
+          <polygon points="150,260 210,80 270,260" fill="#810a1a" opacity="0.9"/>
+          <polygon points="230,260 300,130 370,260" fill="#2c4a7c"/>
+          <rect x="0" y="258" width="420" height="8" fill="#f2ead9" opacity="0.15"/>
+          <circle cx="345" cy="55" r="26" fill="#f2ead9" opacity="0.85"/>
+          <circle cx="70" cy="70" r="14" fill="#f2ead9" opacity="0.4"/>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <span class="eyebrow">Für jedes Alter</span>
+        <h2>Die Stufen bei der DPSG</h2>
+        <p>Vom Kindergartenalter bis zum Studium begleitet die Pfadfinderei junge Menschen mit einer Gruppenstunde pro Woche, gemeinsamen Fahrten und großen Lagern – in jedem Stamm des Diözesanverbands.</p>
+      </div>
+      <div class="stufen-grid">
+        <a class="stufe-card stufe--biber" href="https://www.dpsg-trier.de/stufen/" target="_blank" rel="noopener">
+          <span class="stufe-icon-wrap has-photo">
+            <img class="stufe-icon-photo" src="assets/mascots/biber.png" alt="Maskottchen Biber" loading="lazy" />
+          </span>
+          <h3>Biber</h3>
+          <p class="stufe-alter">ab 4 Jahren</p>
+          <span class="stufe-mehr">Mehr erfahren →</span>
+        </a>
+        <a class="stufe-card stufe--woelflinge" href="https://www.dpsg-trier.de/stufen/" target="_blank" rel="noopener">
+          <span class="stufe-icon-wrap has-photo">
+            <img class="stufe-icon-photo" src="assets/mascots/woelfi.png" alt="Maskottchen Wölfi" loading="lazy" />
+          </span>
+          <h3>Wölflinge</h3>
+          <p class="stufe-alter">ab 6 Jahren</p>
+          <span class="stufe-mehr">Mehr erfahren →</span>
+        </a>
+        <a class="stufe-card stufe--jungpfadfinder" href="https://www.dpsg-trier.de/stufen/" target="_blank" rel="noopener">
+          <span class="stufe-icon-wrap has-photo">
+            <img class="stufe-icon-photo" src="assets/mascots/kobold.png" alt="Maskottchen Kobold" loading="lazy" />
+          </span>
+          <h3>Jungpfadfinder*innen</h3>
+          <p class="stufe-alter">ab 10 Jahren</p>
+          <span class="stufe-mehr">Mehr erfahren →</span>
+        </a>
+        <a class="stufe-card stufe--pfadfinder" href="https://www.dpsg-trier.de/stufen/" target="_blank" rel="noopener">
+          <span class="stufe-icon-wrap has-photo">
+            <img class="stufe-icon-photo" src="assets/mascots/handlogo-pfadfinder.png" alt="Handlogo der Pfadfinderstufe" loading="lazy" />
+          </span>
+          <h3>Pfadfinder*innen</h3>
+          <p class="stufe-alter">ab 14 Jahren</p>
+          <span class="stufe-mehr">Mehr erfahren →</span>
+        </a>
+        <a class="stufe-card stufe--rover" href="https://www.dpsg-trier.de/stufen/" target="_blank" rel="noopener">
+          <span class="stufe-icon-wrap">
+            <svg class="stufe-icon" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M6 46 L22 20 L30 34 L38 16 L58 46 Z" fill="currentColor"/>
+              <circle cx="46" cy="16" r="5" fill="currentColor" opacity="0.7"/>
+            </svg>
+          </span>
+          <h3>Rover</h3>
+          <p class="stufe-alter">ab 16 Jahren</p>
+          <span class="stufe-mehr">Mehr erfahren →</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-alt">
+    <div class="container">
+      <div class="section-header">
+        <span class="eyebrow">Der Diözesanverband in Zahlen</span>
+        <h2>Zuhause im ganzen Bistum Trier</h2>
+      </div>
+      <div class="two-col">
+        <div>
+          <p>Der Diözesanverband Trier ist einer von 24 Diözesanverbänden der Deutschen Pfadfinderschaft Sankt Georg (DPSG) bundesweit. Er erstreckt sich über das gesamte Bistum Trier – von der Stadt Trier über Eifel, Hunsrück und Mosel bis ins Saarland.</p>
+          <p>Getragen wird der Diözesanverband von seinen Bezirken, in denen sich wiederum die Stämme vor Ort zusammenschließen. Ehrenamtliche Leiter*innen, Vorstände und die Diözesanleitung koordinieren und unterstützen die Arbeit auf allen Ebenen.</p>
+          <a class="btn btn-outline-dark" href="dioezesanverband.html">Mehr über den Diözesanverband</a>
+        </div>
+        <ul class="fact-list">
+          <li><span class="dot"></span><div><strong>Mehrere Bezirke</strong><br>zwischen Mosel, Eifel, Hunsrück und Saarland</div></li>
+          <li><span class="dot"></span><div><strong>Zahlreiche Stämme</strong><br>vor Ort in Städten und Gemeinden</div></li>
+          <li><span class="dot"></span><div><strong>Fünf Stufen</strong><br>von Biber bis Rover, für Kinder ab 4 Jahren bis junge Erwachsene</div></li>
+          <li><span class="dot"></span><div><strong>Katholischer Jugendverband</strong><br>eingebettet in die DPSG bundesweit und das Bistum Trier</div></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <span class="eyebrow">Immer auf dem Laufenden</span>
+        <h2>Aktuelles aus dem Diözesanverband</h2>
+        <p>Georgsbrief, Georgsbote und Neuigkeiten aus Bezirken und Stämmen – ein Auszug der letzten Meldungen.</p>
+      </div>
+      <div class="news-grid">
+        <article class="news-card">
+          <span class="news-date">August 2026</span>
+          <h3>Juni-Georgsbote 2026</h3>
+          <p>Der Bote, der euch durch den Sommer bringt – mit Rückblicken und guten Wünschen für die Ferien.</p>
+        </article>
+        <article class="news-card">
+          <span class="news-date">Juli 2026</span>
+          <h3>Unsere nächsten Veranstaltungen</h3>
+          <p>Ein Überblick über Aktionen und Angebote für das neue Halbjahr nach den Ferien.</p>
+        </article>
+        <article class="news-card">
+          <span class="news-date">Mai 2026</span>
+          <h3>Erstinformation zum neuen Wehrdienst</h3>
+          <p>Wichtige Hinweise für 17- bis 18-Jährige rund um den neuen Wehrdienst.</p>
+        </article>
+        <article class="news-card">
+          <span class="news-date">März 2026</span>
+          <h3>Bolivienbegegnungsreise 2026</h3>
+          <p>Zehn Gäste aus Bolivien besuchen den Diözesanverband vom 30. April bis 1. Juni.</p>
+        </article>
+      </div>
+      <p style="text-align:center; margin-top: 32px;">
+        <a class="btn btn-outline-dark" href="aktuelles.html">Alle Neuigkeiten ansehen</a>
+      </p>
+    </div>
+  </section>
+
+  <section class="section section-alt">
+    <div class="container">
+      <div class="newsletter-band">
+        <div>
+          <h3>Georgsbrief abonnieren</h3>
+          <p>Der monatliche Newsletter des Diözesanverbands mit Terminen, Aktionen und Neuigkeiten – direkt ins Postfach.</p>
+        </div>
+        <a class="btn btn-primary" href="https://www.dpsg-trier.de/aktuell/" target="_blank" rel="noopener">Zum Georgsbrief</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="bezirke-teaser">
+    <div class="container">
+      <div class="section-header">
+        <span class="eyebrow">Übersicht</span>
+        <h2>Unsere Bezirke</h2>
+        <p>Der Diözesanverband Trier gliedert sich in mehrere Bezirke – jeder mit eigenen Stämmen vor Ort.</p>
+      </div>
+      <div class="card-grid">
+        <article class="bezirk-card">
+          <h3>Bezirk Saar-Hochwald</h3>
+          <p class="bezirk-ort">📍 Landkreis Saarlouis &amp; Merzig-Wadern</p>
+          <p>Fünf Stämme zwischen Saarlouis und Perl gestalten gemeinsam Pfadfinderarbeit für Kinder und Jugendliche.</p>
+          <div class="bezirk-card-actions">
+            <a class="more-link" href="https://www.dpsg-saar-hochwald.de" target="_blank" rel="noopener">Zur Bezirks-Homepage →</a>
+          </div>
+        </article>
+        <article class="bezirk-card is-placeholder">
+          <h3>Weitere Bezirke</h3>
+          <p class="bezirk-ort">📍 Trier, Eifel, Hunsrück, Mosel, Saarland</p>
+          <p>Weitere Bezirke des Diözesanverbands folgen hier, sobald eigene Bezirks-Homepages angebunden sind. <span class="placeholder">Platzhalter</span></p>
+        </article>
+      </div>
+      <p class="map-note" style="text-align:center; margin-top: 24px;">Alle Bezirke, ihre Stämme und Kontaktdaten findest du auf der <a href="dioezesanverband.html">Diözesanverband-Seite</a>.</p>
+    </div>
+  </section>
+
+  <section class="section cta-band">
+    <div class="container">
+      <h2>Lust, dabei zu sein?</h2>
+      <p>Ob als Kind, Jugendliche*r oder ehrenamtliche Leitung – bei uns ist für jede*n Platz. Melde dich bei einem Bezirk oder Stamm in deiner Nähe oder schreib uns direkt.</p>
+      <a class="btn btn-primary" href="kontakt.html">Jetzt Kontakt aufnehmen</a>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <h4>DPSG Diözesanverband Trier</h4>
+        <p>Der Diözesanverband Trier der Deutschen Pfadfinderschaft Sankt Georg – katholische Pfadfinder*innen im gesamten Bistum Trier, von der Mosel bis ins Saarland.</p>
+        <p style="margin-top:14px;">Weberbach 71, 54290 Trier<br />
+        <a href="tel:+4965146298290">0651 4 629 829 0</a><br />
+        <a href="mailto:info@dpsg-trier.de">info@dpsg-trier.de</a></p>
+      </div>
+      <div>
+        <h4>Navigation</h4>
+        <ul>
+          <li><a href="dioezesanverband.html">Diözesanverband</a></li>
+          <li><a href="aktuelles.html">Aktuelles</a></li>
+          <li><a href="kontakt.html">Kontakt</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Rechtliches &amp; mehr</h4>
+        <ul>
+          <li><a href="impressum.html">Impressum</a></li>
+          <li><a href="datenschutz.html">Datenschutz</a></li>
+          <li><a href="https://www.dpsg.de" target="_blank" rel="noopener">DPSG Bundesebene</a></li>
+          <li><a href="https://www.bistum-trier.de" target="_blank" rel="noopener">Bistum Trier</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© <span id="year"></span> DPSG Diözesanverband Trier</span>
+      <span>Pfadfinden. Leben. Glauben.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Impressum – DPSG Diözesanverband Trier</title>
+<link rel="icon" href="assets/favicon.png" type="image/png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&family=Suez+One&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/style.css?v=20260910" />
+</head>
+<body>
+<div class="site-notice-overlay" id="siteNotice">
+  <div class="site-notice-card">
+    <span class="site-notice-icon" aria-hidden="true">🚧</span>
+    <p><strong>Dies ist ein Gestaltungsentwurf</strong>Die Inhalte orientieren sich an dpsg-trier.de, sind aber teils noch Platzhalter und vom Diözesanvorstand zu prüfen.</p>
+    <button class="site-notice-close" aria-label="Hinweis schließen">×</button>
+  </div>
+</div>
+<script>
+(function () {
+  try {
+    var KEY = "dpsgDvNoticeShownAt";
+    var last = localStorage.getItem(KEY);
+    var now = Date.now();
+    if (last && now - Number(last) < 60 * 60 * 1000) {
+      document.getElementById("siteNotice").classList.add("is-hidden");
+    } else {
+      localStorage.setItem(KEY, String(now));
+    }
+  } catch (e) {}
+})();
+</script>
+
+<header class="site-header">
+  <nav class="nav">
+    <a class="brand" href="index.html">
+      <img class="brand-logo" src="assets/logo-dv-trier.svg" alt="DPSG Diözesanverband Trier" />
+    </a>
+    <button class="nav-toggle" aria-label="Menü öffnen" aria-expanded="false"><span></span></button>
+    <ul class="nav-links">
+      <li><a href="index.html">Startseite</a></li>
+      <li><a href="dioezesanverband.html">Diözesanverband</a></li>
+      <li><a href="aktuelles.html">Aktuelles</a></li>
+      <li><a href="kontakt.html">Kontakt</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main>
+  <section class="section">
+    <div class="container legal-content">
+      <h1>Impressum</h1>
+
+      <div class="notice" style="margin-bottom:28px;">
+        <strong>Hinweis:</strong> Dieses Impressum ist ein Platzhalter-Muster nach § 5 TMG / § 18 MStV. Die
+        <span class="placeholder">markierten Felder</span> müssen vom Diözesanvorstand mit den tatsächlichen,
+        aktuellen Angaben ausgefüllt werden, bevor die Seite veröffentlicht wird.
+      </div>
+
+      <h2>Angaben gemäß § 5 TMG</h2>
+      <p>
+        DPSG Diözesanverband Trier<br />
+        <span class="placeholder">Name der/des Diözesanvorsitzenden</span><br />
+        Weberbach 71<br />
+        54290 Trier
+      </p>
+
+      <h2>Vertreten durch</h2>
+      <p>
+        Der DPSG Diözesanverband Trier wird durch die Diözesanleitung vertreten.
+        <span class="placeholder">Namen der gesetzlich vertretungsberechtigten Diözesanvorsitzenden ergänzen.</span>
+      </p>
+
+      <h2>Kontakt</h2>
+      <p>
+        E-Mail: <a href="mailto:info@dpsg-trier.de">info@dpsg-trier.de</a><br />
+        Telefon: 0651 4 629 829 0
+      </p>
+
+      <h2>Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</h2>
+      <p><span class="placeholder">Name, Anschrift wie oben</span></p>
+
+      <h2>Zugehörigkeit zum Verband</h2>
+      <p>
+        Der DPSG Diözesanverband Trier ist Teil der Deutschen Pfadfinderschaft Sankt Georg (DPSG). Bundesweite
+        Informationen finden sich unter <a href="https://www.dpsg.de" target="_blank" rel="noopener">www.dpsg.de</a>,
+        Informationen zum Bistum Trier unter
+        <a href="https://www.bistum-trier.de" target="_blank" rel="noopener">www.bistum-trier.de</a>.
+      </p>
+
+      <h2>EU-Streitschlichtung</h2>
+      <p>
+        Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit:
+        <a href="https://ec.europa.eu/consumers/odr/" target="_blank" rel="noopener">https://ec.europa.eu/consumers/odr/</a>.
+        Wir sind nicht verpflichtet und nicht bereit, an Streitbeilegungsverfahren vor einer
+        Verbraucherschlichtungsstelle teilzunehmen.
+      </p>
+
+      <h2>Haftung für Inhalte</h2>
+      <p>
+        Als Diensteanbieter sind wir gemäß § 7 Abs. 1 TMG für eigene Inhalte auf diesen Seiten nach den
+        allgemeinen Gesetzen verantwortlich. Nach §§ 8 bis 10 TMG sind wir als Diensteanbieter jedoch
+        nicht verpflichtet, übermittelte oder gespeicherte fremde Informationen zu überwachen.
+      </p>
+
+      <h2>Haftung für Links</h2>
+      <p>
+        Unser Angebot enthält Links zu externen Websites Dritter, auf deren Inhalte wir keinen Einfluss
+        haben. Für die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter verantwortlich.
+      </p>
+
+      <h2>Bildnachweise</h2>
+      <p>Stufen-Maskottchen und Handlogo: offizielles Bildmaterial der DPSG, Quelle dpsg.de. <span class="placeholder">Weitere Angaben zu eigenem Bildmaterial ergänzen, sobald verwendet.</span></p>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-bottom">
+      <span>© <span id="year"></span> DPSG Diözesanverband Trier</span>
+      <span><a href="impressum.html">Impressum</a> · <a href="datenschutz.html">Datenschutz</a></span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>

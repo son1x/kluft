@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Aktuelles – DPSG Diözesanverband Trier</title>
+<meta name="description" content="Neuigkeiten, Georgsbrief und Georgsbote des DPSG Diözesanverbands Trier." />
+<link rel="icon" href="assets/favicon.png" type="image/png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&family=Suez+One&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/style.css?v=20260910" />
+</head>
+<body>
+<div class="site-notice-overlay" id="siteNotice">
+  <div class="site-notice-card">
+    <span class="site-notice-icon" aria-hidden="true">🚧</span>
+    <p><strong>Dies ist ein Gestaltungsentwurf</strong>Die Inhalte orientieren sich an dpsg-trier.de, sind aber teils noch Platzhalter und vom Diözesanvorstand zu prüfen.</p>
+    <button class="site-notice-close" aria-label="Hinweis schließen">×</button>
+  </div>
+</div>
+<script>
+(function () {
+  try {
+    var KEY = "dpsgDvNoticeShownAt";
+    var last = localStorage.getItem(KEY);
+    var now = Date.now();
+    if (last && now - Number(last) < 60 * 60 * 1000) {
+      document.getElementById("siteNotice").classList.add("is-hidden");
+    } else {
+      localStorage.setItem(KEY, String(now));
+    }
+  } catch (e) {}
+})();
+</script>
+
+<header class="site-header">
+  <nav class="nav">
+    <a class="brand" href="index.html">
+      <img class="brand-logo" src="assets/logo-dv-trier.svg" alt="DPSG Diözesanverband Trier" />
+    </a>
+    <button class="nav-toggle" aria-label="Menü öffnen" aria-expanded="false"><span></span></button>
+    <ul class="nav-links">
+      <li><a href="index.html">Startseite</a></li>
+      <li><a href="dioezesanverband.html">Diözesanverband</a></li>
+      <li><a href="aktuelles.html" aria-current="page">Aktuelles</a></li>
+      <li><a href="kontakt.html">Kontakt</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main>
+
+  <section class="section" style="padding-bottom: 24px;">
+    <div class="container">
+      <div class="section-header">
+        <span class="eyebrow">Immer auf dem Laufenden</span>
+        <h1>Aktuelles</h1>
+        <p>Georgsbrief, Georgsbote und Neuigkeiten aus dem Diözesanverband, seinen Bezirken und Stämmen.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top: 0;">
+    <div class="container">
+      <div class="news-grid">
+        <article class="news-card">
+          <span class="news-date">4. August 2026</span>
+          <h3>Juni-Georgsbote 2026</h3>
+          <p>Der Bote, der euch durch den Sommer bringt – mit Rückblicken auf das Halbjahr und guten Wünschen für die Ferien.</p>
+        </article>
+        <article class="news-card">
+          <span class="news-date">17. Juli 2026</span>
+          <h3>Unsere nächsten Veranstaltungen</h3>
+          <p>Ein Überblick über Aktionen und Angebote für das neue Halbjahr nach den Sommerferien.</p>
+        </article>
+        <article class="news-card">
+          <span class="news-date">12. Mai 2026</span>
+          <h3>Erstinformation zum neuen Wehrdienst</h3>
+          <p>Wichtige Hinweise für 17- bis 18-Jährige rund um den neuen Wehrdienst.</p>
+        </article>
+        <article class="news-card">
+          <span class="news-date">11. März 2026</span>
+          <h3>Bolivienbegegnungsreise 2026</h3>
+          <p>Zehn Gäste aus Bolivien besuchen den Diözesanverband im Rahmen einer Austauschreise vom 30. April bis 1. Juni.</p>
+        </article>
+        <article class="news-card">
+          <span class="news-date">11. Februar 2026</span>
+          <h3>Aufarbeitungsprozess in der DPSG</h3>
+          <p>Hinweise und Leitlinien zum verbandsweiten Aufarbeitungsprozess.</p>
+        </article>
+        <article class="news-card">
+          <span class="news-date">19. Dezember 2025</span>
+          <h3>Georgsbote Dezember 2025</h3>
+          <p>Die Weihnachtsausgabe mit saisonalen Grüßen und einem Rückblick auf das Jahr.</p>
+        </article>
+      </div>
+      <p class="map-note" style="text-align:center; margin-top: 24px;">Diese Auswahl basiert auf den zuletzt veröffentlichten Meldungen auf <a href="https://www.dpsg-trier.de/aktuell/" target="_blank" rel="noopener">dpsg-trier.de/aktuell</a>. <span class="placeholder">Redaktionell zu pflegen</span></p>
+    </div>
+  </section>
+
+  <section class="section section-alt">
+    <div class="container">
+      <div class="newsletter-band">
+        <div>
+          <h3>Georgsbrief abonnieren</h3>
+          <p>Der monatliche Newsletter des Diözesanverbands mit Terminen, Aktionen und Neuigkeiten – direkt ins Postfach.</p>
+        </div>
+        <a class="btn btn-primary" href="https://www.dpsg-trier.de/aktuell/" target="_blank" rel="noopener">Zum Georgsbrief</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <h4>DPSG Diözesanverband Trier</h4>
+        <p>Der Diözesanverband Trier der Deutschen Pfadfinderschaft Sankt Georg – katholische Pfadfinder*innen im gesamten Bistum Trier, von der Mosel bis ins Saarland.</p>
+        <p style="margin-top:14px;">Weberbach 71, 54290 Trier<br />
+        <a href="tel:+4965146298290">0651 4 629 829 0</a><br />
+        <a href="mailto:info@dpsg-trier.de">info@dpsg-trier.de</a></p>
+      </div>
+      <div>
+        <h4>Navigation</h4>
+        <ul>
+          <li><a href="dioezesanverband.html">Diözesanverband</a></li>
+          <li><a href="aktuelles.html">Aktuelles</a></li>
+          <li><a href="kontakt.html">Kontakt</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Rechtliches &amp; mehr</h4>
+        <ul>
+          <li><a href="impressum.html">Impressum</a></li>
+          <li><a href="datenschutz.html">Datenschutz</a></li>
+          <li><a href="https://www.dpsg.de" target="_blank" rel="noopener">DPSG Bundesebene</a></li>
+          <li><a href="https://www.bistum-trier.de" target="_blank" rel="noopener">Bistum Trier</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© <span id="year"></span> DPSG Diözesanverband Trier</span>
+      <span>Pfadfinden. Leben. Glauben.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>

@@ -1,16 +1,28 @@
 name: Deploy auf Netcup-Webspace
 
-# Lädt die Seite bei jedem Push auf diesen Branch automatisch per SFTP auf
-# den Webspace hoch. Kann zusätzlich manuell über den "Actions"-Tab in
-# GitHub gestartet werden (Run workflow).
+# Baut das Laravel-Custom-CMS (Pflichtenheft docs/pflichtenheft.md) und lädt
+# es bei jedem Push auf diesen Branch automatisch per SFTP auf den Webspace
+# hoch. Kann zusätzlich manuell über den "Actions"-Tab in GitHub gestartet
+# werden (Run workflow).
 #
 # Wichtig: lftp "mirror --reverse --delete" spiegelt den Webspace also exakt
 # auf den Stand dieses Branches – Dateien, die hier gelöscht wurden,
-# verschwinden dadurch auch auf dem Server.
+# verschwinden dadurch auch auf dem Server. Das ersetzt den früheren
+# statischen Entwurf vollständig (der bleibt als Referenz in
+# legacy-static-site/ sowie im Branch v1-erstentwurf erhalten).
 #
 # lftp spricht ausschließlich SFTP und braucht auf dem Server keine
 # zusätzliche Software (kein rsync-Binary nötig, wie es bei Shared-Hosting
 # ohne SSH-Zugriff auf Zusatztools üblich ist).
+#
+# ÜBERGANGSSTAND (s. Pflichtenheft 4.4/4.5): Solange weder ein SSH-Zugang
+# noch eine MySQL-Datenbank für die Testumgebung als Secrets hinterlegt
+# sind, deployt dieser Workflow eine lauffähige, aber absichtlich
+# datenbankfreie Version (SQLite/File-Driver, frisch generierter APP_KEY
+# pro Lauf, keine echten Zugangsdaten nötig) – nur damit auf
+# test.dpsg-trier.de sichtbar wird, dass die neue CMS-Basis läuft. Sobald
+# echte DB-/Entra-/Brevo-Zugangsdaten als Secrets vorliegen, wird dieser
+# Workflow entsprechend erweitert (s. TODO-Marker unten).
 #
 # Voraussetzung: In den Repository-Einstellungen unter
 # "Settings" → "Secrets and variables" → "Actions" müssen folgende Secrets
@@ -35,6 +47,57 @@ jobs:
     steps:
       - name: Repository auschecken
         uses: actions/checkout@v4
+
+      - name: PHP einrichten
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: intl, mbstring, gd, zip, xml, curl, openssl, pdo_mysql, pdo_sqlite
+          coverage: none
+
+      - name: Node einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: PHP-Abhängigkeiten installieren (nur Produktion)
+        run: composer install --no-dev --optimize-autoloader --no-interaction --no-progress
+
+      - name: Frontend-Assets bauen
+        run: |
+          npm ci
+          npm run build
+
+      # TODO sobald Secrets für DB_HOST/DB_DATABASE/DB_USERNAME/DB_PASSWORD,
+      # ENTRA_CLIENT_ID/ENTRA_CLIENT_SECRET/ENTRA_TENANT_ID und BREVO_API_KEY
+      # hinterlegt sind: hier per env:-Block einlesen und unten in die
+      # .env schreiben statt der SQLite-/File-Platzhalterwerte; zusätzlich
+      # "php artisan migrate --force" ergänzen (braucht dann SSH oder den
+      # Marker-Datei-Cron-Fallback aus Pflichtenheft 4.4, da FTP keine
+      # Befehle ausführen kann).
+      - name: .env für die Testumgebung generieren (keine echten Secrets nötig)
+        run: |
+          APP_KEY="base64:$(openssl rand -base64 32)"
+          touch database/database.sqlite
+          cat > .env <<ENV
+          APP_NAME="DPSG Diözesanverband Trier"
+          APP_ENV=local
+          APP_KEY=${APP_KEY}
+          APP_DEBUG=false
+          APP_URL=https://test.dpsg-trier.de
+          APP_LOCALE=de
+          APP_FALLBACK_LOCALE=de
+          LOG_CHANNEL=stack
+          LOG_STACK=single
+          LOG_LEVEL=error
+          DB_CONNECTION=sqlite
+          SESSION_DRIVER=file
+          SESSION_LIFETIME=480
+          CACHE_STORE=file
+          QUEUE_CONNECTION=sync
+          MAIL_MAILER=log
+          ENV
 
       - name: lftp installieren
         run: sudo apt-get update && sudo apt-get install -y lftp
@@ -74,6 +137,13 @@ jobs:
           mirror --reverse --delete --verbose \
             --exclude-glob .git/ \
             --exclude-glob .github/ \
+            --exclude-glob node_modules/ \
+            --exclude-glob tests/ \
+            --exclude-glob docs/ \
+            --exclude-glob legacy-static-site/ \
+            --exclude-glob .env.example \
+            --exclude-glob .gitattributes \
+            --exclude-glob .editorconfig \
             ./ "$FTP_SERVER_DIR"
           bye
           EOF

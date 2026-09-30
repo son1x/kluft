@@ -194,12 +194,26 @@ jobs:
           EOF
 
       # vendor/ auf dem Server entpacken (überschreibt eine evtl. vorhandene
-      # alte Version) und Laravel-Caches aufbauen. Volle Pfade zu php/tar,
-      # da PATH in nicht-interaktiven SSH-Sessions auf diesem Hosting
-      # eingeschränkt ist (composer selbst ist hier gar nicht per SSH
-      # aufrufbar, s. Kommentar oben – daher das Archiv statt composer
-      # install).
-      - name: vendor/ auf dem Server entpacken und Caches aufbauen (per SSH)
+      # alte Version). Volle Pfade zu php/tar, da PATH in nicht-interaktiven
+      # SSH-Sessions auf diesem Hosting eingeschränkt ist (composer selbst
+      # ist hier gar nicht per SSH aufrufbar, s. Kommentar oben – daher das
+      # Archiv statt composer install).
+      #
+      # BEWUSST OHNE artisan config:cache/route:cache/view:cache: SSH_TARGET_DIR
+      # zeigt hier auf einen praktischen Kurzpfad (z. B. /meine-domain.de/httpdocs),
+      # der auf diesem Hosting per Symlink auf den echten Pfad
+      # (/var/www/vhosts/<konto>/<domain>/httpdocs) verweist. Laravel cacht
+      # aber den Pfad, unter dem es beim Cache-Aufbau lief – und der echte
+      # Webserver-Prozess (mod_fcgid) sieht NUR den echten Pfad (open_basedir
+      # ist darauf beschränkt). Mit dem Kurzpfad gecachte Config/Routen/Views
+      # lassen jeden Request mit "open_basedir restriction in effect" abstürzen.
+      # Laravel funktioniert auch ungecacht einwandfrei (Pfade werden dann bei
+      # jedem Request live und korrekt aufgelöst) – nur etwas langsamer.
+      # Caching sauber nachrüsten: SSH_TARGET_DIR auf den ECHTEN absoluten
+      # Pfad setzen (z. B. /var/www/vhosts/<konto>/<domain>/httpdocs, siehe
+      # Pfade in storage/logs bzw. den Apache-Fehlerprotokollen) und die drei
+      # artisan-*:cache-Zeilen wieder ergänzen.
+      - name: vendor/ auf dem Server entpacken (per SSH)
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ env.SSH_HOST }}
@@ -212,6 +226,5 @@ jobs:
             rm -rf vendor
             tar xzf vendor-bundle.tar.gz
             rm -f vendor-bundle.tar.gz
-            /usr/bin/php artisan config:cache
-            /usr/bin/php artisan route:cache
-            /usr/bin/php artisan view:cache
+            rm -f bootstrap/cache/config.php bootstrap/cache/routes-v7.php bootstrap/cache/services.php bootstrap/cache/packages.php
+            rm -f storage/framework/views/*.php

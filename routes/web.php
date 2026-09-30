@@ -4,8 +4,10 @@ use App\Http\Controllers\Auth\BreakGlassAuthController;
 use App\Http\Controllers\Auth\EntraAuthController;
 use Illuminate\Support\Facades\Route;
 
+// Platzhalter-Startseite, bis die redaktionellen Seiten/CMS-Inhalte
+// (Pflichtenheft Phase 1a) stehen. Bewusst ohne DB-Zugriff nutzbar.
 Route::get('/', function () {
-    return view('welcome');
+    return view('under-construction');
 });
 
 // Entra-ID-/M365-Login der Redaktion (Pflichtenheft 5.1, 11.2).

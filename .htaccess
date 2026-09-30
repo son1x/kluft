@@ -1,0 +1,27 @@
+# Übergangslösung, solange der DocumentRoot noch auf httpdocs (= dieses
+# Verzeichnis) zeigt statt auf public/ (Pflichtenheft 4.4/4.5). Sobald
+# der Hoster die Umstellung des DocumentRoots auf public/ erlaubt, MUSS
+# diese Datei entfernt und die Umstellung vorgenommen werden – das ist
+# Abnahmekriterium 17 für den Livebetrieb. Bis dahin nur auf der
+# Testumgebung einsetzen, nie auf der Produktionsdomain.
+
+# 1) Sensible Verzeichnisse/Dateien sperren, falls doch direkt angefragt
+#    (Verteidigung in der Tiefe zusätzlich zur Rewrite-Regel unten).
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+<FilesMatch "\.(env|lock|json|md|yml|yaml|xml|dist|log)$">
+    Require all denied
+</FilesMatch>
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(app|bootstrap|config|database|resources|routes|storage|tests|vendor|legacy-static-site)/ - [F,L]
+    RewriteRule ^(artisan|composer\.(json|lock)|package(-lock)?\.json|phpunit\.xml|vite\.config\.js)$ - [F,L]
+</IfModule>
+
+# 2) Alles andere an public/ weiterreichen; public/.htaccess übernimmt
+#    von dort aus das reguläre Laravel-Routing zu public/index.php.
+<IfModule mod_rewrite.c>
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ /public/$1 [L]
+</IfModule>

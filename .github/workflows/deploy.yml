@@ -2,21 +2,20 @@ name: Deploy auf Netcup-Webspace
 
 # Baut und testet das Laravel-Custom-CMS (Pflichtenheft docs/pflichtenheft.md),
 # lädt den Quellcode + gebaute Frontend-Assets per SFTP hoch und lässt
-# anschließend per SSH auf dem Server `composer install` (PHP-Abhängigkeiten)
-# sowie die Cache-Kommandos laufen. Kann zusätzlich manuell über den
-# "Actions"-Tab in GitHub gestartet werden (Run workflow).
+# anschließend per SSH die Cache-Kommandos laufen. Kann zusätzlich manuell
+# über den "Actions"-Tab in GitHub gestartet werden (Run workflow).
 #
-# Warum SSH für composer install statt vendor/ mitzuschicken: vendor/ hat
+# Warum vendor/ als EIN Archiv statt einzeln hochgeladen wird: vendor/ hat
 # >36.000 Einzeldateien – per SFTP einzeln hochgeladen dauert das
-# 30-40+ Minuten. Composer install direkt auf dem Server dauert wenige
-# Sekunden bis Minuten. Das entspricht dem in Pflichtenheft 4.4 als
-# bevorzugt beschriebenen Weg ("Schritt per SSH aus der Pipeline").
+# 30-40+ Minuten. Composer selbst ist auf diesem Hosting per SSH NICHT
+# aufrufbar (nur als GUI-Feature im Webhosting-Control-Panel, "PHP
+# Composer") – daher wird vendor/ in der CI gebaut, zu einem einzelnen
+# .tar.gz gepackt (ein einziger, schneller Upload) und auf dem Server per
+# SSH mit `tar` entpackt (Standard-Unix-Tool, kein composer nötig).
 #
 # Wichtig: lftp "mirror --reverse --delete" spiegelt den Webspace also exakt
 # auf den Stand dieses Branches (außer den unten explizit ausgeschlossenen
-# Pfaden, u. a. vendor/ – das verwaltet ausschließlich composer auf dem
-# Server, damit der lftp-Schritt es nicht bei jedem Lauf löscht und neu
-# hochlädt). Das ersetzt den früheren statischen Entwurf vollständig (der
+# Pfaden). Das ersetzt den früheren statischen Entwurf vollständig (der
 # bleibt als Referenz in legacy-static-site/ sowie im Branch
 # v1-erstentwurf erhalten).
 #
@@ -83,10 +82,7 @@ jobs:
           node-version: '20'
           cache: npm
 
-      # Volle Installation (inkl. Dev-Abhängigkeiten) NUR für die Tests in
-      # dieser Pipeline – wird nicht mit hochgeladen (s. u., vendor/ ist
-      # vom Upload ausgeschlossen und wird auf dem Server separat per SSH
-      # installiert).
+      # Volle Installation (inkl. Dev-Abhängigkeiten) für die Tests.
       - name: PHP-Abhängigkeiten installieren (für Tests)
         run: composer install --no-interaction --no-progress
 
@@ -97,6 +93,14 @@ jobs:
           touch database/database.sqlite
           sed -i 's/^DB_CONNECTION=.*/DB_CONNECTION=sqlite/' .env
           php artisan test
+
+      # Für das Deployment: nur Produktions-Abhängigkeiten, dann zu einem
+      # einzelnen Archiv packen (s. Kommentar oben).
+      - name: PHP-Produktionsabhängigkeiten installieren und packen
+        run: |
+          rm -rf vendor
+          composer install --no-dev --optimize-autoloader --no-interaction --no-progress
+          tar czf vendor-bundle.tar.gz vendor
 
       - name: Frontend-Assets bauen
         run: |
@@ -189,7 +193,13 @@ jobs:
           bye
           EOF
 
-      - name: PHP-Abhängigkeiten auf dem Server installieren (per SSH)
+      # vendor/ auf dem Server entpacken (überschreibt eine evtl. vorhandene
+      # alte Version) und Laravel-Caches aufbauen. Volle Pfade zu php/tar,
+      # da PATH in nicht-interaktiven SSH-Sessions auf diesem Hosting
+      # eingeschränkt ist (composer selbst ist hier gar nicht per SSH
+      # aufrufbar, s. Kommentar oben – daher das Archiv statt composer
+      # install).
+      - name: vendor/ auf dem Server entpacken und Caches aufbauen (per SSH)
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ env.SSH_HOST }}
@@ -199,7 +209,9 @@ jobs:
           script: |
             set -e
             cd "${{ env.SSH_TARGET_DIR }}"
-            composer install --no-dev --optimize-autoloader --no-interaction
-            php artisan config:cache
-            php artisan route:cache
-            php artisan view:cache
+            rm -rf vendor
+            tar xzf vendor-bundle.tar.gz
+            rm -f vendor-bundle.tar.gz
+            /usr/bin/php artisan config:cache
+            /usr/bin/php artisan route:cache
+            /usr/bin/php artisan view:cache

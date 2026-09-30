@@ -2,13 +2,22 @@
     "$schema": "https://getcomposer.org/schema.json",
     "name": "dpsg-dv-trier/cms",
     "type": "project",
-    "description": "Custom-CMS für den DPSG Diözesanverband Trier (siehe docs/pflichtenheft.md).",
-    "keywords": ["dpsg", "cms", "laravel"],
+    "description": "Custom-CMS f\u00fcr den DPSG Di\u00f6zesanverband Trier (siehe docs/pflichtenheft.md).",
+    "keywords": [
+        "dpsg",
+        "cms",
+        "laravel"
+    ],
     "license": "proprietary",
     "require": {
         "php": "^8.3",
+        "filament/filament": "^4.0",
         "laravel/framework": "^12.0",
-        "laravel/tinker": "^2.10.1"
+        "laravel/tinker": "^2.10.1",
+        "openspout/openspout": "^4.32",
+        "pragmarx/google2fa": "^9.1",
+        "sabre/vobject": "^5.0",
+        "socialiteproviders/microsoft": "^4.10"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
@@ -50,7 +59,8 @@
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-            "@php artisan package:discover --ansi"
+            "@php artisan package:discover --ansi",
+            "@php artisan filament:upgrade"
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force"

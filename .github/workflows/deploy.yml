@@ -1,36 +1,49 @@
 name: Deploy auf Netcup-Webspace
 
-# Baut das Laravel-Custom-CMS (Pflichtenheft docs/pflichtenheft.md) und lädt
-# es bei jedem Push auf diesen Branch automatisch per SFTP auf den Webspace
-# hoch. Kann zusätzlich manuell über den "Actions"-Tab in GitHub gestartet
-# werden (Run workflow).
+# Baut und testet das Laravel-Custom-CMS (Pflichtenheft docs/pflichtenheft.md),
+# lädt den Quellcode + gebaute Frontend-Assets per SFTP hoch und lässt
+# anschließend per SSH auf dem Server `composer install` (PHP-Abhängigkeiten)
+# sowie die Cache-Kommandos laufen. Kann zusätzlich manuell über den
+# "Actions"-Tab in GitHub gestartet werden (Run workflow).
+#
+# Warum SSH für composer install statt vendor/ mitzuschicken: vendor/ hat
+# >36.000 Einzeldateien – per SFTP einzeln hochgeladen dauert das
+# 30-40+ Minuten. Composer install direkt auf dem Server dauert wenige
+# Sekunden bis Minuten. Das entspricht dem in Pflichtenheft 4.4 als
+# bevorzugt beschriebenen Weg ("Schritt per SSH aus der Pipeline").
 #
 # Wichtig: lftp "mirror --reverse --delete" spiegelt den Webspace also exakt
-# auf den Stand dieses Branches – Dateien, die hier gelöscht wurden,
-# verschwinden dadurch auch auf dem Server. Das ersetzt den früheren
-# statischen Entwurf vollständig (der bleibt als Referenz in
-# legacy-static-site/ sowie im Branch v1-erstentwurf erhalten).
+# auf den Stand dieses Branches (außer den unten explizit ausgeschlossenen
+# Pfaden, u. a. vendor/ – das verwaltet ausschließlich composer auf dem
+# Server, damit der lftp-Schritt es nicht bei jedem Lauf löscht und neu
+# hochlädt). Das ersetzt den früheren statischen Entwurf vollständig (der
+# bleibt als Referenz in legacy-static-site/ sowie im Branch
+# v1-erstentwurf erhalten).
 #
-# lftp spricht ausschließlich SFTP und braucht auf dem Server keine
-# zusätzliche Software (kein rsync-Binary nötig, wie es bei Shared-Hosting
-# ohne SSH-Zugriff auf Zusatztools üblich ist).
-#
-# ÜBERGANGSSTAND (s. Pflichtenheft 4.4/4.5): Solange weder ein SSH-Zugang
-# noch eine MySQL-Datenbank für die Testumgebung als Secrets hinterlegt
-# sind, deployt dieser Workflow eine lauffähige, aber absichtlich
-# datenbankfreie Version (SQLite/File-Driver, frisch generierter APP_KEY
-# pro Lauf, keine echten Zugangsdaten nötig) – nur damit auf
-# test.dpsg-trier.de sichtbar wird, dass die neue CMS-Basis läuft. Sobald
-# echte DB-/Entra-/Brevo-Zugangsdaten als Secrets vorliegen, wird dieser
-# Workflow entsprechend erweitert (s. TODO-Marker unten).
+# ÜBERGANGSSTAND (s. Pflichtenheft 4.4/4.5): Solange weder eine MySQL-
+# Datenbank noch echte Entra-/Brevo-Zugangsdaten für die Testumgebung als
+# Secrets hinterlegt sind, deployt dieser Workflow eine lauffähige, aber
+# absichtlich datenbankfreie Version (SQLite/File-Driver, frisch
+# generierter APP_KEY pro Lauf) – nur damit auf test.dpsg-trier.de
+# sichtbar wird, dass die neue CMS-Basis läuft. Sobald echte Secrets
+# vorliegen, wird dieser Workflow entsprechend erweitert (s. TODO-Marker
+# unten).
 #
 # Voraussetzung: In den Repository-Einstellungen unter
 # "Settings" → "Secrets and variables" → "Actions" müssen folgende Secrets
 # angelegt sein:
-#   FTP_SERVER      – SFTP-Host, z. B. eine IP-Adresse oder ein Hostname
-#   FTP_USERNAME    – Benutzername
-#   FTP_PASSWORD    – Passwort
+#   FTP_SERVER      – SFTP-Host für den Datei-Upload, z. B. eine IP-Adresse
+#   FTP_USERNAME    – SFTP-Benutzername
+#   FTP_PASSWORD    – SFTP-Passwort
 #   FTP_SERVER_DIR  – Zielverzeichnis auf dem Webspace, z. B. "/" oder "/httpdocs/"
+#   SSH_HOST        – SSH-Host (oft identisch mit FTP_SERVER)
+#   SSH_PORT        – SSH-Port (häufig 22, beim Hoster prüfen)
+#   SSH_USERNAME    – SSH-Benutzername
+#   SSH_PRIVATE_KEY – privater SSH-Key (öffentlichen Key vorher im
+#                     Hosting-Panel hinterlegen)
+#   SSH_TARGET_DIR  – (optional) absoluter Server-Pfad für den SSH-Schritt,
+#                     falls er vom FTP-Chroot-Pfad (FTP_SERVER_DIR)
+#                     abweicht; sonst wird FTP_SERVER_DIR verwendet
 #
 # Hinweis: Trotz der Secret-Namen "FTP_*" wird hier SFTP (Port 22) verwendet
 # – FTP und SFTP nutzen bei den meisten Hostern dieselben Zugangsdaten.
@@ -40,6 +53,15 @@ on:
     branches:
       - claude/dpsg-trier-homepage-design-jwdgs4
   workflow_dispatch:
+
+# Verhindert, dass zwei Deploys gleichzeitig auf denselben Server-Ordner
+# schreiben (z. B. wenn kurz hintereinander gepusht wird, oder ein alter,
+# sehr langsamer Lauf noch läuft, während ein neuer startet). Ein neuer
+# Lauf bricht einen noch laufenden älteren Lauf desselben Branches ab,
+# statt parallel dagegen zu laufen.
+concurrency:
+  group: deploy-netcup-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   deploy:
@@ -61,8 +83,20 @@ jobs:
           node-version: '20'
           cache: npm
 
-      - name: PHP-Abhängigkeiten installieren (nur Produktion)
-        run: composer install --no-dev --optimize-autoloader --no-interaction --no-progress
+      # Volle Installation (inkl. Dev-Abhängigkeiten) NUR für die Tests in
+      # dieser Pipeline – wird nicht mit hochgeladen (s. u., vendor/ ist
+      # vom Upload ausgeschlossen und wird auf dem Server separat per SSH
+      # installiert).
+      - name: PHP-Abhängigkeiten installieren (für Tests)
+        run: composer install --no-interaction --no-progress
+
+      - name: Tests ausführen
+        run: |
+          cp .env.example .env
+          php artisan key:generate --no-interaction
+          touch database/database.sqlite
+          sed -i 's/^DB_CONNECTION=.*/DB_CONNECTION=sqlite/' .env
+          php artisan test
 
       - name: Frontend-Assets bauen
         run: |
@@ -73,13 +107,10 @@ jobs:
       # ENTRA_CLIENT_ID/ENTRA_CLIENT_SECRET/ENTRA_TENANT_ID und BREVO_API_KEY
       # hinterlegt sind: hier per env:-Block einlesen und unten in die
       # .env schreiben statt der SQLite-/File-Platzhalterwerte; zusätzlich
-      # "php artisan migrate --force" ergänzen (braucht dann SSH oder den
-      # Marker-Datei-Cron-Fallback aus Pflichtenheft 4.4, da FTP keine
-      # Befehle ausführen kann).
+      # unten im SSH-Schritt "php artisan migrate --force" ergänzen.
       - name: .env für die Testumgebung generieren (keine echten Secrets nötig)
         run: |
           APP_KEY="base64:$(openssl rand -base64 32)"
-          touch database/database.sqlite
           cat > .env <<ENV
           APP_NAME="DPSG Diözesanverband Trier"
           APP_ENV=local
@@ -98,6 +129,7 @@ jobs:
           QUEUE_CONNECTION=sync
           MAIL_MAILER=log
           ENV
+          touch database/database.sqlite
 
       - name: lftp installieren
         run: sudo apt-get update && sudo apt-get install -y lftp
@@ -105,7 +137,7 @@ jobs:
       # lftp meldet "hostname contains invalid characters", wenn im Secret
       # unsichtbare Zeichen stecken (typischerweise ein Windows-Zeilenende
       # \r oder ein Leerzeichen aus Copy&Paste). Dieser Schritt entfernt
-      # führende/folgende Leerraumzeichen aus allen vier Secrets, bevor sie
+      # führende/folgende Leerraumzeichen aus den Secrets, bevor sie
       # verwendet werden, und schreibt die bereinigten Werte in $GITHUB_ENV
       # (nicht ins Log) – für alle folgenden Schritte des Jobs.
       - name: Secrets bereinigen (führende/folgende Leerzeichen, CRLF)
@@ -114,6 +146,10 @@ jobs:
           FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
           FTP_SERVER_DIR: ${{ secrets.FTP_SERVER_DIR }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
+          SSH_TARGET_DIR: ${{ secrets.SSH_TARGET_DIR || secrets.FTP_SERVER_DIR }}
         run: |
           trim() {
             local var="$1"
@@ -126,6 +162,10 @@ jobs:
             echo "FTP_USERNAME=$(trim "$FTP_USERNAME")"
             echo "FTP_PASSWORD=$(trim "$FTP_PASSWORD")"
             echo "FTP_SERVER_DIR=$(trim "$FTP_SERVER_DIR")"
+            echo "SSH_HOST=$(trim "$SSH_HOST")"
+            echo "SSH_PORT=$(trim "${SSH_PORT:-22}")"
+            echo "SSH_USERNAME=$(trim "$SSH_USERNAME")"
+            echo "SSH_TARGET_DIR=$(trim "$SSH_TARGET_DIR")"
           } >> "$GITHUB_ENV"
 
       - name: Per lftp über SFTP synchronisieren (inkl. Löschen entfernter Dateien)
@@ -138,6 +178,7 @@ jobs:
             --exclude-glob .git/ \
             --exclude-glob .github/ \
             --exclude-glob node_modules/ \
+            --exclude-glob vendor/ \
             --exclude-glob tests/ \
             --exclude-glob docs/ \
             --exclude-glob legacy-static-site/ \
@@ -147,3 +188,18 @@ jobs:
             ./ "$FTP_SERVER_DIR"
           bye
           EOF
+
+      - name: PHP-Abhängigkeiten auf dem Server installieren (per SSH)
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ env.SSH_HOST }}
+          port: ${{ env.SSH_PORT }}
+          username: ${{ env.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+            cd "${{ env.SSH_TARGET_DIR }}"
+            composer install --no-dev --optimize-autoloader --no-interaction
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache

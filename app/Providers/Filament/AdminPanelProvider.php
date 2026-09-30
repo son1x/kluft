@@ -27,9 +27,14 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login()
+            // Kein Filament-eigenes Login-Formular: GET /admin/login leitet
+            // direkt zur Entra-ID-Anmeldung weiter (Pflichtenheft 5.1,
+            // Routen-Übersicht 11.2). Der Notfall-Super-Admin hat einen
+            // separaten, nicht verlinkten Pfad (/notfall-login, s. 5.2).
+            ->login(fn () => redirect()->route('auth.entra.redirect'))
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::hex('#003056'), // dpsg-blau, s. Pflichtenheft 7.2
+                'danger' => Color::hex('#810a1a'), // dpsg-rot
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')

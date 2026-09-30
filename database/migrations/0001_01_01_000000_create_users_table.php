@@ -16,7 +16,17 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
+
+            // Redaktion/Admins (keine Besucherdaten), s. Pflichtenheft 8.2 „users“.
+            $table->string('upn')->nullable()->comment('User Principal Name aus Entra ID, z. B. vorname.nachname@dpsg-trier.de');
+            $table->string('entra_oid')->nullable()->unique()->comment('Unveränderliche Entra-Objekt-ID, Schlüssel für die Kontoverknüpfung (nicht E-Mail/UPN)');
+            $table->enum('status', ['pending', 'active', 'disabled'])->default('pending');
+            $table->boolean('is_local_admin')->default(false)->comment('true nur für den Notfall-Super-Admin (Break-Glass, 5.2)');
+            $table->string('password')->nullable()->comment('Nur für is_local_admin gesetzt, Argon2id');
+            $table->text('totp_secret')->nullable()->comment('Verschlüsselt (encrypted-Cast), nur für is_local_admin');
+            $table->foreignId('provisioned_by')->nullable()->constrained('users')->nullOnDelete()->comment('Welche Verwaltungsperson die Zuweisung vorab angelegt hat');
+            $table->timestamp('last_login_at')->nullable();
+
             $table->rememberToken();
             $table->timestamps();
         });

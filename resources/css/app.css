@@ -5,7 +5,54 @@
 @source '../**/*.blade.php';
 @source '../**/*.js';
 
+/*
+ * Selbstgehostete Schriften statt Google-Fonts-CDN (Pflichtenheft 6.8
+ * F-CON-06, 7.2). Carlito ist der metrisch kompatible freie Ersatz für
+ * Calibri (Hausschrift laut CD-Leitfaden), Arvo die im Leitfaden selbst
+ * genannte freie Alternative zu TheSerif für Überschriften. Vite bündelt
+ * die woff2-Dateien beim Build automatisch mit (kein Laufzeit-Request an
+ * Dritte).
+ */
+@import '@fontsource/carlito/400.css';
+@import '@fontsource/carlito/700.css';
+@import '@fontsource/arvo/400.css';
+@import '@fontsource/arvo/700.css';
+
+/*
+ * DPSG-Design-Tokens (Corporate Design der DPSG, Stand April 2026),
+ * gegen das Original-PDF geprüft – s. Pflichtenheft Abschnitt 7.2.
+ * Zentrale Pflegestelle: NUR hier ändern, nicht in einzelnen Views.
+ */
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Carlito', Calibri, Arial, sans-serif;
+    --font-serif: 'Arvo', Georgia, serif;
+
+    /* Kernfarben (Wort-Bild-Marke) */
+    --color-dpsg-blau: #003056;
+    --color-dpsg-rot: #810a1a;
+    --color-dpsg-hellbeige: #ecdfcb;
+    --color-dpsg-mittelbeige: #c7bdad;
+    --color-dpsg-magenta: #e6007e;
+    --color-dpsg-yellow: #ffed00;
+    --color-dpsg-cyan: #009fe3;
+
+    /* Stufenfarben */
+    --color-stufe-biber: #815848; /* vorläufig, im CD-Leitfaden nicht definiert, s. 7.2 */
+    --color-stufe-woelflinge: #ff6400;
+    --color-stufe-jupfi: #2f53a7;
+    --color-stufe-pfadi: #00823c;
+    --color-stufe-rover: #cc1f2f;
+    --color-farbe-leiter: #b1b9ad;
+
+    /* Facharbeitskreise („Vom Fach“) */
+    --color-fach-oekologie: #118938;
+    --color-fach-globale-gerechtigkeit: #b6106f;
+    --color-fach-inklusion: #fdc400;
+    --color-fach-internationales: #662483;
+
+    /* Neutralfarben der Website (eigene Festlegung, s. 7.2) */
+    --color-text: #1c1f26;
+    --color-text-secondary: #5c6670;
+    --color-surface: #ffffff;
+    --color-surface-muted: #e6ebf0;
 }

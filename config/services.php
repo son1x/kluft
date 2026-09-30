@@ -35,4 +35,59 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Microsoft Entra ID (M365) – Redaktions-Login
+    |--------------------------------------------------------------------------
+    |
+    | OIDC/OAuth2 Single-Tenant, s. Pflichtenheft 5.1. `tenant` ist die
+    | Tenant-ID (keine Wildcard/"common"), damit sich nur Konten des
+    | Verbands-Tenants anmelden können. Scopes bewusst minimal gehalten
+    | (openid, profile, email) – Verzeichnissuche läuft separat über
+    | Microsoft Graph mit User.ReadBasic.All (s. 5.6).
+    |
+    */
+    'microsoft' => [
+        'client_id' => env('ENTRA_CLIENT_ID'),
+        'client_secret' => env('ENTRA_CLIENT_SECRET'),
+        'tenant' => env('ENTRA_TENANT_ID'),
+        'redirect' => env('ENTRA_REDIRECT_URI'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Brevo (Transaktionsmails, Newsletter-DOI, Georgsbote)
+    |--------------------------------------------------------------------------
+    */
+    'brevo' => [
+        'api_key' => env('BREVO_API_KEY'),
+        'newsletter_list_id' => env('BREVO_NEWSLETTER_LIST_ID'),
+        'doi_template_id' => env('BREVO_DOI_TEMPLATE_ID'),
+        'doi_redirect_url' => env('BREVO_DOI_REDIRECT_URL'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Instagram Graph API (Blog → Instagram, F-IG-*)
+    |--------------------------------------------------------------------------
+    */
+    'instagram' => [
+        'ig_user_id' => env('INSTAGRAM_IG_USER_ID'),
+        'app_id' => env('INSTAGRAM_APP_ID'),
+        'app_secret' => env('INSTAGRAM_APP_SECRET'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Nextcloud-Kalender (ICS)
+    |--------------------------------------------------------------------------
+    |
+    | SSRF-Schutz (F-CAL-07): erlaubter Host wird zusätzlich zur
+    | gespeicherten calendars.ics_url gegen diese Domain geprüft.
+    |
+    */
+    'nextcloud' => [
+        'allowed_host' => env('NEXTCLOUD_ALLOWED_HOST'),
+    ],
+
 ];

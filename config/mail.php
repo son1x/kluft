@@ -115,4 +115,17 @@ return [
         'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Laravel')),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Test-Umgebung: Mail-Umleitung (F-MAIL-06)
+    |--------------------------------------------------------------------------
+    |
+    | Wenn gesetzt, werden ALLE ausgehenden Mails auf diese Adresse
+    | umgeleitet (s. App\Providers\AppServiceProvider und Pflichtenheft
+    | 6.10 F-MAIL-06) – verhindert, dass beim Testen echte Personen
+    | angeschrieben werden. In der Produktion leer lassen.
+    |
+    */
+    'test_redirect_to' => env('MAIL_TEST_REDIRECT_TO'),
+
 ];

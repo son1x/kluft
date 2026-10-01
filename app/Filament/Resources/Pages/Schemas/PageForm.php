@@ -73,6 +73,12 @@ class PageForm
 
             Section::make('Inhalt')
                 ->components([
+                    Select::make('cover_media_id')
+                        ->label('Titelbild')
+                        ->relationship('coverMedia', 'alt_text')
+                        ->searchable()
+                        ->preload()
+                        ->helperText('Auf der Startseite (Slug "start") das große Hero-Bild; Bilder vorher in der Mediathek hochladen.'),
                     RichEditor::make('body')
                         ->label('Inhalt')
                         ->required()

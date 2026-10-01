@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Page;
+use App\Models\Post;
 use Illuminate\Database\Seeder;
 
 /**
@@ -19,15 +20,34 @@ class DemoContentSeeder extends Seeder
     {
         $pages = [
             [
+                // Titel = Hero-Überschrift, SEO-Beschreibung = Hero-Unterzeile.
                 'slug' => 'start',
-                'title' => 'DPSG Diözesanverband Trier',
+                'title' => 'Pfadfinden im Bistum Trier',
+                'seo_title' => 'DPSG Diözesanverband Trier',
+                'seo_description' => 'Katholische Pfadfinder*innen von der Mosel bis ins Saarland',
                 'show_in_nav' => false,
                 'body' => <<<'HTML'
-                    <p>Der DPSG Diözesanverband Trier ist die katholische Pfadfinder*innenarbeit im gesamten Bistum Trier – von der Mosel bis ins Saarland. Gemeinsam mit unseren Bezirken und Stämmen gestalten wir Kindern und Jugendlichen einen Ort zum Wachsen.</p>
-                    <h2>Fünf Stufen, ein Weg</h2>
-                    <p>Vom neugierigen Entdecken als Biber bis zu eigenverantwortlichen Projekten als Rover begleiten wir junge Menschen stufengerecht auf ihrem Weg. Mehr dazu auf der <a href="/stufen">Stufen-Seite</a>.</p>
-                    <h2>Fragen oder Kontakt?</h2>
-                    <p>Das <a href="/dioezesanbuero">Diözesanbüro</a> ist deine zentrale Anlaufstelle für alles rund um den Diözesanverband.</p>
+                    <h2>Willkommen beim Diözesanverband Trier</h2>
+                    <p>Der DPSG Diözesanverband Trier ist die katholische Pfadfinder*innenarbeit im gesamten Bistum Trier – von der Mosel über Eifel und Hunsrück bis ins Saarland. Gemeinsam mit unseren Bezirken und Stämmen gestalten wir Kindern und Jugendlichen einen Ort zum Wachsen.</p>
+                    <p>In 10 Bezirken engagieren sich mehr als 5.000 Mitglieder in über 60 Stämmen und Siedlungen. Vom neugierigen Entdecken als Biber bis zu eigenverantwortlichen Projekten als Rover begleiten wir junge Menschen stufengerecht auf ihrem Weg – mehr dazu bei den <a href="/stufen">Stufen</a>.</p>
+                    HTML,
+            ],
+            [
+                'slug' => 'bolivien',
+                'title' => 'Bolivienpartnerschaft',
+                'show_in_nav' => false,
+                'body' => <<<'HTML'
+                    <p>Eingebettet in die Bolivienpartnerschaft des Bistums Trier pflegt der Diözesanverband Kontakte zu Pfadfinder*innen in Bolivien. Begegnungen, gemeinsame Projekte und der Austausch über Ländergrenzen hinweg machen Pfadfinden als weltweite Bewegung erlebbar.</p>
+                    <p>[TODO: Aktuelle Projekte, Ansprechperson und Spendenmöglichkeiten ergänzen – eigene Landingpage folgt mit der Bolivien-Sektion (Pflichtenheft 6.2).]</p>
+                    HTML,
+            ],
+            [
+                'slug' => 'georgsbote',
+                'title' => 'Georgsbote',
+                'show_in_nav' => false,
+                'body' => <<<'HTML'
+                    <p>Der Georgsbote ist die Zeitschrift des DPSG Diözesanverbands Trier mit Berichten aus Stufen, Bezirken und Stämmen. Künftig findest du hier alle Ausgaben im PDF-Archiv und kannst dich für den Newsletter anmelden, um neue Ausgaben direkt ins Postfach zu bekommen.</p>
+                    <p>[TODO: Archiv und Newsletter-Anmeldung folgen (Pflichtenheft 6.6).]</p>
                     HTML,
             ],
             [
@@ -177,8 +197,52 @@ class DemoContentSeeder extends Seeder
                     'published_at' => now(),
                     'stage' => $data['stage'] ?? null,
                     'seo_title' => $data['seo_title'] ?? null,
+                    'seo_description' => $data['seo_description'] ?? null,
                     'show_in_nav' => $data['show_in_nav'] ?? false,
                     'nav_sort' => $data['nav_sort'] ?? 0,
+                ]
+            );
+        }
+
+        $this->seedPosts();
+    }
+
+    private function seedPosts(): void
+    {
+        $posts = [
+            [
+                'slug' => 'neue-website-im-aufbau',
+                'title' => 'Unsere neue Website ist im Aufbau',
+                'teaser' => 'Der Diözesanverband bekommt einen neuen Webauftritt – mit eigenem Redaktionssystem für Stufen, Bezirke und das Diözesanbüro.',
+                'body' => '<p>Schritt für Schritt entsteht hier der neue Webauftritt des DPSG Diözesanverbands Trier. Stufen, Arbeitskreise und das Diözesanbüro können Inhalte künftig selbst pflegen. Veranstaltungen, der Georgsbote und ein Verzeichnis aller Bezirke und Stämme mit Kartenansicht folgen.</p>',
+                'days_ago' => 0,
+            ],
+            [
+                'slug' => 'fuenf-stufen-im-ueberblick',
+                'title' => 'Fünf Stufen im Überblick',
+                'teaser' => 'Von den Bibern bis zu den Rover*innen: Jede Altersstufe hat ihre eigene Pädagogik, ihre eigenen Methoden und ihre eigene Farbe.',
+                'body' => '<p>Auf den neuen <a href="/stufen">Stufenseiten</a> stellen wir Biber, Wölflinge, Jungpfadfinder*innen, Pfadfinder*innen und Rover vor – mit Altersspanne und den Schwerpunkten der jeweiligen Stufe.</p>',
+                'days_ago' => 1,
+            ],
+            [
+                'slug' => 'so-erreichst-du-das-dioezesanbuero',
+                'title' => 'So erreichst du das Diözesanbüro',
+                'teaser' => 'Fragen zum Verband, zu einem Bezirk oder zum Mitmachen? Das Diözesanbüro in der Weberbach in Trier hilft weiter.',
+                'body' => '<p>Alle Kontaktdaten und das Leitungsteam findest du auf der Seite <a href="/dioezesanbuero">Diözesanbüro</a>.</p>',
+                'days_ago' => 2,
+            ],
+        ];
+
+        foreach ($posts as $data) {
+            Post::query()->updateOrCreate(
+                ['slug' => $data['slug']],
+                [
+                    'title' => $data['title'],
+                    'teaser' => $data['teaser'],
+                    'body' => $data['body'],
+                    'scope' => 'general',
+                    'status' => 'published',
+                    'published_at' => now()->subDays($data['days_ago']),
                 ]
             );
         }

@@ -71,6 +71,21 @@ class PublicRoutesTest extends TestCase
         $this->get('/')->assertOk()->assertSee('Echte Startseite');
     }
 
+    public function test_homepage_shows_latest_published_posts_and_stage_tiles(): void
+    {
+        Page::query()->create(['title' => 'Start', 'slug' => 'start', 'body' => '<p>x</p>', 'status' => 'published', 'published_at' => now()->subDay()]);
+        Page::query()->create(['title' => 'Biber', 'slug' => 'stufe-biber', 'stage' => 'biber', 'body' => '<p>x</p>', 'status' => 'published', 'published_at' => now()->subDay()]);
+        Post::query()->create(['title' => 'Sichtbare Meldung', 'slug' => 'sichtbar', 'teaser' => 't', 'body' => 'b', 'status' => 'published', 'published_at' => now()->subHour()]);
+        Post::query()->create(['title' => 'Entwurfsmeldung', 'slug' => 'entwurf', 'teaser' => 't', 'body' => 'b', 'status' => 'draft']);
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('Sichtbare Meldung')
+            ->assertDontSee('Entwurfsmeldung')
+            ->assertSee('/stufe-biber', false)
+            ->assertSee('4 bis 7 Jahre');
+    }
+
     public function test_published_post_appears_in_index_and_show(): void
     {
         Post::query()->create([

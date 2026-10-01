@@ -2,24 +2,12 @@
 
 use App\Http\Controllers\Auth\BreakGlassAuthController;
 use App\Http\Controllers\Auth\EntraAuthController;
+use App\Http\Controllers\Public\HomeController;
 use App\Http\Controllers\Public\PageController;
 use App\Http\Controllers\Public\PostController;
-use App\Models\Page;
 use Illuminate\Support\Facades\Route;
 
-// Startseite: zeigt die veröffentlichte Seite mit Slug "start", falls
-// bereits redaktionell angelegt (Pflichtenheft Phase 1a) – sonst die
-// DB-freie Platzhalterseite (unverändert nutzbar, falls noch keine
-// Inhalte existieren oder während der DB kurzzeitig nicht erreichbar ist).
-Route::get('/', function () {
-    $startPage = Page::query()->published()->where('slug', 'start')->first();
-
-    if ($startPage) {
-        return view('pages.show', ['page' => $startPage]);
-    }
-
-    return view('under-construction');
-});
+Route::get('/', HomeController::class)->name('home');
 
 // Entra-ID-/M365-Login der Redaktion (Pflichtenheft 5.1, 11.2).
 // GET /admin/login (registriert vom Filament-Panel, s.

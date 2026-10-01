@@ -13,6 +13,7 @@ class Page extends Model
         'slug',
         'title',
         'body',
+        'cover_media_id',
         'status',
         'published_at',
         'seo_title',
@@ -46,6 +47,14 @@ class Page extends Model
     public function children(): HasMany
     {
         return $this->hasMany(self::class, 'parent_id');
+    }
+
+    /**
+     * @return BelongsTo<Media, $this>
+     */
+    public function coverMedia(): BelongsTo
+    {
+        return $this->belongsTo(Media::class, 'cover_media_id');
     }
 
     /**

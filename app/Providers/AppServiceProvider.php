@@ -38,11 +38,16 @@ class AppServiceProvider extends ServiceProvider
 
         // Hauptnavigation steht jeder Seite, die das Layout nutzt, ohne
         // Wiederholung in jedem Controller zur Verfügung (F-CMS-01).
-        View::composer('layouts.app', function ($view) {
-            $view->with(
-                'navPages',
-                Page::query()->published()->where('show_in_nav', true)->orderBy('nav_sort')->get()
-            );
+        View::composer(['layouts.app', 'home'], function ($view) {
+            $stageOrder = array_keys(config('dpsg.stages'));
+
+            $view->with([
+                'navPages' => Page::query()->published()->where('show_in_nav', true)->orderBy('nav_sort')->get(),
+                'stagePages' => Page::query()->published()->whereNotNull('stage')->get()
+                    ->sortBy(fn (Page $page) => array_search($page->stage, $stageOrder, true))
+                    ->unique('stage')
+                    ->values(),
+            ]);
         });
     }
 }

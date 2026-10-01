@@ -4,8 +4,10 @@ namespace Tests\Feature\Content;
 
 use App\Models\User;
 use App\Support\Roadmap;
+use Illuminate\Encryption\Encrypter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 /**
@@ -41,12 +43,17 @@ class RoadmapTest extends TestCase
         $this->assertFalse(collect(app(Roadmap::class)->todos())->firstWhere('key', 'notfall-login')['done']);
         $this->assertFalse(collect(app(Roadmap::class)->todos())->firstWhere('key', 'cron')['done']);
 
-        User::query()->create(['name' => 'Notfall', 'email' => 'notfall@example.org', 'status' => 'active', 'is_local_admin' => true]);
+        User::query()->create(['name' => 'Notfall', 'email' => 'notfall@example.org', 'status' => 'active', 'is_local_admin' => true, 'totp_secret' => 'ABCDEFGHIJKLMNOP']);
         Cache::forever(Roadmap::HEARTBEAT_KEY, now()->timestamp);
 
         $todos = collect(app(Roadmap::class)->todos());
         $this->assertTrue($todos->firstWhere('key', 'notfall-login')['done']);
         $this->assertTrue($todos->firstWhere('key', 'cron')['done']);
         $this->assertNull($todos->firstWhere('key', 'domain-bolivien')['done']);
+
+        // Unlesbares TOTP-Secret (fremder APP_KEY) gilt nicht als erledigt.
+        DB::table('users')->where('email', 'notfall@example.org')
+            ->update(['totp_secret' => (new Encrypter(random_bytes(32), 'aes-256-cbc'))->encryptString('X')]);
+        $this->assertFalse(collect(app(Roadmap::class)->todos())->firstWhere('key', 'notfall-login')['done']);
     }
 }

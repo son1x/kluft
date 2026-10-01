@@ -7,6 +7,7 @@ use App\Models\Page;
 use App\Models\User;
 use App\Services\BrevoNewsletter;
 use App\Services\Instagram\InstagramClient;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -146,8 +147,8 @@ class Roadmap
                 'key' => 'notfall-login',
                 'phase' => '1b',
                 'title' => 'Notfall-Login einrichten und testen',
-                'detail' => 'Per SSH „php artisan cms:create-superadmin“ ausführen, TOTP in einer Authenticator-App speichern, Anmeldung unter /notfall-login einmal testen. Zugangsdaten offline verwahren.',
-                'done' => User::query()->where('is_local_admin', true)->exists(),
+                'detail' => 'Per SSH „php artisan cms:create-superadmin“ (bzw. mit --reset zum Neu-Einrichten) ausführen, möglichst mit eigener Adresse wie notfall@dpsg-trier.de statt der eigenen M365-Adresse; TOTP in einer Authenticator-App speichern, Anmeldung unter /notfall-login einmal testen. Zugangsdaten offline verwahren.',
+                'done' => $this->breakGlassUsable(),
             ],
             [
                 'key' => 'staemme-daten',
@@ -185,6 +186,21 @@ class Roadmap
                 'done' => app(InstagramClient::class)->isConfigured(),
             ],
         ];
+    }
+
+    /**
+     * Notfall-Account vorhanden UND sein TOTP-Secret lesbar (nach einem
+     * APP_KEY-Wechsel wäre er trotz Datensatz unbenutzbar).
+     */
+    public function breakGlassUsable(): bool
+    {
+        $user = User::query()->where('is_local_admin', true)->first();
+
+        try {
+            return $user !== null && filled($user->totp_secret);
+        } catch (DecryptException) {
+            return false;
+        }
     }
 
     public function schedulerRuns(): bool

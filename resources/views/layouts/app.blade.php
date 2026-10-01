@@ -136,7 +136,7 @@
                 <span>© {{ date('Y') }} {{ $contact['name'] }}</span>
                 <a href="{{ url('/impressum') }}" class="hover:underline">Impressum</a>
                 <a href="{{ url('/datenschutz') }}" class="hover:underline">Datenschutz</a>
-                <span class="sm:ml-auto">Stufen-Maskottchen: DPSG, Quelle dpsg.de</span>
+                <span class="sm:ml-auto">Stufen-Maskottchen und Rover-Lilie: DPSG (dpsg.de, rover.de)</span>
             </div>
         </div>
     </footer>

@@ -235,7 +235,7 @@ jobs:
             --exclude-glob public/uploads/ \
             --exclude-glob public/maps/data/ \
             ./ "$FTP_SERVER_DIR"
-          mirror --reverse --only-missing --verbose public/maps/data "$FTP_SERVER_DIR/public/maps/data"
+          mirror --reverse --ignore-time --verbose public/maps/data "$FTP_SERVER_DIR/public/maps/data"
           bye
           EOF
 

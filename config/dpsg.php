@@ -12,7 +12,7 @@ return [
         'woelflinge' => ['label' => 'Wölflinge', 'age' => '6 bis 10 Jahre', 'mascot' => 'images/stufen/woelflinge.png'],
         'jupfi' => ['label' => 'Jungpfadfinder*innen', 'age' => '10 bis 13 Jahre', 'mascot' => 'images/stufen/jupfi.png'],
         'pfadi' => ['label' => 'Pfadfinder*innen', 'age' => '13 bis 15 Jahre', 'mascot' => 'images/stufen/pfadi.png'],
-        'rover' => ['label' => 'Rover', 'age' => '15 bis 20 Jahre', 'mascot' => null],
+        'rover' => ['label' => 'Rover', 'age' => '15 bis 20 Jahre', 'mascot' => 'images/stufen/rover.svg'],
     ],
 
     'contact' => [

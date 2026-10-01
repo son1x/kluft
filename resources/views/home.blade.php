@@ -17,19 +17,18 @@
             {{-- Ohne Titelbild (in der Seite "start" wählbar): DPSG-Blau mit
                  den Stufen-Maskottchen statt eines leeren Fotofelds. --}}
             <div class="absolute inset-0 bg-gradient-to-br from-dpsg-blau via-dpsg-blau to-[#001a30]" aria-hidden="true"></div>
-            <div class="absolute right-8 top-1/2 hidden -translate-y-1/2 grid-cols-2 gap-5 xl:grid xl:right-[max(2rem,calc((100vw-72rem)/2))]" aria-hidden="true">
+            <div class="absolute right-8 top-1/2 hidden w-[27rem] -translate-y-1/2 flex-wrap justify-center gap-5 xl:flex xl:right-[max(2rem,calc((100vw-72rem)/2))]" aria-hidden="true">
                 @foreach (config('dpsg.stages') as $key => $stage)
-                    @if ($stage['mascot'])
-                        <div @class([
-                            'flex h-36 w-36 items-center justify-center rounded-full border-4 bg-white p-5',
-                            'border-stufe-biber' => $key === 'biber',
-                            'border-stufe-woelflinge' => $key === 'woelflinge',
-                            'border-stufe-jupfi' => $key === 'jupfi',
-                            'border-stufe-pfadi' => $key === 'pfadi',
-                        ])>
-                            <img src="{{ asset($stage['mascot']) }}" alt="" class="max-h-full max-w-full object-contain" />
-                        </div>
-                    @endif
+                    <div @class([
+                        'flex h-32 w-32 items-center justify-center rounded-full border-4 bg-white p-5',
+                        'border-stufe-biber' => $key === 'biber',
+                        'border-stufe-woelflinge' => $key === 'woelflinge',
+                        'border-stufe-jupfi' => $key === 'jupfi',
+                        'border-stufe-pfadi' => $key === 'pfadi',
+                        'border-stufe-rover' => $key === 'rover',
+                    ])>
+                        <img src="{{ asset($stage['mascot']) }}" alt="" class="max-h-full max-w-full object-contain" />
+                    </div>
                 @endforeach
             </div>
         @endif
@@ -123,11 +122,7 @@
                             'bg-stufe-rover' => $stagePage->stage === 'rover',
                         ])>
                             <div class="flex aspect-square w-4/5 items-center justify-center rounded-full bg-white/90 p-[12%]">
-                                @if ($stage['mascot'])
-                                    <img src="{{ asset($stage['mascot']) }}" alt="" class="max-h-full max-w-full object-contain" loading="lazy" />
-                                @else
-                                    <x-heroicon-o-map class="h-full w-full text-stufe-rover" aria-hidden="true" />
-                                @endif
+                                <img src="{{ asset($stage['mascot']) }}" alt="" class="max-h-full max-w-full object-contain" loading="lazy" />
                             </div>
                         </div>
                         <div class="bg-surface-muted px-4 py-3">

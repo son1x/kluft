@@ -14,7 +14,7 @@
             @if ($post->author) · {{ $post->author->name }} @endif
         </p>
         <div class="prose max-w-none">
-            {!! $post->body !!}
+            {!! str($post->body)->sanitizeHtml() !!}
         </div>
 
         <p class="mt-8">

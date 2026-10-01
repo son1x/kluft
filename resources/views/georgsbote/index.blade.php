@@ -9,7 +9,7 @@
 
         @if ($intro)
             <div class="prose mt-4 max-w-3xl">
-                {!! \Illuminate\Support\Str::before($intro->body, '[TODO') !!}
+                {!! str($intro->body)->before('[TODO')->sanitizeHtml() !!}
             </div>
         @endif
 

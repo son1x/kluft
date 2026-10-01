@@ -22,7 +22,7 @@
         @endif
         <h1 class="font-serif text-3xl font-bold mb-6">{{ $page->title }}</h1>
         <div class="prose max-w-none">
-            {!! $page->body !!}
+            {!! str($page->body)->sanitizeHtml() !!}
         </div>
     </article>
 @endsection

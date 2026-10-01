@@ -33,7 +33,7 @@
     <div class="mx-auto max-w-6xl px-4">
         @if ($landing)
             <section class="mt-12 bg-white p-8 shadow-lg">
-                <div class="prose max-w-none prose-headings:font-serif prose-a:text-dpsg-rot">{!! $landing->body !!}</div>
+                <div class="prose max-w-none prose-headings:font-serif prose-a:text-dpsg-rot">{!! str($landing->body)->sanitizeHtml() !!}</div>
             </section>
         @endif
 

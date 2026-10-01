@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\BreakGlassAuthController;
 use App\Http\Controllers\Auth\EntraAuthController;
+use App\Http\Controllers\Public\CalendarController;
 use App\Http\Controllers\Public\GeorgsboteController;
 use App\Http\Controllers\Public\GruppierungController;
 use App\Http\Controllers\Public\HomeController;
@@ -40,6 +41,12 @@ Route::get('/bezirke-staemme', [GruppierungController::class, 'index'])->name('g
 Route::get('/api/gruppierungen.geojson', [GruppierungController::class, 'geojson'])
     ->middleware('throttle:60,1')
     ->name('gruppierungen.geojson');
+
+// Kalender (F-CAL, Pflichtenheft 11.1).
+Route::get('/kalender', [CalendarController::class, 'index'])->name('calendar.index');
+Route::get('/api/calendar/events', [CalendarController::class, 'api'])
+    ->middleware('throttle:60,1')
+    ->name('calendar.api');
 
 // Georgsbote: Archiv + Newsletter-Anmeldung (F-GB, Pflichtenheft 11.1).
 Route::get('/georgsbote', [GeorgsboteController::class, 'index'])->name('georgsbote.index');

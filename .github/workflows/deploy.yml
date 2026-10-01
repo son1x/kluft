@@ -129,6 +129,7 @@ jobs:
           BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
           BREVO_NEWSLETTER_LIST_ID: ${{ secrets.BREVO_NEWSLETTER_LIST_ID }}
           BREVO_DOI_TEMPLATE_ID: ${{ secrets.BREVO_DOI_TEMPLATE_ID }}
+          NEXTCLOUD_ALLOWED_HOSTS: ${{ secrets.NEXTCLOUD_ALLOWED_HOSTS }}
         run: |
           APP_KEY="base64:$(openssl rand -base64 32)"
           cat > .env <<ENV
@@ -155,6 +156,7 @@ jobs:
           BREVO_NEWSLETTER_LIST_ID=${BREVO_NEWSLETTER_LIST_ID}
           BREVO_DOI_TEMPLATE_ID=${BREVO_DOI_TEMPLATE_ID}
           BREVO_DOI_REDIRECT_URL=https://test.dpsg-trier.de/georgsbote/danke
+          NEXTCLOUD_ALLOWED_HOSTS=${NEXTCLOUD_ALLOWED_HOSTS}
           MAIL_MAILER=log
           ENV
 

@@ -206,11 +206,10 @@ jobs:
             --exclude-glob .gitattributes \
             --exclude-glob .editorconfig \
             --exclude-glob database/database.sqlite \
-            --exclude-glob storage/app/public/media/ \
             --exclude-glob storage/logs/ \
             --exclude-glob storage/framework/sessions/ \
             --exclude-glob storage/framework/cache/ \
-            --exclude-glob public/storage \
+            --exclude-glob public/storage/ \
             ./ "$FTP_SERVER_DIR"
           bye
           EOF
@@ -250,13 +249,12 @@ jobs:
             rm -f vendor-bundle.tar.gz
             rm -f bootstrap/cache/config.php bootstrap/cache/routes-v7.php bootstrap/cache/services.php bootstrap/cache/packages.php
             rm -f storage/framework/views/*.php
-            # Mediathek-Uploads (storage/app/public/media) sind vom Mirror
-            # ausgeschlossen und werden über public/storage ausgeliefert.
-            # Relativer Symlink statt "artisan storage:link": dessen
-            # absoluter Pfad wäre hier der SSH-Kurzpfad, den der Webserver
-            # nicht kennt (s. open_basedir-Kommentar oben).
-            mkdir -p storage/app/public/media
-            [ -L public/storage ] || ln -s ../storage/app/public public/storage
+            # Mediathek-Uploads liegen direkt in public/storage (echtes
+            # Verzeichnis, vom Mirror ausgeschlossen). Ein Symlink nach
+            # storage/app/public wird vom Webserver hier nicht verfolgt
+            # (jede Anfrage darunter -> 403).
+            if [ -L public/storage ]; then rm public/storage; fi
+            mkdir -p public/storage/media
             # database/database.sqlite ist vom Mirror oben bewusst
             # ausgeschlossen (sonst würde jeder Deploy alle über das
             # Admin-Panel angelegten Inhalte löschen). migrate --force ist

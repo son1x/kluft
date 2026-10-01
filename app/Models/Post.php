@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Post extends Model
 {
@@ -54,14 +56,22 @@ class Post extends Model
         return $this->belongsTo(Media::class, 'cover_media_id');
     }
 
+    /**
+     * @return HasMany<SocialPost, $this>
+     */
+    public function socialPosts(): HasMany
+    {
+        return $this->hasMany(SocialPost::class)->latest();
+    }
+
     public function isPublished(): bool
     {
         return $this->status === 'published' && $this->published_at?->isPast();
     }
 
     /**
-     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
-     * @return \Illuminate\Database\Eloquent\Builder<self>
+     * @param  Builder<self>  $query
+     * @return Builder<self>
      */
     public function scopePublished($query)
     {

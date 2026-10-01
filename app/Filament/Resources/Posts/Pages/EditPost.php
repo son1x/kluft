@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Posts\Pages;
 
+use App\Filament\Resources\Posts\Actions\ShareToInstagramAction;
 use App\Filament\Resources\Posts\PostResource;
 use Filament\Actions\DeleteAction;
 use Filament\Facades\Filament;
@@ -14,6 +15,7 @@ class EditPost extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            ShareToInstagramAction::make(),
             DeleteAction::make(),
         ];
     }

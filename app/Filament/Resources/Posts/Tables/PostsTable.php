@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Posts\Tables;
 
+use App\Models\Post;
+use App\Models\SocialPost;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -35,11 +37,25 @@ class PostsTable
                 TextColumn::make('author.name')
                     ->label('Autor:in')
                     ->searchable(),
+                TextColumn::make('instagram')
+                    ->label('Instagram')
+                    ->state(fn (Post $record) => $record->socialPosts->first()?->status)
+                    ->formatStateUsing(fn (?string $state) => SocialPost::STATUSES[$state] ?? '–')
+                    ->badge()
+                    ->color(fn (?string $state) => match ($state) {
+                        'published' => 'success',
+                        'failed' => 'danger',
+                        default => 'gray',
+                    })
+                    ->url(fn (Post $record) => $record->socialPosts->first()?->permalink, shouldOpenInNewTab: true)
+                    ->placeholder('–')
+                    ->toggleable(),
                 TextColumn::make('published_at')
                     ->label('Veröffentlicht am')
                     ->dateTime('d.m.Y H:i')
                     ->sortable(),
             ])
+            ->modifyQueryUsing(fn ($query) => $query->with('socialPosts'))
             ->defaultSort('created_at', 'desc')
             ->filters([
                 SelectFilter::make('status')

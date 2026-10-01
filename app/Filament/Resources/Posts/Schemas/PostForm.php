@@ -2,12 +2,13 @@
 
 namespace App\Filament\Resources\Posts\Schemas;
 
+use App\Policies\PostPolicy;
 use App\Support\RoleCatalog;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
@@ -128,7 +129,7 @@ class PostForm
 
         $user = Filament::auth()->user();
 
-        if ($user && app(\App\Policies\PostPolicy::class)->publish($user)) {
+        if ($user && app(PostPolicy::class)->publish($user)) {
             $options['published'] = 'Veröffentlicht';
         }
 

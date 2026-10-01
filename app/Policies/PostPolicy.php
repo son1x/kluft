@@ -54,6 +54,25 @@ class PostPolicy
             || $user->hasRole('vorstand');
     }
 
+    /**
+     * Blog → Instagram (5.4, F-IG-06): Vorstand und Verwaltung immer,
+     * Stufen-/Sektionsadmins für Beiträge ihres Scopes; Autor:innen nicht.
+     * Nur veröffentlichte Beiträge.
+     */
+    public function shareToInstagram(User $user, Post $post): bool
+    {
+        if (! $post->isPublished()) {
+            return false;
+        }
+
+        if ($user->isVerwaltung() || $user->hasRole('vorstand')) {
+            return true;
+        }
+
+        return ($post->stage && $user->hasRoleInScope('stufenadmin', 'stage', $post->stage))
+            || ($post->section && $user->hasRoleInScope('sektionsadmin', 'section', $post->section));
+    }
+
     private function canManage(User $user, Post $post): bool
     {
         if ($user->isVerwaltung() || $user->hasRole('vorstand')) {

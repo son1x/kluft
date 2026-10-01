@@ -16,3 +16,6 @@ Schedule::command('registrations:purge')->dailyAt('03:00');
 // Lebenszeichen des Schedulers, damit /roadmap anzeigen kann, ob der
 // Cronjob auf dem Server läuft.
 Schedule::call(fn () => Cache::forever(Roadmap::HEARTBEAT_KEY, now()->timestamp))->everyMinute()->name('scheduler-heartbeat');
+
+// Instagram-Token wöchentlich erneuern (F-IG-04, Pflichtenheft 11.4).
+Schedule::command('instagram:refresh-token')->weeklyOn(1, '04:00');

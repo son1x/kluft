@@ -59,7 +59,12 @@ class GruppierungForm
                         ->label('Angebotene Stufen')
                         ->options(collect(config('dpsg.stages'))->map(fn (array $stage) => $stage['label'])->all())
                         ->columns(3)
-                        ->afterStateHydrated(fn (CheckboxList $component, ?Gruppierung $record) => $component->state($record?->stufen() ?? []))
+                        // Neue Stämme: Wölflinge bis Rover; Biber nur, wenn
+                        // ausdrücklich angekreuzt (Bibergruppen gibt es nicht überall).
+                        ->afterStateHydrated(fn (CheckboxList $component, ?Gruppierung $record) => $component->state(
+                            $record ? $record->stufen() : ['woelflinge', 'jupfi', 'pfadi', 'rover']
+                        ))
+                        ->helperText('Biber nur ankreuzen, wenn der Stamm eine Bibergruppe hat. Bei Bezirken bleibt die Liste leer.')
                         ->dehydrated(false)
                         ->saveRelationshipsUsing(fn (Gruppierung $record, ?array $state) => $record->syncStufen($state ?? []))
                         ->columnSpanFull(),

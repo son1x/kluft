@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\User;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use PragmaRX\Google2FA\Google2FA;
@@ -19,7 +20,7 @@ use PragmaRX\Google2FA\Google2FA;
  */
 class CreateSuperAdminCommand extends Command
 {
-    protected $signature = 'cms:create-superadmin';
+    protected $signature = 'cms:create-superadmin {--reset : Bestehenden Notfall-Account mit neuem Passwort und neuem TOTP-Secret versehen}';
 
     protected $description = 'Legt den lokalen Notfall-Super-Admin-Account an (Break-Glass, Pflichtenheft 5.2)';
 
@@ -27,14 +28,24 @@ class CreateSuperAdminCommand extends Command
     {
         $this->warn('Break-Glass-Account: nur für den Notfall bei Entra-ID-Ausfall. Zugangsdaten gehören in einen Passwortmanager mit Vier-Augen-Zugriff.');
 
-        if (User::query()->where('is_local_admin', true)->exists()) {
-            $this->error('Es existiert bereits ein lokaler Notfall-Super-Admin. Für einen weiteren bitte diesen Befehl anpassen oder den bestehenden Account zurücksetzen.');
+        $existing = User::query()->where('is_local_admin', true)->first();
+
+        if ($existing && ! $this->option('reset')) {
+            $this->error('Es existiert bereits ein lokaler Notfall-Super-Admin ('.$existing->email.'). Zum Zurücksetzen (neues Passwort + neues TOTP-Secret): php artisan cms:create-superadmin --reset');
 
             return self::FAILURE;
         }
 
-        $name = $this->ask('Name (z. B. "Notfall-Admin")', 'Notfall-Admin');
-        $email = $this->ask('E-Mail-Adresse (erhält die Alarmmail bei jeder Anmeldung)');
+        if ($existing) {
+            $this->line('Setze den Notfall-Account '.$existing->email.' zurück.');
+            $name = $existing->name;
+            // Eigene Adresse empfohlen: dieselbe wie das M365-Konto blockiert
+            // dessen Microsoft-Anmeldung (Notfall-Zugang bleibt getrennt).
+            $email = mb_strtolower(trim((string) $this->ask('E-Mail-Adresse (Enter = unverändert)', $existing->email)));
+        } else {
+            $name = $this->ask('Name (z. B. "Notfall-Admin")', 'Notfall-Admin');
+            $email = mb_strtolower(trim((string) $this->ask('E-Mail-Adresse (erhält die Alarmmail bei jeder Anmeldung)')));
+        }
 
         $validator = Validator::make(['email' => $email], ['email' => ['required', 'email']]);
         if ($validator->fails()) {
@@ -61,22 +72,35 @@ class CreateSuperAdminCommand extends Command
         $google2fa = new Google2FA;
         $totpSecret = $google2fa->generateSecretKey();
 
-        $user = User::query()->create([
-            'name' => $name,
-            'email' => $email,
-            'status' => 'active',
-            'is_local_admin' => true,
-            'password' => Hash::make($password),
-            'totp_secret' => $totpSecret,
-        ]);
+        if ($existing) {
+            // Direkt per Query: Eloquent würde zum Vergleich das alte
+            // TOTP-Secret entschlüsseln – genau das kann kaputt sein.
+            User::query()->whereKey($existing->id)->update([
+                'email' => $email,
+                'entra_oid' => null,
+                'status' => 'active',
+                'password' => Hash::make($password),
+                'totp_secret' => Crypt::encryptString($totpSecret),
+            ]);
+            $user = $existing;
+        } else {
+            $user = User::query()->create([
+                'name' => $name,
+                'email' => $email,
+                'status' => 'active',
+                'is_local_admin' => true,
+                'password' => Hash::make($password),
+                'totp_secret' => $totpSecret,
+            ]);
+        }
 
-        $user->roleAssignments()->create([
+        $user->roleAssignments()->firstOrCreate([
             'role' => 'superadmin',
             'scope_type' => 'global',
         ]);
 
         $this->newLine();
-        $this->info('Notfall-Super-Admin angelegt.');
+        $this->info($existing ? 'Notfall-Super-Admin zurückgesetzt.' : 'Notfall-Super-Admin angelegt.');
         $this->newLine();
         $this->line('TOTP-Secret (in eine Authenticator-App eintragen, z. B. manuell als Base32-Secret):');
         $this->line("  {$totpSecret}");

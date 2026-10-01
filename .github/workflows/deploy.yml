@@ -142,8 +142,15 @@ jobs:
           else
             MAIL_MAILER=log
           fi
+          # Platzhalter: der echte, dauerhafte Schlüssel wird erst auf dem
+          # Server eingesetzt (s. "vendor/ auf dem Server entpacken").
           APP_KEY="base64:$(openssl rand -base64 32)"
-          cat > .env <<ENV
+          # Als .env.deploy hochladen, NICHT als .env: Die laufende .env
+          # (mit dem dauerhaften APP_KEY) bleibt während des Uploads
+          # unangetastet und wird erst danach in einem Schritt ersetzt.
+          # Sonst liefe die Seite minutenlang mit einem fremden Schlüssel –
+          # alle Sitzungen ungültig, neu Verschlüsseltes später unlesbar.
+          cat > .env.deploy <<ENV
           APP_NAME="DPSG Diözesanverband Trier"
           APP_ENV=local
           APP_KEY=${APP_KEY}
@@ -275,6 +282,7 @@ jobs:
             --exclude-glob docs/ \
             --exclude-glob legacy-static-site/ \
             --exclude-glob .env.example \
+            --exclude-glob .env \
             --exclude-glob .gitattributes \
             --exclude-glob .editorconfig \
             --exclude-glob database/database.sqlite \
@@ -330,7 +338,11 @@ jobs:
               chmod 600 storage/app/private/app.key
             fi
             APP_KEY_VALUE="$(cat storage/app/private/app.key)"
-            sed -i "s#^APP_KEY=.*#APP_KEY=${APP_KEY_VALUE}#" .env
+            # Neue Konfiguration mit dem dauerhaften Schlüssel versehen und
+            # atomar an die Stelle der alten .env setzen.
+            sed -i "s#^APP_KEY=.*#APP_KEY=${APP_KEY_VALUE}#" .env.deploy
+            chmod 640 .env.deploy
+            mv -f .env.deploy .env
             # Mediathek-Uploads liegen in public/uploads (vom Mirror
             # ausgeschlossen); /storage/ ist per Root-.htaccess gesperrt.
             # Reste früherer Versuche (Symlink/leeres Verzeichnis) entfernen.
@@ -360,3 +372,11 @@ jobs:
             if [ "$NEEDS_SEED" = "1" ] || [ "${{ github.event.inputs.force_seed }}" = "true" ]; then
               /usr/bin/php artisan db:seed --force
             fi
+            # Diagnose ohne SSH-Zugang: die letzten Fehlermeldungen aus dem
+            # Laravel-Log (nur die Meldungszeile, gekürzt, E-Mail-Adressen und
+            # IPs geschwärzt) im Actions-Protokoll anzeigen.
+            echo "---- Letzte Fehler im Laravel-Log ----"
+            grep -h '\.\(ERROR\|CRITICAL\|ALERT\|EMERGENCY\):' storage/logs/laravel*.log 2>/dev/null \
+              | tail -n 15 | cut -c1-400 \
+              | sed -E 's/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/<email>/g; s/([0-9]{1,3}\.){3}[0-9]{1,3}/<ip>/g' \
+              || echo "(keine)"

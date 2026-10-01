@@ -6,10 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Notifications\BreakGlassLoginNotification;
 use App\Support\AuditLogger;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
@@ -52,12 +54,25 @@ class BreakGlassAuthController extends Controller
         }
 
         $user = User::query()
-            ->where('email', $data['email'])
+            ->whereRaw('lower(email) = ?', [mb_strtolower(trim($data['email']))])
             ->where('is_local_admin', true)
             ->first();
 
         $passwordValid = $user && Hash::check($data['password'], $user->password);
-        $totpValid = $user && (new Google2FA)->verifyKey($user->totp_secret, $data['totp']);
+
+        try {
+            $totpValid = $passwordValid && (new Google2FA)->verifyKey($user->totp_secret, $data['totp']);
+        } catch (DecryptException) {
+            // Das TOTP-Geheimnis wurde mit einem anderen APP_KEY verschlüsselt
+            // (z. B. Konto während eines Deploys angelegt). Ohne neues Secret
+            // ist dieser Account nicht mehr nutzbar – deutlich melden statt 500.
+            Log::critical('Notfall-Login: TOTP-Geheimnis nicht entschlüsselbar (APP_KEY geändert?). Account per "php artisan cms:create-superadmin" neu einrichten.', ['user_id' => $user->id]);
+            RateLimiter::hit($throttleKey, self::DECAY_MINUTES * 60);
+
+            throw ValidationException::withMessages([
+                'email' => 'Der Notfall-Account muss neu eingerichtet werden (TOTP-Geheimnis nicht lesbar). Bitte per SSH „php artisan cms:create-superadmin“ ausführen.',
+            ]);
+        }
 
         if (! $user || ! $passwordValid || ! $totpValid || ! $user->isActive()) {
             RateLimiter::hit($throttleKey, self::DECAY_MINUTES * 60);

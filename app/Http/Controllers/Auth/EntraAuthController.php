@@ -8,6 +8,7 @@ use App\Notifications\NewPendingUserNotification;
 use App\Support\AuditLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification;
 use Laravel\Socialite\Facades\Socialite;
@@ -30,7 +31,7 @@ class EntraAuthController extends Controller
             ->redirect();
     }
 
-    public function callback(Request $request): RedirectResponse
+    public function callback(Request $request): RedirectResponse|Response
     {
         /** @var SocialiteUser $entraUser */
         $entraUser = Socialite::driver('microsoft')->user();
@@ -40,17 +41,27 @@ class EntraAuthController extends Controller
         $email = mb_strtolower((string) ($entraUser->getEmail() ?? $upn));
         $name = $entraUser->getName() ?? $upn;
 
-        $user = User::query()->where('entra_oid', $oid)->first();
+        // Der Notfall-Account (is_local_admin) wird nie mit einem
+        // Microsoft-Konto verknüpft – sonst trüge eine normale M365-Anmeldung
+        // stillschweigend Super-Admin-Rechte (Pflichtenheft 5.2: getrennter Zugang).
+        $user = User::query()->where('entra_oid', $oid)->where('is_local_admin', false)->first();
 
         if (! $user) {
             // Vorab von der Verwaltung angelegter Datensatz (per UPN/E-Mail,
             // noch ohne entra_oid) – jetzt bei der ersten Anmeldung verknüpfen.
             $user = User::query()
                 ->whereNull('entra_oid')
+                ->where('is_local_admin', false)
                 ->where(function ($query) use ($upn, $email) {
-                    $query->where('upn', $upn)->orWhere('email', $email);
+                    $query->whereRaw('lower(upn) = ?', [$upn])->orWhereRaw('lower(email) = ?', [$email]);
                 })
                 ->first();
+        }
+
+        if (! $user && User::query()->where('is_local_admin', true)->whereRaw('lower(email) = ?', [$email])->exists()) {
+            AuditLogger::log('login.entra.blocked_breakglass_email', request: $request);
+
+            return response()->view('auth.entra-conflict', ['email' => $email], 409);
         }
 
         if ($user) {

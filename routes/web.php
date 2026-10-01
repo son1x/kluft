@@ -10,6 +10,7 @@ use App\Http\Controllers\Public\HomeController;
 use App\Http\Controllers\Public\PageController;
 use App\Http\Controllers\Public\PostController;
 use App\Http\Controllers\Public\RegistrationController;
+use App\Http\Controllers\Public\RoadmapController;
 use App\Http\Controllers\Public\SectionController;
 use Illuminate\Support\Facades\Route;
 
@@ -62,6 +63,9 @@ Route::middleware('throttle:20,10')->group(function () {
     Route::get('/anmeldung/stornieren/{token}', [RegistrationController::class, 'showCancel'])->name('registrations.cancel');
     Route::post('/anmeldung/stornieren/{token}', [RegistrationController::class, 'cancel'])->name('registrations.cancel.submit');
 });
+
+// Projektstand nach Pflichtenheft (außerhalb des CMS).
+Route::get('/roadmap', RoadmapController::class)->name('roadmap');
 
 // Georgsbote: Archiv + Newsletter-Anmeldung (F-GB, Pflichtenheft 11.1).
 Route::get('/georgsbote', [GeorgsboteController::class, 'index'])->name('georgsbote.index');

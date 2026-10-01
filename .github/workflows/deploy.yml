@@ -23,7 +23,7 @@ name: Deploy auf Netcup-Webspace
 # Datenbank noch echte Entra-/Brevo-Zugangsdaten für die Testumgebung als
 # Secrets hinterlegt sind, deployt dieser Workflow eine lauffähige, aber
 # absichtlich datenbankfreie Version (SQLite/File-Driver, frisch
-# generierter APP_KEY pro Lauf) – nur damit auf test.dpsg-trier.de
+# gesicherter APP_KEY, s. Schritt "APP_KEY auf dem Server sichern") – nur damit auf test.dpsg-trier.de
 # sichtbar wird, dass die neue CMS-Basis läuft. Sobald echte Secrets
 # vorliegen, wird dieser Workflow entsprechend erweitert (s. TODO-Marker
 # unten).
@@ -211,6 +211,27 @@ jobs:
             echo "SSH_TARGET_DIR=$(trim "$SSH_TARGET_DIR")"
           } >> "$GITHUB_ENV"
 
+      # APP_KEY muss über Deploys hinweg gleich bleiben: Er verschlüsselt
+      # Sitzungen und das TOTP-Geheimnis des Notfall-Logins. Vor dem Upload
+      # (der die .env ersetzt) wird der bisherige Schlüssel einmalig nach
+      # storage/app/private/app.key gesichert (vom Mirror ausgenommen,
+      # per .htaccess nicht abrufbar); danach wird nur noch dieser verwendet.
+      - name: APP_KEY auf dem Server sichern (per SSH)
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ env.SSH_HOST }}
+          port: ${{ env.SSH_PORT }}
+          username: ${{ env.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+            cd "${{ env.SSH_TARGET_DIR }}"
+            mkdir -p storage/app/private
+            if [ ! -s storage/app/private/app.key ] && [ -f .env ]; then
+              grep '^APP_KEY=base64:' .env | head -n1 | cut -d= -f2- > storage/app/private/app.key || true
+            fi
+            if [ -f storage/app/private/app.key ]; then chmod 600 storage/app/private/app.key; fi
+
       - name: Per lftp über SFTP synchronisieren (inkl. Löschen entfernter Dateien)
         run: |
           lftp -u "$FTP_USERNAME","$FTP_PASSWORD" -p 22 "sftp://$FTP_SERVER" <<EOF
@@ -229,6 +250,7 @@ jobs:
             --exclude-glob .gitattributes \
             --exclude-glob .editorconfig \
             --exclude-glob database/database.sqlite \
+            --exclude-glob storage/app/private/ \
             --exclude-glob storage/logs/ \
             --exclude-glob storage/framework/sessions/ \
             --exclude-glob storage/framework/cache/ \
@@ -274,6 +296,13 @@ jobs:
             rm -f vendor-bundle.tar.gz
             rm -f bootstrap/cache/config.php bootstrap/cache/routes-v7.php bootstrap/cache/services.php bootstrap/cache/packages.php
             rm -f storage/framework/views/*.php
+            # Gesicherten APP_KEY einsetzen (beim allerersten Mal erzeugen).
+            if [ ! -s storage/app/private/app.key ]; then
+              /usr/bin/php -r 'echo "base64:".base64_encode(random_bytes(32));' > storage/app/private/app.key
+              chmod 600 storage/app/private/app.key
+            fi
+            APP_KEY_VALUE="$(cat storage/app/private/app.key)"
+            sed -i "s#^APP_KEY=.*#APP_KEY=${APP_KEY_VALUE}#" .env
             # Mediathek-Uploads liegen in public/uploads (vom Mirror
             # ausgeschlossen); /storage/ ist per Root-.htaccess gesperrt.
             # Reste früherer Versuche (Symlink/leeres Verzeichnis) entfernen.

@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Page;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use SocialiteProviders\Manager\SocialiteWasCalled;
 use SocialiteProviders\Microsoft\MicrosoftExtendSocialite;
@@ -33,5 +35,14 @@ class AppServiceProvider extends ServiceProvider
         if (filled($redirectTo = config('mail.test_redirect_to'))) {
             Mail::alwaysTo($redirectTo);
         }
+
+        // Hauptnavigation steht jeder Seite, die das Layout nutzt, ohne
+        // Wiederholung in jedem Controller zur Verfügung (F-CMS-01).
+        View::composer('layouts.app', function ($view) {
+            $view->with(
+                'navPages',
+                Page::query()->published()->where('show_in_nav', true)->orderBy('nav_sort')->get()
+            );
+        });
     }
 }

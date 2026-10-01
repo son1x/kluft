@@ -133,7 +133,6 @@ jobs:
           QUEUE_CONNECTION=sync
           MAIL_MAILER=log
           ENV
-          touch database/database.sqlite
 
       - name: lftp installieren
         run: sudo apt-get update && sudo apt-get install -y lftp
@@ -189,6 +188,7 @@ jobs:
             --exclude-glob .env.example \
             --exclude-glob .gitattributes \
             --exclude-glob .editorconfig \
+            --exclude-glob database/database.sqlite \
             ./ "$FTP_SERVER_DIR"
           bye
           EOF
@@ -228,3 +228,22 @@ jobs:
             rm -f vendor-bundle.tar.gz
             rm -f bootstrap/cache/config.php bootstrap/cache/routes-v7.php bootstrap/cache/services.php bootstrap/cache/packages.php
             rm -f storage/framework/views/*.php
+            # database/database.sqlite ist vom Mirror oben bewusst
+            # ausgeschlossen (sonst würde jeder Deploy alle über das
+            # Admin-Panel angelegten Inhalte löschen). migrate --force ist
+            # idempotent und läuft daher immer (hält das Schema aktuell);
+            # db:seed nur beim allerersten Mal, da der Seeder die Pflicht-
+            # seiten per updateOrCreate zurücksetzen würde und damit
+            # spätere redaktionelle Änderungen an Impressum & Co.
+            # überschreiben könnte. TODO: entfällt, sobald eine echte
+            # MySQL-DB angebunden ist (s. Kommentar oben zu DB_HOST/.../
+            # BREVO_API_KEY).
+            NEEDS_SEED=0
+            if [ ! -f database/database.sqlite ]; then
+              touch database/database.sqlite
+              NEEDS_SEED=1
+            fi
+            /usr/bin/php artisan migrate --force
+            if [ "$NEEDS_SEED" = "1" ]; then
+              /usr/bin/php artisan db:seed --force
+            fi

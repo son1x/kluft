@@ -7,6 +7,7 @@
         "dev": "vite"
     },
     "devDependencies": {
+        "@tailwindcss/typography": "^0.5.20",
         "@tailwindcss/vite": "^4.0.0",
         "axios": "^1.11.0",
         "concurrently": "^9.0.1",
@@ -16,6 +17,7 @@
     },
     "dependencies": {
         "@fontsource/arvo": "^5.3.0",
-        "@fontsource/carlito": "^5.3.0"
+        "@fontsource/carlito": "^5.3.0",
+        "alpinejs": "^3.17.4"
     }
 }

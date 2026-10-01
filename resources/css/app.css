@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@plugin '@tailwindcss/typography';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
@@ -55,4 +56,9 @@
     --color-text-secondary: #5c6670;
     --color-surface: #ffffff;
     --color-surface-muted: #e6ebf0;
+}
+
+/* Alpine.js: Elemente bis zur Initialisierung ausblenden (Consent-Banner) */
+[x-cloak] {
+    display: none !important;
 }

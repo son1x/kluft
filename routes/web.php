@@ -2,11 +2,22 @@
 
 use App\Http\Controllers\Auth\BreakGlassAuthController;
 use App\Http\Controllers\Auth\EntraAuthController;
+use App\Http\Controllers\Public\PageController;
+use App\Http\Controllers\Public\PostController;
+use App\Models\Page;
 use Illuminate\Support\Facades\Route;
 
-// Platzhalter-Startseite, bis die redaktionellen Seiten/CMS-Inhalte
-// (Pflichtenheft Phase 1a) stehen. Bewusst ohne DB-Zugriff nutzbar.
+// Startseite: zeigt die veröffentlichte Seite mit Slug "start", falls
+// bereits redaktionell angelegt (Pflichtenheft Phase 1a) – sonst die
+// DB-freie Platzhalterseite (unverändert nutzbar, falls noch keine
+// Inhalte existieren oder während der DB kurzzeitig nicht erreichbar ist).
 Route::get('/', function () {
+    $startPage = Page::query()->published()->where('slug', 'start')->first();
+
+    if ($startPage) {
+        return view('pages.show', ['page' => $startPage]);
+    }
+
     return view('under-construction');
 });
 
@@ -27,3 +38,12 @@ Route::middleware('throttle:20,15')->group(function () {
     Route::post('/notfall-login', [BreakGlassAuthController::class, 'login'])
         ->name('notfall-login.attempt');
 });
+
+// Blog/Aktuelles (F-CMS-03). Vor dem Seiten-Catch-all registriert, damit
+// "/aktuelles" nicht als Seiten-Slug interpretiert wird.
+Route::get('/aktuelles', [PostController::class, 'index'])->name('posts.index');
+Route::get('/aktuelles/{slug}', [PostController::class, 'show'])->name('posts.show');
+
+// Redaktionelle Seiten (F-CMS-01). Bewusst als letzte Route registriert –
+// fängt jeden sonst nicht zugeordneten Ein-Segment-Pfad als Seiten-Slug ab.
+Route::get('/{slug}', [PageController::class, 'show'])->name('pages.show');

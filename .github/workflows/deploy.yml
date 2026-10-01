@@ -266,6 +266,9 @@ jobs:
               grep '^APP_KEY=base64:' .env | head -n1 | cut -d= -f2- > storage/app/private/app.key || true
             fi
             if [ -f storage/app/private/app.key ]; then chmod 600 storage/app/private/app.key; fi
+            # Wartungsmodus für die Dauer des Uploads: Besucher sehen eine
+            # 503-Seite statt 500er durch halb hochgeladene Dateien.
+            if [ -f vendor/autoload.php ] && [ -f .env ]; then /usr/bin/php artisan down --retry=60 || true; fi
 
       - name: Per lftp über SFTP synchronisieren (inkl. Löschen entfernter Dateien)
         run: |
@@ -290,6 +293,8 @@ jobs:
             --exclude-glob storage/logs/ \
             --exclude-glob storage/framework/sessions/ \
             --exclude-glob storage/framework/cache/ \
+            --exclude-glob storage/framework/down \
+            --exclude-glob storage/framework/maintenance.php \
             --exclude-glob public/uploads/ \
             --exclude-glob public/maps/data/ \
             ./ "$FTP_SERVER_DIR"
@@ -375,8 +380,25 @@ jobs:
             # Diagnose ohne SSH-Zugang: die letzten Fehlermeldungen aus dem
             # Laravel-Log (nur die Meldungszeile, gekürzt, E-Mail-Adressen und
             # IPs geschwärzt) im Actions-Protokoll anzeigen.
+            /usr/bin/php artisan up
             echo "---- Letzte Fehler im Laravel-Log ----"
             grep -h '\.\(ERROR\|CRITICAL\|ALERT\|EMERGENCY\):' storage/logs/laravel*.log 2>/dev/null \
               | tail -n 15 | cut -c1-400 \
               | sed -E 's/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/<email>/g; s/([0-9]{1,3}\.){3}[0-9]{1,3}/<ip>/g' \
               || echo "(keine)"
+
+      # Falls ein Schritt oben fehlschlägt, darf die Seite nicht im
+      # Wartungsmodus hängen bleiben.
+      - name: Wartungsmodus sicher beenden
+        if: always()
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ env.SSH_HOST }}
+          port: ${{ env.SSH_PORT }}
+          username: ${{ env.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd "${{ env.SSH_TARGET_DIR }}"
+            if [ -f storage/framework/down ]; then
+              /usr/bin/php artisan up || rm -f storage/framework/down storage/framework/maintenance.php
+            fi

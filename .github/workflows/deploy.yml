@@ -209,7 +209,7 @@ jobs:
             --exclude-glob storage/logs/ \
             --exclude-glob storage/framework/sessions/ \
             --exclude-glob storage/framework/cache/ \
-            --exclude-glob public/storage/ \
+            --exclude-glob public/uploads/ \
             ./ "$FTP_SERVER_DIR"
           bye
           EOF
@@ -249,12 +249,13 @@ jobs:
             rm -f vendor-bundle.tar.gz
             rm -f bootstrap/cache/config.php bootstrap/cache/routes-v7.php bootstrap/cache/services.php bootstrap/cache/packages.php
             rm -f storage/framework/views/*.php
-            # Mediathek-Uploads liegen direkt in public/storage (echtes
-            # Verzeichnis, vom Mirror ausgeschlossen). Ein Symlink nach
-            # storage/app/public wird vom Webserver hier nicht verfolgt
-            # (jede Anfrage darunter -> 403).
+            # Mediathek-Uploads liegen in public/uploads (vom Mirror
+            # ausgeschlossen); /storage/ ist per Root-.htaccess gesperrt.
+            # Reste früherer Versuche (Symlink/leeres Verzeichnis) entfernen.
             if [ -L public/storage ]; then rm public/storage; fi
-            mkdir -p public/storage/media
+            rmdir public/storage/media public/storage 2>/dev/null || true
+            mkdir -p public/uploads/media
+            printf '%s\n' '<FilesMatch "\.(php|phtml|phar|phps|php[0-9])$">' '    Require all denied' '</FilesMatch>' > public/uploads/.htaccess
             # database/database.sqlite ist vom Mirror oben bewusst
             # ausgeschlossen (sonst würde jeder Deploy alle über das
             # Admin-Panel angelegten Inhalte löschen). migrate --force ist

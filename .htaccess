@@ -19,7 +19,17 @@
     RewriteRule ^(artisan|composer\.(json|lock)|package(-lock)?\.json|phpunit\.xml|vite\.config\.js)$ - [F,L]
 </IfModule>
 
-# 2) Alles andere an public/ weiterreichen; public/.htaccess übernimmt
+# 2) Trailing-Slash-Redirect schon hier, sonst sieht die Regel in
+#    public/.htaccess den intern umgeschriebenen Pfad und leitet auf
+#    /public/... weiter.
+<IfModule mod_rewrite.c>
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteCond %{DOCUMENT_ROOT}/public%{REQUEST_URI} !-d
+    RewriteCond %{REQUEST_URI} ^(.+)/$
+    RewriteRule ^ %1 [L,R=301]
+</IfModule>
+
+# 3) Alles andere an public/ weiterreichen; public/.htaccess übernimmt
 #    von dort aus das reguläre Laravel-Routing zu public/index.php.
 <IfModule mod_rewrite.c>
     RewriteCond %{REQUEST_URI} !^/public/

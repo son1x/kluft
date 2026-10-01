@@ -38,12 +38,14 @@ return [
             'report' => false,
         ],
 
-        // Direkt unter public/ statt storage/app/public + Symlink: der
-        // Webserver auf dem Netcup-Hosting folgt dem Symlink nicht (403).
+        // Direkt unter public/uploads statt storage/app/public + Symlink:
+        // Solange der DocumentRoot das Projektverzeichnis ist, sperrt das
+        // Root-.htaccess jede URL unter /storage/ (dort liegen Logs und
+        // Sessions), ein /storage-Symlink wäre also nie erreichbar.
         'public' => [
             'driver' => 'local',
-            'root' => public_path('storage'),
-            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
+            'root' => public_path('uploads'),
+            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/uploads',
             'visibility' => 'public',
             'throw' => false,
             'report' => false,

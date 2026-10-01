@@ -86,6 +86,15 @@ jobs:
       - name: PHP-Abhängigkeiten installieren (für Tests)
         run: composer install --no-interaction --no-progress
 
+      # Muss VOR "Tests ausführen" laufen: Views nutzen @vite(), das ohne
+      # public/build/manifest.json (erst durch diesen Schritt erzeugt)
+      # mit "Vite manifest not found" fehlschlägt, sobald ein Test eine
+      # Seite über die Route rendert.
+      - name: Frontend-Assets bauen
+        run: |
+          npm ci
+          npm run build
+
       - name: Tests ausführen
         run: |
           cp .env.example .env
@@ -101,11 +110,6 @@ jobs:
           rm -rf vendor
           composer install --no-dev --optimize-autoloader --no-interaction --no-progress
           tar czf vendor-bundle.tar.gz vendor
-
-      - name: Frontend-Assets bauen
-        run: |
-          npm ci
-          npm run build
 
       # TODO sobald Secrets für DB_HOST/DB_DATABASE/DB_USERNAME/DB_PASSWORD,
       # ENTRA_CLIENT_ID/ENTRA_CLIENT_SECRET/ENTRA_TENANT_ID und BREVO_API_KEY

@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Support\AuditLogger;
+use App\Support\RoleCatalog;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -14,6 +16,24 @@ class RoleAssignment extends Model
         'scope_key',
         'granted_by',
     ];
+
+    /**
+     * Jede Rollenvergabe/-änderung landet im Audit-Log (5.5).
+     */
+    protected static function booted(): void
+    {
+        $log = fn (string $action) => fn (RoleAssignment $assignment) => AuditLogger::log(
+            "{$action}:".RoleCatalog::encode($assignment),
+            auth()->user(),
+            'user',
+            $assignment->user_id,
+            request(),
+        );
+
+        static::created($log('role.granted'));
+        static::deleted($log('role.revoked'));
+        static::updated($log('role.changed'));
+    }
 
     /**
      * @return BelongsTo<User, $this>

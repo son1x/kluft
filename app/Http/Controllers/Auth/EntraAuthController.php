@@ -36,8 +36,8 @@ class EntraAuthController extends Controller
         $entraUser = Socialite::driver('microsoft')->user();
 
         $oid = $entraUser->getId();
-        $upn = $entraUser->user['userPrincipalName'] ?? $entraUser->getEmail();
-        $email = $entraUser->getEmail() ?? $upn;
+        $upn = mb_strtolower((string) ($entraUser->user['userPrincipalName'] ?? $entraUser->getEmail()));
+        $email = mb_strtolower((string) ($entraUser->getEmail() ?? $upn));
         $name = $entraUser->getName() ?? $upn;
 
         $user = User::query()->where('entra_oid', $oid)->first();

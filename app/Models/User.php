@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\AuditLogger;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
@@ -58,6 +59,15 @@ class User extends Authenticatable implements FilamentUser
             'is_local_admin' => 'boolean',
             'totp_secret' => 'encrypted',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::updated(function (User $user) {
+            if ($user->wasChanged('status')) {
+                AuditLogger::log("user.status:{$user->status}", auth()->user(), 'user', $user->id, request());
+            }
+        });
     }
 
     /**

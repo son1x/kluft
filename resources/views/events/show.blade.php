@@ -32,8 +32,8 @@
                     <p class="mt-4 border-l-4 border-dpsg-rot bg-white p-4 font-bold" role="status">Diese Veranstaltung ist abgesagt.</p>
                 @endif
 
-                @if ($cover = $event->coverMedia?->url())
-                    <img src="{{ $cover }}" alt="{{ $event->coverMedia->alt_text }}" class="mt-6 aspect-[16/9] w-full object-cover" />
+                @if ($event->coverMedia)
+                    @include('partials.cover-figure', ['media' => $event->coverMedia])
                 @endif
 
                 @if ($event->teaser)

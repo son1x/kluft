@@ -13,9 +13,18 @@
             {{ $post->published_at?->translatedFormat('d. F Y') }}
             @if ($post->author) · {{ $post->author->name }} @endif
         </p>
+        @if ($post->coverMedia)
+            @include('partials.cover-figure', ['media' => $post->coverMedia, 'class' => 'mb-6'])
+        @endif
         <div class="prose max-w-none">
             {!! str($post->body)->sanitizeHtml() !!}
         </div>
+
+        @if ($notice = $post->aiNotice())
+            <p class="mt-8 flex items-start gap-2 border-l-4 border-dpsg-mittelbeige bg-surface-muted p-3 text-sm" role="note">
+                <span class="font-bold">KI-Hinweis:</span> <span>{{ $notice }}</span>
+            </p>
+        @endif
 
         <p class="mt-8">
             <a href="{{ url('/aktuelles') }}" class="text-dpsg-blau hover:underline">&larr; Zurück zu Aktuelles</a>

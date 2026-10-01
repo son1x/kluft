@@ -23,7 +23,23 @@ class Post extends Model
         'published_at',
         'author_id',
         'wp_id',
+        'ai_level',
+        'ai_tool',
+        'ai_content',
+        'ai_person',
     ];
+
+    /**
+     * Stufen der KI-Kennzeichnung (CD-Leitfaden Abschnitt 13, F-CMS-14).
+     */
+    public const AI_LEVELS = [
+        'none' => 'Keine KI genutzt',
+        'assist' => 'Nur unterstützend (Rechtschreibung, Recherche, Formulierungshilfe) – keine Kennzeichnung nötig',
+        'partial' => 'Teilweise KI-unterstützt',
+        'full' => 'Vollständig KI-generiert',
+    ];
+
+    public const AI_CONTENT_TYPES = ['Text', 'Bild', 'Video', 'Text und Bild'];
 
     protected function casts(): array
     {
@@ -62,6 +78,21 @@ class Post extends Model
     public function socialPosts(): HasMany
     {
         return $this->hasMany(SocialPost::class)->latest();
+    }
+
+    /**
+     * Automatischer Hinweistext für das Frontend, oder null, wenn keine
+     * Kennzeichnung nötig ist.
+     */
+    public function aiNotice(): ?string
+    {
+        $tool = trim((string) $this->ai_tool) ?: 'unbekannt';
+
+        return match ($this->ai_level) {
+            'full' => ($this->ai_content ?: 'Text').' wurde mithilfe des KI-Tools '.$tool.' generiert.',
+            'partial' => (trim((string) $this->ai_person) ?: $this->author?->name ?: 'Redaktion').' in Zusammenarbeit mit dem KI-Tool '.$tool.'.',
+            default => null,
+        };
     }
 
     public function isPublished(): bool

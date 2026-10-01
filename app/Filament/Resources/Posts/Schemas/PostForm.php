@@ -2,14 +2,18 @@
 
 namespace App\Filament\Resources\Posts\Schemas;
 
+use App\Models\Post;
 use App\Policies\PostPolicy;
 use App\Support\RoleCatalog;
 use Filament\Facades\Filament;
+use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 
 class PostForm
@@ -94,6 +98,51 @@ class PostForm
                     RichEditor::make('body')
                         ->label('Inhalt')
                         ->required()
+                        ->columnSpanFull(),
+                ]),
+
+            // KI-Kennzeichnung nach CD-Leitfaden Abschnitt 13 (F-CMS-14).
+            Section::make('KI-Kennzeichnung')
+                ->description('Pflichtangabe laut CD-Leitfaden: Wurde beim Erstellen KI genutzt? Der Hinweis im Frontend wird automatisch erzeugt.')
+                ->columns(2)
+                ->components([
+                    Radio::make('ai_level')
+                        ->label('KI-Nutzung')
+                        ->options(Post::AI_LEVELS)
+                        ->default('none')
+                        ->required()
+                        ->live()
+                        ->columnSpanFull(),
+                    TextInput::make('ai_tool')
+                        ->label('KI-Tool')
+                        ->placeholder('z. B. ChatGPT, Claude, Midjourney')
+                        ->maxLength(100)
+                        ->live(onBlur: true)
+                        ->visible(fn (Get $get) => in_array($get('ai_level'), ['partial', 'full'], true))
+                        ->required(fn (Get $get) => in_array($get('ai_level'), ['partial', 'full'], true)),
+                    Select::make('ai_content')
+                        ->label('Was wurde generiert?')
+                        ->options(array_combine(Post::AI_CONTENT_TYPES, Post::AI_CONTENT_TYPES))
+                        ->default('Text')
+                        ->native(false)
+                        ->live()
+                        ->visible(fn (Get $get) => $get('ai_level') === 'full')
+                        ->required(fn (Get $get) => $get('ai_level') === 'full'),
+                    TextInput::make('ai_person')
+                        ->label('Erstellende Person')
+                        ->placeholder(fn () => Filament::auth()->user()?->name)
+                        ->helperText('Leer = Name der Autorin/des Autors.')
+                        ->maxLength(150)
+                        ->live(onBlur: true)
+                        ->visible(fn (Get $get) => $get('ai_level') === 'partial'),
+                    Placeholder::make('ai_preview')
+                        ->label('Hinweis im Frontend')
+                        ->content(fn (Get $get, ?Post $record) => (new Post([
+                            'ai_level' => $get('ai_level'),
+                            'ai_tool' => $get('ai_tool'),
+                            'ai_content' => $get('ai_content'),
+                            'ai_person' => $get('ai_person') ?: ($record?->author?->name ?? Filament::auth()->user()?->name),
+                        ]))->aiNotice() ?? 'Kein Hinweis nötig.')
                         ->columnSpanFull(),
                 ]),
         ]);

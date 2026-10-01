@@ -116,12 +116,16 @@ jobs:
           composer install --no-dev --optimize-autoloader --no-interaction --no-progress
           tar czf vendor-bundle.tar.gz vendor
 
-      # TODO sobald Secrets für DB_HOST/DB_DATABASE/DB_USERNAME/DB_PASSWORD,
-      # ENTRA_CLIENT_ID/ENTRA_CLIENT_SECRET/ENTRA_TENANT_ID und BREVO_API_KEY
-      # hinterlegt sind: hier per env:-Block einlesen und unten in die
-      # .env schreiben statt der SQLite-/File-Platzhalterwerte; zusätzlich
-      # unten im SSH-Schritt "php artisan migrate --force" ergänzen.
-      - name: .env für die Testumgebung generieren (keine echten Secrets nötig)
+      # TODO sobald Secrets für DB_HOST/DB_DATABASE/DB_USERNAME/DB_PASSWORD
+      # und BREVO_API_KEY hinterlegt sind: hier per env:-Block einlesen und
+      # unten in die .env schreiben statt der SQLite-/File-Platzhalterwerte
+      # (DB bleibt vorerst bewusst SQLite, s. Rücksprache); zusätzlich unten
+      # im SSH-Schritt "php artisan migrate --force" ergänzen.
+      - name: .env für die Testumgebung generieren
+        env:
+          ENTRA_CLIENT_ID: ${{ secrets.ENTRA_CLIENT_ID }}
+          ENTRA_CLIENT_SECRET: ${{ secrets.ENTRA_CLIENT_SECRET }}
+          ENTRA_TENANT_ID: ${{ secrets.ENTRA_TENANT_ID }}
         run: |
           APP_KEY="base64:$(openssl rand -base64 32)"
           cat > .env <<ENV
@@ -140,6 +144,10 @@ jobs:
           SESSION_LIFETIME=480
           CACHE_STORE=file
           QUEUE_CONNECTION=sync
+          ENTRA_CLIENT_ID=${ENTRA_CLIENT_ID}
+          ENTRA_CLIENT_SECRET=${ENTRA_CLIENT_SECRET}
+          ENTRA_TENANT_ID=${ENTRA_TENANT_ID}
+          ENTRA_REDIRECT_URI=https://test.dpsg-trier.de/auth/entra/callback
           MAIL_MAILER=log
           ENV
 

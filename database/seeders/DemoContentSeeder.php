@@ -93,8 +93,7 @@ class DemoContentSeeder extends Seeder
                 'title' => 'Georgsbote',
                 'show_in_nav' => false,
                 'body' => <<<'HTML'
-                    <p>Der Georgsbote ist die Zeitschrift des DPSG Diözesanverbands Trier mit Berichten aus Stufen, Bezirken und Stämmen. Künftig findest du hier alle Ausgaben im PDF-Archiv und kannst dich für den Newsletter anmelden, um neue Ausgaben direkt ins Postfach zu bekommen.</p>
-                    <p>[TODO: Archiv und Newsletter-Anmeldung folgen (Pflichtenheft 6.6).]</p>
+                    <p>Der Georgsbote ist die Zeitschrift des DPSG Diözesanverbands Trier mit Berichten aus Stufen, Bezirken und Stämmen. Hier findest du alle Ausgaben als PDF; über den Newsletter kommen neue Ausgaben direkt in dein Postfach.</p>
                     HTML,
             ],
             [

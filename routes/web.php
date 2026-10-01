@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\BreakGlassAuthController;
 use App\Http\Controllers\Auth\EntraAuthController;
+use App\Http\Controllers\Public\GeorgsboteController;
 use App\Http\Controllers\Public\GruppierungController;
 use App\Http\Controllers\Public\HomeController;
 use App\Http\Controllers\Public\PageController;
@@ -38,6 +39,16 @@ Route::get('/bezirke-staemme', [GruppierungController::class, 'index'])->name('g
 Route::get('/api/gruppierungen.geojson', [GruppierungController::class, 'geojson'])
     ->middleware('throttle:60,1')
     ->name('gruppierungen.geojson');
+
+// Georgsbote: Archiv + Newsletter-Anmeldung (F-GB, Pflichtenheft 11.1).
+Route::get('/georgsbote', [GeorgsboteController::class, 'index'])->name('georgsbote.index');
+Route::get('/georgsbote/danke', [GeorgsboteController::class, 'danke'])->name('georgsbote.danke');
+Route::get('/georgsbote/{jahr}/{ausgabe}.pdf', [GeorgsboteController::class, 'pdf'])
+    ->whereNumber(['jahr', 'ausgabe'])
+    ->name('georgsbote.pdf');
+Route::post('/georgsbote/anmelden', [GeorgsboteController::class, 'subscribe'])
+    ->middleware('throttle:5,10')
+    ->name('georgsbote.anmelden');
 
 // Redaktionelle Seiten (F-CMS-01). Bewusst als letzte Route registriert –
 // fängt jeden sonst nicht zugeordneten Ein-Segment-Pfad als Seiten-Slug ab.

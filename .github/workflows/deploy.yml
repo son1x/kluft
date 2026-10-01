@@ -117,7 +117,7 @@ jobs:
           tar czf vendor-bundle.tar.gz vendor
 
       # TODO sobald Secrets für DB_HOST/DB_DATABASE/DB_USERNAME/DB_PASSWORD
-      # und BREVO_API_KEY hinterlegt sind: hier per env:-Block einlesen und
+      # hinterlegt sind: hier per env:-Block einlesen und
       # unten in die .env schreiben statt der SQLite-/File-Platzhalterwerte
       # (DB bleibt vorerst bewusst SQLite, s. Rücksprache); zusätzlich unten
       # im SSH-Schritt "php artisan migrate --force" ergänzen.
@@ -126,6 +126,9 @@ jobs:
           ENTRA_CLIENT_ID: ${{ secrets.ENTRA_CLIENT_ID }}
           ENTRA_CLIENT_SECRET: ${{ secrets.ENTRA_CLIENT_SECRET }}
           ENTRA_TENANT_ID: ${{ secrets.ENTRA_TENANT_ID }}
+          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+          BREVO_NEWSLETTER_LIST_ID: ${{ secrets.BREVO_NEWSLETTER_LIST_ID }}
+          BREVO_DOI_TEMPLATE_ID: ${{ secrets.BREVO_DOI_TEMPLATE_ID }}
         run: |
           APP_KEY="base64:$(openssl rand -base64 32)"
           cat > .env <<ENV
@@ -148,6 +151,10 @@ jobs:
           ENTRA_CLIENT_SECRET=${ENTRA_CLIENT_SECRET}
           ENTRA_TENANT_ID=${ENTRA_TENANT_ID}
           ENTRA_REDIRECT_URI=https://test.dpsg-trier.de/auth/entra/callback
+          BREVO_API_KEY=${BREVO_API_KEY}
+          BREVO_NEWSLETTER_LIST_ID=${BREVO_NEWSLETTER_LIST_ID}
+          BREVO_DOI_TEMPLATE_ID=${BREVO_DOI_TEMPLATE_ID}
+          BREVO_DOI_REDIRECT_URL=https://test.dpsg-trier.de/georgsbote/danke
           MAIL_MAILER=log
           ENV
 

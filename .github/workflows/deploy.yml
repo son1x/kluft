@@ -52,6 +52,11 @@ on:
     branches:
       - claude/dpsg-trier-homepage-design-jwdgs4
   workflow_dispatch:
+    inputs:
+      force_seed:
+        description: 'db:seed auch bei bereits bestehender DB erzwingen (z. B. nach einem neuen Seeder wie RequiredPagesSeeder)'
+        type: boolean
+        default: false
 
 # Verhindert, dass zwei Deploys gleichzeitig auf denselben Server-Ordner
 # schreiben (z. B. wenn kurz hintereinander gepusht wird, oder ein alter,
@@ -239,15 +244,18 @@ jobs:
             # db:seed nur beim allerersten Mal, da der Seeder die Pflicht-
             # seiten per updateOrCreate zurücksetzen würde und damit
             # spätere redaktionelle Änderungen an Impressum & Co.
-            # überschreiben könnte. TODO: entfällt, sobald eine echte
-            # MySQL-DB angebunden ist (s. Kommentar oben zu DB_HOST/.../
-            # BREVO_API_KEY).
+            # überschreiben könnte. Für Fälle wie "neuer Seeder auf
+            # bereits bestehender DB nachträglich ausführen" steht der
+            # workflow_dispatch-Input "force_seed" (Run workflow im
+            # Actions-Tab) zur Verfügung. TODO: entfällt, sobald eine
+            # echte MySQL-DB angebunden ist (s. Kommentar oben zu
+            # DB_HOST/.../BREVO_API_KEY).
             NEEDS_SEED=0
             if [ ! -f database/database.sqlite ]; then
               touch database/database.sqlite
               NEEDS_SEED=1
             fi
             /usr/bin/php artisan migrate --force
-            if [ "$NEEDS_SEED" = "1" ]; then
+            if [ "$NEEDS_SEED" = "1" ] || [ "${{ github.event.inputs.force_seed }}" = "true" ]; then
               /usr/bin/php artisan db:seed --force
             fi

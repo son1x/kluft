@@ -94,10 +94,12 @@ function safeUrl(value) {
 
 function popupContent(p) {
     const root = el('div', 'font-sans text-sm text-text max-w-64');
-    root.append(el('p', 'text-xs uppercase tracking-wide text-text-secondary', p.typ === 'bezirk' ? 'Bezirk' : (p.bezirk ? `Stamm · Bezirk ${p.bezirk}` : 'Stamm')));
+    const kind = p.typ === 'bezirk' ? 'Bezirk' : (p.bezirk ? `Stamm · Bezirk ${p.bezirk}` : 'Stamm');
+    root.append(el('p', 'text-xs uppercase tracking-wide text-text-secondary', p.nummer ? `${p.nummer} · ${kind}` : kind));
     root.append(el('h3', 'font-serif text-base font-bold text-dpsg-blau', p.name));
 
-    const address = [p.strasse, [p.plz, p.ort].filter(Boolean).join(' ')].filter(Boolean);
+    const showOrt = p.strasse || (p.ort && !p.name.includes(p.ort));
+    const address = showOrt ? [p.strasse, [p.plz, p.ort].filter(Boolean).join(' ')].filter(Boolean) : [];
     if (address.length) {
         const a = el('p', 'mt-1');
         address.forEach((line, i) => { if (i) a.append(document.createElement('br')); a.append(line); });
@@ -123,6 +125,10 @@ function popupContent(p) {
         if (url) { const l = el('a', 'text-dpsg-rot underline', label); l.href = url; l.target = '_blank'; l.rel = 'noopener'; links.append(l); }
     });
     if (links.childNodes.length) root.append(links);
+
+    if (p.ungefaehr === true || p.ungefaehr === 'true') {
+        root.append(el('p', 'mt-2 text-xs text-text-secondary', 'Standort ungefähr (Ortsmitte)'));
+    }
 
     return root;
 }

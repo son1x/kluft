@@ -35,6 +35,75 @@ class GruppierungenTest extends TestCase
         $this->assertSame(0, Gruppierung::query()->whereNotNull('lat')->count());
     }
 
+    public function test_import_from_dpsg_trier_is_complete_numbered_and_idempotent(): void
+    {
+        $this->seed(\Database\Seeders\GruppierungenSeeder::class);
+        $this->seed(\Database\Seeders\StaemmeSeeder::class);
+
+        $this->assertSame(10, Gruppierung::query()->where('typ', 'bezirk')->whereNotNull('nummer')->count());
+        $this->assertSame(68, Gruppierung::query()->where('typ', 'stamm')->count());
+        $this->assertSame(0, Gruppierung::query()->where('typ', 'stamm')->whereNull('parent_id')->count());
+
+        $stamm = Gruppierung::query()->where('nummer', '21-01-08')->firstOrFail();
+        $this->assertSame('koblenz', $stamm->bezirk->slug);
+        $this->assertTrue($stamm->hasApproximatePosition());
+
+        // Erneuter Lauf: keine Duplikate, im Backend gepflegte Angaben bleiben.
+        $stamm->update(['website_url' => 'https://neu.example', 'name' => 'Umbenannt']);
+        $this->seed(\Database\Seeders\StaemmeSeeder::class);
+        $this->assertSame(68, Gruppierung::query()->where('typ', 'stamm')->count());
+        $this->assertSame('https://neu.example', $stamm->fresh()->website_url);
+        $this->assertSame('Umbenannt', $stamm->fresh()->name);
+    }
+
+    public function test_bezirke_and_staemme_are_ordered_by_dpsg_number(): void
+    {
+        $b2 = $this->bezirk('zweiter', ['nummer' => '21-02-00', 'name' => 'Zweiter']);
+        $b1 = $this->bezirk('erster', ['nummer' => '21-01-00', 'name' => 'Erster']);
+        $this->stamm('z-stamm', $b1, ['nummer' => '21-01-03', 'name' => 'Aaa Stamm 03']);
+        $this->stamm('a-stamm', $b1, ['nummer' => '21-01-01', 'name' => 'Zzz Stamm 01']);
+        $this->stamm('ohne-nummer', $b1, ['name' => 'Mmm ohne Nummer']);
+
+        $this->get('/bezirke-staemme')->assertOk()->assertSeeInOrder([
+            '21-01-00', 'Bezirk Erster',
+            '21-01-01', 'Zzz Stamm 01',
+            '21-01-03', 'Aaa Stamm 03',
+            'Mmm ohne Nummer',
+            '21-02-00', 'Bezirk Zweiter',
+        ]);
+    }
+
+    public function test_imported_position_is_marked_approximate_until_set_in_backend(): void
+    {
+        $stamm = $this->stamm('x', null, ['nummer' => '21-01-01', 'lat' => 49.7, 'lng' => 6.6]);
+
+        $this->get('/bezirke-staemme')->assertSee('Standort ungefähr (Ortsmitte)');
+        $this->assertTrue($this->getJson('/api/gruppierungen.geojson')->json('features.0.properties.ungefaehr'));
+        $this->assertSame('21-01-01', $this->getJson('/api/gruppierungen.geojson')->json('features.0.properties.nummer'));
+
+        $stamm->update(['position_gesetzt_von' => $this->verwaltung()->id]);
+        $this->get('/bezirke-staemme')->assertDontSee('Standort ungefähr (Ortsmitte)');
+        $this->assertFalse($this->getJson('/api/gruppierungen.geojson')->json('features.0.properties.ungefaehr'));
+    }
+
+    public function test_backend_validates_dpsg_number_format(): void
+    {
+        Filament::setCurrentPanel('admin');
+        $this->actingAs($this->verwaltung());
+        $stamm = $this->stamm('x', null);
+
+        Livewire::test(EditGruppierung::class, ['record' => $stamm->getRouteKey()])
+            ->fillForm(['nummer' => '21/1/8'])
+            ->call('save')
+            ->assertHasFormErrors(['nummer']);
+
+        Livewire::test(EditGruppierung::class, ['record' => $stamm->getRouteKey()])
+            ->fillForm(['nummer' => '21-01-08'])
+            ->call('save')
+            ->assertHasNoFormErrors();
+        $this->assertSame('21-01-08', $stamm->fresh()->nummer);
+    }
+
     private function bezirk(string $slug, array $attrs = []): Gruppierung
     {
         return Gruppierung::query()->create(['typ' => 'bezirk', 'name' => ucfirst($slug), 'slug' => $slug, ...$attrs]);

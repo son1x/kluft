@@ -19,12 +19,12 @@ class GruppierungController extends Controller
     {
         [$bezirk, $stufe] = $this->filters($request);
 
-        $bezirke = Gruppierung::query()->active()->where('typ', 'bezirk')->orderBy('sort')->orderBy('name')->get();
+        $bezirke = Gruppierung::query()->active()->where('typ', 'bezirk')->ordered()->get();
 
         $staemme = Gruppierung::query()->active()->where('typ', 'stamm')
             ->filtered($bezirk, $stufe)
             ->with('bezirk')
-            ->orderBy('sort')->orderBy('name')
+            ->ordered()
             ->get();
         Gruppierung::preloadStufen($bezirke->concat($staemme));
         $staemme = $staemme->groupBy('parent_id');
@@ -59,7 +59,7 @@ class GruppierungController extends Controller
                     ->whereNotNull('lat')->whereNotNull('lng')
                     ->filtered($bezirk, $stufe)
                     ->with(['bezirk', 'logo'])
-                    ->orderBy('sort')->orderBy('name')
+                    ->ordered()
                     ->get()
                     ->tap(fn ($all) => Gruppierung::preloadStufen($all))
                     ->map(fn (Gruppierung $g) => [
@@ -68,6 +68,8 @@ class GruppierungController extends Controller
                         'geometry' => ['type' => 'Point', 'coordinates' => [$g->lng, $g->lat]],
                         'properties' => [
                             'slug' => $g->slug,
+                            'nummer' => $g->nummer,
+                            'ungefaehr' => $g->hasApproximatePosition(),
                             'name' => $g->displayName(),
                             'typ' => $g->typ,
                             'bezirk' => $g->bezirk?->name,

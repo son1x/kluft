@@ -35,6 +35,13 @@ class GruppierungForm
                         ->native(false)
                         ->visible(fn (Get $get) => $get('typ') === 'stamm')
                         ->helperText('Optional – der Stamm erscheint dann auch auf der Bezirksseite.'),
+                    TextInput::make('nummer')
+                        ->label('DPSG-Nummer')
+                        ->placeholder('21-01-08')
+                        ->regex('/^21-\\d{2}-\\d{2}$/')
+                        ->unique(ignoreRecord: true)
+                        ->validationMessages(['regex' => 'Format: Diözesanverband-Bezirk-Stamm, z. B. 21-01-08 (Bezirke: 21-01-00).'])
+                        ->helperText('Diözesanverband-Bezirk-Stamm, z. B. 21-01-08; Bezirke enden auf -00. Bestimmt die Reihenfolge.'),
                     TextInput::make('name')
                         ->label('Name')
                         ->required()

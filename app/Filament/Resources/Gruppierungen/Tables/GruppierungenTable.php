@@ -19,6 +19,11 @@ class GruppierungenTable
     {
         return $table
             ->columns([
+                TextColumn::make('nummer')
+                    ->label('Nr.')
+                    ->fontFamily('mono')
+                    ->searchable()
+                    ->sortable(),
                 TextColumn::make('name')
                     ->label('Name')
                     ->formatStateUsing(fn (Gruppierung $record) => $record->displayName())
@@ -41,13 +46,30 @@ class GruppierungenTable
                     ->badge(),
                 IconColumn::make('standort')
                     ->label('Standort')
-                    ->state(fn (Gruppierung $record) => $record->hasPosition())
-                    ->boolean(),
+                    ->state(fn (Gruppierung $record) => match (true) {
+                        ! $record->hasPosition() => 'fehlt',
+                        $record->hasApproximatePosition() => 'ungefaehr',
+                        default => 'genau',
+                    })
+                    ->icon(fn (string $state) => match ($state) {
+                        'genau' => 'heroicon-o-check-circle',
+                        'ungefaehr' => 'heroicon-o-map-pin',
+                        default => 'heroicon-o-x-circle',
+                    })
+                    ->color(fn (string $state) => match ($state) {
+                        'genau' => 'success',
+                        'ungefaehr' => 'warning',
+                        default => 'danger',
+                    })
+                    ->tooltip(fn (string $state) => match ($state) {
+                        'genau' => 'Standort gesetzt',
+                        'ungefaehr' => 'Ungefähr (Ortsmitte) – bitte genauen Standort setzen',
+                        default => 'Kein Standort',
+                    }),
                 ToggleColumn::make('active')
                     ->label('Aktiv'),
             ])
-            ->defaultSort('sort')
-            ->reorderable('sort')
+            ->defaultSort(fn (Builder $query) => $query->ordered())
             ->filters([
                 SelectFilter::make('typ')
                     ->label('Typ')
@@ -57,6 +79,9 @@ class GruppierungenTable
                     ->relationship('bezirk', 'name', fn (Builder $query) => $query->where('typ', 'bezirk')),
                 TernaryFilter::make('active')
                     ->label('Aktiv'),
+                Filter::make('standort_ungefaehr')
+                    ->label('Standort nur ungefähr')
+                    ->query(fn (Builder $query) => $query->whereNotNull('lat')->whereNotNull('lng')->whereNull('position_gesetzt_von')),
                 Filter::make('ohne_standort')
                     ->label('Ohne Standort')
                     ->query(fn (Builder $query) => $query->where(fn (Builder $q) => $q->whereNull('lat')->orWhereNull('lng'))),

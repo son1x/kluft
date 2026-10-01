@@ -20,6 +20,7 @@ class Gruppierung extends Model
 
     protected $fillable = [
         'typ',
+        'nummer',
         'parent_id',
         'name',
         'slug',
@@ -162,6 +163,15 @@ class Gruppierung extends Model
         return is_string($url) && preg_match('#^https?://#i', $url) ? $url : null;
     }
 
+    /**
+     * Importierte Ortsmitte statt eines von der Verwaltung gesetzten
+     * genauen Standorts.
+     */
+    public function hasApproximatePosition(): bool
+    {
+        return $this->hasPosition() && $this->position_gesetzt_von === null;
+    }
+
     public function hasPosition(): bool
     {
         return $this->lat !== null && $this->lng !== null;
@@ -173,6 +183,17 @@ class Gruppierung extends Model
     public function publicAnsprechperson(): ?string
     {
         return $this->ansprechperson_einwilligung ? $this->ansprechperson : null;
+    }
+
+    /**
+     * Nach DPSG-Nummer (Bezirk, dann Stamm); Einträge ohne Nummer zuletzt.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopeOrdered(Builder $query): Builder
+    {
+        return $query->orderByRaw('nummer is null')->orderBy('nummer')->orderBy('sort')->orderBy('name');
     }
 
     /**

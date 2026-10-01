@@ -109,7 +109,7 @@ class RequiredPagesSeeder extends Seeder
                     E-Mail: <a href="mailto:info@dpsg-trier.de">info@dpsg-trier.de</a></p>
                     <p>[TODO: Kontaktformular folgt in einer späteren Ausbaustufe (F-CMS-09).]</p>
                     <h2>Kontakt zu einem Bezirk vor Ort</h2>
-                    <p>Das Leitungsteam findest du auf der Seite <a href="/dioezesanbuero">Diözesanbüro</a>. Ein eigenes Bezirke- und Stämme-Verzeichnis mit Kartenansicht ist für eine spätere Ausbaustufe vorgesehen (Pflichtenheft 6.11).</p>
+                    <p>Alle Bezirke und Stämme mit Kontakt und Karte findest du unter <a href="/bezirke-staemme">Bezirke &amp; Stämme</a>, das Leitungsteam auf der Seite <a href="/dioezesanbuero">Diözesanbüro</a>.</p>
                     HTML,
             ],
         ];

@@ -9,6 +9,7 @@
     @endif
     <link rel="icon" href="{{ asset('favicon.ico') }}" />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @stack('head')
 </head>
 {{-- Strukturprinzip nach bistum-trier.de (Pflichtenheft 7.1): schmale
      Servicezeile mit hängendem Logo-Badge, Hero bzw. Kopfband, darüber
@@ -46,6 +47,7 @@
                 @foreach ($navPages ?? [] as $navPage)
                     <li><a href="{{ url('/'.$navPage->slug) }}" @class(['block px-4 py-3', 'text-dpsg-rot' => request()->is($navPage->slug)])>{{ $navPage->title }}</a></li>
                 @endforeach
+                <li><a href="{{ url('/bezirke-staemme') }}" @class(['block px-4 py-3', 'text-dpsg-rot' => request()->is('bezirke-staemme')])>Bezirke &amp; Stämme</a></li>
                 <li><a href="{{ url('/aktuelles') }}" @class(['block px-4 py-3', 'text-dpsg-rot' => request()->is('aktuelles*')])>Aktuelles</a></li>
                 <li><a href="{{ url('/kontakt') }}" class="block px-4 py-3">Kontakt</a></li>
             </ul>
@@ -71,6 +73,9 @@
                     </li>
                 @endforeach
                 <li class="flex-1 border-l border-dpsg-mittelbeige text-center">
+                    <a href="{{ url('/bezirke-staemme') }}" @class(['block px-3 py-1 hover:text-dpsg-rot', 'text-dpsg-rot' => request()->is('bezirke-staemme')])>Bezirke &amp; Stämme</a>
+                </li>
+                <li class="flex-1 border-l border-dpsg-mittelbeige text-center">
                     <a href="{{ url('/aktuelles') }}" @class(['block px-3 py-1 hover:text-dpsg-rot', 'text-dpsg-rot' => request()->is('aktuelles*')])>Aktuelles</a>
                 </li>
             </ul>
@@ -90,6 +95,7 @@
                     @foreach ($navPages ?? [] as $navPage)
                         <li><a href="{{ url('/'.$navPage->slug) }}" class="hover:underline">{{ $navPage->title }}</a></li>
                     @endforeach
+                    <li><a href="{{ url('/bezirke-staemme') }}" class="hover:underline">Bezirke &amp; Stämme</a></li>
                     <li><a href="{{ url('/aktuelles') }}" class="hover:underline">Aktuelles</a></li>
                     <li><a href="https://www.dpsg.de" target="_blank" rel="noopener" class="hover:underline">DPSG Bundesebene</a></li>
                     <li><a href="https://www.bistum-trier.de" target="_blank" rel="noopener" class="hover:underline">Bistum Trier</a></li>

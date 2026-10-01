@@ -151,6 +151,29 @@ jobs:
           MAIL_MAILER=log
           ENV
 
+      # Selbstgehostete Kartendaten (F-MAP-04, ~140 MB) – zu groß fürs
+      # Repository. Werden aus dem Protomaps-Tagesbuild ausgeschnitten und
+      # gecacht; der Dateiname enthält das Build-Datum aus config/dpsg.php.
+      - name: Kartendaten aus dem Cache holen
+        id: mapcache
+        uses: actions/cache@v4
+        with:
+          path: public/maps/data
+          key: map-data-${{ hashFiles('config/dpsg.php') }}
+
+      - name: Go einrichten (für go-pmtiles)
+        if: steps.mapcache.outputs.cache-hit != 'true'
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+          cache: false
+
+      - name: Kartendaten erzeugen
+        if: steps.mapcache.outputs.cache-hit != 'true'
+        run: |
+          go install github.com/protomaps/go-pmtiles@v1.31.2
+          scripts/build-map-data.sh "$(go env GOPATH)/bin/go-pmtiles"
+
       - name: lftp installieren
         run: sudo apt-get update && sudo apt-get install -y lftp
 
@@ -210,7 +233,9 @@ jobs:
             --exclude-glob storage/framework/sessions/ \
             --exclude-glob storage/framework/cache/ \
             --exclude-glob public/uploads/ \
+            --exclude-glob public/maps/data/ \
             ./ "$FTP_SERVER_DIR"
+          mirror --reverse --only-missing --verbose public/maps/data "$FTP_SERVER_DIR/public/maps/data"
           bye
           EOF
 

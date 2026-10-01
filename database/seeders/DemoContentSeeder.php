@@ -83,7 +83,7 @@ class DemoContentSeeder extends Seeder
                     <li><strong>Verwaltung, Diözesanbüro:</strong> Miriam Dobner</li>
                     </ul>
                     <h2>Struktur des Diözesanverbands</h2>
-                    <p>Der Diözesanverband Trier gliedert sich in 10 Bezirke im gesamten Bistum Trier, von der Mosel über Eifel und Hunsrück bis ins Saarland, mit mehr als 60 Stämmen und Siedlungen und über 5.000 Mitgliedern. Ein eigenes Bezirke- und Stämme-Verzeichnis mit Kartenansicht ist in Vorbereitung (Pflichtenheft 6.11).</p>
+                    <p>Der Diözesanverband Trier gliedert sich in 10 Bezirke im gesamten Bistum Trier, von der Mosel über Eifel und Hunsrück bis ins Saarland, mit mehr als 60 Stämmen und Siedlungen und über 5.000 Mitgliedern. Alle Bezirke und Stämme mit Kontakt und Karte findest du unter <a href="/bezirke-staemme">Bezirke &amp; Stämme</a>.</p>
                     HTML,
             ],
             [
@@ -214,7 +214,7 @@ class DemoContentSeeder extends Seeder
                 'slug' => 'neue-website-im-aufbau',
                 'title' => 'Unsere neue Website ist im Aufbau',
                 'teaser' => 'Der Diözesanverband bekommt einen neuen Webauftritt – mit eigenem Redaktionssystem für Stufen, Bezirke und das Diözesanbüro.',
-                'body' => '<p>Schritt für Schritt entsteht hier der neue Webauftritt des DPSG Diözesanverbands Trier. Stufen, Arbeitskreise und das Diözesanbüro können Inhalte künftig selbst pflegen. Veranstaltungen, der Georgsbote und ein Verzeichnis aller Bezirke und Stämme mit Kartenansicht folgen.</p>',
+                'body' => '<p>Schritt für Schritt entsteht hier der neue Webauftritt des DPSG Diözesanverbands Trier. Stufen, Arbeitskreise und das Diözesanbüro können Inhalte künftig selbst pflegen. Neu ist das Verzeichnis aller <a href="/bezirke-staemme">Bezirke und Stämme</a> mit Karte; Veranstaltungen und der Georgsbote folgen.</p>',
                 'days_ago' => 0,
             ],
             [

@@ -25,4 +25,16 @@ return [
         'email' => 'info@dpsg-trier.de',
     ],
 
+    /*
+    | Selbstgehostete Karte (F-MAP-04). Bei neuem Build-Datum ändert sich
+    | der Dateiname, sodass der Deploy die neue Datei hochlädt.
+    */
+    'map' => [
+        'build' => '20260930',
+        'pmtiles' => 'maps/data/trier-20260930-z13.pmtiles',
+        // West, Süd, Ost, Nord – Ausdehnung des Bistums Trier mit Rand
+        'bbox' => [6.0, 49.05, 8.15, 50.85],
+        'center' => [7.05, 49.85],
+    ],
+
 ];

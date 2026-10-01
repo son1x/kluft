@@ -146,7 +146,10 @@
             <p class="mt-5 max-w-3xl text-lg md:text-xl">
                 Du möchtest Pfadfinder*in werden oder als Leiter*in mitmachen? In über 60 Stämmen im ganzen Bistum Trier ist sicher auch einer in deiner Nähe. Das Diözesanbüro hilft dir weiter.
             </p>
-            <a href="{{ url('/kontakt') }}" class="mt-6 inline-block bg-white px-5 py-2 font-bold text-dpsg-blau hover:bg-dpsg-hellbeige">Kontakt aufnehmen</a>
+            <div class="mt-6 flex flex-wrap gap-3">
+                <a href="{{ url('/bezirke-staemme') }}" class="inline-block bg-white px-5 py-2 font-bold text-dpsg-blau hover:bg-dpsg-hellbeige">Stamm in der Nähe finden</a>
+                <a href="{{ url('/kontakt') }}" class="inline-block border border-white px-5 py-2 font-bold text-white hover:bg-white hover:text-dpsg-blau">Kontakt aufnehmen</a>
+            </div>
         </div>
     </section>
 
@@ -171,8 +174,8 @@
 
         @php($serviceLinks = array_filter([
             ['url' => '/dioezesanbuero', 'label' => 'Diözesanbüro', 'icon' => 'heroicon-o-building-office-2'],
-            ['url' => '/kontakt', 'label' => 'Kontakt', 'icon' => 'heroicon-o-envelope'],
             ['url' => '/stufen', 'label' => 'Die Stufen', 'icon' => 'heroicon-o-user-group'],
+            ['url' => '/bezirke-staemme', 'label' => 'Bezirke & Stämme', 'icon' => 'heroicon-o-map-pin'],
             ['url' => '/aktuelles', 'label' => 'Aktuelles', 'icon' => 'heroicon-o-newspaper'],
             $highlightPages->has('bolivien') ? ['url' => '/bolivien', 'label' => 'Bolivien', 'icon' => 'heroicon-o-globe-europe-africa'] : null,
             $highlightPages->has('georgsbote') ? ['url' => '/georgsbote', 'label' => 'Georgsbote', 'icon' => 'heroicon-o-book-open'] : null,

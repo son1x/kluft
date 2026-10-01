@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\BreakGlassAuthController;
 use App\Http\Controllers\Auth\EntraAuthController;
+use App\Http\Controllers\Public\GruppierungController;
 use App\Http\Controllers\Public\HomeController;
 use App\Http\Controllers\Public\PageController;
 use App\Http\Controllers\Public\PostController;
@@ -31,6 +32,12 @@ Route::middleware('throttle:20,15')->group(function () {
 // "/aktuelles" nicht als Seiten-Slug interpretiert wird.
 Route::get('/aktuelles', [PostController::class, 'index'])->name('posts.index');
 Route::get('/aktuelles/{slug}', [PostController::class, 'show'])->name('posts.show');
+
+// Bezirke- und Stämme-Verzeichnis mit Karte (F-MAP, Pflichtenheft 11.1).
+Route::get('/bezirke-staemme', [GruppierungController::class, 'index'])->name('gruppierungen.index');
+Route::get('/api/gruppierungen.geojson', [GruppierungController::class, 'geojson'])
+    ->middleware('throttle:60,1')
+    ->name('gruppierungen.geojson');
 
 // Redaktionelle Seiten (F-CMS-01). Bewusst als letzte Route registriert –
 // fängt jeden sonst nicht zugeordneten Ein-Segment-Pfad als Seiten-Slug ab.

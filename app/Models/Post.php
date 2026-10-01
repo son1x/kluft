@@ -9,6 +9,7 @@ class Post extends Model
 {
     protected $fillable = [
         'stage',
+        'section',
         'scope',
         'title',
         'slug',

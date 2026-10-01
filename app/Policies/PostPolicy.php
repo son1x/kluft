@@ -68,6 +68,10 @@ class PostPolicy
             return true;
         }
 
+        if ($post->section && $user->hasRoleInScope('sektionsadmin', 'section', $post->section)) {
+            return true;
+        }
+
         return false;
     }
 }

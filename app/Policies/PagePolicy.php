@@ -23,7 +23,7 @@ class PagePolicy
 
     public function create(User $user): bool
     {
-        return $user->isVerwaltung() || $user->hasRole('stufenadmin');
+        return $user->isVerwaltung() || $user->hasRole('stufenadmin') || $user->hasRole('sektionsadmin');
     }
 
     public function update(User $user, Page $page): bool
@@ -43,6 +43,10 @@ class PagePolicy
         }
 
         if ($page->stage && $user->hasRoleInScope('stufenadmin', 'stage', $page->stage)) {
+            return true;
+        }
+
+        if ($page->section && $user->hasRoleInScope('sektionsadmin', 'section', $page->section)) {
             return true;
         }
 

@@ -15,6 +15,19 @@ return [
         'rover' => ['label' => 'Rover', 'age' => '15 bis 20 Jahre', 'mascot' => 'images/stufen/rover.svg'],
     ],
 
+    /*
+    | Sektionen mit eigener Landingpage, Navigation und Farbakzent
+    | (Pflichtenheft 6.2). Der Schlüssel ist zugleich der Rollen-Scope
+    | (sektionsadmin|section|<schlüssel>) und pages/posts.section.
+    */
+    'sections' => [
+        'bolivien' => [
+            'label' => 'Bolivienpartnerschaft',
+            'landing' => 'bolivien',
+            'domains' => ['bolivienpartnerschaft.de', 'www.bolivienpartnerschaft.de'],
+        ],
+    ],
+
     'contact' => [
         'name' => 'DPSG Diözesanverband Trier',
         'office' => 'Diözesanbüro',

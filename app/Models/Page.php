@@ -19,6 +19,7 @@ class Page extends Model
         'seo_title',
         'seo_description',
         'stage',
+        'section',
         'nav_sort',
         'show_in_nav',
         'author_id',

@@ -43,6 +43,15 @@ class DemoContentSeeder extends Seeder
         <p>Der Diözesanverband Trier gliedert sich in 10 Bezirke im gesamten Bistum Trier, von der Mosel über Eifel und Hunsrück bis ins Saarland, mit mehr als 60 Stämmen und Siedlungen und über 5.000 Mitgliedern. Alle Bezirke und Stämme mit Kontakt und Karte findest du unter <a href="/bezirke-staemme">Bezirke &amp; Stämme</a>.</p>
         HTML;
 
+    public const SPENDEN_BODY = <<<'HTML'
+        <p>Mit deiner Spende unterstützt du die Projekte unserer Partner*innen in Bolivien. Die Partnerschaft lebt von Begegnung und Austausch – und von Menschen, die sie mittragen.</p>
+        <h2>Bankverbindung</h2>
+        <p>[TODO: Kontoinhaber, IBAN, BIC und Verwendungszweck durch die Bolivien-Verantwortlichen ergänzen.]</p>
+        <h2>Spendenbescheinigung</h2>
+        <p>[TODO: Hinweis zur Zuwendungsbestätigung ergänzen.]</p>
+        <p>Fragen zur Partnerschaft und zu Spenden: <a href="mailto:info@dpsg-trier.de">info@dpsg-trier.de</a></p>
+        HTML;
+
     public const BUERO_BODY = <<<'HTML'
         <p>Das Diözesanbüro ist die hauptberufliche Unterstützung des Verbands: Bildungsreferent*innen und Verwaltung begleiten die Ehrenamtlichen in Bezirken, Stämmen und Arbeitskreisen – bei Ausbildung, Veranstaltungen und Organisation. Geleitet wird der Verband von der ehrenamtlichen <a href="/dioezesanleitung">Diözesanleitung</a>.</p>
         <h2>Anschrift</h2>
@@ -82,10 +91,13 @@ class DemoContentSeeder extends Seeder
             [
                 'slug' => 'bolivien',
                 'title' => 'Bolivienpartnerschaft',
-                'show_in_nav' => false,
+                'section' => 'bolivien',
+                'seo_description' => 'Partnerschaft mit Pfadfinder*innen in Bolivien',
+                'show_in_nav' => true,
+                'nav_sort' => 40,
                 'body' => <<<'HTML'
                     <p>Eingebettet in die Bolivienpartnerschaft des Bistums Trier pflegt der Diözesanverband Kontakte zu Pfadfinder*innen in Bolivien. Begegnungen, gemeinsame Projekte und der Austausch über Ländergrenzen hinweg machen Pfadfinden als weltweite Bewegung erlebbar.</p>
-                    <p>[TODO: Aktuelle Projekte, Ansprechperson und Spendenmöglichkeiten ergänzen – eigene Landingpage folgt mit der Bolivien-Sektion (Pflichtenheft 6.2).]</p>
+                    <p>[TODO: Aktuelle Projekte, Ansprechperson und Spendenmöglichkeiten ergänzen.]</p>
                     HTML,
             ],
             [
@@ -221,6 +233,7 @@ class DemoContentSeeder extends Seeder
                     'status' => 'published',
                     'published_at' => now(),
                     'stage' => $data['stage'] ?? null,
+                    'section' => $data['section'] ?? null,
                     'seo_title' => $data['seo_title'] ?? null,
                     'seo_description' => $data['seo_description'] ?? null,
                     'show_in_nav' => $data['show_in_nav'] ?? false,
@@ -228,6 +241,16 @@ class DemoContentSeeder extends Seeder
                 ]
             );
         }
+
+        Page::query()->updateOrCreate(['slug' => 'bolivien-spenden'], [
+            'parent_id' => Page::query()->where('slug', 'bolivien')->value('id'),
+            'section' => 'bolivien',
+            'title' => 'Spenden',
+            'body' => self::SPENDEN_BODY,
+            'status' => 'published',
+            'published_at' => now(),
+            'nav_sort' => 90,
+        ]);
 
         $this->seedPosts();
     }

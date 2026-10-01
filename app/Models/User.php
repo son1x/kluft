@@ -100,6 +100,16 @@ class User extends Authenticatable implements FilamentUser
         );
     }
 
+    /**
+     * Scope-Schlüssel einer Rolle, z. B. scopeKeysFor('stufenadmin') => ['biber'].
+     *
+     * @return list<string>
+     */
+    public function scopeKeysFor(string $role): array
+    {
+        return $this->roleAssignments->where('role', $role)->pluck('scope_key')->filter()->values()->all();
+    }
+
     public function isSuperAdmin(): bool
     {
         return $this->hasRole('superadmin');

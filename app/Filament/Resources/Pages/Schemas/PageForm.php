@@ -8,7 +8,9 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
+use App\Support\RoleCatalog;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 
 class PageForm
@@ -45,15 +47,19 @@ class PageForm
 
                     Select::make('stage')
                         ->label('Stufe')
-                        ->options([
-                            'biber' => 'Biber',
-                            'woelflinge' => 'Wölflinge',
-                            'jupfi' => 'Jungpfadfinder',
-                            'pfadi' => 'Pfadfinder',
-                            'rover' => 'Rover',
-                        ])
+                        ->options(fn () => self::stageOptions())
                         ->native(false)
+                        ->visible(fn () => self::stageOptions() !== [])
+                        ->required(fn (Get $get) => ! self::isGlobal() && self::sectionOptions() === [])
                         ->helperText('Nur setzen, wenn diese Seite zu einer bestimmten Stufe gehört.'),
+
+                    Select::make('section')
+                        ->label('Sektion')
+                        ->options(fn () => self::sectionOptions())
+                        ->native(false)
+                        ->visible(fn () => self::sectionOptions() !== [])
+                        ->required(fn (Get $get) => ! self::isGlobal() && blank($get('stage')))
+                        ->helperText('Seiten einer Sektion erscheinen in deren Navigation (z. B. Bolivienpartnerschaft).'),
 
                     Select::make('status')
                         ->label('Status')
@@ -96,6 +102,37 @@ class PageForm
                         ->maxLength(500),
                 ]),
         ]);
+    }
+
+    private static function isGlobal(): bool
+    {
+        return (bool) Filament::auth()->user()?->isVerwaltung();
+    }
+
+    /**
+     * Verwaltung: alle Stufen; Stufenadmins nur die eigenen.
+     *
+     * @return array<string, string>
+     */
+    private static function stageOptions(): array
+    {
+        $all = collect(config('dpsg.stages'))->map(fn (array $stage) => $stage['label']);
+
+        return self::isGlobal()
+            ? $all->all()
+            : $all->only(Filament::auth()->user()?->scopeKeysFor('stufenadmin') ?? [])->all();
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private static function sectionOptions(): array
+    {
+        $all = collect(RoleCatalog::sections());
+
+        return self::isGlobal()
+            ? $all->all()
+            : $all->only(Filament::auth()->user()?->scopeKeysFor('sektionsadmin') ?? [])->all();
     }
 
     /**

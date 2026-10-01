@@ -40,14 +40,10 @@ class PostResource extends Resource
             return $query;
         }
 
-        $stageKeys = $user->roleAssignments
-            ->where('role', 'stufenadmin')
-            ->pluck('scope_key');
-
-        return $query->where(function (Builder $q) use ($user, $stageKeys) {
-            $q->where('author_id', $user->id)
-                ->orWhereIn('stage', $stageKeys);
-        });
+        return $query->where(fn (Builder $q) => $q
+            ->where('author_id', $user->id)
+            ->orWhereIn('stage', $user->scopeKeysFor('stufenadmin'))
+            ->orWhereIn('section', $user->scopeKeysFor('sektionsadmin')));
     }
 
     public static function form(Schema $schema): Schema

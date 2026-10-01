@@ -14,7 +14,13 @@ use App\Models\User;
  */
 class RoleCatalog
 {
-    public const SECTIONS = ['bolivien' => 'Bolivienpartnerschaft'];
+    /**
+     * @return array<string, string> Schlüssel => Beschriftung
+     */
+    public static function sections(): array
+    {
+        return collect(config('dpsg.sections'))->map(fn (array $section) => $section['label'])->all();
+    }
 
     /**
      * @return array<string, string> Schlüssel => Beschriftung
@@ -27,7 +33,7 @@ class RoleCatalog
         foreach ($stages as $key => $label) {
             $options["stufenadmin|stage|{$key}"] = "Stufenadmin – {$label}";
         }
-        foreach (self::SECTIONS as $key => $label) {
+        foreach (self::sections() as $key => $label) {
             $options["sektionsadmin|section|{$key}"] = "Sektionsadmin – {$label}";
         }
 
@@ -35,7 +41,7 @@ class RoleCatalog
         foreach ($stages as $key => $label) {
             $options["autor|own|{$key}"] = "Autor:in – {$label}";
         }
-        foreach (self::SECTIONS as $key => $label) {
+        foreach (self::sections() as $key => $label) {
             $options["autor|own|{$key}"] = "Autor:in – {$label}";
         }
 

@@ -6,6 +6,9 @@
 @endif
 
 @section('content')
+    @if ($page->section && config("dpsg.sections.{$page->section}"))
+        @include('sections.nav', ['section' => $page->section, 'current' => $page->slug])
+    @endif
     <article class="max-w-3xl mx-auto px-4 py-10">
         @if ($page->parent)
             <nav aria-label="Brotkrumen" class="mb-4 text-sm text-text-secondary">

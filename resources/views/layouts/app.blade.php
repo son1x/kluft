@@ -4,6 +4,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>@yield('seo_title', $title ?? 'DPSG Diözesanverband Trier')</title>
+    @hasSection('canonical')
+        <link rel="canonical" href="@yield('canonical')" />
+    @endif
     @hasSection('seo_description')
         <meta name="description" content="@yield('seo_description')" />
     @endif

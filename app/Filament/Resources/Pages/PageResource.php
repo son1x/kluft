@@ -41,13 +41,9 @@ class PageResource extends Resource
             return $query;
         }
 
-        return $query->where(function (Builder $q) use ($user) {
-            $stageKeys = $user->roleAssignments
-                ->where('role', 'stufenadmin')
-                ->pluck('scope_key');
-
-            $q->whereIn('stage', $stageKeys);
-        });
+        return $query->where(fn (Builder $q) => $q
+            ->whereIn('stage', $user->scopeKeysFor('stufenadmin'))
+            ->orWhereIn('section', $user->scopeKeysFor('sektionsadmin')));
     }
 
     public static function form(Schema $schema): Schema

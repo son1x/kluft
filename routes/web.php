@@ -7,6 +7,7 @@ use App\Http\Controllers\Public\GruppierungController;
 use App\Http\Controllers\Public\HomeController;
 use App\Http\Controllers\Public\PageController;
 use App\Http\Controllers\Public\PostController;
+use App\Http\Controllers\Public\SectionController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
@@ -49,6 +50,14 @@ Route::get('/georgsbote/{jahr}/{ausgabe}.pdf', [GeorgsboteController::class, 'pd
 Route::post('/georgsbote/anmelden', [GeorgsboteController::class, 'subscribe'])
     ->middleware('throttle:5,10')
     ->name('georgsbote.anmelden');
+
+// Sektionen (F-BOL, Pflichtenheft 6.2), z. B. /bolivien.
+Route::get('/{section}', [SectionController::class, 'show'])
+    ->whereIn('section', array_keys(config('dpsg.sections')))
+    ->name('sections.show');
+Route::get('/{section}/aktuelles', [SectionController::class, 'posts'])
+    ->whereIn('section', array_keys(config('dpsg.sections')))
+    ->name('sections.posts');
 
 // Redaktionelle Seiten (F-CMS-01). Bewusst als letzte Route registriert –
 // fängt jeden sonst nicht zugeordneten Ein-Segment-Pfad als Seiten-Slug ab.

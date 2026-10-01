@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Posts\Schemas;
 
+use App\Support\RoleCatalog;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
@@ -46,6 +47,7 @@ class PostForm
                         ])
                         ->default('general')
                         ->native(false)
+                        ->live()
                         ->required(),
 
                     Select::make('stage')
@@ -59,6 +61,13 @@ class PostForm
                         ])
                         ->native(false)
                         ->visible(fn ($get) => $get('scope') === 'stage'),
+
+                    Select::make('section')
+                        ->label('Sektion')
+                        ->options(fn () => self::sectionOptions())
+                        ->native(false)
+                        ->required(fn ($get) => $get('scope') === 'section')
+                        ->visible(fn ($get) => $get('scope') === 'section'),
 
                     Select::make('status')
                         ->label('Status')
@@ -87,6 +96,24 @@ class PostForm
                         ->columnSpanFull(),
                 ]),
         ]);
+    }
+
+    /**
+     * Verwaltung/Vorstand: alle Sektionen; sonst nur Sektionen, in denen
+     * die Person Sektionsadmin oder Autor:in ist.
+     *
+     * @return array<string, string>
+     */
+    private static function sectionOptions(): array
+    {
+        $user = Filament::auth()->user();
+        $all = collect(RoleCatalog::sections());
+
+        if (! $user || $user->isVerwaltung() || $user->hasRole('vorstand')) {
+            return $all->all();
+        }
+
+        return $all->only([...$user->scopeKeysFor('sektionsadmin'), ...$user->scopeKeysFor('autor')])->all();
     }
 
     /**

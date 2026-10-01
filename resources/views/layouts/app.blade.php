@@ -51,6 +51,7 @@
                     <li><a href="{{ url('/'.$navPage->slug) }}" @class(['block px-4 py-3', 'text-dpsg-rot' => request()->is($navPage->slug)])>{{ $navPage->title }}</a></li>
                 @endforeach
                 <li><a href="{{ url('/bezirke-staemme') }}" @class(['block px-4 py-3', 'text-dpsg-rot' => request()->is('bezirke-staemme')])>Bezirke &amp; Stämme</a></li>
+                <li><a href="{{ url('/veranstaltungen') }}" @class(['block px-4 py-3', 'text-dpsg-rot' => request()->is('veranstaltungen*')])>Veranstaltungen</a></li>
                 <li><a href="{{ url('/kalender') }}" @class(['block px-4 py-3', 'text-dpsg-rot' => request()->is('kalender')])>Kalender</a></li>
                 <li><a href="{{ url('/aktuelles') }}" @class(['block px-4 py-3', 'text-dpsg-rot' => request()->is('aktuelles*')])>Aktuelles</a></li>
                 <li><a href="{{ url('/kontakt') }}" class="block px-4 py-3">Kontakt</a></li>
@@ -80,6 +81,9 @@
                     <a href="{{ url('/bezirke-staemme') }}" @class(['block px-3 py-1 hover:text-dpsg-rot', 'text-dpsg-rot' => request()->is('bezirke-staemme')])>Bezirke &amp; Stämme</a>
                 </li>
                 <li class="flex-1 border-l border-dpsg-mittelbeige text-center">
+                    <a href="{{ url('/veranstaltungen') }}" @class(['block px-3 py-1 hover:text-dpsg-rot', 'text-dpsg-rot' => request()->is('veranstaltungen*')])>Veranstaltungen</a>
+                </li>
+                <li class="flex-1 border-l border-dpsg-mittelbeige text-center">
                     <a href="{{ url('/kalender') }}" @class(['block px-3 py-1 hover:text-dpsg-rot', 'text-dpsg-rot' => request()->is('kalender')])>Kalender</a>
                 </li>
                 <li class="flex-1 border-l border-dpsg-mittelbeige text-center">
@@ -103,6 +107,7 @@
                         <li><a href="{{ url('/'.$navPage->slug) }}" class="hover:underline">{{ $navPage->title }}</a></li>
                     @endforeach
                     <li><a href="{{ url('/bezirke-staemme') }}" class="hover:underline">Bezirke &amp; Stämme</a></li>
+                    <li><a href="{{ url('/veranstaltungen') }}" class="hover:underline">Veranstaltungen</a></li>
                     <li><a href="{{ url('/kalender') }}" class="hover:underline">Kalender</a></li>
                     <li><a href="{{ url('/georgsbote') }}" class="hover:underline">Georgsbote</a></li>
                     <li><a href="{{ url('/aktuelles') }}" class="hover:underline">Aktuelles</a></li>

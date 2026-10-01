@@ -1,0 +1,299 @@
+<?php
+
+namespace Tests\Feature\Events;
+
+use App\Filament\Resources\Events\Pages\CreateEvent;
+use App\Filament\Resources\Events\Pages\EditEvent;
+use App\Filament\Resources\Events\Pages\ListEvents;
+use App\Filament\Resources\Events\RelationManagers\RegistrationsRelationManager;
+use App\Mail\EventRegistrationMail;
+use App\Models\AuditLog;
+use App\Models\Event;
+use App\Models\EventRegistration;
+use App\Models\User;
+use App\Services\EventRegistrations;
+use App\Services\ParticipantExport;
+use Filament\Facades\Filament;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Testing\TestResponse;
+use Livewire\Livewire;
+use Tests\TestCase;
+
+/**
+ * Veranstaltungsmanagement, Pflichtenheft 6.7, 9.3 und Abnahmekriterien.
+ */
+class EventRegistrationTest extends TestCase
+{
+    use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Mail::fake();
+    }
+
+    private function event(array $attrs = []): Event
+    {
+        return Event::query()->create([
+            'title' => 'Wölflingstag',
+            'slug' => 'woelflingstag',
+            'starts_at' => now()->addMonths(2)->setTime(10, 0),
+            'ends_at' => now()->addMonths(2)->setTime(17, 0),
+            'location' => 'Trier',
+            'stage' => 'woelflinge',
+            'status' => 'open',
+            'form_fields' => ['birth_year' => 'required', 'stamm' => 'optional', 'diet' => 'optional'],
+            ...$attrs,
+        ]);
+    }
+
+    private function user(string $email, string $role, string $scopeType = 'global', ?string $scopeKey = null): User
+    {
+        $user = User::query()->create(['name' => $email, 'email' => $email, 'status' => 'active']);
+        $user->roleAssignments()->create(['role' => $role, 'scope_type' => $scopeType, 'scope_key' => $scopeKey]);
+
+        return $user->fresh();
+    }
+
+    private function register(Event $event, array $input = []): TestResponse
+    {
+        return $this->post("/veranstaltungen/{$event->slug}/anmeldung", [
+            'first_name' => 'Mia',
+            'last_name' => 'Muster',
+            'email' => 'Eltern@Example.org',
+            'birth_year' => now()->year - 20,
+            'stamm' => 'Stamm Sankt Georg',
+            'diet' => 'vegetarisch',
+            'consent' => '1',
+            ...$input,
+        ]);
+    }
+
+    private function sentToken(string $kind): string
+    {
+        $token = null;
+        Mail::assertSent(EventRegistrationMail::class, function (EventRegistrationMail $mail) use ($kind, &$token) {
+            if ($mail->kind === $kind) {
+                $token = $mail->token;
+            }
+
+            return $mail->kind === $kind;
+        });
+
+        return $token;
+    }
+
+    public function test_double_opt_in_flow_with_encrypted_extra_data(): void
+    {
+        $event = $this->event();
+
+        $this->get('/veranstaltungen')->assertOk()->assertSee('Wölflingstag');
+        $this->get('/veranstaltungen/woelflingstag')->assertOk()->assertSee('Geburtsjahr *')->assertSee('Verpflegung')->assertDontSee('Telefonnummer');
+
+        $this->register($event)->assertRedirect('/veranstaltungen/woelflingstag#anmeldung');
+
+        $registration = EventRegistration::query()->sole();
+        $this->assertSame('pending', $registration->status);
+        $this->assertSame('eltern@example.org', $registration->email);
+        $this->assertSame(['stamm' => 'Stamm Sankt Georg', 'diet' => 'vegetarisch'], $registration->data);
+        $this->assertSame(config('dpsg.event_consent.version'), $registration->consent_text_version);
+        // Zusatzangaben verschlüsselt, Token nur als Hash.
+        $raw = DB::table('event_registrations')->first();
+        $this->assertStringNotContainsString('Sankt Georg', $raw->data);
+        $token = $this->sentToken('doi');
+        $this->assertNotSame($token, $raw->confirm_token_hash);
+
+        // GET ändert nichts (Linkscanner), erst POST bestätigt.
+        $this->get("/anmeldung/bestaetigen/{$token}")->assertOk()->assertSee('Ja, Anmeldung bestätigen');
+        $this->assertSame('pending', $registration->fresh()->status);
+        $this->post("/anmeldung/bestaetigen/{$token}")->assertOk()->assertSee('Anmeldung bestätigt');
+
+        $registration->refresh();
+        $this->assertSame('confirmed', $registration->status);
+        $this->assertNull($registration->confirm_token_hash);
+        $this->assertSame($event->purgeAt()->format('Y-m-d H:i:s'), $registration->purge_at->format('Y-m-d H:i:s'));
+        $this->post("/anmeldung/bestaetigen/{$token}")->assertSee('Link nicht mehr gültig');
+
+        // Stornieren über den Link aus der Bestätigungsmail.
+        $cancelToken = $this->sentToken('confirmed');
+        $this->get("/anmeldung/stornieren/{$cancelToken}")->assertOk()->assertSee('Mia Muster');
+        $this->post("/anmeldung/stornieren/{$cancelToken}")->assertOk()->assertSee('Anmeldung storniert');
+        $this->assertSame('cancelled', $registration->fresh()->status);
+        Mail::assertSent(EventRegistrationMail::class, fn ($m) => $m->kind === 'cancelled');
+    }
+
+    public function test_waitlist_and_automatic_promotion(): void
+    {
+        $event = $this->event(['capacity' => 1, 'waitlist_enabled' => true]);
+
+        $this->register($event);
+        $this->post('/anmeldung/bestaetigen/'.$this->sentToken('doi'));
+        $first = EventRegistration::query()->sole();
+
+        Mail::fake();
+        $this->get('/veranstaltungen/woelflingstag')->assertSee('Auf die Warteliste');
+        $this->register($event, ['first_name' => 'Ben']);
+        $this->post('/anmeldung/bestaetigen/'.$this->sentToken('doi'))->assertSee('Warteliste');
+        $second = EventRegistration::query()->where('first_name', 'Ben')->sole();
+        $this->assertSame('waitlist', $second->status);
+
+        app(EventRegistrations::class)->cancel($first);
+
+        $this->assertSame('confirmed', $second->fresh()->status);
+        Mail::assertSent(EventRegistrationMail::class, fn ($m) => $m->kind === 'promoted' && $m->registration->is($second) && $m->token);
+    }
+
+    public function test_full_event_without_waitlist_rejects_further_registrations(): void
+    {
+        $event = $this->event(['capacity' => 1]);
+
+        // Zwei unbestätigte Anmeldungen; nur die erste Bestätigung bekommt den Platz.
+        $this->register($event);
+        $this->register($event, ['first_name' => 'Ben']);
+        $tokens = [];
+        Mail::assertSent(EventRegistrationMail::class, function ($m) use (&$tokens) {
+            $tokens[] = $m->token;
+
+            return true;
+        });
+
+        $this->post("/anmeldung/bestaetigen/{$tokens[0]}")->assertSee('Anmeldung bestätigt');
+        $this->post("/anmeldung/bestaetigen/{$tokens[1]}")->assertSee('Leider ausgebucht');
+        $this->assertSame(1, EventRegistration::query()->count());
+
+        $this->get('/veranstaltungen/woelflingstag')->assertSee('Leider sind alle Plätze vergeben')->assertDontSee('Verbindlich anmelden');
+        $this->register($event, ['first_name' => 'Cleo']);
+        $this->assertSame(1, EventRegistration::query()->count());
+    }
+
+    public function test_minors_need_guardian_consent(): void
+    {
+        $event = $this->event();
+        $child = now()->addMonths(2)->year - 10;
+
+        $this->register($event, ['birth_year' => $child])->assertSessionHasErrors('by_guardian')->assertSessionMissing('anmeldung');
+        $this->register($event, ['birth_year' => $child, 'by_guardian' => '1'])->assertSessionHasErrors(['guardian_name', 'guardian_consent']);
+        $this->register($event, ['birth_year' => $child, 'by_guardian' => '1', 'guardian_name' => 'Eva Muster', 'guardian_consent' => '1'])
+            ->assertSessionHasNoErrors()
+            ->assertSessionHas('anmeldung', 'angefragt');
+
+        $registration = EventRegistration::query()->sole();
+        $this->assertSame('Eva Muster', $registration->guardian_name);
+        $this->assertTrue($registration->guardian_consent);
+    }
+
+    public function test_validation_honeypot_and_unavailable_events(): void
+    {
+        $event = $this->event();
+
+        $this->register($event, ['consent' => null, 'birth_year' => null])->assertSessionHasErrors(['consent', 'birth_year']);
+        $this->register($event, ['website' => 'spam'])->assertRedirect();
+        $this->register($event, ['diet' => 'nur-schokolade'])->assertSessionHasErrors('diet');
+        $this->assertSame(0, EventRegistration::query()->count());
+
+        $this->event(['slug' => 'entwurf', 'status' => 'draft']);
+        $this->get('/veranstaltungen/entwurf')->assertNotFound();
+
+        $closed = $this->event(['slug' => 'vorbei', 'reg_closes_at' => now()->subDay()]);
+        $this->get('/veranstaltungen/vorbei')->assertSee('Die Anmeldung ist geschlossen');
+        $this->register($closed);
+        $this->assertSame(0, EventRegistration::query()->count());
+        Mail::assertNothingSent();
+    }
+
+    public function test_unconfirmed_and_expired_registrations_are_purged(): void
+    {
+        $event = $this->event();
+        $this->register($event);
+        $token = $this->sentToken('doi');
+
+        $this->travel(49)->hours();
+        $this->post("/anmeldung/bestaetigen/{$token}")->assertSee('Link abgelaufen');
+        $this->assertSame(0, EventRegistration::query()->count());
+
+        $this->register($event);
+        $this->travel(49)->hours();
+        $this->artisan('registrations:purge --unconfirmed')->assertSuccessful();
+        $this->assertSame(0, EventRegistration::query()->count());
+
+        $confirmed = $event->registrations()->create([
+            'status' => 'confirmed', 'first_name' => 'A', 'last_name' => 'B', 'email' => 'a@example.org',
+            'consent_text_version' => 'x', 'consent_at' => now(), 'purge_at' => $event->purgeAt(),
+        ]);
+        $this->artisan('registrations:purge')->assertSuccessful();
+        $this->assertNotNull($confirmed->fresh());
+
+        $this->travelTo($event->purgeAt()->addMinute());
+        $this->artisan('registrations:purge')->assertSuccessful();
+        $this->assertNull($confirmed->fresh());
+    }
+
+    public function test_participant_access_follows_scope_and_export_is_audited_and_masked(): void
+    {
+        Filament::setCurrentPanel('admin');
+        $woelflinge = $this->event();
+        $rover = $this->event(['slug' => 'rover-hike', 'title' => 'Rover-Hike', 'stage' => 'rover']);
+        $registration = $woelflinge->registrations()->create([
+            'status' => 'confirmed', 'first_name' => '=HYPERLINK("x")', 'last_name' => 'Muster', 'email' => 'mia@example.org',
+            'birth_year' => 2015, 'data' => ['stamm' => 'Stamm Sankt Georg', 'diet' => 'vegan'],
+            'consent_text_version' => 'x', 'consent_at' => now(), 'confirmed_at' => now(),
+        ]);
+
+        $stufenadmin = $this->user('woe@dpsg-trier.de', 'stufenadmin', 'stage', 'woelflinge');
+        $vorstand = $this->user('vorstand@dpsg-trier.de', 'vorstand');
+        $autor = $this->user('autor@dpsg-trier.de', 'autor', 'own');
+
+        $this->assertTrue($stufenadmin->can('manageParticipants', $woelflinge));
+        $this->assertFalse($stufenadmin->can('manageParticipants', $rover));
+        $this->assertFalse($vorstand->can('manageParticipants', $woelflinge));
+        $this->actingAs($autor)->get('/admin/events')->assertForbidden();
+
+        $this->actingAs($stufenadmin);
+        Livewire::test(ListEvents::class)->assertCanSeeTableRecords([$woelflinge])->assertCanNotSeeTableRecords([$rover]);
+        $this->get("/admin/events/{$rover->id}/edit")->assertNotFound();
+        $this->assertTrue(RegistrationsRelationManager::canViewForRecord($woelflinge, EditEvent::class));
+
+        Livewire::test(RegistrationsRelationManager::class, ['ownerRecord' => $woelflinge, 'pageClass' => EditEvent::class])
+            ->assertCanSeeTableRecords([$registration])
+            ->callTableAction('export')
+            ->assertFileDownloaded('Teilnehmende-woelflingstag-'.now()->format('Y-m-d').'.xlsx');
+        $this->assertSame(1, AuditLog::query()->where('action', 'event.export')->where('subject_id', $woelflinge->id)->where('user_id', $stufenadmin->id)->count());
+
+        // Vorstand: Anzahlen ja, Teilnehmerdaten nein.
+        $this->actingAs($vorstand);
+        Livewire::test(ListEvents::class)->assertCanSeeTableRecords([$woelflinge, $rover]);
+        $this->assertFalse(RegistrationsRelationManager::canViewForRecord($woelflinge, EditEvent::class));
+
+        $export = app(ParticipantExport::class);
+        $this->assertSame(['Nr.', 'Status', 'Vorname', 'Nachname', 'E-Mail', 'Geburtsjahr', 'Stamm', 'Verpflegung', 'Angemeldet durch (sorgeberechtigt)', 'Bestätigt am'], $export->headings($woelflinge));
+        $row = $export->rows($woelflinge)[0];
+        $this->assertSame("'=HYPERLINK(\"x\")", $row[2]);
+        $this->assertSame('Vegan', $row[7]);
+        $this->assertSame("'+49 651", ParticipantExport::mask('+49 651'));
+        $this->assertSame("'@SUMME(A1)", ParticipantExport::mask('@SUMME(A1)'));
+        $this->assertSame('Muster', ParticipantExport::mask('Muster'));
+    }
+
+    public function test_stufenadmin_creates_event_only_for_own_stage(): void
+    {
+        Filament::setCurrentPanel('admin');
+        $this->actingAs($this->user('woe@dpsg-trier.de', 'stufenadmin', 'stage', 'woelflinge'));
+
+        Livewire::test(CreateEvent::class)
+            ->fillForm(['title' => 'Pfadi-Lager', 'slug' => 'pfadi-lager', 'starts_at' => now()->addMonth(), 'stage' => 'pfadi', 'status' => 'open', 'retention_days' => 90])
+            ->call('create')
+            ->assertHasFormErrors(['stage']);
+
+        Livewire::test(CreateEvent::class)
+            ->fillForm(['title' => 'Wölflingstag', 'slug' => 'woelflingstag', 'starts_at' => now()->addMonth(), 'stage' => 'woelflinge', 'status' => 'open', 'retention_days' => 60, 'form_fields' => ['birth_year' => 'required', 'phone' => 'optional']])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $event = Event::query()->sole();
+        $this->assertSame(['birth_year', 'phone'], array_keys($event->formFields()));
+        $this->assertTrue($event->formFields()['birth_year']['required']);
+        $this->assertSame(60, $event->retention_days);
+    }
+}

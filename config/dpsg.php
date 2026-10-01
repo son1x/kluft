@@ -50,4 +50,37 @@ return [
         'center' => [7.05, 49.85],
     ],
 
+    /*
+    | Formular-Baukasten für Veranstaltungsanmeldungen (F-EV-03). Name und
+    | E-Mail sind immer Pflicht; alles hier wird je Veranstaltung als
+    | "nicht abfragen / optional / Pflicht" eingestellt. Gesundheitsdaten
+    | sind bewusst nicht enthalten (Pflichtenheft 8.2, 9.1).
+    */
+    'event_fields' => [
+        'birth_year' => ['label' => 'Geburtsjahr', 'type' => 'year'],
+        'stamm' => ['label' => 'Stamm', 'type' => 'stamm'],
+        'phone' => ['label' => 'Telefonnummer für Rückfragen', 'type' => 'tel'],
+        'diet' => ['label' => 'Verpflegung', 'type' => 'select', 'options' => [
+            'alles' => 'Esse alles',
+            'vegetarisch' => 'Vegetarisch',
+            'vegan' => 'Vegan',
+        ]],
+        'comment' => ['label' => 'Anmerkungen', 'type' => 'textarea'],
+    ],
+
+    /*
+    | Versionierter Einwilligungstext der Veranstaltungsanmeldung (9.2
+    | "Einwilligungsnachweis"). Bei inhaltlicher Änderung die Version
+    | hochzählen – jede Anmeldung speichert die Version, der sie zustimmte.
+    */
+    'event_consent' => [
+        'version' => '2026-10-01',
+        'text' => 'Ich willige ein, dass der DPSG Diözesanverband Trier meine Angaben zur Organisation und Durchführung dieser Veranstaltung verarbeitet. Die E-Mails werden über unseren Dienstleister Brevo versendet. Die Daten werden spätestens :tage Tage nach Ende der Veranstaltung gelöscht; unbestätigte Anmeldungen nach 48 Stunden. Ich kann die Einwilligung jederzeit über den Link in der Bestätigungsmail oder per E-Mail an info@dpsg-trier.de widerrufen.',
+        'guardian_text' => 'Ich bin personensorgeberechtigt für die angemeldete Person und willige in ihre Teilnahme sowie die Verarbeitung ihrer Angaben ein.',
+    ],
+
+    // Unter diesem Alter ist die Einwilligung der Personensorgeberechtigten
+    // nötig (F-EV-14, § 8 Abs. 8 KDG).
+    'guardian_consent_age' => 16,
+
 ];

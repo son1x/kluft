@@ -3,11 +3,13 @@
 use App\Http\Controllers\Auth\BreakGlassAuthController;
 use App\Http\Controllers\Auth\EntraAuthController;
 use App\Http\Controllers\Public\CalendarController;
+use App\Http\Controllers\Public\EventController;
 use App\Http\Controllers\Public\GeorgsboteController;
 use App\Http\Controllers\Public\GruppierungController;
 use App\Http\Controllers\Public\HomeController;
 use App\Http\Controllers\Public\PageController;
 use App\Http\Controllers\Public\PostController;
+use App\Http\Controllers\Public\RegistrationController;
 use App\Http\Controllers\Public\SectionController;
 use Illuminate\Support\Facades\Route;
 
@@ -47,6 +49,19 @@ Route::get('/kalender', [CalendarController::class, 'index'])->name('calendar.in
 Route::get('/api/calendar/events', [CalendarController::class, 'api'])
     ->middleware('throttle:60,1')
     ->name('calendar.api');
+
+// Veranstaltungen mit Anmeldung (F-EV, Pflichtenheft 11.1).
+Route::get('/veranstaltungen', [EventController::class, 'index'])->name('events.index');
+Route::get('/veranstaltungen/{slug}', [EventController::class, 'show'])->name('events.show');
+Route::post('/veranstaltungen/{slug}/anmeldung', [EventController::class, 'register'])
+    ->middleware('throttle:5,10')
+    ->name('events.register');
+Route::middleware('throttle:20,10')->group(function () {
+    Route::get('/anmeldung/bestaetigen/{token}', [RegistrationController::class, 'showConfirm'])->name('registrations.confirm');
+    Route::post('/anmeldung/bestaetigen/{token}', [RegistrationController::class, 'confirm'])->name('registrations.confirm.submit');
+    Route::get('/anmeldung/stornieren/{token}', [RegistrationController::class, 'showCancel'])->name('registrations.cancel');
+    Route::post('/anmeldung/stornieren/{token}', [RegistrationController::class, 'cancel'])->name('registrations.cancel.submit');
+});
 
 // Georgsbote: Archiv + Newsletter-Anmeldung (F-GB, Pflichtenheft 11.1).
 Route::get('/georgsbote', [GeorgsboteController::class, 'index'])->name('georgsbote.index');

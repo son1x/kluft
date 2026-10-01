@@ -6,3 +6,7 @@ use Illuminate\Support\Facades\Schedule;
 // dem Server: Cronjob "php artisan schedule:run" jede Minute (oder alle
 // 15 Minuten) im Hosting-Panel.
 Schedule::command('calendar:sync')->everyFifteenMinutes()->withoutOverlapping();
+
+// Löschfristen der Veranstaltungsanmeldungen (Pflichtenheft 9.3, 11.4).
+Schedule::command('registrations:purge --unconfirmed')->hourly();
+Schedule::command('registrations:purge')->dailyAt('03:00');

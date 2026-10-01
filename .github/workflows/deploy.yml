@@ -130,7 +130,18 @@ jobs:
           BREVO_NEWSLETTER_LIST_ID: ${{ secrets.BREVO_NEWSLETTER_LIST_ID }}
           BREVO_DOI_TEMPLATE_ID: ${{ secrets.BREVO_DOI_TEMPLATE_ID }}
           NEXTCLOUD_ALLOWED_HOSTS: ${{ secrets.NEXTCLOUD_ALLOWED_HOSTS }}
+          BREVO_SMTP_LOGIN: ${{ secrets.BREVO_SMTP_LOGIN }}
+          BREVO_SMTP_KEY: ${{ secrets.BREVO_SMTP_KEY }}
+          MAIL_TEST_REDIRECT_TO: ${{ secrets.MAIL_TEST_REDIRECT_TO }}
         run: |
+          # Echte Mails nur mit Brevo-SMTP-Zugang UND Test-Umleitung
+          # (F-MAIL-06): auf test.dpsg-trier.de bekommt niemand außer der
+          # Testadresse Post. Sonst landen Mails nur im Log.
+          if [ -n "$BREVO_SMTP_LOGIN" ] && [ -n "$BREVO_SMTP_KEY" ] && [ -n "$MAIL_TEST_REDIRECT_TO" ]; then
+            MAIL_MAILER=smtp
+          else
+            MAIL_MAILER=log
+          fi
           APP_KEY="base64:$(openssl rand -base64 32)"
           cat > .env <<ENV
           APP_NAME="DPSG Diözesanverband Trier"
@@ -157,7 +168,15 @@ jobs:
           BREVO_DOI_TEMPLATE_ID=${BREVO_DOI_TEMPLATE_ID}
           BREVO_DOI_REDIRECT_URL=https://test.dpsg-trier.de/georgsbote/danke
           NEXTCLOUD_ALLOWED_HOSTS=${NEXTCLOUD_ALLOWED_HOSTS}
-          MAIL_MAILER=log
+          MAIL_MAILER=${MAIL_MAILER}
+          MAIL_SCHEME=smtp
+          MAIL_HOST=smtp-relay.brevo.com
+          MAIL_PORT=587
+          MAIL_USERNAME="${BREVO_SMTP_LOGIN}"
+          MAIL_PASSWORD="${BREVO_SMTP_KEY}"
+          MAIL_FROM_ADDRESS=events@dpsg-trier.de
+          MAIL_FROM_NAME="DPSG Diözesanverband Trier"
+          MAIL_TEST_REDIRECT_TO=${MAIL_TEST_REDIRECT_TO}
           ENV
 
       # Selbstgehostete Kartendaten (F-MAP-04, ~140 MB) – zu groß fürs

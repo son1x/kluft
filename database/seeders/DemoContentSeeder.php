@@ -16,6 +16,53 @@ use Illuminate\Database\Seeder;
  */
 class DemoContentSeeder extends Seeder
 {
+    public const LEITUNG_BODY = <<<'HTML'
+        <p>Der DPSG Diözesanverband Trier wird ehrenamtlich geleitet. Zur Diözesanleitung gehören der Diözesanvorstand sowie Referent*innen für die Stufen und Fachbereiche. Sie vertreten den Verband, setzen die Beschlüsse der Diözesanversammlung um und gestalten die inhaltliche Arbeit im ganzen Bistum Trier.</p>
+        <p>Hauptberuflich unterstützt wird die Diözesanleitung vom <a href="/dioezesanbuero">Diözesanbüro</a> mit den Bildungsreferent*innen.</p>
+        <p>[TODO: Zusammensetzung, Namen und Funktionen vor Veröffentlichung von der Diözesanleitung bestätigen lassen.]</p>
+        <h2>Diözesanvorstand</h2>
+        <ul>
+        <li><strong>Diözesanvorstand:</strong> Till Mang</li>
+        <li><strong>Diözesankurat:</strong> Peter Zillgen</li>
+        </ul>
+        <h2>Vorstandsreferenten</h2>
+        <ul>
+        <li><strong>Vorstandsreferent (Region Mitte):</strong> Felix Monzen</li>
+        <li><strong>Vorstandsreferent:</strong> Christopher Klein</li>
+        </ul>
+        <h2>Referent*innen für Stufen und Fachbereiche</h2>
+        <ul>
+        <li><strong>Wölflingsstufe:</strong> Heike Franz &amp; Lisa Tinanoff</li>
+        <li><strong>Jungpfadfinderstufe:</strong> Silas Weiß</li>
+        <li><strong>Roverstufe:</strong> Tobias Jost</li>
+        <li><strong>Inklusion / Ich-Du-Wir:</strong> Bianca Boltze</li>
+        <li><strong>Bolivienpartnerschaft:</strong> Jannis Odrosek</li>
+        </ul>
+        <p>Kontakt zur Diözesanleitung: <a href="mailto:info@dpsg-trier.de">info@dpsg-trier.de</a></p>
+        <h2>Struktur des Diözesanverbands</h2>
+        <p>Der Diözesanverband Trier gliedert sich in 10 Bezirke im gesamten Bistum Trier, von der Mosel über Eifel und Hunsrück bis ins Saarland, mit mehr als 60 Stämmen und Siedlungen und über 5.000 Mitgliedern. Alle Bezirke und Stämme mit Kontakt und Karte findest du unter <a href="/bezirke-staemme">Bezirke &amp; Stämme</a>.</p>
+        HTML;
+
+    public const BUERO_BODY = <<<'HTML'
+        <p>Das Diözesanbüro ist die hauptberufliche Unterstützung des Verbands: Bildungsreferent*innen und Verwaltung begleiten die Ehrenamtlichen in Bezirken, Stämmen und Arbeitskreisen – bei Ausbildung, Veranstaltungen und Organisation. Geleitet wird der Verband von der ehrenamtlichen <a href="/dioezesanleitung">Diözesanleitung</a>.</p>
+        <h2>Anschrift</h2>
+        <p>DPSG Diözesanverband Trier<br>
+        Diözesanbüro<br>
+        Weberbach 71<br>
+        54290 Trier</p>
+        <p>Telefon: <a href="tel:+4965146298290">0651 4 629 829 0</a><br>
+        E-Mail: <a href="mailto:info@dpsg-trier.de">info@dpsg-trier.de</a></p>
+        <h2>Team im Diözesanbüro</h2>
+        <p>[TODO: Namen, Funktionen und Kontaktdaten vor Veröffentlichung bestätigen lassen.]</p>
+        <ul>
+        <li><strong>Geschäftsführender Bildungsreferent:</strong> Marc Basenach</li>
+        <li><strong>Bildungsreferent:</strong> Axel Hemgesberg</li>
+        <li><strong>Bildungsreferentin:</strong> Lisa Alm</li>
+        <li><strong>Bildungsreferentin:</strong> Julia Lehn</li>
+        <li><strong>Verwaltung:</strong> Miriam Dobner</li>
+        </ul>
+        HTML;
+
     public function run(): void
     {
         $pages = [
@@ -51,40 +98,18 @@ class DemoContentSeeder extends Seeder
                     HTML,
             ],
             [
-                'slug' => 'dioezesanbuero',
-                'title' => 'Diözesanbüro',
+                'slug' => 'dioezesanleitung',
+                'title' => 'Diözesanleitung',
                 'show_in_nav' => true,
                 'nav_sort' => 10,
-                'body' => <<<'HTML'
-                    <p>Das Diözesanbüro ist die zentrale Anlaufstelle des DPSG Diözesanverbands Trier – für Mitglieder, Bezirke, Stämme und alle, die mehr über uns erfahren möchten.</p>
-                    <h2>Anschrift</h2>
-                    <p>DPSG Diözesanverband Trier<br>
-                    Diözesanbüro<br>
-                    Weberbach 71<br>
-                    54290 Trier</p>
-                    <p>Telefon: <a href="tel:+4965146298290">0651 4 629 829 0</a><br>
-                    E-Mail: <a href="mailto:info@dpsg-trier.de">info@dpsg-trier.de</a></p>
-                    <h2>Die Diözesanleitung</h2>
-                    <p>Der Diözesanverband wird von einer ehrenamtlichen Diözesanleitung geführt – unterstützt von Kurat*in, Fach- und Stufenreferent*innen sowie dem Diözesanbüro. [TODO: Namen, Rollen und Kontaktdaten vor Veröffentlichung durch die Verwaltung bestätigen lassen.]</p>
-                    <ul>
-                    <li><strong>Diözesanvorstand:</strong> Till Mang</li>
-                    <li><strong>Diözesankurat:</strong> Peter Zillgen</li>
-                    <li><strong>Vorstandsreferent (Region Mitte):</strong> Felix Monzen</li>
-                    <li><strong>Vorstandsreferent:</strong> Christopher Klein</li>
-                    <li><strong>Geschäftsführender Bildungsreferent:</strong> Marc Basenach</li>
-                    <li><strong>Bildungsreferent:</strong> Axel Hemgesberg</li>
-                    <li><strong>Bildungsreferentin:</strong> Lisa Alm</li>
-                    <li><strong>Bildungsreferentin:</strong> Julia Lehn</li>
-                    <li><strong>Referentinnen Wölflingstufe:</strong> Heike Franz &amp; Lisa Tinanoff</li>
-                    <li><strong>Referent Jungpfadfinderstufe:</strong> Silas Weiß</li>
-                    <li><strong>Referent Roverstufe:</strong> Tobias Jost</li>
-                    <li><strong>Referentin Inklusion / Ich-Du-Wir:</strong> Bianca Boltze</li>
-                    <li><strong>Referent Bolivienpartnerschaft:</strong> Jannis Odrosek</li>
-                    <li><strong>Verwaltung, Diözesanbüro:</strong> Miriam Dobner</li>
-                    </ul>
-                    <h2>Struktur des Diözesanverbands</h2>
-                    <p>Der Diözesanverband Trier gliedert sich in 10 Bezirke im gesamten Bistum Trier, von der Mosel über Eifel und Hunsrück bis ins Saarland, mit mehr als 60 Stämmen und Siedlungen und über 5.000 Mitgliedern. Alle Bezirke und Stämme mit Kontakt und Karte findest du unter <a href="/bezirke-staemme">Bezirke &amp; Stämme</a>.</p>
-                    HTML,
+                'body' => self::LEITUNG_BODY,
+            ],
+            [
+                'slug' => 'dioezesanbuero',
+                'title' => 'Diözesanbüro',
+                'parent' => 'kontakt',
+                'show_in_nav' => false,
+                'body' => self::BUERO_BODY,
             ],
             [
                 'slug' => 'stufen',
@@ -191,6 +216,7 @@ class DemoContentSeeder extends Seeder
             Page::query()->updateOrCreate(
                 ['slug' => $data['slug']],
                 [
+                    'parent_id' => isset($data['parent']) ? Page::query()->where('slug', $data['parent'])->value('id') : null,
                     'title' => $data['title'],
                     'body' => $data['body'],
                     'status' => 'published',

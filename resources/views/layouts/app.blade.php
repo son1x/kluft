@@ -113,6 +113,7 @@
                 <h2 class="mb-4 font-serif text-base font-bold">Service</h2>
                 <ul class="space-y-2">
                     <li><a href="{{ url('/kontakt') }}" class="hover:underline">Kontakt</a></li>
+                    <li><a href="{{ url('/dioezesanbuero') }}" class="hover:underline">Diözesanbüro</a></li>
                     <li><a href="{{ url('/impressum') }}" class="hover:underline">Impressum</a></li>
                     <li><a href="{{ url('/datenschutz') }}" class="hover:underline">Datenschutz</a></li>
                     <li>

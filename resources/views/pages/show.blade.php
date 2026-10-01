@@ -7,6 +7,13 @@
 
 @section('content')
     <article class="max-w-3xl mx-auto px-4 py-10">
+        @if ($page->parent)
+            <nav aria-label="Brotkrumen" class="mb-4 text-sm text-text-secondary">
+                <a href="{{ url('/'.$page->parent->slug) }}" class="text-dpsg-rot hover:underline">{{ $page->parent->title }}</a>
+                <span aria-hidden="true"> › </span>
+                <span aria-current="page">{{ $page->title }}</span>
+            </nav>
+        @endif
         @if ($page->stage)
             <div class="mb-2">@include('partials.stufe-badge', ['stage' => $page->stage])</div>
         @endif

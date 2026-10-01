@@ -86,6 +86,24 @@ class PublicRoutesTest extends TestCase
             ->assertSee('4 bis 7 Jahre');
     }
 
+    public function test_dioezesanleitung_is_main_page_and_buero_is_subpage_of_kontakt(): void
+    {
+        $this->seed(\Database\Seeders\RequiredPagesSeeder::class);
+        $this->seed(\Database\Seeders\DemoContentSeeder::class);
+
+        $nav = fn (string $html) => \Illuminate\Support\Str::between($html, 'aria-label="Hauptnavigation"', '</nav>');
+
+        $start = $this->get('/stufen')->assertOk()->getContent();
+        $this->assertStringContainsString('Diözesanleitung', $nav($start));
+        $this->assertStringNotContainsString('Diözesanbüro', $nav($start));
+
+        $this->get('/dioezesanleitung')->assertOk()->assertSee('Diözesanvorstand')->assertDontSee('Geschäftsführender Bildungsreferent');
+        $this->get('/dioezesanbuero')->assertOk()
+            ->assertSee('Brotkrumen')
+            ->assertSee('Geschäftsführender Bildungsreferent')
+            ->assertDontSee('Diözesankurat');
+    }
+
     public function test_published_post_appears_in_index_and_show(): void
     {
         Post::query()->create([

@@ -66,6 +66,14 @@ return [
         'doi_redirect_url' => env('BREVO_DOI_REDIRECT_URL'),
     ],
 
+    // Instagram API mit Instagram-Login (F-IG). Das Zugangstoken wird nicht
+    // hier, sondern verschlüsselt in `integration_tokens` gespeichert und im
+    // Backend unter „Integrationen“ eingetragen.
+    'instagram' => [
+        'graph_url' => 'https://graph.instagram.com',
+        'version' => env('INSTAGRAM_GRAPH_VERSION', 'v23.0'),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Nextcloud-Kalender (F-CAL): nur diese Hosts dürfen abgerufen werden
@@ -73,30 +81,6 @@ return [
     */
     'nextcloud' => [
         'allowed_hosts' => env('NEXTCLOUD_ALLOWED_HOSTS', ''),
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Instagram Graph API (Blog → Instagram, F-IG-*)
-    |--------------------------------------------------------------------------
-    */
-    'instagram' => [
-        'ig_user_id' => env('INSTAGRAM_IG_USER_ID'),
-        'app_id' => env('INSTAGRAM_APP_ID'),
-        'app_secret' => env('INSTAGRAM_APP_SECRET'),
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Nextcloud-Kalender (ICS)
-    |--------------------------------------------------------------------------
-    |
-    | SSRF-Schutz (F-CAL-07): erlaubter Host wird zusätzlich zur
-    | gespeicherten calendars.ics_url gegen diese Domain geprüft.
-    |
-    */
-    'nextcloud' => [
-        'allowed_host' => env('NEXTCLOUD_ALLOWED_HOST'),
     ],
 
 ];

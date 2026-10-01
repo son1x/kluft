@@ -3,7 +3,7 @@
 // lokal – es gehen keine Anfragen an externe Kartendienste.
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { Protocol } from 'pmtiles';
+import { FetchSource, PMTiles, Protocol } from 'pmtiles';
 import { layers, namedFlavor } from '@protomaps/basemaps';
 
 const protocol = new Protocol();
@@ -37,7 +37,18 @@ function baseStyle(pmtilesUrl) {
     };
 }
 
+// Range-Requests am Browser-Cache vorbei: Chrome bricht gecachte
+// Teilabrufe sonst teils mit "Failed to fetch" ab (pmtiles umgeht das
+// von sich aus nur unter Windows).
+function registerArchive(url) {
+    if (protocol.get(url)) return;
+    const source = new FetchSource(url);
+    source.chromeWindowsNoCache = true;
+    protocol.add(new PMTiles(source));
+}
+
 function createMap(container, { pmtiles, bbox }) {
+    registerArchive(pmtiles);
     const [w, s, e, n] = bbox;
     const pad = 0.6;
 

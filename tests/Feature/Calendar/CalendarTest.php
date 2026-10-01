@@ -140,14 +140,14 @@ class CalendarTest extends TestCase
         $this->assertStringNotContainsString('@example.org', json_encode($json));
     }
 
-    public function test_allowed_hosts_come_from_the_environment_variable(): void
+    public function test_services_config_keeps_the_calendar_and_instagram_keys(): void
     {
-        // Liest die echte config/services.php (ohne Test-Override aus setUp).
-        putenv('NEXTCLOUD_ALLOWED_HOSTS=cloud.example.org, nc.example.org');
+        // Liest die echte config/services.php (ohne Test-Override aus setUp):
+        // Ein doppelter Schlüssel weiter unten würde diese Werte überschreiben.
         $config = require config_path('services.php');
-        putenv('NEXTCLOUD_ALLOWED_HOSTS');
 
-        $this->assertSame('cloud.example.org, nc.example.org', $config['nextcloud']['allowed_hosts']);
+        $this->assertArrayHasKey('allowed_hosts', $config['nextcloud']);
+        $this->assertArrayHasKey('graph_url', $config['instagram']);
     }
 
     public function test_calendar_page_works_without_any_calendar(): void

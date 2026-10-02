@@ -13,6 +13,7 @@ on:
         options:
           - calendar:check
           - calendar:sync
+          - cron:info
         default: calendar:check
 
 jobs:
@@ -51,5 +52,16 @@ jobs:
               calendar:check) /usr/bin/php artisan calendar:check ;;
               # Kalender sofort abrufen (sonst alle 15 Minuten per Cronjob), danach Stand zeigen.
               calendar:sync) /usr/bin/php artisan calendar:sync; /usr/bin/php artisan calendar:check ;;
+              # Angaben für den Cronjob in Plesk: Pfad und PHP-Version.
+              cron:info)
+                echo "Projektverzeichnis: $(pwd -P)"
+                echo "artisan vorhanden: $([ -f artisan ] && echo ja || echo nein)"
+                echo "Home: $HOME"
+                echo "php im Pfad: $(command -v php) – $(php -v 2>/dev/null | head -n1)"
+                echo "/usr/bin/php: $(/usr/bin/php -v 2>/dev/null | head -n1)"
+                for v in /opt/plesk/php/*/bin/php; do [ -x "$v" ] && echo "$v: $($v -v 2>/dev/null | head -n1)"; done
+                echo "vendor/autoload.php vorhanden: $([ -f vendor/autoload.php ] && echo ja || echo nein)"
+                /usr/bin/php artisan --version
+                ;;
               *) echo "Unbekannte Prüfung"; exit 1 ;;
             esac

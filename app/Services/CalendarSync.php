@@ -58,6 +58,7 @@ class CalendarSync
      */
     public function fetch(string $url): string
     {
+        $url = self::normalizeUrl($url);
         self::assertAllowedUrl($url);
 
         $response = Http::timeout(10)
@@ -72,6 +73,9 @@ class CalendarSync
             ->accept('text/calendar')
             ->get($url);
 
+        if ($response->redirect()) {
+            throw new RuntimeException("Der Link leitet weiter (HTTP {$response->status()}) – bitte in Nextcloud den Link zum Abonnieren bzw. Exportieren des Kalenders verwenden.");
+        }
         if (! $response->successful()) {
             throw new RuntimeException("Abruf fehlgeschlagen (HTTP {$response->status()}).");
         }
@@ -82,6 +86,26 @@ class CalendarSync
         }
 
         return $body;
+    }
+
+    /**
+     * Nextcloud-Freigabelinks in die ICS-Adresse umschreiben:
+     * …/apps/calendar/p/TOKEN (Webansicht, leitet weiter) →
+     * …/remote.php/dav/public-calendars/TOKEN?export; webcal:// → https://.
+     */
+    public static function normalizeUrl(string $url): string
+    {
+        $url = trim($url);
+        $url = preg_replace('#^webcals?://#i', 'https://', $url);
+
+        if (preg_match('#^(https://[^/?\#]+)(?:/index\.php)?/apps/calendar/p/([A-Za-z0-9]+)#', $url, $m)) {
+            return $m[1].'/remote.php/dav/public-calendars/'.$m[2].'?export';
+        }
+        if (preg_match('#^(https://[^/?\#]+/remote\.php/dav/public-calendars/[A-Za-z0-9]+)/?$#', $url, $m)) {
+            return $m[1].'?export';
+        }
+
+        return $url;
     }
 
     public static function assertAllowedUrl(string $url): void

@@ -188,4 +188,29 @@ class CalendarTest extends TestCase
             ->call('save')
             ->assertHasFormErrors(['ics_url']);
     }
+
+    #[TestDox('Normaler Nextcloud-Freigabelink und webcal:// werden automatisch zur ICS-Adresse')]
+    public function test_nextcloud_share_links_are_converted_to_ics_export(): void
+    {
+        $this->assertSame(self::URL, CalendarSync::normalizeUrl('https://cloud.dpsg-trier.de/index.php/apps/calendar/p/abc123'));
+        $this->assertSame(self::URL, CalendarSync::normalizeUrl('https://cloud.dpsg-trier.de/apps/calendar/p/abc123/dayGridMonth/now'));
+        $this->assertSame(self::URL, CalendarSync::normalizeUrl('webcal://cloud.dpsg-trier.de/remote.php/dav/public-calendars/abc123'));
+        $this->assertSame(self::URL, CalendarSync::normalizeUrl(' '.self::URL.' '));
+
+        // Bereits gespeicherter Freigabelink funktioniert ohne Neueingabe.
+        Http::fake([self::URL => Http::response($this->ics(), 200, ['Content-Type' => 'text/calendar'])]);
+        $calendar = $this->calendar(['ics_url' => 'https://cloud.dpsg-trier.de/index.php/apps/calendar/p/abc123']);
+        $this->assertTrue(app(CalendarSync::class)->sync($calendar));
+        $this->assertNull($calendar->fresh()->last_error);
+    }
+
+    #[TestDox('Leitet ein Link weiter, erklärt die Fehlermeldung, welcher Link richtig ist')]
+    public function test_redirecting_link_gets_helpful_error(): void
+    {
+        Http::fake([self::URL => Http::response('', 303, ['Location' => 'https://cloud.dpsg-trier.de/login'])]);
+        $calendar = $this->calendar();
+
+        $this->assertFalse(app(CalendarSync::class)->sync($calendar));
+        $this->assertStringContainsString('leitet weiter', $calendar->fresh()->last_error);
+    }
 }

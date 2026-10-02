@@ -1,6 +1,7 @@
 name: Server-Prüfung (Testumgebung)
 
-# Führt eine Prüfung auf dem Server aus, ohne Geheimnisse auszugeben.
+# Führt eine Prüfung bzw. einen Abruf auf dem Server aus, ohne Geheimnisse
+# auszugeben.
 # GitHub → Actions → „Server-Prüfung“ → „Run workflow“.
 
 on:
@@ -11,6 +12,7 @@ on:
         type: choice
         options:
           - calendar:check
+          - calendar:sync
         default: calendar:check
 
 jobs:
@@ -47,5 +49,7 @@ jobs:
             cd "${{ env.SSH_TARGET_DIR }}"
             case "$CHECK" in
               calendar:check) /usr/bin/php artisan calendar:check ;;
+              # Kalender sofort abrufen (sonst alle 15 Minuten per Cronjob), danach Stand zeigen.
+              calendar:sync) /usr/bin/php artisan calendar:sync; /usr/bin/php artisan calendar:check ;;
               *) echo "Unbekannte Prüfung"; exit 1 ;;
             esac

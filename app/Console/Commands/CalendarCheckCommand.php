@@ -81,7 +81,7 @@ class CalendarCheckCommand extends Command
         }
 
         foreach ($calendars as $calendar) {
-            $host = mb_strtolower((string) parse_url((string) $calendar->ics_url, PHP_URL_HOST));
+            $host = mb_strtolower((string) parse_url(CalendarSync::normalizeUrl((string) $calendar->ics_url), PHP_URL_HOST));
             $allowed = in_array($host, $hosts, true);
             $state = $calendar->active ? 'aktiv' : 'inaktiv';
             $sync = $calendar->last_synced_at ? 'zuletzt abgerufen '.$calendar->last_synced_at->timezone('Europe/Berlin')->format('d.m.Y H:i') : 'noch nie abgerufen';
@@ -90,7 +90,7 @@ class CalendarCheckCommand extends Command
                 $line .= '; letzter Fehler: '.$calendar->last_error;
             }
             ($allowed && ! $calendar->last_error) ? $this->line($line) : $this->warn($line);
-            $problems += $allowed ? 0 : 1;
+            $problems += ($allowed ? 0 : 1) + ($calendar->last_error ? 1 : 0);
         }
 
         $this->newLine();

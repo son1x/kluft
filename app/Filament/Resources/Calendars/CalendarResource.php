@@ -44,22 +44,23 @@ class CalendarResource extends Resource
                     ColorPicker::make('color')->label('Farbe')->default('#003056')->required()->regex('/^#[0-9a-fA-F]{6}$/'),
                     TextInput::make('ics_url')
                         ->label('ICS-Freigabelink (Nextcloud)')
-                        ->url()
                         // Der gespeicherte Link wird nie an den Browser geschickt
                         // (wirkt wie ein Zugangsschlüssel); leer lassen = unverändert.
                         ->required(fn (?Calendar $record) => $record === null)
                         ->dehydrated(fn (?string $state) => filled($state))
+                        // Öffentlicher Nextcloud-Link oder webcal:// wird zur ICS-Adresse.
+                        ->dehydrateStateUsing(fn (?string $state) => filled($state) ? CalendarSync::normalizeUrl($state) : $state)
                         ->password()
                         ->revealable()
                         ->rule(fn () => function (string $attribute, mixed $value, \Closure $fail) {
                             try {
-                                CalendarSync::assertAllowedUrl((string) $value);
+                                CalendarSync::assertAllowedUrl(CalendarSync::normalizeUrl((string) $value));
                             } catch (\RuntimeException $e) {
                                 $fail($e->getMessage());
                             }
                         })
                         ->helperText(fn (?Calendar $record) => ($record ? 'Leer lassen, um den gespeicherten Link zu behalten. ' : '')
-                            .'In Nextcloud: Kalender → Teilen → Öffentlicher Link → „Abonnement-Link kopieren". Erlaubte Hosts: '
+                            .'In Nextcloud: Kalender → Teilen → Öffentlicher Link → „Abonnement-Link kopieren“ (der normale Freigabelink geht auch, er wird automatisch umgewandelt). Erlaubte Hosts: '
                             .(implode(', ', CalendarSync::allowedHosts()) ?: 'noch keine (NEXTCLOUD_ALLOWED_HOSTS)'))
                         ->columnSpanFull(),
                     Select::make('stage')

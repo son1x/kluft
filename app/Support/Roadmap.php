@@ -5,6 +5,7 @@ namespace App\Support;
 use App\Models\Calendar;
 use App\Models\Page;
 use App\Models\User;
+use App\Services\Backup\BackupService;
 use App\Services\BrevoNewsletter;
 use App\Services\Instagram\InstagramClient;
 use Illuminate\Contracts\Encryption\DecryptException;
@@ -179,6 +180,13 @@ class Roadmap
                 'done' => null,
             ],
             [
+                'key' => 'backups',
+                'phase' => 'Abnahme',
+                'title' => 'Backups einschalten',
+                'detail' => 'GitHub-Secret BACKUP_PASSWORD setzen (mind. 16 Zeichen, zusätzlich offline im Passwortmanager ablegen – ohne es ist kein Backup lesbar). Empfohlen: Kopie außerhalb des Webspace in einen Nextcloud-Ordner über BACKUP_WEBDAV_URL, BACKUP_WEBDAV_USER und BACKUP_WEBDAV_PASSWORD (App-Passwort). Läuft dann täglich um 2 Uhr über den Cronjob.',
+                'done' => $this->backupsHealthy(),
+            ],
+            [
                 'key' => 'instagram-zugang',
                 'phase' => '1d',
                 'title' => 'Instagram-Zugang vorbereiten',
@@ -201,6 +209,19 @@ class Roadmap
         } catch (DecryptException) {
             return false;
         }
+    }
+
+    /**
+     * Letztes Backup höchstens 36 h alt und letzter Wiederherstellungstest
+     * erfolgreich.
+     */
+    public function backupsHealthy(): bool
+    {
+        $run = Cache::get(BackupService::LAST_RUN_KEY);
+        $verify = Cache::get(BackupService::LAST_VERIFY_KEY);
+
+        return $run !== null && $verify !== null && ($verify['ok'] ?? false)
+            && now()->diffInHours($run['at'], true) < 36;
     }
 
     public function schedulerRuns(): bool

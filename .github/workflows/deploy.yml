@@ -133,6 +133,10 @@ jobs:
           BREVO_SMTP_LOGIN: ${{ secrets.BREVO_SMTP_LOGIN }}
           BREVO_SMTP_KEY: ${{ secrets.BREVO_SMTP_KEY }}
           MAIL_TEST_REDIRECT_TO: ${{ secrets.MAIL_TEST_REDIRECT_TO }}
+          BACKUP_PASSWORD: ${{ secrets.BACKUP_PASSWORD }}
+          BACKUP_WEBDAV_URL: ${{ secrets.BACKUP_WEBDAV_URL }}
+          BACKUP_WEBDAV_USER: ${{ secrets.BACKUP_WEBDAV_USER }}
+          BACKUP_WEBDAV_PASSWORD: ${{ secrets.BACKUP_WEBDAV_PASSWORD }}
         run: |
           # Echte Mails nur mit Brevo-SMTP-Zugang UND Test-Umleitung
           # (F-MAIL-06): auf test.dpsg-trier.de bekommt niemand außer der
@@ -184,6 +188,10 @@ jobs:
           MAIL_FROM_ADDRESS=events@dpsg-trier.de
           MAIL_FROM_NAME="DPSG Diözesanverband Trier"
           MAIL_TEST_REDIRECT_TO=${MAIL_TEST_REDIRECT_TO}
+          BACKUP_PASSWORD="${BACKUP_PASSWORD}"
+          BACKUP_WEBDAV_URL=${BACKUP_WEBDAV_URL}
+          BACKUP_WEBDAV_USER="${BACKUP_WEBDAV_USER}"
+          BACKUP_WEBDAV_PASSWORD="${BACKUP_WEBDAV_PASSWORD}"
           ENV
 
       # Selbstgehostete Kartendaten (F-MAP-04, ~140 MB) – zu groß fürs
@@ -383,6 +391,9 @@ jobs:
             # WebP-Varianten für Bilder ohne Varianten nachziehen (F-CMS-04).
             /usr/bin/php artisan media:variants || true
             /usr/bin/php artisan up
+            echo "---- PHP-Fähigkeiten auf dem Server ----"
+            /usr/bin/php -r 'echo "PHP ", PHP_VERSION, " | GD: ", function_exists("imagecreatefromstring") ? "ja" : "NEIN", " | WebP: ", function_exists("imagewebp") ? "ja" : "NEIN", " | Zip: ", class_exists("ZipArchive") ? "ja" : "NEIN", " | Sodium: ", function_exists("sodium_crypto_secretstream_xchacha20poly1305_init_push") ? "ja" : "NEIN", "\n";'
+            command -v mysqldump >/dev/null && echo "mysqldump: vorhanden" || echo "mysqldump: fehlt"
             echo "---- Letzte Fehler im Laravel-Log ----"
             grep -h '\.\(ERROR\|CRITICAL\|ALERT\|EMERGENCY\):' storage/logs/laravel*.log 2>/dev/null \
               | tail -n 15 | cut -c1-400 \

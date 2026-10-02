@@ -27,7 +27,11 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::table('pages', fn (Blueprint $table) => $table->dropColumn('section'));
-        Schema::table('posts', fn (Blueprint $table) => $table->dropColumn('section'));
+        foreach (['pages', 'posts'] as $name) {
+            Schema::table($name, function (Blueprint $table) {
+                $table->dropIndex(['section']);
+                $table->dropColumn('section');
+            });
+        }
     }
 };

@@ -79,6 +79,20 @@ return [
         'guardian_text' => 'Ich bin personensorgeberechtigt für die angemeldete Person und willige in ihre Teilnahme sowie die Verarbeitung ihrer Angaben ein.',
     ],
 
+    /*
+    | Backups (Pflichtenheft 10.2, 11.4): täglich, verschlüsselt, 14 Tage.
+    | Das Passwort gehört NICHT auf den Server allein, sondern zusätzlich
+    | offline in den Passwortmanager – ohne es ist kein Backup lesbar.
+    | Optional Ablage außerhalb des Webspace per WebDAV (z. B. Nextcloud).
+    */
+    'backup' => [
+        'password' => env('BACKUP_PASSWORD'),
+        'keep_days' => 14,
+        'webdav_url' => env('BACKUP_WEBDAV_URL'),
+        'webdav_user' => env('BACKUP_WEBDAV_USER'),
+        'webdav_password' => env('BACKUP_WEBDAV_PASSWORD'),
+    ],
+
     // Unter diesem Alter ist die Einwilligung der Personensorgeberechtigten
     // nötig (F-EV-14, § 8 Abs. 8 KDG).
     'guardian_consent_age' => 16,

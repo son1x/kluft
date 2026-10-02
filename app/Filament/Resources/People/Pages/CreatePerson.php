@@ -8,4 +8,9 @@ use Filament\Resources\Pages\CreateRecord;
 class CreatePerson extends CreateRecord
 {
     protected static string $resource = PersonResource::class;
+
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        return PersonResource::storePortrait($data);
+    }
 }

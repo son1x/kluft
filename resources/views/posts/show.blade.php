@@ -17,7 +17,7 @@
             @include('partials.cover-figure', ['media' => $post->coverMedia, 'class' => 'mb-6'])
         @endif
         <div class="prose max-w-none">
-            {!! str($post->body)->sanitizeHtml() !!}
+            {!! str($post->body)->sanitizeHtml()->glossar() !!}
         </div>
 
         @if ($notice = $post->aiNotice())

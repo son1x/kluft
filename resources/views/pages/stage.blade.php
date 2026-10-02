@@ -48,7 +48,7 @@
 @section('content')
     <div class="stufe-{{ $page->stage }} mx-auto grid max-w-6xl gap-10 px-4 py-12 lg:grid-cols-3">
         <article class="prose prose-stufe prose-lg max-w-none lg:col-span-2">
-            {!! str($page->body)->sanitizeHtml() !!}
+            {!! str($page->body)->sanitizeHtml()->glossar() !!}
         </article>
 
         <aside class="space-y-6" aria-label="Mitmachen und Kontakt">

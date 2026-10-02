@@ -1,8 +1,8 @@
 {{-- Rundes Personenbild; ohne (freigegebenes) Foto ein Kreis mit Initialen
      in der Stufenfarbe bzw. mit Muster (config dpsg.person_badges). Erwartet: $person, optional $size (Tailwind-Klassen). --}}
-@php($size = $size ?? 'h-20 w-20 text-2xl')
+@php($size = $size ?? 'h-24 w-24 text-3xl')
 @if ($person->photo && $person->consent)
-    <x-picture :media="$person->photo" alt="" sizes="160px" class="{{ $size }} shrink-0 rounded-full object-cover" />
+    <x-picture :media="$person->photo" alt="" sizes="192px" class="{{ $size }} shrink-0 rounded-full object-cover" />
 @else
     @php($badge = $person->badge ?? $person->stage)
     <span aria-hidden="true" @class([

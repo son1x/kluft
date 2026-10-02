@@ -22,7 +22,7 @@
         @endif
         <h1 class="font-serif text-3xl font-bold mb-6">{{ $page->title }}</h1>
         <div class="prose max-w-none">
-            {!! str($page->body)->sanitizeHtml() !!}
+            {!! str($page->body)->sanitizeHtml()->glossar() !!}
         </div>
     </article>
 

@@ -14,4 +14,9 @@ class EditPerson extends EditRecord
     {
         return [DeleteAction::make()];
     }
+
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        return PersonResource::storePortrait($data);
+    }
 }

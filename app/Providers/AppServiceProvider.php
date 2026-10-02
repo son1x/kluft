@@ -3,10 +3,12 @@
 namespace App\Providers;
 
 use App\Models\Page;
+use App\Services\Glossary;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Stringable;
 use SocialiteProviders\Manager\SocialiteWasCalled;
 use SocialiteProviders\Microsoft\MicrosoftExtendSocialite;
 
@@ -25,6 +27,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Begriffs-Hover im redaktionellen HTML: str($html)->sanitizeHtml()->glossar()
+        Stringable::macro('glossar', function () {
+            /** @var Stringable $this */
+            return new Stringable(app(Glossary::class)->annotate((string) $this));
+        });
+
         // Registriert den Entra-ID-/Microsoft-365-Treiber für Socialite
         // (Pflichtenheft 3.1, 5.1). Tenant/Client-Daten kommen aus
         // config/services.php bzw. .env (ENTRA_*).

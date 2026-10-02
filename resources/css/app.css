@@ -139,3 +139,44 @@ html {
 .fach-globale-gerechtigkeit { --fach: var(--color-fach-globale-gerechtigkeit); --fach-ink: #fff; }
 .fach-oekologie { --fach: var(--color-fach-oekologie); --fach-ink: #fff; }
 .fach-inklusion { --fach: var(--color-fach-inklusion); --fach-ink: var(--color-text); }
+
+/*
+ * Begriffs-Hover (Glossar): gepunktete Unterstreichung, Erklärung als
+ * Sprechblase bei Maus, Fokus (Tastatur) oder Antippen. Screenreader lesen
+ * die Erklärung über den versteckten Text im Element.
+ */
+abbr.glossar {
+    position: relative;
+    cursor: help;
+    text-decoration: underline dotted;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 3px;
+}
+abbr.glossar::after {
+    content: attr(data-erklaerung);
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 8px);
+    z-index: 30;
+    width: max-content;
+    max-width: min(18rem, 80vw);
+    transform: translateX(-50%);
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.375rem;
+    background: var(--color-dpsg-blau);
+    color: #fff;
+    font-size: 0.8125rem;
+    font-weight: 400;
+    line-height: 1.35;
+    text-align: left;
+    white-space: normal;
+    box-shadow: 0 6px 16px rgb(0 0 0 / 0.18);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s;
+}
+abbr.glossar:hover::after,
+abbr.glossar:focus::after,
+abbr.glossar:focus-visible::after {
+    opacity: 1;
+}

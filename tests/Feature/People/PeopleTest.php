@@ -138,4 +138,32 @@ class PeopleTest extends TestCase
         $this->assertSame(['Till Mang', 'Heike Franz'], $spots->map(fn ($s) => $s->person->name)->all());
         $this->assertSame(55.5, $spots->first()->x);
     }
+
+    #[TestDox('Porträt lässt sich direkt bei der Person hochladen und landet mit Bildnachweis in der Mediathek')]
+    public function test_portrait_upload_creates_media_and_shows_round_photo(): void
+    {
+        Storage::fake('public');
+        Filament::setCurrentPanel('admin');
+        $verwaltung = User::query()->create(['name' => 'V', 'email' => 'v@dpsg-trier.de', 'status' => 'active']);
+        $verwaltung->roleAssignments()->create(['role' => 'verwaltung', 'scope_type' => 'global']);
+        $this->actingAs($verwaltung);
+        $person = Person::query()->create(['gremium' => 'leitung', 'name' => 'Silas Weiß', 'role' => 'Referent', 'consent' => true]);
+
+        Livewire::test(\App\Filament\Resources\People\Pages\EditPerson::class, ['record' => $person->getRouteKey()])
+            ->fillForm(['portrait_upload' => [\Illuminate\Http\UploadedFile::fake()->image('silas.jpg', 800, 800)]])
+            ->call('save')
+            ->assertHasFormErrors(['portrait_credit' => 'required']);
+
+        Livewire::test(\App\Filament\Resources\People\Pages\EditPerson::class, ['record' => $person->getRouteKey()])
+            ->fillForm(['portrait_upload' => [\Illuminate\Http\UploadedFile::fake()->image('silas.jpg', 800, 800)], 'portrait_credit' => 'Max Muster'])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $photo = $person->fresh()->photo;
+        $this->assertNotNull($photo);
+        $this->assertSame('Porträt Silas Weiß', $photo->alt_text);
+        $this->assertSame('Max Muster', $photo->credit);
+        $this->assertTrue($photo->rights_confirmed);
+        Storage::disk('public')->assertExists($photo->path);
+    }
 }

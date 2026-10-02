@@ -5,9 +5,12 @@ namespace App\Filament\Resources\People;
 use App\Filament\Resources\People\Pages\CreatePerson;
 use App\Filament\Resources\People\Pages\EditPerson;
 use App\Filament\Resources\People\Pages\ListPeople;
+use App\Models\Media;
 use App\Models\Person;
 use BackedEnum;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -21,6 +24,8 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\HtmlString;
 
 /**
  * Personenvorstellung auf den Seiten der Gremien (Diözesanleitung,
@@ -37,6 +42,41 @@ class PersonResource extends Resource
     protected static ?string $pluralModelLabel = 'Personen';
 
     protected static ?string $slug = 'personen';
+
+    /**
+     * Hochgeladenes Porträt als Mediathek-Eintrag anlegen und zuordnen
+     * (aus Create-/EditPerson aufgerufen). Rechte gelten als bestätigt,
+     * wenn die Veröffentlichung mit der Person abgestimmt ist.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    public static function storePortrait(array $data): array
+    {
+        $path = $data['portrait_upload'] ?? null;
+        $credit = $data['portrait_credit'] ?? null;
+        unset($data['portrait_upload'], $data['portrait_credit']);
+
+        if (is_array($path)) {
+            $path = array_values($path)[0] ?? null;
+        }
+        if (! is_string($path) || $path === '' || ! Storage::disk('public')->exists($path)) {
+            return $data;
+        }
+
+        $media = Media::query()->create([
+            'path' => $path,
+            'mime' => Storage::disk('public')->mimeType($path) ?: 'image/jpeg',
+            'size' => Storage::disk('public')->size($path),
+            'alt_text' => 'Porträt '.($data['name'] ?? ''),
+            'credit' => (string) $credit,
+            'rights_confirmed' => (bool) ($data['consent'] ?? false),
+            'uploaded_by' => auth()->id(),
+        ]);
+        $data['photo_media_id'] = $media->id;
+
+        return $data;
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -82,13 +122,41 @@ class PersonResource extends Resource
                         ->helperText('Standard: Initial.Nachname@'.config('dpsg.person_email_domain').' – leer lassen, dann wird diese Adresse angezeigt. DAK-Mitglieder haben keine eigene Adresse.'),
                     Textarea::make('bio')->label('Vorstellungstext')->rows(6)->maxLength(3000)->columnSpanFull()
                         ->helperText('Absätze mit einer Leerzeile trennen. Lange Texte werden mit „Mehr lesen“ eingeklappt.'),
-                    Select::make('photo_media_id')->label('Porträtfoto (optional)')
-                        ->relationship('photo', 'alt_text')->searchable()->preload()
-                        ->helperText('Ohne Foto erscheint ein Kreis mit den Initialen.'),
                     TextInput::make('sort')->label('Reihenfolge')->numeric()->default(0),
                     Toggle::make('consent')->label('Veröffentlichung mit der Person abgestimmt')
                         ->helperText('Name, Funktion, Text und ggf. Foto erscheinen erst, wenn die Person zugestimmt hat (KDG).'),
                     Toggle::make('active')->label('Aktiv')->default(true),
+                ]),
+
+            // Porträt wie bei dpsg-koeln.de: direkt hier hochladen, quadratisch
+            // zuschneiden; landet automatisch in der Mediathek.
+            Section::make('Porträtfoto')
+                ->description('Ohne Foto erscheint ein Kreis mit den Initialen. Das Foto wird rund angezeigt – beim Hochladen auf einen quadratischen Ausschnitt mit dem Gesicht in der Mitte zuschneiden.')
+                ->columns(2)
+                ->columnSpanFull()
+                ->components([
+                    Placeholder::make('current_photo')->label('Aktuelles Foto')
+                        ->visible(fn (?Person $record) => $record?->photo !== null)
+                        ->content(fn (?Person $record) => new HtmlString('<img src="'.e($record?->photo?->url()).'" alt="" style="width:96px;height:96px;border-radius:9999px;object-fit:cover">')),
+                    FileUpload::make('portrait_upload')->label(fn (?Person $record) => $record?->photo ? 'Neues Foto hochladen' : 'Foto hochladen')
+                        ->image()
+                        ->disk('public')->directory('media/portraits')->visibility('public')
+                        ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                        ->maxSize(10240)
+                        ->imageEditor()
+                        ->imageEditorAspectRatios(['1:1'])
+                        ->imageCropAspectRatio('1:1')
+                        ->imageResizeTargetWidth('800')
+                        ->imageResizeTargetHeight('800')
+                        ->imageResizeMode('cover')
+                        ->live(),
+                    TextInput::make('portrait_credit')->label('Bildnachweis (Fotograf*in)')
+                        ->maxLength(150)
+                        ->required(fn (Get $get) => filled($get('portrait_upload')))
+                        ->visible(fn (Get $get) => filled($get('portrait_upload'))),
+                    Select::make('photo_media_id')->label('… oder Bild aus der Mediathek wählen')
+                        ->relationship('photo', 'alt_text')->searchable()->preload()
+                        ->hidden(fn (Get $get) => filled($get('portrait_upload'))),
                 ]),
         ]);
     }

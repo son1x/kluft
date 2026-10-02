@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Console\Commands\BrevoCheckCommand;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -40,8 +41,14 @@ class BrevoNewsletter
             ]));
 
         if (! $response->successful()) {
-            // Keine Adresse ins Log (Datensparsamkeit), nur Status/Fehlercode.
-            Log::warning('Brevo-DOI fehlgeschlagen', ['status' => $response->status(), 'code' => $response->json('code')]);
+            // Keine Adresse ins Log (Datensparsamkeit): Status, Fehlercode und
+            // Brevos Meldung ohne E-Mail-Adressen/IPs. Als error, damit es
+            // bei LOG_LEVEL=error im Log und im Deploy-Protokoll erscheint.
+            Log::error('Brevo-DOI fehlgeschlagen', [
+                'status' => $response->status(),
+                'code' => $response->json('code'),
+                'message' => BrevoCheckCommand::scrub((string) $response->json('message')),
+            ]);
         }
 
         return $response->successful();

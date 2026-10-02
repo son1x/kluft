@@ -14,6 +14,7 @@ on:
           - calendar:check
           - calendar:sync
           - cron:info
+          - brevo:check
         default: calendar:check
 
 jobs:
@@ -62,6 +63,14 @@ jobs:
                 for v in /opt/plesk/php/*/bin/php; do [ -x "$v" ] && echo "$v: $($v -v 2>/dev/null | head -n1)"; done
                 echo "vendor/autoload.php vorhanden: $([ -f vendor/autoload.php ] && echo ja || echo nein)"
                 /usr/bin/php artisan --version
+                ;;
+              # Brevo: API-Schlüssel/IP-Freigabe, Liste, Double-Opt-In-Vorlage
+              # (verschickt nichts); dazu die letzten Brevo-Fehler aus dem Log.
+              brevo:check)
+                /usr/bin/php artisan brevo:check || true
+                echo "---- Letzte Brevo-Fehler im Log ----"
+                grep -h 'Brevo' storage/logs/laravel*.log 2>/dev/null | tail -n 5 | cut -c1-400 \
+                  | sed -E 's/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/<email>/g' || echo "(keine)"
                 ;;
               *) echo "Unbekannte Prüfung"; exit 1 ;;
             esac

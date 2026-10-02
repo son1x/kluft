@@ -293,7 +293,7 @@ jobs:
             if [ -f storage/app/private/app.key ]; then chmod 600 storage/app/private/app.key; fi
             # Wartungsmodus für die Dauer des Uploads: Besucher sehen eine
             # 503-Seite statt 500er durch halb hochgeladene Dateien.
-            if [ -f vendor/autoload.php ] && [ -f .env ]; then /usr/bin/php artisan down --retry=60 || true; fi
+            if [ -f vendor/autoload.php ] && [ -f .env ]; then /usr/bin/php artisan down --retry=60 --render="errors::503" || true; fi
 
       - name: Per lftp über SFTP synchronisieren (inkl. Löschen entfernter Dateien)
         run: |

@@ -22,6 +22,7 @@ return [
         ['1c', 'Veranstaltungen', 'done'],
         ['1d', 'Instagram', 'partial'],
         ['1e', 'WordPress-Migration', 'partial'],
+        ['Talia', 'Feedback Talia', 'open'],
         ['Abnahme', 'Abnahme', 'open'],
         ['2', 'Beraten-Online', 'later'],
     ],
@@ -91,6 +92,21 @@ return [
         '14' => ['title' => 'Risiken', 'status' => 'info', 'note' => ''],
         '15' => ['title' => 'Offene Punkte / Klärungsbedarf', 'status' => 'partial', 'note' => 'Siehe „Deine offenen Punkte“ oben.'],
         '16' => ['title' => 'Anhang: Glossar', 'status' => 'info', 'note' => ''],
+    ],
+
+    /*
+    | Rückmeldungen außerhalb des Pflichtenhefts, je Meilenstein. Status wie
+    | oben; 'note' = Einschätzung/Empfehlung.
+    */
+    'feedback' => [
+        'Talia' => [
+            ['status' => 'open', 'title' => 'Aktuelles weiter nach vorne', 'note' => 'Empfehlung: im Menü direkt hinter „Start“ und auf der Startseite die Meldungen vor den Begrüßungstext. Funktioniert nur, wenn regelmäßig neue Beiträge kommen – sonst steht ganz oben Veraltetes.'],
+            ['status' => 'open', 'title' => 'Suche', 'note' => 'Im Pflichtenheft als Soll vorgesehen (F-CMS-07). Empfehlung: einfache Suche über Seiten, Beiträge, Veranstaltungen und Stämme jetzt bauen (Lupe im Kopf); bessere Trefferreihenfolge mit dem Umzug auf MySQL.'],
+            ['status' => 'open', 'title' => 'Footer ohne Wiederholung des Menüs', 'note' => 'Empfehlung: ja. Seit das Menü beim Scrollen mitläuft, ist die Wiederholung überflüssig. Footer auf Kontakt, Service/Rechtliches, Georgsbrief-Anmeldung und Partnerlinks (dpsg.de, Bistum) reduzieren.'],
+            ['status' => 'open', 'title' => 'Weniger Beige', 'note' => 'Die Farben sind die des DPSG-CD (Leitfaden April 2026); Beige ist dort für Flächen und Fußzeile vorgesehen, aber kein Muss. Empfehlung: Footer in DPSG-Blau, Infoboxen hellgrau/weiß, Beige nur noch sparsam.'],
+            ['status' => 'open', 'title' => 'Diözesan-Logo größer', 'note' => 'Empfehlung: moderat größer (Desktop ca. 1,4-fach). Für eine scharfe Darstellung in groß bräuchten wir das Logo als Vektordatei (SVG/PDF) vom Diözesanbüro.'],
+            ['status' => 'open', 'title' => 'Inklusions-Lilie für den Fachbereich Inklusion', 'note' => 'Empfehlung: ja, analog zum Amistad-Logo bei Bolivien (Seite, Kachel, Menüpunkt). Benötigt die Datei (am besten SVG) und die Nutzungsfreigabe.'],
+        ],
     ],
 
     // Abnahmekriterien (Abschnitt 13) einzeln

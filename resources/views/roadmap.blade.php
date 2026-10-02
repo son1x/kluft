@@ -60,7 +60,7 @@
         {{-- Meilensteine (Pflichtenheft 12) --}}
         <section aria-labelledby="phasen-heading" class="mt-10">
             <h2 id="phasen-heading" class="font-serif text-2xl font-bold">Meilensteine</h2>
-            <ol class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
+            <ol class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
                 @foreach ($phases as [$key, $label, $status])
                     <li @class(['flex items-center gap-3 bg-white p-3 shadow-sm', 'ring-2 ring-dpsg-blau' => $key === $currentPhase])>
                         @include('partials.ampel', ['status' => $status])
@@ -73,6 +73,28 @@
                 @endforeach
             </ol>
         </section>
+
+        {{-- Rückmeldungen je Meilenstein (außerhalb des Pflichtenhefts) --}}
+        @foreach ($feedback as $milestone => $items)
+            @php($phase = collect($phases)->firstWhere(0, $milestone))
+            <section aria-labelledby="feedback-{{ \Illuminate\Support\Str::slug($milestone) }}" class="mt-10 bg-white shadow-md">
+                <header class="flex flex-wrap items-baseline justify-between gap-2 border-b border-surface-muted p-5">
+                    <h2 id="feedback-{{ \Illuminate\Support\Str::slug($milestone) }}" class="font-serif text-xl font-bold">Meilenstein {{ $milestone }}@if ($phase && $phase[1] !== 'Feedback '.$milestone) – {{ $phase[1] }}@else: Rückmeldungen @endif</h2>
+                    <p class="text-sm font-bold">{{ collect($items)->where('status', 'done')->count() }} von {{ count($items) }} umgesetzt</p>
+                </header>
+                <ul class="divide-y divide-surface-muted">
+                    @foreach ($items as $item)
+                        <li class="flex gap-4 px-5 py-3">
+                            @include('partials.ampel', ['status' => $item['status']])
+                            <div class="min-w-0">
+                                <h3 class="font-bold">{{ $item['title'] }}</h3>
+                                @if ($item['note'])<p class="mt-0.5 text-sm text-text-secondary">{{ $item['note'] }}</p>@endif
+                            </div>
+                        </li>
+                    @endforeach
+                </ul>
+            </section>
+        @endforeach
 
         {{-- Gesamtstand --}}
         <section aria-labelledby="stand-heading" class="mt-10">

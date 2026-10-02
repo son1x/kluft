@@ -21,6 +21,7 @@ class RoadmapController extends Controller
             'currentPhase' => $data['current_phase'],
             'phases' => $data['phases'],
             'acceptance' => $data['acceptance'],
+            'feedback' => $data['feedback'] ?? [],
             'chapters' => $roadmap->chapters(),
             'counts' => $roadmap->counts(),
             'todos' => $roadmap->todos(),

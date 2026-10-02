@@ -301,6 +301,9 @@ jobs:
           set sftp:auto-confirm yes
           set net:max-retries 2
           set mirror:parallel-transfer-count 3
+          # Erst unter temporärem Namen hochladen, dann umbenennen: jede Datei
+          # (auch .htaccess) wird atomar ausgetauscht, nie halb geschrieben.
+          set xfer:use-temp-file yes
           mirror --reverse --delete --verbose \
             --exclude-glob .git/ \
             --exclude-glob .github/ \

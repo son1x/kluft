@@ -447,13 +447,11 @@ jobs:
             DB_FAILED=0
             MARKER=storage/app/private/mariadb-initialized
             if grep -q '^DB_CONNECTION=mariadb' .env; then
-              if ! /usr/bin/php artisan db:show >storage/app/private/db-error.txt 2>&1; then
-                echo "::error::MariaDB nicht erreichbar – die Seite läuft weiter mit SQLite. Meldung:"
-                grep -m1 -o 'SQLSTATE[^(]*' storage/app/private/db-error.txt | cut -c1-200 || true
+              if ! /usr/bin/php artisan db:check; then
+                echo "::error::MariaDB nicht erreichbar – die Seite läuft weiter mit SQLite."
                 use_sqlite
                 DB_FAILED=1
               fi
-              rm -f storage/app/private/db-error.txt
             fi
             if grep -q '^DB_CONNECTION=mariadb' .env; then
               if [ ! -f "$MARKER" ] && [ -f database/database.sqlite ]; then

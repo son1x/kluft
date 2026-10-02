@@ -34,6 +34,18 @@ class CopySqliteToMariaDbTest extends TestCase
         parent::tearDown();
     }
 
+    #[TestDox('db:check meldet, ob die Datenbank erreichbar ist (Prüfung im Deploy)')]
+    public function test_db_check_reports_reachable_database(): void
+    {
+        $this->artisan('db:check')->expectsOutputToContain('Datenbank erreichbar')->assertSuccessful();
+
+        config(['database.connections.kaputt' => ['driver' => 'mariadb', 'host' => '127.0.0.1', 'port' => 1, 'database' => 'x', 'username' => 'x', 'password' => 'x']]);
+        $previous = config('database.default');
+        config(['database.default' => 'kaputt']);
+        $this->artisan('db:check')->expectsOutputToContain('Datenbank nicht erreichbar')->assertFailed();
+        config(['database.default' => $previous]);
+    }
+
     #[TestDox('Kopieren verweigert, wenn das Ziel keine MariaDB ist')]
     public function test_refuses_non_mariadb_target(): void
     {

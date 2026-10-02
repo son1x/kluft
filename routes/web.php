@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\BreakGlassAuthController;
 use App\Http\Controllers\Auth\EntraAuthController;
 use App\Http\Controllers\Public\CalendarController;
+use App\Http\Controllers\Public\ContactController;
 use App\Http\Controllers\Public\EventController;
 use App\Http\Controllers\Public\GeorgsboteController;
 use App\Http\Controllers\Public\GeorgsbriefController;
@@ -58,6 +59,9 @@ Route::get('/veranstaltungen/{slug}', [EventController::class, 'show'])->name('e
 Route::post('/veranstaltungen/{slug}/anmeldung', [EventController::class, 'register'])
     ->middleware('throttle:5,10')
     ->name('events.register');
+Route::post('/veranstaltungen/{slug}/frage', [ContactController::class, 'askEvent'])
+    ->middleware('throttle:5,10')
+    ->name('events.ask');
 Route::middleware('throttle:20,10')->group(function () {
     Route::get('/anmeldung/bestaetigen/{token}', [RegistrationController::class, 'showConfirm'])->name('registrations.confirm');
     Route::post('/anmeldung/bestaetigen/{token}', [RegistrationController::class, 'confirm'])->name('registrations.confirm.submit');
@@ -82,6 +86,11 @@ Route::post('/georgsbrief/anmelden', [GeorgsbriefController::class, 'subscribe']
     ->name('georgsbrief.anmelden');
 // Frühere Adresse der Bestätigungsseite (evtl. schon in Brevo hinterlegt).
 Route::redirect('/georgsbote/danke', '/georgsbrief/danke', 301);
+
+// Kontaktformular (F-CMS-09); das Formular steht auf der CMS-Seite „kontakt“.
+Route::post('/kontakt', [ContactController::class, 'send'])
+    ->middleware('throttle:5,10')
+    ->name('contact.send');
 
 // Sektionen (F-BOL, Pflichtenheft 6.2), z. B. /bolivien.
 Route::get('/{section}', [SectionController::class, 'show'])

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
+use App\Models\ContactTopic;
 use App\Models\Event;
 use App\Models\Gruppierung;
 use App\Models\Page;
@@ -27,6 +28,16 @@ class PageController extends Controller
 
         if ($slug === config('dpsg.sections_page')) {
             return $this->sectionOverview($page);
+        }
+
+        if ($slug === config('dpsg.contact_page')) {
+            $topics = ContactTopic::query()->active()->get();
+
+            return view('pages.contact', [
+                'page' => $page,
+                'topics' => $topics,
+                'selected' => old('thema', $topics->firstWhere('slug', request()->query('thema'))?->slug),
+            ]);
         }
 
         // Gremiumsseiten (z. B. Diözesanleitung) zeigen ihre Personen und

@@ -65,6 +65,9 @@ return [
     // Übersichtsseite der Fachbereiche (Hauptmenüpunkt mit Unterpunkten).
     'sections_page' => 'fachbereiche',
 
+    // CMS-Seite mit dem Kontaktformular (F-CMS-09).
+    'contact_page' => 'kontakt',
+
     'contact' => [
         'name' => 'DPSG Diözesanverband Trier',
         'office' => 'Diözesanbüro',

@@ -85,6 +85,12 @@
                 </ul>
             </section>
         @endif
+        @if ($contactUrl = \App\Models\ContactTopic::urlFor('section', $section))
+            <p class="mt-6 flex items-center gap-2 text-sm">
+                <x-heroicon-o-envelope class="h-5 w-5 shrink-0 text-dpsg-rot" aria-hidden="true" />
+                <span>Fragen oder Lust mitzumachen? <a href="{{ $contactUrl }}" class="font-bold text-dpsg-rot underline">Schreib uns über das Kontaktformular</a>.</span>
+            </p>
+        @endif
 
         @if ($pages->isNotEmpty())
             <section class="mt-16" aria-labelledby="themen-heading">

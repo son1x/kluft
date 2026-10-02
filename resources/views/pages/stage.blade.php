@@ -134,7 +134,7 @@
                         @endforeach
                         oder
                     @endif
-                    im <a href="{{ url('/dioezesanbuero') }}" class="text-dpsg-rot underline">Diözesanbüro</a>.</span>
+                    im <a href="{{ url('/dioezesanbuero') }}" class="text-dpsg-rot underline">Diözesanbüro</a>@if ($contactUrl = \App\Models\ContactTopic::urlFor('stage', $page->stage)) – oder schreib uns direkt über das <a href="{{ $contactUrl }}" class="font-bold text-dpsg-rot underline">Kontaktformular</a>@endif.</span>
             </p>
         </div>
     </section>

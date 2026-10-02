@@ -17,7 +17,7 @@ Ursprüngliche Idee: Anbindung an **Signal**.
 - Der Verband nutzt bereits **Microsoft 365** (Anmeldung ins Backend über M365) und eine **Nextcloud** (Kalender).
 - Transaktionsmails sollen ohnehin über **Brevo** laufen (SMTP-Zugang noch offen, s. Roadmap).
 - Heute gibt es **keine** Benachrichtigung der Verantwortlichen bei neuen Anmeldungen – die Liste ist nur im Backend sichtbar.
-- Ein **Formular für Fragen zu Veranstaltungen** gibt es noch nicht; es würde zusammen mit dem geplanten Kontaktformular (Pflichtenheft 6.1) entstehen.
+- Kontaktformular und **„Frage zur Veranstaltung“** gibt es inzwischen (Pflichtenheft F-CMS-09); beide schicken eine E-Mail an die zuständigen Personen bzw. die Kontaktperson der Veranstaltung und speichern nichts.
 
 ## Optionen
 
@@ -66,7 +66,6 @@ Bei Fragen zu Veranstaltungen gilt dasselbe: Die Benachrichtigung nennt nur Vera
    - Vorschlag A: ein Kanal je Stufe/Fachbereich plus einer für den ganzen Verband (Veranstaltungen ohne Stufe).
    - Vorschlag B: Meldung an die bei der Veranstaltung eingetragene Kontaktperson.
 3. **Welche Ereignisse?** Neue Anmeldung, Nachrücken von der Warteliste, Stornierung, Veranstaltung voll, neue Frage.
-4. **Fragen-Formular:** Soll es zusammen mit dem Kontaktformular gebaut werden?
 
 ## Empfehlung
 

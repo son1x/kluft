@@ -189,5 +189,31 @@
                 </form>
             @endif
         </section>
+
+        {{-- Frage zur Veranstaltung (F-CMS-09): geht per Mail an die Kontaktperson --}}
+        <section id="frage" aria-labelledby="frage-heading" class="mt-12 max-w-3xl scroll-mt-24">
+            <h2 id="frage-heading" class="font-serif text-2xl font-bold">Fragen zur Veranstaltung?</h2>
+            @if (session('frage_status') === 'gesendet')
+                <div class="mt-4 border-l-4 border-stufe-pfadi bg-white p-4 shadow" role="status">
+                    <p class="font-bold">Danke für deine Frage!</p>
+                    <p class="mt-1">Sie ist unterwegs zu {{ $event->contact_name ?: 'den Verantwortlichen' }}. Die Antwort kommt per E-Mail.</p>
+                </div>
+            @else
+                <details class="mt-4 bg-white p-5 shadow-md" @if ($errors->frage->any() || session('frage_status')) open @endif>
+                    <summary class="cursor-pointer font-bold text-dpsg-rot">Frage an {{ $event->contact_name ?: 'die Verantwortlichen' }} schreiben</summary>
+                    @if (session('frage_status') === 'fehler')
+                        <p class="mt-4 border-l-4 border-dpsg-rot bg-surface-muted p-3 text-sm" role="alert">Das hat leider nicht geklappt. Bitte versuch es später noch einmal oder schreib direkt an <a href="mailto:{{ $event->contact_email ?: config('dpsg.contact.email') }}" class="text-dpsg-rot underline">{{ $event->contact_email ?: config('dpsg.contact.email') }}</a>.</p>
+                    @elseif (session('frage_status') === 'abgelaufen')
+                        <p class="mt-4 border-l-4 border-dpsg-mittelbeige bg-surface-muted p-3 text-sm" role="alert">Das Formular war sehr lange geöffnet. Bitte schick es noch einmal ab.</p>
+                    @endif
+                    <form method="post" action="{{ route('events.ask', $event->slug) }}" class="mt-4 space-y-4" novalidate>
+                        @include('partials.message-form-fields', ['idPrefix' => 'frage', 'bag' => 'frage'])
+                        <button type="submit" class="inline-flex items-center gap-2 bg-dpsg-blau px-5 py-2 font-bold text-white hover:bg-dpsg-rot">
+                            <x-heroicon-o-paper-airplane class="h-5 w-5" aria-hidden="true" /> Frage senden
+                        </button>
+                    </form>
+                </details>
+            @endif
+        </section>
     </article>
 @endsection

@@ -107,7 +107,6 @@ class RequiredPagesSeeder extends Seeder
                     54290 Trier</p>
                     <p>Telefon: <a href="tel:+4965146298290">0651 4 629 829 0</a><br>
                     E-Mail: <a href="mailto:info@dpsg-trier.de">info@dpsg-trier.de</a></p>
-                    <p>[TODO: Kontaktformular folgt in einer späteren Ausbaustufe (F-CMS-09).]</p>
                     <h2>Kontakt zu einem Bezirk vor Ort</h2>
                     <p>Alle Bezirke und Stämme mit Kontakt und Karte findest du unter <a href="/bezirke-staemme">Bezirke &amp; Stämme</a>. Die hauptberuflichen Ansprechpersonen findest du im <a href="/dioezesanbuero">Diözesanbüro</a>, das ehrenamtliche Leitungsteam unter <a href="/dioezesanleitung">Diözesanleitung</a>.</p>
                     HTML,

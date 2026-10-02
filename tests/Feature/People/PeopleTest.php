@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\People;
 
+use App\Filament\Resources\People\Pages\EditPerson;
 use App\Filament\Resources\TeamPhotos\Pages\EditTeamPhoto;
 use App\Models\Media;
 use App\Models\Page;
@@ -10,6 +11,7 @@ use App\Models\TeamPhoto;
 use App\Models\User;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\TestDox;
@@ -149,13 +151,13 @@ class PeopleTest extends TestCase
         $this->actingAs($verwaltung);
         $person = Person::query()->create(['gremium' => 'leitung', 'name' => 'Silas Weiß', 'role' => 'Referent', 'consent' => true]);
 
-        Livewire::test(\App\Filament\Resources\People\Pages\EditPerson::class, ['record' => $person->getRouteKey()])
-            ->fillForm(['portrait_upload' => [\Illuminate\Http\UploadedFile::fake()->image('silas.jpg', 800, 800)]])
+        Livewire::test(EditPerson::class, ['record' => $person->getRouteKey()])
+            ->fillForm(['portrait_upload' => [UploadedFile::fake()->image('silas.jpg', 800, 800)]])
             ->call('save')
             ->assertHasFormErrors(['portrait_credit' => 'required']);
 
-        Livewire::test(\App\Filament\Resources\People\Pages\EditPerson::class, ['record' => $person->getRouteKey()])
-            ->fillForm(['portrait_upload' => [\Illuminate\Http\UploadedFile::fake()->image('silas.jpg', 800, 800)], 'portrait_credit' => 'Max Muster'])
+        Livewire::test(EditPerson::class, ['record' => $person->getRouteKey()])
+            ->fillForm(['portrait_upload' => [UploadedFile::fake()->image('silas.jpg', 800, 800)], 'portrait_credit' => 'Max Muster'])
             ->call('save')
             ->assertHasNoFormErrors();
 

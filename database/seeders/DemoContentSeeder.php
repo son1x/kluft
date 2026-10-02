@@ -43,6 +43,22 @@ class DemoContentSeeder extends Seeder
         <p>Der Diözesanverband Trier gliedert sich in 10 Bezirke im gesamten Bistum Trier, von der Mosel über Eifel und Hunsrück bis ins Saarland, mit mehr als 60 Stämmen und Siedlungen und über 5.000 Mitgliedern. Alle Bezirke und Stämme mit Kontakt und Karte findest du unter <a href="/bezirke-staemme">Bezirke &amp; Stämme</a>.</p>
         HTML;
 
+    public const DV_BODY = <<<'HTML'
+        <p>Die Deutsche Pfadfinderschaft Sankt Georg (DPSG) ist organisiert in Stämmen vor Ort, die sich zu Bezirken zusammenschließen. Mehrere Bezirke bilden einen Diözesanverband – für das Bistum Trier ist das der Diözesanverband Trier, mit 10 Bezirken von der Mosel über Eifel und Hunsrück bis ins Saarland.</p>
+        HTML;
+
+    public const GEORGSBOTE_BODY = <<<'HTML'
+        <p>Der Georgsbote ist die Zeitschrift des DPSG Diözesanverbands Trier mit Berichten aus Stufen, Bezirken und Stämmen. Hier findest du alle Ausgaben als PDF. Kurz und regelmäßig informiert dich unser Newsletter, der Georgsbrief.</p>
+        HTML;
+
+    public const GEORGSBRIEF_BODY = <<<'HTML'
+        <p>Der Georgsbrief ist der Newsletter der DPSG Trier: Termine, Neuigkeiten und Infos aus dem Diözesanverband – direkt in dein Postfach.</p>
+        HTML;
+
+    public const STAEMME_BODY = <<<'HTML'
+        <p>Wo finde ich meinen Stamm? Hier findest du alle Bezirke und Stämme im Bistum Trier mit Kontakt und den Stufen, die sie anbieten.</p>
+        HTML;
+
     public const FACHBEREICHE_BODY = <<<'HTML'
         <p>Neben den Stufen gibt es im Diözesanverband Fachbereiche. Sie kümmern sich um Themen, die alle Altersstufen betreffen, und unterstützen Stämme, Bezirke und Leiter*innen mit Ideen, Material und Aktionen.</p>
         HTML;
@@ -143,16 +159,43 @@ class DemoContentSeeder extends Seeder
                 'body' => self::INKLUSION_BODY,
             ],
             [
+                'slug' => 'dioezesanverband',
+                'title' => 'Diözesanverband',
+                'show_in_nav' => true,
+                'nav_sort' => 10,
+                'body' => self::DV_BODY,
+            ],
+            [
                 'slug' => 'georgsbote',
                 'title' => 'Georgsbote',
-                'show_in_nav' => false,
-                'body' => <<<'HTML'
-                    <p>Der Georgsbote ist die Zeitschrift des DPSG Diözesanverbands Trier mit Berichten aus Stufen, Bezirken und Stämmen. Hier findest du alle Ausgaben als PDF; über den Newsletter kommen neue Ausgaben direkt in dein Postfach.</p>
-                    HTML,
+                'parent' => 'dioezesanverband',
+                'seo_description' => 'Die Zeitschrift des Diözesanverbands – alle Ausgaben als PDF',
+                'show_in_nav' => true,
+                'nav_sort' => 30,
+                'body' => self::GEORGSBOTE_BODY,
+            ],
+            [
+                'slug' => 'georgsbrief',
+                'title' => 'Georgsbrief',
+                'parent' => 'dioezesanverband',
+                'seo_description' => 'Der Newsletter der DPSG Trier',
+                'show_in_nav' => true,
+                'nav_sort' => 40,
+                'body' => self::GEORGSBRIEF_BODY,
+            ],
+            [
+                'slug' => 'bezirke-staemme',
+                'title' => 'Bezirke & Stämme',
+                'parent' => 'dioezesanverband',
+                'seo_description' => 'Alle Bezirke und Stämme im Bistum Trier auf der Karte',
+                'show_in_nav' => true,
+                'nav_sort' => 20,
+                'body' => self::STAEMME_BODY,
             ],
             [
                 'slug' => 'dioezesanleitung',
                 'title' => 'Diözesanleitung',
+                'parent' => 'dioezesanverband',
                 'show_in_nav' => true,
                 'nav_sort' => 10,
                 'body' => self::LEITUNG_BODY,

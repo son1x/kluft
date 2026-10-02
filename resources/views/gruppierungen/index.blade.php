@@ -11,9 +11,13 @@
     @php($stages = config('dpsg.stages'))
     <div class="mx-auto max-w-6xl px-4 py-10">
         <h1 class="font-serif text-3xl font-bold">Bezirke &amp; Stämme</h1>
-        <p class="mt-3 max-w-3xl text-text-secondary">
-            Wo finde ich meinen Stamm? Hier findest du alle Bezirke und Stämme im Bistum Trier mit Kontakt und den Stufen, die sie anbieten.
-        </p>
+        @if ($intro && trim(strip_tags($intro->body)) !== '')
+            <div class="prose mt-3 max-w-3xl text-text-secondary">{!! str($intro->body)->sanitizeHtml() !!}</div>
+        @else
+            <p class="mt-3 max-w-3xl text-text-secondary">
+                Wo finde ich meinen Stamm? Hier findest du alle Bezirke und Stämme im Bistum Trier mit Kontakt und den Stufen, die sie anbieten.
+            </p>
+        @endif
 
         <form method="get" action="{{ route('gruppierungen.index') }}" class="mt-6 flex flex-wrap items-end gap-4 bg-surface-muted p-4">
             <label class="flex flex-col text-sm font-bold">

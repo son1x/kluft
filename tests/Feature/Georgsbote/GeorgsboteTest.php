@@ -115,8 +115,8 @@ class GeorgsboteTest extends TestCase
         Http::fake();
         config(['services.brevo.api_key' => null]);
 
-        $this->get('/georgsbote')->assertSee('Die Online-Anmeldung wird gerade eingerichtet');
-        $this->post('/georgsbote/anmelden', ['email' => 'a@example.org', 'einwilligung' => '1'])
+        $this->get('/georgsbrief')->assertSee('Die Online-Anmeldung wird gerade eingerichtet');
+        $this->post('/georgsbrief/anmelden', ['email' => 'a@example.org', 'einwilligung' => '1'])
             ->assertSessionHas('newsletter_status', 'inaktiv');
 
         Http::assertNothingSent();
@@ -125,10 +125,10 @@ class GeorgsboteTest extends TestCase
     #[TestDox('Newsletter-Anmeldung per Bestätigungsmail, ohne Adresse bei uns zu speichern')]
     public function test_newsletter_signup_requests_double_opt_in_and_stores_no_address(): void
     {
-        config(['services.brevo' => ['api_key' => 'test-key', 'newsletter_list_id' => '7', 'doi_template_id' => '12', 'doi_redirect_url' => 'https://test.dpsg-trier.de/georgsbote/danke']]);
+        config(['services.brevo' => ['api_key' => 'test-key', 'newsletter_list_id' => '7', 'doi_template_id' => '12', 'doi_redirect_url' => 'https://test.dpsg-trier.de/georgsbrief/danke']]);
         Http::fake([BrevoNewsletter::ENDPOINT => Http::response(null, 201)]);
 
-        $this->post('/georgsbote/anmelden', ['email' => 'Erika@Example.org', 'vorname' => 'Erika', 'einwilligung' => '1'])
+        $this->post('/georgsbrief/anmelden', ['email' => 'Erika@Example.org', 'vorname' => 'Erika', 'einwilligung' => '1'])
             ->assertRedirect()
             ->assertSessionHas('newsletter_status', 'angefragt');
 
@@ -137,7 +137,7 @@ class GeorgsboteTest extends TestCase
             && $request['email'] === 'erika@example.org'
             && $request['includeListIds'] === [7]
             && $request['templateId'] === 12
-            && $request['redirectionUrl'] === 'https://test.dpsg-trier.de/georgsbote/danke');
+            && $request['redirectionUrl'] === 'https://test.dpsg-trier.de/georgsbrief/danke');
 
         // Abnahmekriterium 4: keine E-Mail-Adresse im CMS gespeichert.
         $this->assertTrue(AuditLog::query()->where('action', 'like', 'newsletter.doi:angefragt:%')->exists());
@@ -154,8 +154,8 @@ class GeorgsboteTest extends TestCase
         config(['services.brevo' => ['api_key' => 'k', 'newsletter_list_id' => '1', 'doi_template_id' => '1', 'doi_redirect_url' => null]]);
         Http::fake();
 
-        $this->post('/georgsbote/anmelden', ['email' => 'a@example.org'])->assertSessionHasErrors('einwilligung');
-        $this->post('/georgsbote/anmelden', ['email' => 'a@example.org', 'einwilligung' => '1', 'website' => 'spam'])
+        $this->post('/georgsbrief/anmelden', ['email' => 'a@example.org'])->assertSessionHasErrors('einwilligung');
+        $this->post('/georgsbrief/anmelden', ['email' => 'a@example.org', 'einwilligung' => '1', 'website' => 'spam'])
             ->assertSessionHas('newsletter_status', 'angefragt');
 
         Http::assertNothingSent();

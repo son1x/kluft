@@ -127,7 +127,7 @@ class Roadmap
             [
                 'key' => 'brevo-newsletter',
                 'phase' => '1b',
-                'title' => 'Brevo für den Georgsboten verbinden',
+                'title' => 'Brevo für den Georgsbrief (Newsletter) verbinden',
                 'detail' => 'In Brevo Liste und Double-Opt-In-Template anlegen; GitHub-Secrets BREVO_API_KEY, BREVO_NEWSLETTER_LIST_ID, BREVO_DOI_TEMPLATE_ID setzen.',
                 'done' => app(BrevoNewsletter::class)->isConfigured(),
             ],

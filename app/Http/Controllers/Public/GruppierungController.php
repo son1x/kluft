@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
 use App\Models\Gruppierung;
+use App\Models\Page;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -38,6 +39,8 @@ class GruppierungController extends Controller
         $ohneBezirk = $bezirk ? collect() : $staemme->get('', collect());
 
         return view('gruppierungen.index', [
+            // Redaktioneller Einleitungstext (Seite „bezirke-staemme“, zugleich Menüpunkt).
+            'intro' => Page::query()->published()->where('slug', 'bezirke-staemme')->first(),
             'bezirke' => $bezirke,
             'sections' => $sections,
             'ohneBezirk' => $ohneBezirk,

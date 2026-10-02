@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\EntraAuthController;
 use App\Http\Controllers\Public\CalendarController;
 use App\Http\Controllers\Public\EventController;
 use App\Http\Controllers\Public\GeorgsboteController;
+use App\Http\Controllers\Public\GeorgsbriefController;
 use App\Http\Controllers\Public\GruppierungController;
 use App\Http\Controllers\Public\HomeController;
 use App\Http\Controllers\Public\PageController;
@@ -67,15 +68,20 @@ Route::middleware('throttle:20,10')->group(function () {
 // Projektstand nach Pflichtenheft (außerhalb des CMS).
 Route::get('/roadmap', RoadmapController::class)->name('roadmap');
 
-// Georgsbote: Archiv + Newsletter-Anmeldung (F-GB, Pflichtenheft 11.1).
+// Georgsbote: Archiv der PDF-Ausgaben (F-GB, Pflichtenheft 11.1).
 Route::get('/georgsbote', [GeorgsboteController::class, 'index'])->name('georgsbote.index');
-Route::get('/georgsbote/danke', [GeorgsboteController::class, 'danke'])->name('georgsbote.danke');
 Route::get('/georgsbote/{jahr}/{ausgabe}.pdf', [GeorgsboteController::class, 'pdf'])
     ->whereNumber(['jahr', 'ausgabe'])
     ->name('georgsbote.pdf');
-Route::post('/georgsbote/anmelden', [GeorgsboteController::class, 'subscribe'])
+
+// Georgsbrief: Newsletter-Anmeldung (Double-Opt-In über Brevo).
+Route::get('/georgsbrief', [GeorgsbriefController::class, 'index'])->name('georgsbrief.index');
+Route::get('/georgsbrief/danke', [GeorgsbriefController::class, 'danke'])->name('georgsbrief.danke');
+Route::post('/georgsbrief/anmelden', [GeorgsbriefController::class, 'subscribe'])
     ->middleware('throttle:5,10')
-    ->name('georgsbote.anmelden');
+    ->name('georgsbrief.anmelden');
+// Frühere Adresse der Bestätigungsseite (evtl. schon in Brevo hinterlegt).
+Route::redirect('/georgsbote/danke', '/georgsbrief/danke', 301);
 
 // Sektionen (F-BOL, Pflichtenheft 6.2), z. B. /bolivien.
 Route::get('/{section}', [SectionController::class, 'show'])

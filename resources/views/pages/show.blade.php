@@ -26,6 +26,22 @@
         </div>
     </article>
 
+    {{-- Übersichtsseiten (z. B. Diözesanverband): Unterpunkte als Kacheln --}}
+    @php($childPages = $page->navChildren)
+    @if ($childPages->isNotEmpty())
+        <div class="mx-auto mb-12 grid max-w-6xl gap-6 px-4 sm:grid-cols-2 lg:grid-cols-4">
+            @foreach ($childPages as $child)
+                <a href="{{ url('/'.$child->slug) }}" class="group flex flex-col border-t-4 border-dpsg-blau bg-white p-6 shadow-md transition hover:-translate-y-0.5 hover:border-dpsg-rot hover:shadow-lg">
+                    <h2 class="font-serif text-xl font-bold group-hover:text-dpsg-rot">{{ $child->title }}</h2>
+                    @if ($teaser = $child->seo_description ?: \Illuminate\Support\Str::limit(trim(html_entity_decode(strip_tags(\Illuminate\Support\Str::before((string) $child->body, '[TODO')))), 140))
+                        <p class="mt-2 flex-1 text-sm text-text-secondary">{{ $teaser }}</p>
+                    @endif
+                    <span class="mt-4 inline-flex items-center gap-1 text-sm font-bold text-dpsg-rot">Mehr <x-heroicon-o-arrow-right class="h-4 w-4 transition group-hover:translate-x-1" aria-hidden="true" /></span>
+                </a>
+            @endforeach
+        </div>
+    @endif
+
     @if (($teamPhoto ?? null) || ($people ?? collect())->isNotEmpty())
         @include('partials.team', ['people' => $people, 'teamPhoto' => $teamPhoto])
     @endif

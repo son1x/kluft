@@ -150,13 +150,19 @@
 
     @if ($highlightPages->isNotEmpty())
         <section class="bg-surface-muted">
-            <div class="mx-auto grid max-w-6xl gap-6 px-4 py-16 md:grid-cols-2">
-                @foreach (['bolivien', 'georgsbote'] as $slug)
+            <div @class(['mx-auto grid max-w-6xl gap-6 px-4 py-16 md:grid-cols-2', 'lg:grid-cols-3' => $highlightPages->count() > 2])>
+                @foreach (['bolivien', 'georgsbote', 'georgsbrief'] as $slug)
                     @if ($highlight = $highlightPages->get($slug))
                         <article class="flex flex-col bg-white p-6 shadow-md">
+                            @if ($slug === 'georgsbrief')
+                                <picture class="-mx-6 -mt-6 mb-4 block bg-[#eff2f7] px-6 py-4">
+                                    <source type="image/webp" srcset="{{ asset('images/georgsbrief-logo.webp') }}" />
+                                    <img src="{{ asset('images/georgsbrief-logo.png') }}" alt="" width="970" height="251" class="h-auto w-full" loading="lazy" />
+                                </picture>
+                            @endif
                             <h2 class="font-serif text-xl font-bold">{{ $highlight->title }}</h2>
                             <p class="mt-3 flex-1">{{ \Illuminate\Support\Str::limit(trim(\Illuminate\Support\Str::before(strip_tags($highlight->body), '[TODO')), 260) }}</p>
-                            <a href="{{ url('/'.$highlight->slug) }}" class="mt-5 self-start border border-dpsg-rot px-3 py-1 text-sm text-dpsg-rot hover:bg-dpsg-rot hover:text-white">Mehr erfahren</a>
+                            <a href="{{ url('/'.$highlight->slug) }}" class="mt-5 self-start border border-dpsg-rot px-3 py-1 text-sm text-dpsg-rot hover:bg-dpsg-rot hover:text-white">{{ $slug === 'georgsbrief' ? 'Jetzt abonnieren' : 'Mehr erfahren' }}</a>
                         </article>
                     @endif
                 @endforeach
@@ -174,8 +180,9 @@
             ['url' => '/aktuelles', 'label' => 'Aktuelles', 'icon' => 'heroicon-o-newspaper'],
             $highlightPages->has('bolivien') ? ['url' => '/bolivien', 'label' => 'Bolivien', 'icon' => 'heroicon-o-globe-europe-africa'] : null,
             $highlightPages->has('georgsbote') ? ['url' => '/georgsbote', 'label' => 'Georgsbote', 'icon' => 'heroicon-o-book-open'] : null,
+            $highlightPages->has('georgsbrief') ? ['url' => '/georgsbrief', 'label' => 'Georgsbrief', 'icon' => 'heroicon-o-envelope-open'] : null,
         ]))
-        <div class="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-6">
+        <div @class(['grid grid-cols-2 gap-5 sm:grid-cols-3', 'lg:grid-cols-6' => count($serviceLinks) <= 6, 'lg:grid-cols-7' => count($serviceLinks) > 6])>
             @foreach ($serviceLinks as $link)
                 <a href="{{ url($link['url']) }}" class="group flex aspect-square flex-col items-center justify-center gap-3 bg-white p-4 text-center shadow-md transition hover:-translate-y-0.5 hover:shadow-lg">
                     <x-dynamic-component :component="$link['icon']" class="h-10 w-10 text-dpsg-rot" aria-hidden="true" />

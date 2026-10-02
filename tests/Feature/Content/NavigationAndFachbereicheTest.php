@@ -120,4 +120,37 @@ class NavigationAndFachbereicheTest extends TestCase
         $this->assertSame('vorstand@dpsg-trier.de', (new Person(['gremium' => 'leitung', 'name' => 'Till Mang', 'email' => 'vorstand@dpsg-trier.de']))->publicEmail());
         $this->assertNull((new Person(['gremium' => 'dak', 'name' => 'Mara Muster']))->publicEmail());
     }
+
+    #[TestDox('Diözesanverband im Menü mit Diözesanleitung, Bezirke & Stämme, Georgsbote und Georgsbrief')]
+    public function test_dioezesanverband_menu_and_migration(): void
+    {
+        $this->page('stufen', 'Die Stufen', ['show_in_nav' => true, 'nav_sort' => 20]);
+        // Die Seite legt bereits eine frühere Migration an.
+        $leitung = Page::query()->updateOrCreate(['slug' => 'dioezesanleitung'], [
+            'title' => 'Diözesanleitung', 'body' => '<p>Leitung</p>', 'status' => 'published', 'published_at' => now()->subDay(),
+            'parent_id' => null, 'show_in_nav' => true, 'nav_sort' => 10,
+        ]);
+        $bote = $this->page('georgsbote', 'Georgsbote', ['body' => '<p>Der Georgsbote ist die Zeitschrift des DPSG Diözesanverbands Trier mit Berichten aus Stufen, Bezirken und Stämmen. Hier findest du alle Ausgaben als PDF; über den Newsletter kommen neue Ausgaben direkt in dein Postfach.</p>']);
+
+        DB::table('migrations')->where('migration', '2026_10_02_140000_menu_dioezesanverband_georgsbrief')->delete();
+        (require database_path('migrations/2026_10_02_140000_menu_dioezesanverband_georgsbrief.php'))->up();
+
+        $dv = Page::query()->where('slug', 'dioezesanverband')->firstOrFail();
+        $this->assertSame($dv->id, $leitung->fresh()->parent_id);
+        $this->assertSame($dv->id, $bote->fresh()->parent_id);
+        $this->assertStringContainsString('Georgsbrief', $bote->fresh()->body);
+        $this->assertSame(['Diözesanleitung', 'Bezirke & Stämme', 'Georgsbote', 'Georgsbrief'], $dv->navChildren->pluck('title')->all());
+
+        $html = $this->get('/kalender')->assertOk()->getContent();
+        $desktop = substr($html, strpos($html, 'aria-label="Hauptnavigation"'));
+        $this->assertMatchesRegularExpression('#Diözesanverband.*Diözesanleitung.*Bezirke &amp; Stämme.*Georgsbote.*Georgsbrief.*Die Stufen#s', $desktop);
+
+        // Übersichtsseite zeigt die Unterpunkte als Kacheln; Unterseiten mit
+        // eigener Route (Karte, Archiv, Newsletter) bleiben erreichbar.
+        $this->get('/dioezesanverband')->assertOk()->assertSeeInOrder(['Diözesanleitung', 'Bezirke &amp; Stämme', 'Georgsbote', 'Georgsbrief'], false);
+        $this->get('/bezirke-staemme')->assertOk()->assertSee('Wo finde ich meinen Stamm?');
+        $this->get('/georgsbrief')->assertOk()->assertSee('georgsbrief-logo', false)->assertSee('Georgsbrief abonnieren');
+        $this->get('/georgsbote')->assertOk()->assertDontSee('Georgsbrief abonnieren')->assertSee('Zum Georgsbrief');
+        $this->get('/georgsbote/danke')->assertRedirect('/georgsbrief/danke');
+    }
 }

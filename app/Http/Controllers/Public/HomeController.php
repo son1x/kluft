@@ -30,7 +30,7 @@ class HomeController extends Controller
 
         $highlightPages = Page::query()
             ->published()
-            ->whereIn('slug', ['bolivien', 'georgsbote'])
+            ->whereIn('slug', ['bolivien', 'georgsbote', 'georgsbrief'])
             ->get()
             ->keyBy('slug');
 

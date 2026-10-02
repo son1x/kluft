@@ -61,7 +61,6 @@
                         @endif
                     </li>
                 @endforeach
-                <li><a href="{{ url('/bezirke-staemme') }}" @class(['block px-4 py-3', 'text-dpsg-rot' => request()->is('bezirke-staemme')])>Bezirke &amp; Stämme</a></li>
                 <li><a href="{{ url('/veranstaltungen') }}" @class(['block px-4 py-3', 'text-dpsg-rot' => request()->is('veranstaltungen*')])>Veranstaltungen</a></li>
                 <li><a href="{{ url('/kalender') }}" @class(['block px-4 py-3', 'text-dpsg-rot' => request()->is('kalender')])>Kalender</a></li>
                 <li><a href="{{ url('/aktuelles') }}" @class(['block px-4 py-3', 'text-dpsg-rot' => request()->is('aktuelles*')])>Aktuelles</a></li>
@@ -149,9 +148,6 @@
                     @endif
                 @endforeach
                 <li class="flex-1 border-l border-dpsg-mittelbeige text-center">
-                    <a href="{{ url('/bezirke-staemme') }}" @class(['block px-3 py-1 hover:text-dpsg-rot', 'text-dpsg-rot' => request()->is('bezirke-staemme')])>Bezirke &amp; Stämme</a>
-                </li>
-                <li class="flex-1 border-l border-dpsg-mittelbeige text-center">
                     <a href="{{ url('/veranstaltungen') }}" @class(['block px-3 py-1 hover:text-dpsg-rot', 'text-dpsg-rot' => request()->is('veranstaltungen*')])>Veranstaltungen</a>
                 </li>
                 <li class="flex-1 border-l border-dpsg-mittelbeige text-center">
@@ -180,10 +176,8 @@
                             <li class="pl-3"><a href="{{ url('/'.$child->slug) }}" class="hover:underline">{{ $child->title }}</a></li>
                         @endforeach
                     @endforeach
-                    <li><a href="{{ url('/bezirke-staemme') }}" class="hover:underline">Bezirke &amp; Stämme</a></li>
                     <li><a href="{{ url('/veranstaltungen') }}" class="hover:underline">Veranstaltungen</a></li>
                     <li><a href="{{ url('/kalender') }}" class="hover:underline">Kalender</a></li>
-                    <li><a href="{{ url('/georgsbote') }}" class="hover:underline">Georgsbote</a></li>
                     <li><a href="{{ url('/aktuelles') }}" class="hover:underline">Aktuelles</a></li>
                     <li><a href="https://www.dpsg.de" target="_blank" rel="noopener" class="hover:underline">DPSG Bundesebene</a></li>
                     <li><a href="https://www.bistum-trier.de" target="_blank" rel="noopener" class="hover:underline">Bistum Trier</a></li>

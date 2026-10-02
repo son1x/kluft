@@ -25,6 +25,9 @@ class CalendarController extends Controller
     /** Filterwert für „nur Veranstaltungen mit Anmeldung“. */
     private const EVENTS = 'veranstaltungen';
 
+    /** Zeitraum der Listenansicht in Monaten. */
+    private const LIST_MONTHS = 12;
+
     public function index(Request $request): View
     {
         $calendars = Calendar::query()->where('active', true)->orderBy('label')->get();
@@ -41,7 +44,8 @@ class CalendarController extends Controller
             $to = $monat->endOfMonth()->endOfWeek();
         } else {
             $from = CarbonImmutable::now()->startOfDay();
-            $to = $from->addMonths(6);
+            // Lager und Kurse stehen oft lange vorher fest: ein Jahr im Voraus.
+            $to = $from->addMonths(self::LIST_MONTHS);
         }
 
         return view('calendar.index', [

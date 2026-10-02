@@ -177,6 +177,18 @@ class CalendarTest extends TestCase
         $this->assertNotContains('Wölflingstag', array_column($json, 'title'));
     }
 
+    #[TestDox('Die Liste reicht ein Jahr voraus (Lager und Kurse stehen oft lange vorher fest)')]
+    public function test_list_covers_twelve_months(): void
+    {
+        Event::query()->create(['title' => 'Sommerlager in elf Monaten', 'slug' => 'sola', 'status' => 'open', 'starts_at' => now()->addMonths(11), 'ends_at' => now()->addMonths(11)->addDays(7)]);
+        Event::query()->create(['title' => 'Jubiläum in zwei Jahren', 'slug' => 'jubi', 'status' => 'open', 'starts_at' => now()->addYears(2), 'ends_at' => now()->addYears(2)->addHours(5)]);
+
+        $this->get('/kalender')->assertOk()
+            ->assertSee('Sommerlager in elf Monaten')
+            ->assertDontSee('Jubiläum in zwei Jahren')
+            ->assertSee('Die Liste zeigt Termine bis');
+    }
+
     #[TestDox('Kalenderseite zeigt Veranstaltungen auch ohne eingetragenen Nextcloud-Kalender')]
     public function test_calendar_without_nextcloud_shows_events(): void
     {

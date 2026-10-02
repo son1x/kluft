@@ -91,8 +91,14 @@
                     @endforeach
                 </ul>
             @empty
-                <p class="mt-8 text-text-secondary">Keine Termine in den nächsten sechs Monaten.</p>
+                <p class="mt-8 text-text-secondary">Keine Termine in den nächsten zwölf Monaten.</p>
             @endforelse
+            @if ($events->isNotEmpty())
+                <p class="mt-8 text-sm text-text-secondary">
+                    Die Liste zeigt Termine bis {{ $to->locale('de')->isoFormat('D. MMMM YYYY') }}. Spätere Termine findest du in der
+                    <a href="{{ route('calendar.index', [...$filter, 'ansicht' => 'monat', 'monat' => $to->addMonth()->format('Y-m')]) }}" class="text-dpsg-rot underline">Monatsansicht</a>.
+                </p>
+            @endif
         @else
             <div class="mt-8 flex items-center justify-between">
                 <a href="{{ route('calendar.index', [...$filter, 'ansicht' => 'monat', 'monat' => $monat->subMonth()->format('Y-m')]) }}" class="border border-dpsg-rot px-3 py-1 text-dpsg-rot hover:bg-dpsg-rot hover:text-white">‹ <span class="sr-only">Vorheriger Monat</span></a>

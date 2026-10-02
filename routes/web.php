@@ -12,7 +12,6 @@ use App\Http\Controllers\Public\PostController;
 use App\Http\Controllers\Public\RegistrationController;
 use App\Http\Controllers\Public\RoadmapController;
 use App\Http\Controllers\Public\SectionController;
-use App\Http\Controllers\Public\TestReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
@@ -67,7 +66,6 @@ Route::middleware('throttle:20,10')->group(function () {
 
 // Projektstand nach Pflichtenheft (außerhalb des CMS).
 Route::get('/roadmap', RoadmapController::class)->name('roadmap');
-Route::get('/roadmap/tests', TestReportController::class)->name('roadmap.tests');
 
 // Georgsbote: Archiv + Newsletter-Anmeldung (F-GB, Pflichtenheft 11.1).
 Route::get('/georgsbote', [GeorgsboteController::class, 'index'])->name('georgsbote.index');

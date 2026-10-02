@@ -20,9 +20,6 @@
     <div class="mx-auto max-w-6xl px-4 py-10">
         <h1 class="font-serif text-3xl font-bold">Roadmap</h1>
         <p class="mt-2 max-w-3xl text-text-secondary">Umsetzungsstand der neuen Website nach Pflichtenheft. Stand: {{ \Illuminate\Support\Carbon::parse($stand)->locale('de')->isoFormat('D. MMMM YYYY') }}.</p>
-        <a href="{{ route('roadmap.tests') }}" class="mt-3 inline-flex items-center gap-2 border border-dpsg-blau px-3 py-1.5 text-sm font-bold text-dpsg-blau hover:bg-dpsg-blau hover:text-white">
-            <x-heroicon-o-beaker class="h-4 w-4" aria-hidden="true" /> Automatische Tests ansehen
-        </a>
 
         {{-- Offene Punkte der Projektleitung --}}
         <section aria-labelledby="todo-heading" class="mt-8 border-l-4 border-dpsg-rot bg-dpsg-hellbeige p-6">

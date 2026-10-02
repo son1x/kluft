@@ -76,10 +76,13 @@ class NavigationAndFachbereicheTest extends TestCase
         $this->get('/stufe-jupfi')->assertOk()
             ->assertSee('Der Diözesanarbeitskreis')
             ->assertSeeInOrder(['Stufenreferent*innen', 'Silas Weiß', 'Im Arbeitskreis', 'Mara Muster'])
-            ->assertSee('mailto:dak-jupfi@example.org', false)
+            // Kontakt über die Referent*innen (Initial.Nachname@…), DAK ohne eigene Adresse.
+            ->assertSee('mailto:s.weiss@dpsg-trier.de', false)
+            ->assertDontSee('dak-jupfi@example.org')
             ->assertDontSee('Ohne Freigabe')
             ->assertDontSee('Andere Stufe');
 
+        $this->assertNull($member->fresh()->email);
         $this->assertSame('DAK Jungpfadfinder*innen', $member->gremiumLabel());
         $this->assertStringEndsWith('/stufe-jupfi#person-mara-muster', $member->pageUrl());
     }
@@ -104,5 +107,17 @@ class NavigationAndFachbereicheTest extends TestCase
         $this->assertSame('<p>Eigener Text</p>', $inklusion->fresh()->body);
         $this->assertSame($fach->id, Page::query()->where('slug', 'internationale-gerechtigkeit')->value('parent_id'));
         $this->assertSame('inklusion', $bianca->fresh()->section);
+    }
+
+    #[TestDox('E-Mail-Adresse nach Schema Initial.Nachname@dpsg-trier.de, eingetragene Adresse hat Vorrang')]
+    public function test_email_follows_initial_lastname_scheme(): void
+    {
+        $this->assertSame('s.weiss@dpsg-trier.de', Person::suggestedEmail('Silas Weiß'));
+        $this->assertSame('j.mueller-luedenscheidt@dpsg-trier.de', Person::suggestedEmail('Jörg Müller-Lüdenscheidt'));
+        $this->assertNull(Person::suggestedEmail('Madonna'));
+
+        $this->assertSame('t.mang@dpsg-trier.de', (new Person(['gremium' => 'leitung', 'name' => 'Till Mang']))->publicEmail());
+        $this->assertSame('vorstand@dpsg-trier.de', (new Person(['gremium' => 'leitung', 'name' => 'Till Mang', 'email' => 'vorstand@dpsg-trier.de']))->publicEmail());
+        $this->assertNull((new Person(['gremium' => 'dak', 'name' => 'Mara Muster']))->publicEmail());
     }
 }

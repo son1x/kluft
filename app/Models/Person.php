@@ -53,6 +53,51 @@ class Person extends Model
             ?? '?';
     }
 
+    protected static function booted(): void
+    {
+        // DAK-Mitglieder haben keine eigene Adresse; Kontakt läuft über die
+        // Stufenreferent*innen.
+        static::saving(function (Person $person) {
+            if ($person->gremium === 'dak') {
+                $person->email = null;
+            }
+        });
+    }
+
+    /**
+     * Adresse nach dem Schema Initial.Nachname@dpsg-trier.de, z. B.
+     * „Silas Weiß“ → s.weiss@dpsg-trier.de. Null, wenn der Name nur aus
+     * einem Wort besteht.
+     */
+    public static function suggestedEmail(?string $name): ?string
+    {
+        $parts = preg_split('/\s+/', trim((string) $name), -1, PREG_SPLIT_NO_EMPTY);
+        if (count($parts) < 2) {
+            return null;
+        }
+
+        $ascii = fn (string $s) => Str::lower(Str::ascii(strtr($s, [
+            'ä' => 'ae', 'ö' => 'oe', 'ü' => 'ue', 'Ä' => 'Ae', 'Ö' => 'Oe', 'Ü' => 'Ue', 'ß' => 'ss',
+        ])));
+        $initial = mb_substr($ascii($parts[0]), 0, 1);
+        $last = preg_replace('/[^a-z0-9-]/', '', $ascii(end($parts)));
+
+        return $initial !== '' && $last !== '' ? "{$initial}.{$last}@".config('dpsg.person_email_domain') : null;
+    }
+
+    /**
+     * Öffentlich angezeigte Adresse: eingetragene Adresse, sonst nach
+     * Schema; für DAK-Mitglieder keine.
+     */
+    public function publicEmail(): ?string
+    {
+        if ($this->gremium === 'dak') {
+            return null;
+        }
+
+        return filled($this->email) ? $this->email : self::suggestedEmail($this->name);
+    }
+
     public function anchor(): string
     {
         return 'person-'.Str::slug($this->name);

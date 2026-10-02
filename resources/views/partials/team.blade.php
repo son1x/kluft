@@ -70,7 +70,7 @@
                             <div>
                                 <h3 class="font-serif text-lg font-bold leading-tight">{{ $person->name }}</h3>
                                 @if ($person->role)<p class="text-sm text-text-secondary">{{ $person->role }}</p>@endif
-                                @if ($person->email)<a href="mailto:{{ $person->email }}" class="text-sm text-dpsg-rot underline">{{ $person->email }}</a>@endif
+                                @if ($person->publicEmail())<a href="mailto:{{ $person->publicEmail() }}" class="text-sm break-all text-dpsg-rot underline">{{ $person->publicEmail() }}</a>@endif
                             </div>
                         </div>
                         @if ($person->bio)

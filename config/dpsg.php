@@ -96,6 +96,10 @@ return [
         'bolivien' => 'Bolivienpartnerschaft (Streifen)',
     ],
 
+    // Persönliche Adressen nach dem Schema Initial.Nachname@<domain>
+    // (DAK-Mitglieder haben keine eigene Adresse).
+    'person_email_domain' => 'dpsg-trier.de',
+
     'gremien' => [
         'leitung' => ['label' => 'Diözesanleitung', 'page' => 'dioezesanleitung'],
         'buero' => ['label' => 'Diözesanbüro', 'page' => 'dioezesanbuero'],

@@ -47,7 +47,10 @@ class PersonResource extends Resource
                 ->columns(2)
                 ->columnSpanFull()
                 ->components([
-                    TextInput::make('name')->label('Name')->required()->maxLength(150),
+                    TextInput::make('name')->label('Name')->required()->maxLength(150)
+                        ->live(onBlur: true)
+                        ->afterStateUpdated(fn ($state, $set, Get $get) => blank($get('email')) && $get('gremium') !== 'dak'
+                            ? $set('email', Person::suggestedEmail($state)) : null),
                     TextInput::make('role')->label('Funktion')->placeholder('z. B. Referentin der Wölflingsstufe')->maxLength(150),
                     Select::make('gremium')->label('Gremium')->options($gremien)->in(array_keys($gremien))->required()->native(false)
                         ->live()
@@ -73,7 +76,10 @@ class PersonResource extends Resource
                         ->placeholder('–')
                         ->native(false)
                         ->helperText('Erscheint dann auf der Startseite des Fachbereichs als Ansprechperson.'),
-                    TextInput::make('email')->label('E-Mail (Funktionsadresse)')->email()->maxLength(255),
+                    TextInput::make('email')->label('E-Mail')->email()->maxLength(255)
+                        ->visible(fn (Get $get) => $get('gremium') !== 'dak')
+                        ->placeholder(fn (Get $get) => Person::suggestedEmail($get('name')) ?? 'initial.nachname@'.config('dpsg.person_email_domain'))
+                        ->helperText('Standard: Initial.Nachname@'.config('dpsg.person_email_domain').' – leer lassen, dann wird diese Adresse angezeigt. DAK-Mitglieder haben keine eigene Adresse.'),
                     Textarea::make('bio')->label('Vorstellungstext')->rows(6)->maxLength(3000)->columnSpanFull()
                         ->helperText('Absätze mit einer Leerzeile trennen. Lange Texte werden mit „Mehr lesen“ eingeklappt.'),
                     Select::make('photo_media_id')->label('Porträtfoto (optional)')

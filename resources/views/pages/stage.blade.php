@@ -125,9 +125,14 @@
         <div class="mx-auto max-w-6xl px-4">
             <p class="mt-2 flex flex-wrap items-center gap-3 rounded-lg bg-surface-muted p-4 text-sm">
                 <x-heroicon-o-hand-raised class="h-5 w-5 shrink-0 text-(--stufe)" aria-hidden="true" />
+                @php($referents = $dak->filter(fn ($p) => $p->publicEmail()))
                 <span>Lust, im DAK {{ $stage['label'] }} mitzuarbeiten? Melde dich gern
-                    @if ($dak->firstWhere('email'))
-                        bei <a href="mailto:{{ $dak->firstWhere('email')->email }}" class="text-dpsg-rot underline">{{ $dak->firstWhere('email')->email }}</a> oder
+                    @if ($referents->isNotEmpty())
+                        bei
+                        @foreach ($referents as $referent)
+                            <a href="mailto:{{ $referent->publicEmail() }}" class="text-dpsg-rot underline">{{ $referent->name }}</a>{{ $loop->last ? '' : ',' }}
+                        @endforeach
+                        oder
                     @endif
                     im <a href="{{ url('/dioezesanbuero') }}" class="text-dpsg-rot underline">Diözesanbüro</a>.</span>
             </p>

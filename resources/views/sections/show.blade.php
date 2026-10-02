@@ -57,7 +57,7 @@
                                 <p class="font-serif text-lg font-bold leading-tight">{{ $person->name }}</p>
                                 @if ($person->role)<p class="text-sm text-text-secondary">{{ $person->role }}</p>@endif
                                 <p class="mt-1 text-sm">
-                                    <a href="mailto:{{ $person->email ?: config('dpsg.contact.email') }}" class="text-dpsg-rot underline">{{ $person->email ?: config('dpsg.contact.email') }}</a>
+                                    <a href="mailto:{{ $person->publicEmail() ?: config('dpsg.contact.email') }}" class="break-all text-dpsg-rot underline">{{ $person->publicEmail() ?: config('dpsg.contact.email') }}</a>
                                 </p>
                                 <a href="{{ $person->pageUrl() }}" class="mt-1 inline-block text-sm underline hover:text-dpsg-rot">Mehr über {{ \Illuminate\Support\Str::before($person->name, ' ') }}</a>
                             </div>

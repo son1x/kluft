@@ -106,13 +106,7 @@ jobs:
           php artisan key:generate --no-interaction
           touch database/database.sqlite
           sed -i 's/^DB_CONNECTION=.*/DB_CONNECTION=sqlite/' .env
-          php artisan test --log-junit "$RUNNER_TEMP/junit.xml"
-
-      # Ergebnis für /roadmap/tests (nur bei Erfolg – sonst wird ohnehin
-      # nicht ausgeliefert). Die Datei ist nicht im Repo, wird aber mit
-      # hochgeladen.
-      - name: Testbericht erzeugen
-        run: php .github/scripts/test-report.php "$RUNNER_TEMP/junit.xml" resources/data/test-report.json
+          php artisan test
 
       # Für das Deployment: nur Produktions-Abhängigkeiten, dann zu einem
       # einzelnen Archiv packen (s. Kommentar oben).

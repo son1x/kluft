@@ -25,9 +25,15 @@ class Calendar extends Model
      */
     public function textColor(): string
     {
+        return self::textColorFor($this->color);
+    }
+
+    /** Weiß oder Dunkelgrau – je nachdem, was auf der Farbe besser lesbar ist. */
+    public static function textColorFor(string $color): string
+    {
         [$r, $g, $b] = array_map(
             fn (string $hex) => (($c = hexdec($hex) / 255) <= 0.03928 ? $c / 12.92 : (($c + 0.055) / 1.055) ** 2.4),
-            str_split(ltrim($this->color, '#'), 2)
+            str_split(ltrim($color, '#'), 2)
         );
         $luminance = 0.2126 * $r + 0.7152 * $g + 0.0722 * $b;
 

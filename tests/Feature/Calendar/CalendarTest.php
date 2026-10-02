@@ -5,6 +5,7 @@ namespace Tests\Feature\Calendar;
 use App\Filament\Resources\Calendars\Pages\EditCalendar;
 use App\Models\Calendar;
 use App\Models\CalendarEvent;
+use App\Models\Event;
 use App\Models\User;
 use App\Services\CalendarSync;
 use Carbon\CarbonImmutable;
@@ -143,6 +144,45 @@ class CalendarTest extends TestCase
         $json = $this->getJson('/api/calendar/events?from='.now()->toDateString().'&to='.now()->addMonths(3)->toDateString())->assertOk()->json();
         $this->assertContains('Diözesanversammlung', array_column($json, 'title'));
         $this->assertStringNotContainsString('@example.org', json_encode($json));
+    }
+
+    #[TestDox('Veranstaltungen aus dem Backend stehen im Kalender – mit Link, Stufenfilter und ohne Doppelung mit Nextcloud')]
+    public function test_events_appear_in_calendar_without_duplicates(): void
+    {
+        $dv = Calendar::query()->create(['label' => 'Diözese', 'ics_url' => self::URL, 'color' => '#003056']);
+        $tag = now()->addDays(10)->setTime(10, 0);
+        Event::query()->create(['title' => 'Wölflingstag 2026', 'slug' => 'woelflingstag', 'location' => 'Trier', 'stage' => 'woelflinge', 'status' => 'open',
+            'starts_at' => $tag, 'ends_at' => $tag->copy()->setTime(17, 0)]);
+        Event::query()->create(['title' => 'Roverrunde', 'slug' => 'roverrunde', 'stage' => 'rover', 'status' => 'cancelled',
+            'starts_at' => now()->addDays(12)->setTime(18, 0), 'ends_at' => now()->addDays(12)->setTime(20, 0)]);
+        Event::query()->create(['title' => 'Entwurf', 'slug' => 'entwurf', 'status' => 'draft', 'starts_at' => now()->addDays(5), 'ends_at' => now()->addDays(5)->addHour()]);
+        // Dieselbe Veranstaltung steht zusätzlich in der Nextcloud (leicht anderer Titel).
+        CalendarEvent::query()->create(['calendar_id' => $dv->id, 'uid' => 'doppelt', 'starts_at' => $tag->copy()->setTime(9, 30), 'ends_at' => $tag->copy()->setTime(17, 0), 'title' => 'Wölflingstag']);
+        CalendarEvent::query()->create(['calendar_id' => $dv->id, 'uid' => 'dv', 'starts_at' => now()->addDays(3)->setTime(10, 0), 'ends_at' => now()->addDays(3)->setTime(12, 0), 'title' => 'Diözesanversammlung']);
+
+        $this->get('/kalender')->assertOk()
+            ->assertSeeInOrder(['Diözesanversammlung', 'Wölflingstag 2026', 'Anmeldung möglich', 'Infos und Anmeldung', 'Roverrunde', 'Abgesagt'])
+            ->assertSee('/veranstaltungen/woelflingstag', false)
+            ->assertDontSee('Entwurf');
+        $this->assertSame(1, substr_count($this->get('/kalender')->getContent(), '>Wölflingstag'), 'Doppelter Termin aus der Nextcloud wird ausgeblendet');
+
+        $this->get('/kalender?stufe=woelflinge')->assertSee('Wölflingstag 2026')->assertDontSee('Roverrunde')->assertDontSee('Diözesanversammlung');
+        $this->get('/kalender?kalender=veranstaltungen')->assertSee('Wölflingstag 2026')->assertDontSee('Diözesanversammlung');
+        $this->get('/kalender?kalender='.$dv->id)->assertSee('Diözesanversammlung')->assertDontSee('Roverrunde');
+        $this->get('/kalender?ansicht=monat&monat='.$tag->format('Y-m'))->assertSee('Wölflingstag 2026');
+
+        $json = $this->getJson('/api/calendar/events?from='.now()->toDateString().'&to='.now()->addMonths(1)->toDateString())->json();
+        $event = collect($json)->firstWhere('title', 'Wölflingstag 2026');
+        $this->assertSame(route('events.show', 'woelflingstag'), $event['url']);
+        $this->assertNotContains('Wölflingstag', array_column($json, 'title'));
+    }
+
+    #[TestDox('Kalenderseite zeigt Veranstaltungen auch ohne eingetragenen Nextcloud-Kalender')]
+    public function test_calendar_without_nextcloud_shows_events(): void
+    {
+        Event::query()->create(['title' => 'Leiterrunde', 'slug' => 'leiterrunde', 'status' => 'open', 'starts_at' => now()->addDays(4), 'ends_at' => now()->addDays(4)->addHours(2)]);
+
+        $this->get('/kalender')->assertOk()->assertSee('Leiterrunde')->assertDontSee('Der Kalender wird gerade eingerichtet');
     }
 
     #[TestDox('Konfiguration für Kalender und Instagram ist vollständig')]

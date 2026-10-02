@@ -25,6 +25,7 @@
 @section('content')
     <div class="mx-auto max-w-6xl px-4 py-10">
         <h1 class="font-serif text-3xl font-bold">Kalender</h1>
+        <p class="mt-2 max-w-3xl text-text-secondary">Termine des Diözesanverbands, der Stufen und Arbeitskreise. <span class="font-bold text-dpsg-rot">Rot</span> markiert sind Veranstaltungen, zu denen du dich online anmelden kannst.</p>
 
         <form method="get" action="{{ route('calendar.index') }}" class="mt-6 flex flex-wrap items-end gap-4 bg-surface-muted p-4">
             <input type="hidden" name="ansicht" value="{{ $ansicht }}" />
@@ -32,7 +33,8 @@
             <label class="flex flex-col text-sm font-bold">
                 Kalender
                 <select name="kalender" class="mt-1 min-w-48 border border-dpsg-mittelbeige bg-white px-3 py-2 font-normal">
-                    <option value="">Alle Kalender</option>
+                    <option value="">Alle Termine</option>
+                    <option value="veranstaltungen" @selected($kalender === 'veranstaltungen')>Veranstaltungen mit Anmeldung</option>
                     @foreach ($calendars as $c)
                         <option value="{{ $c->id }}" @selected($kalender === $c->id)>{{ $c->label }}</option>
                     @endforeach
@@ -54,7 +56,7 @@
             </div>
         </form>
 
-        @if ($calendars->isEmpty())
+        @if ($calendars->isEmpty() && ! $hasEvents)
             <p class="mt-8 text-text-secondary">Der Kalender wird gerade eingerichtet. Bald findest du hier die Termine des Diözesanverbands und der Stufen.</p>
         @elseif ($ansicht === 'liste')
             @forelse ($events->groupBy(fn ($e) => $e->starts_at->format('Y-m')) as $ym => $monthEvents)
@@ -62,16 +64,23 @@
                 <ul class="mt-4 space-y-4">
                     @foreach ($monthEvents as $e)
                         <li class="flex bg-white shadow-md">
-                            <div class="flex w-24 shrink-0 flex-col items-center justify-center border-t-8 bg-surface-muted py-3 text-center" style="border-top-color: {{ e($e->calendar->color) }}">
+                            <div class="flex w-24 shrink-0 flex-col items-center justify-center border-t-8 bg-surface-muted py-3 text-center" style="border-top-color: {{ e($e->color) }}">
                                 <span class="text-xs text-text-secondary">{{ $e->starts_at->locale('de')->isoFormat('dddd') }}</span>
                                 <span class="font-serif text-2xl font-bold text-dpsg-rot">{{ $e->starts_at->format('j') }}</span>
                                 <span class="text-xs text-text-secondary">{{ $e->starts_at->locale('de')->isoFormat('MMM YYYY') }}</span>
                             </div>
                             <div class="min-w-0 flex-1 p-4">
-                                <h3 class="font-serif text-lg font-bold">{{ $e->title }}</h3>
+                                <h3 @class(['font-serif text-lg font-bold', 'line-through' => $e->cancelled])>
+                                    @if ($e->url)<a href="{{ $e->url }}" class="hover:text-dpsg-rot hover:underline">{{ $e->title }}</a>@else{{ $e->title }}@endif
+                                </h3>
                                 <p class="text-sm text-text-secondary">{{ $timeLabel($e) }}@if ($e->location) · {{ $e->location }}@endif</p>
-                                <p class="mt-1 flex items-center gap-1 text-xs"><span class="inline-block h-2.5 w-2.5 rounded-full" style="background: {{ e($e->calendar->color) }}"></span>{{ $e->calendar->label }}</p>
-                                @if ($e->description)
+                                <p class="mt-1 flex flex-wrap items-center gap-x-1 gap-y-1 text-xs">
+                                    <span class="inline-block h-2.5 w-2.5 rounded-full" style="background: {{ e($e->color) }}"></span>{{ $e->sourceLabel }}
+                                    @if ($e->badge)<span @class(['ml-2 rounded-full px-2 py-0.5 font-bold', 'bg-dpsg-rot text-white' => ! $e->cancelled, 'bg-surface-muted text-text-secondary' => $e->cancelled])>{{ $e->badge }}</span>@endif
+                                </p>
+                                @if ($e->url)
+                                    <p class="mt-2 text-sm"><a href="{{ $e->url }}" class="font-bold text-dpsg-rot underline">{{ $e->cancelled ? 'Mehr erfahren' : 'Infos und Anmeldung' }}</a></p>
+                                @elseif ($e->description)
                                     <details class="mt-2 text-sm">
                                         <summary class="cursor-pointer text-dpsg-rot">Details</summary>
                                         <p class="mt-2 whitespace-pre-line">{{ $e->description }}</p>
@@ -99,9 +108,15 @@
                     <div @class(['min-h-24 border-b border-r border-dpsg-mittelbeige p-1', 'bg-white' => $day->month === $monat->month, 'bg-surface-muted/50 text-text-secondary' => $day->month !== $monat->month]) role="gridcell">
                         <div @class(['mb-1 text-right text-xs', 'font-bold text-dpsg-rot' => $day->isToday()])>{{ $day->format('j') }}</div>
                         @foreach ($dayEvents as $e)
-                            <div class="mb-1 truncate rounded px-1 text-xs" style="background: {{ e($e->calendar->color) }}; color: {{ $e->calendar->textColor() }}" title="{{ $e->title }} – {{ $timeLabel($e) }}">
-                                @unless ($e->all_day){{ $e->starts_at->format('H:i') }} @endunless{{ $e->title }}
-                            </div>
+                            @if ($e->url)
+                                <a href="{{ $e->url }}" @class(['mb-1 block truncate rounded px-1 text-xs hover:underline', 'line-through' => $e->cancelled]) style="background: {{ e($e->color) }}; color: {{ $e->textColor() }}" title="{{ $e->title }} – {{ $timeLabel($e) }}@if ($e->badge) ({{ $e->badge }})@endif">
+                                    @unless ($e->all_day){{ $e->starts_at->format('H:i') }} @endunless{{ $e->title }}
+                                </a>
+                            @else
+                                <div class="mb-1 truncate rounded px-1 text-xs" style="background: {{ e($e->color) }}; color: {{ $e->textColor() }}" title="{{ $e->title }} – {{ $timeLabel($e) }}">
+                                    @unless ($e->all_day){{ $e->starts_at->format('H:i') }} @endunless{{ $e->title }}
+                                </div>
+                            @endif
                         @endforeach
                     </div>
                 @endfor

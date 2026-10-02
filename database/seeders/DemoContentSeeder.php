@@ -129,13 +129,6 @@ class DemoContentSeeder extends Seeder
                 'nav_sort' => 20,
                 'body' => <<<'HTML'
                     <p>Die DPSG begleitet Kinder und Jugendliche in fünf altersgerechten Stufen – von den ersten Entdeckungen als Biber bis zu eigenverantwortlichen Projekten als Rover. Jede Stufe hat ihre eigene Pädagogik, ihre eigenen Methoden und ihre eigene Farbe.</p>
-                    <ul>
-                    <li><strong><a href="/stufe-biber">Biber</a></strong> (4 bis 7 Jahre) – neugierig durch die Welt gehen</li>
-                    <li><strong><a href="/stufe-woelflinge">Wölflinge</a></strong> (6 bis 10 Jahre) – Forscher*innen, Entdecker*innen und Kundschafter*innen</li>
-                    <li><strong><a href="/stufe-jupfi">Jungpfadfinder*innen</a></strong> (10 bis 13 Jahre) – Stück für Stück die Welt erobern</li>
-                    <li><strong><a href="/stufe-pfadi">Pfadfinder*innen</a></strong> (13 bis 15 Jahre) – das eigene Leben selbst in die Hand nehmen</li>
-                    <li><strong><a href="/stufe-rover">Rover</a></strong> (15 bis 20 Jahre) – Entscheidungen für die eigene Zukunft treffen</li>
-                    </ul>
                     HTML,
             ],
             [
@@ -144,7 +137,6 @@ class DemoContentSeeder extends Seeder
                 'stage' => 'biber',
                 'seo_title' => 'Biber (4 bis 7 Jahre) – DPSG Diözesanverband Trier',
                 'body' => <<<'HTML'
-                    <p><strong>4 bis 7 Jahre</strong> – neugierig durch die Welt gehen</p>
                     <p>Ab dem Alter von vier Jahren können Mädchen und Jungen Mitglied in einer Bibergruppe werden. Schon vor dem Einstieg in die Wölflingsstufe lernen sie hier das Abenteuer Pfadfinden kennen. Kinder in diesem Alter gehen mit neugierigen Augen durch die Welt – in der Bibergruppe können sie das gemeinsam mit Freund*innen tun, begleitet von den Leiter*innen ihrer Gruppe.</p>
                     <p>Im Mittelpunkt stehen gemeinsames Spielen und Erleben in der Gruppe, ergänzt um erste pfadfinderische Aktionen wie ein gemeinsames Lagerfeuer.</p>
                     <p>Die Biberstufe wurde 2016 von der Bundesversammlung beschlossen und 2017 als Vorgruppe vor der Wölflingsstufe fest in der Satzung verankert.</p>
@@ -161,7 +153,6 @@ class DemoContentSeeder extends Seeder
                 'stage' => 'woelflinge',
                 'seo_title' => 'Wölflinge (6 bis 10 Jahre) – DPSG Diözesanverband Trier',
                 'body' => <<<'HTML'
-                    <p><strong>6 bis 10 Jahre</strong> – Forscher*innen, Entdecker*innen und Kundschafter*innen</p>
                     <p>Wölflinge sind Kinder im Alter von 6 bis 10 Jahren. In diesem Alter sind sie Forscher*innen, Entdecker*innen, Kundschafter*innen und Kritiker*innen – sie wollen ihre Welt auch außerhalb des Elternhauses spielerisch entdecken.</p>
                     <p>Dabei geht es um vier Entdeckungsbereiche: hinter die Dinge schauen und Unbekanntes kennenlernen, zu anderen finden und sich gegenseitig akzeptieren, zu sich selbst finden und eigene Stärken sowie Schwächen erkennen, und erfahren, dass Gott für sie da ist.</p>
                     <p>Die wichtigste Aktionsform ist dabei das Spiel. Wölflinge bestimmen mit – bei Gruppenstunden, Festen, Lagern und der Stammesversammlung.</p>
@@ -178,7 +169,6 @@ class DemoContentSeeder extends Seeder
                 'stage' => 'jupfi',
                 'seo_title' => 'Jungpfadfinder*innen (10 bis 13 Jahre) – DPSG Diözesanverband Trier',
                 'body' => <<<'HTML'
-                    <p><strong>10 bis 13 Jahre</strong> – Stück für Stück die Welt erobern</p>
                     <p>Jungpfadfinder*innen sind 10 bis 13 Jahre alt und treffen sich meist einmal wöchentlich zur Truppstunde, in Gruppen von etwa 10 bis 20 Mitgliedern.</p>
                     <p>Im Trupp erfahren sie, was es heißt, gemeinsam in einer Gruppe zu leben: sich auseinanderzusetzen, miteinander umzugehen, voneinander zu lernen und aufeinander Rücksicht zu nehmen – immer mit Spaß am gemeinsamen Erleben.</p>
                     <p>Im Mittelpunkt steht das Abenteuer: Stück für Stück erobern Jungpfadfinder*innen ihre Welt, schauen hinter die Dinge und lernen eigene Grenzen kennen. Dabei bestimmen sie das Truppleben zunehmend selbst mit und übernehmen Verantwortung dafür.</p>
@@ -195,7 +185,6 @@ class DemoContentSeeder extends Seeder
                 'stage' => 'pfadi',
                 'seo_title' => 'Pfadfinder*innen (13 bis 15 Jahre) – DPSG Diözesanverband Trier',
                 'body' => <<<'HTML'
-                    <p><strong>13 bis 15 Jahre</strong> – das eigene Leben selbst in die Hand nehmen</p>
                     <p>Unter dem Motto „Wagt es" ermutigt die Pfadfinderstufe dazu, das eigene Leben selbst in die Hand zu nehmen. Pfadfinder*innen machen sich gemeinsam auf den Weg, um sich persönlich weiterzuentwickeln – in Truppstunden, auf Fahrten oder ganz für sich allein.</p>
                     <p>Diese persönliche Entwicklung bleibt nicht losgelöst vom Geschehen in der Welt: Pfadfinder*innen sind aufgerufen, ihre Zeit zu nutzen, um – ganz im Sinne des Gründers der Pfadfinderbewegung, Robert Baden-Powell – die Welt ein kleines Stück besser zu hinterlassen, als sie sie vorgefunden haben.</p>
                     <ul>
@@ -211,7 +200,6 @@ class DemoContentSeeder extends Seeder
                 'stage' => 'rover',
                 'seo_title' => 'Rover (15 bis 20 Jahre) – DPSG Diözesanverband Trier',
                 'body' => <<<'HTML'
-                    <p><strong>15 bis 20 Jahre</strong> – Entscheidungen für die eigene Zukunft treffen</p>
                     <p>Rover*innen im Alter von 15 bis 20 Jahren treffen Entscheidungen für ihre eigene Zukunft. Sie packen an und entdecken die Welt mit ihren Menschen und Kulturen – häufig auf größeren Fahrten und in eigenverantwortlich geplanten Projekten.</p>
                     <p>Als älteste Stufe der DPSG stehen Rover*innen an der Schwelle zum Erwachsenwerden. Viele engagieren sich bereits als Leiter*in in jüngeren Gruppen oder übernehmen Verantwortung auf Bezirks- und Diözesanebene.</p>
                     <ul>

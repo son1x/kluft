@@ -92,3 +92,40 @@
 html {
     scroll-padding-top: 4.5rem;
 }
+
+/*
+ * Stufenfarbe als Variable: .stufe-<key> setzt --stufe (Fläche) und
+ * --stufe-ink (lesbare Schrift darauf; Wölflinge-Orange braucht dunkle
+ * Schrift, s. Kontrastregel 7.2). Nutzung z. B. bg-(--stufe).
+ */
+.stufe-biber { --stufe: var(--color-stufe-biber); --stufe-ink: #fff; }
+.stufe-woelflinge { --stufe: var(--color-stufe-woelflinge); --stufe-ink: var(--color-text); }
+.stufe-jupfi { --stufe: var(--color-stufe-jupfi); --stufe-ink: #fff; }
+.stufe-pfadi { --stufe: var(--color-stufe-pfadi); --stufe-ink: #fff; }
+.stufe-rover { --stufe: var(--color-stufe-rover); --stufe-ink: #fff; }
+
+/* Dezentes Punktraster auf farbigen Kopfbändern. */
+.stufe-pattern {
+    background-image: radial-gradient(color-mix(in srgb, var(--stufe-ink, #fff) 14%, transparent) 1.5px, transparent 1.6px);
+    background-size: 22px 22px;
+}
+
+/* Aufzählungen im Stufentext als Häkchen in der Stufenfarbe. */
+.prose-stufe ul {
+    list-style: none;
+    padding-left: 0;
+}
+.prose-stufe ul > li {
+    position: relative;
+    padding-left: 2.1rem;
+}
+.prose-stufe ul > li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.2em;
+    width: 1.4rem;
+    height: 1.4rem;
+    border-radius: 9999px;
+    background: var(--stufe) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center / 62% no-repeat;
+}

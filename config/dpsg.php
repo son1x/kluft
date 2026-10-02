@@ -8,12 +8,20 @@ return [
     | resources/ nach Klassennamen durchsucht.
     */
     'stages' => [
-        'biber' => ['label' => 'Biber', 'age' => '4 bis 7 Jahre', 'mascot' => 'images/stufen/biber.png'],
-        'woelflinge' => ['label' => 'Wölflinge', 'age' => '6 bis 10 Jahre', 'mascot' => 'images/stufen/woelflinge.png'],
-        'jupfi' => ['label' => 'Jungpfadfinder*innen', 'age' => '10 bis 13 Jahre', 'mascot' => 'images/stufen/jupfi.png'],
-        'pfadi' => ['label' => 'Pfadfinder*innen', 'age' => '13 bis 15 Jahre', 'mascot' => 'images/stufen/pfadi.png'],
-        'rover' => ['label' => 'Rover', 'age' => '15 bis 20 Jahre', 'mascot' => 'images/stufen/rover.svg'],
+        'biber' => ['label' => 'Biber', 'age' => '4 bis 7 Jahre', 'from' => 4, 'to' => 7, 'mascot' => 'images/stufen/biber.png',
+            'tagline' => 'Neugierig durch die Welt gehen'],
+        'woelflinge' => ['label' => 'Wölflinge', 'age' => '6 bis 10 Jahre', 'from' => 6, 'to' => 10, 'mascot' => 'images/stufen/woelflinge.png',
+            'tagline' => 'Forscher*innen, Entdecker*innen und Kundschafter*innen'],
+        'jupfi' => ['label' => 'Jungpfadfinder*innen', 'age' => '10 bis 13 Jahre', 'from' => 10, 'to' => 13, 'mascot' => 'images/stufen/jupfi.png',
+            'tagline' => 'Stück für Stück die Welt erobern'],
+        'pfadi' => ['label' => 'Pfadfinder*innen', 'age' => '13 bis 15 Jahre', 'from' => 13, 'to' => 15, 'mascot' => 'images/stufen/pfadi.png',
+            'tagline' => 'Das eigene Leben selbst in die Hand nehmen'],
+        'rover' => ['label' => 'Rover', 'age' => '15 bis 20 Jahre', 'from' => 15, 'to' => 20, 'mascot' => 'images/stufen/rover.svg',
+            'tagline' => 'Entscheidungen für die eigene Zukunft treffen'],
     ],
+
+    // Übersichtsseite der Stufen (zeigt Altersleiste und Stufenkacheln).
+    'stages_page' => 'stufen',
 
     /*
     | Sektionen mit eigener Landingpage, Navigation und Farbakzent

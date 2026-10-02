@@ -21,7 +21,6 @@
 <body class="min-h-screen flex flex-col bg-surface font-sans text-text" x-data="{ navOpen: false, scrolled: false }" @scroll.window.throttle.50ms="scrolled = window.scrollY > 40">
     <a href="#inhalt" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-2 focus:bg-white focus:px-4 focus:py-2 focus:text-dpsg-blau">Zum Inhalt springen</a>
 
-    @php($isHome = request()->routeIs('home'))
 
     {{-- Mobil bleibt die blaue Kopfzeile beim Scrollen oben stehen; das
          hängende Logo schrumpft dann in die Zeile hinein. --}}
@@ -48,7 +47,6 @@
 
         <nav id="mobile-nav" aria-label="Hauptnavigation (mobil)" class="border-t border-white/20 bg-white text-text shadow-lg md:hidden" x-show="navOpen" x-cloak>
             <ul class="divide-y divide-surface-muted pt-12 font-bold">
-                <li><a href="{{ url('/') }}" @class(['block px-4 py-3', 'text-dpsg-rot' => $isHome])>Start</a></li>
                 @foreach ($navPages ?? [] as $navPage)
                     <li>
                         <a href="{{ url('/'.$navPage->slug) }}" @class(['block px-4 py-3', 'text-dpsg-rot' => request()->is($navPage->slug)])>{{ $navPage->title }}</a>
@@ -88,26 +86,25 @@
          :class="stuck && 'bg-white shadow-md'">
         <nav aria-label="Hauptnavigation" class="mx-auto max-w-6xl px-4">
             <ul class="flex items-center bg-white text-sm font-bold lg:whitespace-nowrap transition-[padding,box-shadow] duration-200" :class="stuck ? 'py-2' : 'py-3 shadow-lg'">
-                <li class="hidden shrink-0 lg:block" x-show="stuck" x-transition.opacity x-cloak>
-                    <a href="{{ url('/') }}" class="block pr-4" tabindex="-1" aria-hidden="true">
-                        <img src="{{ asset('images/logo-dv-trier.png') }}" alt="" class="h-9 w-auto" width="300" height="223" />
+                {{-- Kein Menüpunkt „Start“: das Logo führt zur Startseite. Klebt die
+                     Leiste oben, übernimmt das kleine Logo diese Aufgabe. --}}
+                <li class="shrink-0" x-show="stuck" x-transition.opacity x-cloak>
+                    <a href="{{ url('/') }}" class="block pr-4">
+                        <img src="{{ asset('images/logo-dv-trier.png') }}" alt="DPSG Diözesanverband Trier – zur Startseite" class="h-9 w-auto" width="300" height="223" />
                     </a>
-                </li>
-                <li class="flex-1 text-center">
-                    <a href="{{ url('/') }}" @class(['block px-3 py-1 hover:text-dpsg-rot', 'text-dpsg-rot' => $isHome]) @if ($isHome) aria-current="page" @endif>Start</a>
                 </li>
                 @foreach ($navPages ?? [] as $navPage)
                     @php($children = $navPage->navChildren)
                     @php($current = request()->is($navPage->slug))
                     @php($active = $current || $children->contains(fn ($child) => request()->is($child->slug)))
                     @if ($children->isEmpty())
-                        <li class="flex-1 border-l border-dpsg-mittelbeige text-center">
+                        <li @class(['flex-1 text-center', 'border-l border-dpsg-mittelbeige' => ! $loop->first])>
                             <a href="{{ url('/'.$navPage->slug) }}" @class(['block px-3 py-1 hover:text-dpsg-rot', 'text-dpsg-rot' => $active]) @if ($current) aria-current="page" @endif>{{ $navPage->title }}</a>
                         </li>
                     @else
                         {{-- Unterpunkte: aufklappen bei Maus darüber, per Pfeil-Knopf
                              (Tastatur/Touch) oder Fokus; Esc schließt. --}}
-                        <li class="relative flex-1 border-l border-dpsg-mittelbeige text-center"
+                        <li @class(['relative flex-1 text-center', 'border-l border-dpsg-mittelbeige' => ! $loop->first])
                             x-data="{ open: false }"
                             @mouseenter="open = true" @mouseleave="open = false"
                             @keydown.escape="open = false; $refs.toggle.focus()"

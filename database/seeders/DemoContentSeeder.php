@@ -22,7 +22,7 @@ class DemoContentSeeder extends Seeder
         <p>[TODO: Zusammensetzung, Namen und Funktionen vor Veröffentlichung von der Diözesanleitung bestätigen lassen.]</p>
         <h2>Diözesanvorstand</h2>
         <ul>
-        <li><strong>Diözesanvorstand:</strong> Till Mang</li>
+        <li><strong>Diözesanvorsitzender:</strong> Till Mang</li>
         <li><strong>Diözesankurat:</strong> Peter Zillgen</li>
         </ul>
         <h2>Vorstandsreferenten</h2>

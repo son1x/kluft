@@ -28,7 +28,9 @@ class TestReportController extends Controller
 
     public function __invoke(): View
     {
-        $file = config('dpsg.test_report');
+        // Pfad überschreibbar für Tests; config/dpsg.php muss ohne Laravel
+        // lesbar bleiben (der Deploy-Workflow liest daraus die Kartendaten).
+        $file = config('dpsg.test_report') ?? resource_path('data/test-report.json');
         $report = is_file($file) ? json_decode((string) file_get_contents($file), true) : null;
 
         $areas = [];

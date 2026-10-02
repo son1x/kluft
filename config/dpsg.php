@@ -20,10 +20,6 @@ return [
             'tagline' => 'Entscheidungen für die eigene Zukunft treffen'],
     ],
 
-    // Testbericht der ausgelieferten Version (/roadmap/tests), erzeugt im
-    // Deploy-Workflow von .github/scripts/test-report.php.
-    'test_report' => resource_path('data/test-report.json'),
-
     // Übersichtsseite der Stufen (zeigt Altersleiste und Stufenkacheln).
     'stages_page' => 'stufen',
 

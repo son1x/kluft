@@ -102,14 +102,22 @@ class CalendarCheckCommand extends Command
                 try {
                     $ics = app(CalendarSync::class)->fetch((string) $calendar->ics_url);
                     $isIcs = str_contains($ics, 'BEGIN:VCALENDAR');
-                    preg_match_all('/^DTSTART[^:]*:(\d{8})/m', $ics, $m);
-                    $dates = $m[1];
+                    // Nur echte Termine (VEVENT), nicht die Zeitzonen-Definitionen.
+                    preg_match_all('/BEGIN:VEVENT(.*?)END:VEVENT/s', $ics, $blocks);
+                    $dates = [];
+                    $recurring = 0;
+                    foreach ($blocks[1] as $block) {
+                        if (preg_match('/^DTSTART[^:]*:(\d{8})/m', $block, $d)) {
+                            $dates[] = $d[1];
+                        }
+                        $recurring += str_contains($block, 'RRULE:') ? 1 : 0;
+                    }
                     sort($dates);
                     $this->line('  → Abruf: '.number_format(strlen($ics) / 1024, 1, ',', '.').' KB, '
                         .($isIcs ? 'gültige Kalenderdatei' : 'KEINE Kalenderdatei (evtl. Anmeldeseite)').', '
                         .substr_count($ics, 'BEGIN:VEVENT').' Termin(e)'
                         .($dates ? ', von '.Carbon::createFromFormat('Ymd', $dates[0])->format('d.m.Y').' bis '.Carbon::createFromFormat('Ymd', end($dates))->format('d.m.Y') : '')
-                        .(str_contains($ics, 'RRULE') ? ', mit Serienterminen' : ''));
+                        .($recurring ? ", davon {$recurring} Serientermin(e)" : ''));
                 } catch (Throwable $e) {
                     $this->warn('  → Abruf fehlgeschlagen: '.$e->getMessage());
                 }

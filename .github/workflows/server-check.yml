@@ -1,0 +1,51 @@
+name: Server-Prüfung (Testumgebung)
+
+# Führt eine Prüfung auf dem Server aus, ohne Geheimnisse auszugeben.
+# GitHub → Actions → „Server-Prüfung“ → „Run workflow“.
+
+on:
+  workflow_dispatch:
+    inputs:
+      check:
+        description: 'Was prüfen?'
+        type: choice
+        options:
+          - calendar:check
+        default: calendar:check
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Secrets bereinigen
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
+          SSH_TARGET_DIR: ${{ secrets.SSH_TARGET_DIR || secrets.FTP_SERVER_DIR }}
+        run: |
+          trim() { local v="$1"; v="${v#"${v%%[![:space:]]*}"}"; v="${v%"${v##*[![:space:]]}"}"; printf '%s' "$v"; }
+          {
+            echo "SSH_HOST=$(trim "$SSH_HOST")"
+            echo "SSH_PORT=$(trim "${SSH_PORT:-22}")"
+            echo "SSH_USERNAME=$(trim "$SSH_USERNAME")"
+            echo "SSH_TARGET_DIR=$(trim "$SSH_TARGET_DIR")"
+          } >> "$GITHUB_ENV"
+
+      - name: Prüfung auf dem Server
+        uses: appleboy/ssh-action@v1
+        env:
+          CHECK: ${{ inputs.check }}
+        with:
+          host: ${{ env.SSH_HOST }}
+          port: ${{ env.SSH_PORT }}
+          username: ${{ env.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          envs: CHECK
+          script: |
+            cd "${{ env.SSH_TARGET_DIR }}"
+            case "$CHECK" in
+              calendar:check) /usr/bin/php artisan calendar:check ;;
+              *) echo "Unbekannte Prüfung"; exit 1 ;;
+            esac

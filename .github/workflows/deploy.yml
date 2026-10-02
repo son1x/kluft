@@ -177,7 +177,7 @@ jobs:
           BREVO_API_KEY=${BREVO_API_KEY}
           BREVO_NEWSLETTER_LIST_ID=${BREVO_NEWSLETTER_LIST_ID}
           BREVO_DOI_TEMPLATE_ID=${BREVO_DOI_TEMPLATE_ID}
-          BREVO_DOI_REDIRECT_URL=https://test.dpsg-trier.de/georgsbote/danke
+          BREVO_DOI_REDIRECT_URL=https://test.dpsg-trier.de/georgsbrief/danke
           NEXTCLOUD_ALLOWED_HOSTS=${NEXTCLOUD_ALLOWED_HOSTS}
           MAIL_MAILER=${MAIL_MAILER}
           MAIL_SCHEME=smtp

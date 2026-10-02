@@ -12,15 +12,37 @@ use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+use Illuminate\Support\HtmlString;
 
 class PostForm
 {
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
+            // Aus WordPress übernommene Beiträge: Nacharbeitsliste und
+            // Durchsicht vor der Veröffentlichung (F-MIG-04/06).
+            Section::make('Aus WordPress importiert')
+                ->icon('heroicon-o-arrow-down-tray')
+                ->visible(fn (?Post $record) => $record?->wp_id !== null)
+                ->columnSpanFull()
+                ->components([
+                    Placeholder::make('import_issues_list')
+                        ->label('Bitte vor der Veröffentlichung prüfen')
+                        ->content(fn (?Post $record) => new HtmlString(
+                            '<ul class="list-disc space-y-1 pl-5 text-sm">'
+                            .collect($record?->import_issues ?? [])->map(fn (string $i) => '<li>'.e($i).'</li>')->implode('')
+                            .'</ul>'
+                            .($record?->wp_url ? '<p class="mt-2 text-sm">Original: <a class="underline" target="_blank" rel="noopener" href="'.e($record->wp_url).'">'.e($record->wp_url).'</a></p>' : '')
+                        )),
+                    Toggle::make('import_reviewed')
+                        ->label('Durchgesehen: Personenbezug, Bildrechte und Links sind geprüft')
+                        ->helperText('Erst danach lässt sich der Beitrag zur Prüfung geben oder veröffentlichen.'),
+                ]),
+
             Section::make()
                 ->columns(2)
                 ->components([
@@ -79,7 +101,12 @@ class PostForm
                         ->options(self::statusOptions())
                         ->default('draft')
                         ->native(false)
-                        ->required(),
+                        ->required()
+                        ->rule(fn (Get $get, ?Post $record) => function (string $attribute, mixed $value, \Closure $fail) use ($get, $record) {
+                            if ($record?->wp_id && $value !== 'draft' && ! $get('import_reviewed')) {
+                                $fail('Importierte Beiträge erst durchsehen und oben „Durchgesehen“ anhaken.');
+                            }
+                        }),
 
                     Select::make('cover_media_id')
                         ->label('Titelbild')

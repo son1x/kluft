@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\LegacyRedirects;
 use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -14,6 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // Security-Header für alle Antworten (Pflichtenheft 10.1).
         $middleware->append(SecurityHeaders::class);
+        // Alte Adressen (WordPress) per 301 auf die neuen (F-MIG-05).
+        $middleware->append(LegacyRedirects::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

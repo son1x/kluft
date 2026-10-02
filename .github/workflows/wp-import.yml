@@ -1,0 +1,72 @@
+name: WordPress-Import (Testumgebung)
+
+# Übernimmt Beiträge von www.dpsg-trier.de auf den Server (Pflichtenheft
+# 6.9). Manuell starten: GitHub → Actions → „WordPress-Import“ → „Run
+# workflow“. Erst mit „Testlauf“ prüfen, dann ohne. Wiederholbar: neue
+# Beiträge kommen dazu, im CMS bearbeitete bleiben unverändert. Ergebnis im
+# Backend unter „WordPress-Import“.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Testlauf (nichts speichern oder herunterladen)'
+        type: boolean
+        default: true
+      since:
+        description: 'Nur Beiträge ab Datum (YYYY-MM-DD), leer = letzte 3 Jahre'
+        type: string
+        default: ''
+
+concurrency:
+  # Nicht parallel zu einem Deploy auf dieselbe Umgebung.
+  group: deploy-netcup-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Eingaben prüfen
+        env:
+          SINCE: ${{ inputs.since }}
+        run: |
+          if [ -n "$SINCE" ] && ! [[ "$SINCE" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
+            echo "::error::Datum bitte als YYYY-MM-DD"; exit 1
+          fi
+
+      - name: Secrets bereinigen
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
+          SSH_TARGET_DIR: ${{ secrets.SSH_TARGET_DIR || secrets.FTP_SERVER_DIR }}
+        run: |
+          trim() { local v="$1"; v="${v#"${v%%[![:space:]]*}"}"; v="${v%"${v##*[![:space:]]}"}"; printf '%s' "$v"; }
+          {
+            echo "SSH_HOST=$(trim "$SSH_HOST")"
+            echo "SSH_PORT=$(trim "${SSH_PORT:-22}")"
+            echo "SSH_USERNAME=$(trim "$SSH_USERNAME")"
+            echo "SSH_TARGET_DIR=$(trim "$SSH_TARGET_DIR")"
+          } >> "$GITHUB_ENV"
+
+      - name: Import auf dem Server ausführen
+        uses: appleboy/ssh-action@v1
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+          SINCE: ${{ inputs.since }}
+        with:
+          host: ${{ env.SSH_HOST }}
+          port: ${{ env.SSH_PORT }}
+          username: ${{ env.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          command_timeout: 40m
+          envs: DRY_RUN,SINCE
+          script: |
+            set -e
+            cd "${{ env.SSH_TARGET_DIR }}"
+            ARGS=""
+            if [ "$DRY_RUN" = "true" ]; then ARGS="$ARGS --dry-run"; fi
+            if [ -n "$SINCE" ]; then ARGS="$ARGS --since=$SINCE"; fi
+            /usr/bin/php -d memory_limit=512M artisan wp:import $ARGS

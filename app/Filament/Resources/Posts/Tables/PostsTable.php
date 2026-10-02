@@ -9,6 +9,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 
 class PostsTable
@@ -34,6 +35,13 @@ class PostsTable
                         'review' => 'warning',
                         default => 'gray',
                     }),
+                TextColumn::make('import')
+                    ->label('Import')
+                    ->state(fn (Post $record) => $record->wp_id ? ($record->import_reviewed ? 'durchgesehen' : 'Nacharbeit: '.count($record->import_issues ?? [])) : null)
+                    ->badge()
+                    ->color(fn (?string $state) => $state === 'durchgesehen' ? 'success' : 'warning')
+                    ->placeholder('–')
+                    ->toggleable(),
                 TextColumn::make('author.name')
                     ->label('Autor:in')
                     ->searchable(),
@@ -65,6 +73,11 @@ class PostsTable
                         'review' => 'Zur Prüfung',
                         'published' => 'Veröffentlicht',
                     ]),
+                TernaryFilter::make('wp_id')
+                    ->label('Aus WordPress')
+                    ->nullable()
+                    ->trueLabel('Nur importierte')
+                    ->falseLabel('Ohne importierte'),
                 SelectFilter::make('stage')
                     ->label('Stufe')
                     ->options([

@@ -7,9 +7,9 @@
 */
 
 return [
-    'stand' => '2026-10-01',
+    'stand' => '2026-10-02',
 
-    'current_phase' => '1d',
+    'current_phase' => '1e',
 
     // Erledigte Punkte, die /roadmap nicht automatisch prüfen kann
     // (Schlüssel aus App\Support\Roadmap::todoList()).
@@ -21,7 +21,7 @@ return [
         ['1b', 'Kernmodule', 'done'],
         ['1c', 'Veranstaltungen', 'done'],
         ['1d', 'Instagram', 'partial'],
-        ['1e', 'WordPress-Migration', 'open'],
+        ['1e', 'WordPress-Migration', 'partial'],
         ['Abnahme', 'Abnahme', 'open'],
         ['2', 'Beraten-Online', 'later'],
     ],
@@ -58,7 +58,7 @@ return [
         '6.6' => ['title' => 'Georgsbote (Brevo) – Phase 1', 'status' => 'partial', 'note' => 'Archiv mit Veröffentlichungsprüfung und Newsletter-Double-Opt-In fertig. Offen: Brevo-Zugangsdaten, Bulk-Upload alter Jahrgänge.'],
         '6.7' => ['title' => 'Veranstaltungsmanagement (Eigenentwicklung) – Phase 1', 'status' => 'done', 'note' => 'Anmeldung mit Double-Opt-In, Warteliste, Minderjährigen-Einwilligung, XLSX-Export und Löschfristen fertig.'],
         '6.8' => ['title' => 'Consent-Management – Phase 1', 'status' => 'partial', 'note' => 'Banner, Widerruf und lokale Auslieferung aller Dateien fertig. Offen: Zwei-Klick-Einbettungen.'],
-        '6.9' => ['title' => 'WordPress-Migration – Phase 1e', 'status' => 'open', 'note' => 'Phase 1e – kommt als Letztes.'],
+        '6.9' => ['title' => 'WordPress-Migration – Phase 1e', 'status' => 'partial', 'note' => 'Import-Kommando über die WordPress-REST-API mit Testlauf, wiederholbar ohne Duplikate; bereinigt das HTML, übernimmt Bilder und PDFs (auch aus Link-Beiträgen auf den Download-Manager), schreibt interne Links um, legt 301-Weiterleitungen an, übernimmt keine Kommentare/Benutzer. Beiträge kommen als Entwurf mit Nacharbeitsliste; Veröffentlichung erst nach Durchsicht. Bericht im Backend. Offen: Import auf dem Server ausführen und die 41 Beiträge durchsehen; alte WordPress-Seiten bei Bedarf von Hand umleiten.'],
         '6.10' => ['title' => 'E-Mail-Versand über Brevo SMTP – Phase 1', 'status' => 'partial', 'note' => 'Mails, Testumleitung und datensparsame Inhalte fertig. Offen: SMTP-Zugang, Domain-Authentifizierung, Versand über Warteschlange.'],
         '6.11' => ['title' => 'Bezirke- und Stämme-Verzeichnis mit Kartenansicht – Phase 1', 'status' => 'partial', 'note' => 'Karte, Liste, Filter und Backend fertig; 68 Stämme erfasst. Offen: Daten von den Stämmen bestätigen lassen (Links, Biber-Gruppen).'],
         '7' => ['title' => 'Design und UI', 'status' => 'done', 'note' => ''],
@@ -67,7 +67,7 @@ return [
         '7.3' => ['title' => 'Barrierefreiheit', 'status' => 'partial', 'note' => 'Grundlagen umgesetzt (Kontraste, Tastatur, Formulare). Barrierefreiheitstest steht aus.'],
         '8' => ['title' => 'Datenmodell (Skizze)', 'status' => 'partial', 'note' => ''],
         '8.1' => ['title' => 'ER-Diagramm', 'status' => 'info', 'note' => ''],
-        '8.2' => ['title' => 'Tabellen (Auszug)', 'status' => 'partial', 'note' => 'Kern-Tabellen vorhanden. Offen: Versionen, Weiterleitungen, Einwilligungstexte, Instagram-Tabellen.'],
+        '8.2' => ['title' => 'Tabellen (Auszug)', 'status' => 'partial', 'note' => 'Kern-Tabellen vorhanden. Weiterleitungen und Importläufe dazugekommen. Offen: Versionen, Einwilligungstexte.'],
         '8.3' => ['title' => 'Datenschutz im Datenmodell', 'status' => 'done', 'note' => 'Verschlüsselte Zusatzdaten, Löschdatum je Anmeldung, keine Newsletter-Adressen im CMS.'],
         '9' => ['title' => 'KDG-Konformität', 'status' => 'partial', 'note' => ''],
         '9.1' => ['title' => 'Rechtsgrundlagen und Grundsätze', 'status' => 'partial', 'note' => 'In den Formularen umgesetzt; Abstimmung mit der/dem Datenschutzbeauftragten steht aus.'],
@@ -109,7 +109,7 @@ return [
         ['done', 'Autor:innen bearbeiten nur eigene News, Veröffentlichung nach Freigabe'],
         ['done', 'Verwaltung ohne Systemeinstellungen und Tokens'],
         ['open', 'Transaktionsmails über Brevo mit SPF/DKIM/DMARC'],
-        ['open', 'WordPress-Import wiederholbar mit 301-Weiterleitungen'],
+        ['partial', 'WordPress-Import wiederholbar mit 301-Weiterleitungen – fertig und getestet, Import auf dem Server steht aus'],
         ['partial', 'M365-Konto suchen und Rolle zuweisen – Verzeichnissuche fehlt'],
         ['partial', '.env/vendor/storage nicht erreichbar; Produktiv-Deploy mit Freigabe fehlt'],
         ['done', 'Stämme-Karte ohne externe Kacheln, Liste ohne JavaScript'],

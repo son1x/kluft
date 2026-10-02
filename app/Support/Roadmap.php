@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Models\Calendar;
 use App\Models\Page;
+use App\Models\Post;
 use App\Models\User;
 use App\Services\Backup\BackupService;
 use App\Services\BrevoNewsletter;
@@ -199,6 +200,13 @@ class Roadmap
                 'title' => 'Backups einschalten',
                 'detail' => 'GitHub-Secret BACKUP_PASSWORD setzen (mind. 16 Zeichen, zusätzlich offline im Passwortmanager ablegen – ohne es ist kein Backup lesbar). Empfohlen: Kopie außerhalb des Webspace in einen Nextcloud-Ordner über BACKUP_WEBDAV_URL, BACKUP_WEBDAV_USER und BACKUP_WEBDAV_PASSWORD (App-Passwort). Läuft dann täglich um 2 Uhr über den Cronjob.',
                 'done' => $this->backupsHealthy(),
+            ],
+            [
+                'key' => 'wp-import-durchsicht',
+                'phase' => '1e',
+                'title' => 'Importierte WordPress-Beiträge durchsehen',
+                'detail' => 'Backend → „WordPress-Import“: Jeden importierten Beitrag öffnen, die Nacharbeitsliste abarbeiten (Personenbezug, Bildrechte/Bildnachweis, Alternativtexte, externe Links), „Durchgesehen“ anhaken und dann veröffentlichen oder löschen.',
+                'done' => Post::query()->whereNotNull('wp_id')->exists() && ! Post::query()->whereNotNull('wp_id')->where('import_reviewed', false)->exists(),
             ],
             [
                 'key' => 'instagram-zugang',

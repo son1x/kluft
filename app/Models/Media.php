@@ -22,6 +22,7 @@ class Media extends Model
         'variants',
         'width',
         'height',
+        'source_url',
     ];
 
     protected function casts(): array

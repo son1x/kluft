@@ -151,6 +151,23 @@ return [
         'webdav_password' => env('BACKUP_WEBDAV_PASSWORD'),
     ],
 
+    /*
+    | WordPress-Migration (Pflichtenheft 6.9, Phase 1e). Kategorien → Stufe
+    | bzw. Fachbereich und WP-Autor (Slug) → CMS-Konto (E-Mail) sind
+    | optional; ohne Zuordnung „Allgemein“ bzw. ohne Autor.
+    */
+    'wp_import' => [
+        'source' => env('WP_IMPORT_SOURCE', 'https://www.dpsg-trier.de'),
+        'since_years' => 3,
+        'categories' => [
+            // 'woelflinge' => ['stage' => 'woelflinge'],
+            // 'bolivien' => ['section' => 'bolivien'],
+        ],
+        'authors' => [
+            // 'wp-autor-slug' => 'vorname.nachname@dpsg-trier.de',
+        ],
+    ],
+
     // Unter diesem Alter ist die Einwilligung der Personensorgeberechtigten
     // nötig (F-EV-14, § 8 Abs. 8 KDG).
     'guardian_consent_age' => 16,

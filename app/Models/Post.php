@@ -23,6 +23,10 @@ class Post extends Model
         'published_at',
         'author_id',
         'wp_id',
+        'wp_url',
+        'import_hash',
+        'import_issues',
+        'import_reviewed',
         'ai_level',
         'ai_tool',
         'ai_content',
@@ -45,6 +49,8 @@ class Post extends Model
     {
         return [
             'published_at' => 'datetime',
+            'import_issues' => 'array',
+            'import_reviewed' => 'boolean',
         ];
     }
 

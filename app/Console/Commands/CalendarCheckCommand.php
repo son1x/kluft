@@ -95,6 +95,25 @@ class CalendarCheckCommand extends Command
                 $line .= '; letzter Fehler: '.$calendar->last_error;
             }
             ($allowed && ! $calendar->last_error) ? $this->line($line) : $this->warn($line);
+
+            // Rohdaten ansehen (ohne Inhalte auszugeben): Wie viele Termine
+            // liefert Nextcloud und aus welchem Zeitraum?
+            if ($allowed && $calendar->active) {
+                try {
+                    $ics = app(CalendarSync::class)->fetch((string) $calendar->ics_url);
+                    $isIcs = str_contains($ics, 'BEGIN:VCALENDAR');
+                    preg_match_all('/^DTSTART[^:]*:(\d{8})/m', $ics, $m);
+                    $dates = $m[1];
+                    sort($dates);
+                    $this->line('  → Abruf: '.number_format(strlen($ics) / 1024, 1, ',', '.').' KB, '
+                        .($isIcs ? 'gültige Kalenderdatei' : 'KEINE Kalenderdatei (evtl. Anmeldeseite)').', '
+                        .substr_count($ics, 'BEGIN:VEVENT').' Termin(e)'
+                        .($dates ? ', von '.Carbon::createFromFormat('Ymd', $dates[0])->format('d.m.Y').' bis '.Carbon::createFromFormat('Ymd', end($dates))->format('d.m.Y') : '')
+                        .(str_contains($ics, 'RRULE') ? ', mit Serienterminen' : ''));
+                } catch (Throwable $e) {
+                    $this->warn('  → Abruf fehlgeschlagen: '.$e->getMessage());
+                }
+            }
             $problems += ($allowed ? 0 : 1) + ($calendar->last_error ? 1 : 0);
         }
 

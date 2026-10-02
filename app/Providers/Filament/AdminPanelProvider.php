@@ -39,6 +39,10 @@ class AdminPanelProvider extends PanelProvider
             ->login(fn () => redirect()->route('auth.entra.redirect'))
             // Avatare lokal statt über ui-avatars.com (keine Namen an Dritte).
             ->defaultAvatarProvider(InitialsAvatarProvider::class)
+            // Nach „Anlegen“ bzw. „Speichern“ zurück zur Übersicht der Liste
+            // statt auf der Bearbeiten-Seite zu bleiben.
+            ->resourceCreatePageRedirect('index')
+            ->resourceEditPageRedirect('index')
             ->colors([
                 'primary' => Color::hex('#003056'), // dpsg-blau, s. Pflichtenheft 7.2
                 'danger' => Color::hex('#810a1a'), // dpsg-rot

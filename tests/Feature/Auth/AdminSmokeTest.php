@@ -2,9 +2,14 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Filament\Resources\GlossaryTerms\GlossaryTermResource;
+use App\Filament\Resources\GlossaryTerms\Pages\CreateGlossaryTerm;
+use App\Filament\Resources\GlossaryTerms\Pages\EditGlossaryTerm;
+use App\Models\GlossaryTerm;
 use App\Models\User;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
@@ -47,5 +52,27 @@ class AdminSmokeTest extends TestCase
         }
 
         $this->assertGreaterThan(15, $checked);
+    }
+
+    #[TestDox('Nach Anlegen und Speichern geht es zurück zur Übersicht')]
+    public function test_create_and_save_return_to_the_list(): void
+    {
+        Filament::setCurrentPanel(Filament::getPanel('admin'));
+        $user = User::query()->create(['name' => 'Büro', 'email' => 'buero@dpsg-trier.de', 'status' => 'active']);
+        $user->roleAssignments()->create(['role' => 'verwaltung', 'scope_type' => 'global']);
+        $this->actingAs($user);
+        $index = GlossaryTermResource::getUrl('index');
+
+        Livewire::test(CreateGlossaryTerm::class)
+            ->fillForm(['term' => 'DAK', 'explanation' => 'Diözesanarbeitskreis'])
+            ->call('create')
+            ->assertHasNoFormErrors()
+            ->assertRedirect($index);
+
+        Livewire::test(EditGlossaryTerm::class, ['record' => GlossaryTerm::query()->sole()->getRouteKey()])
+            ->fillForm(['explanation' => 'Arbeitskreis einer Stufe'])
+            ->call('save')
+            ->assertHasNoFormErrors()
+            ->assertRedirect($index);
     }
 }

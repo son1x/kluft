@@ -88,7 +88,7 @@ class TeamPhotoResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn ($q) => $q->withCount('spots'))
+            ->modifyQueryUsing(fn ($query) => $query->withCount('spots'))
             ->columns([
                 TextColumn::make('title')->label('Überschrift')->placeholder('–'),
                 TextColumn::make('gremium')->label('Seite')->badge()

@@ -112,6 +112,9 @@ class PeopleTest extends TestCase
         $buero = User::query()->create(['name' => 'B', 'email' => 'b@dpsg-trier.de', 'status' => 'active']);
         $buero->roleAssignments()->create(['role' => 'verwaltung', 'scope_type' => 'global']);
         $this->actingAs($buero)->get('/admin/personen')->assertOk()->assertSee('Till Mang');
+        $this->get('/admin/gruppenfotos')->assertOk()->assertSee('Unsere Diözesanleitung');
+        $this->get('/admin/gruppenfotos/create')->assertOk();
+        $this->get('/admin/personen/create')->assertOk();
         $this->get("/admin/gruppenfotos/{$this->photo->id}/edit")->assertOk();
 
         $heike = Person::query()->where('name', 'Heike Franz')->first();

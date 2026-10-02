@@ -12,6 +12,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\TestDox;
@@ -141,9 +142,9 @@ class GeorgsboteTest extends TestCase
 
         // Abnahmekriterium 4: keine E-Mail-Adresse im CMS gespeichert.
         $this->assertTrue(AuditLog::query()->where('action', 'like', 'newsletter.doi:angefragt:%')->exists());
-        foreach (DB::select("SELECT name FROM sqlite_master WHERE type='table'") as $table) {
-            foreach (DB::table($table->name)->get() as $row) {
-                $this->assertStringNotContainsStringIgnoringCase('erika@example.org', json_encode($row), "Adresse in Tabelle {$table->name} gefunden");
+        foreach (Schema::getTableListing(schemaQualified: false) as $table) {
+            foreach (DB::table($table)->get() as $row) {
+                $this->assertStringNotContainsStringIgnoringCase('erika@example.org', json_encode($row), "Adresse in Tabelle {$table} gefunden");
             }
         }
     }

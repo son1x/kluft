@@ -118,6 +118,13 @@ class Roadmap
                 'done' => $this->schedulerRuns(),
             ],
             [
+                'key' => 'mariadb',
+                'phase' => '0',
+                'title' => 'MariaDB anbinden',
+                'detail' => 'Datenbank in Plesk anlegen (utf8mb4) und als GitHub-Secrets DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME, DB_PASSWORD hinterlegen. Beim nächsten Deploy werden die Inhalte automatisch aus SQLite übernommen.',
+                'done' => in_array(config('database.connections.'.config('database.default').'.driver'), ['mysql', 'mariadb'], true),
+            ],
+            [
                 'key' => 'kalender',
                 'phase' => '1b',
                 'title' => 'Nextcloud-Kalender eintragen',

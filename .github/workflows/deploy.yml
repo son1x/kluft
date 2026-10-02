@@ -19,14 +19,12 @@ name: Deploy auf Netcup-Webspace
 # bleibt als Referenz in legacy-static-site/ sowie im Branch
 # v1-erstentwurf erhalten).
 #
-# ÜBERGANGSSTAND (s. Pflichtenheft 4.4/4.5): Solange weder eine MySQL-
-# Datenbank noch echte Entra-/Brevo-Zugangsdaten für die Testumgebung als
-# Secrets hinterlegt sind, deployt dieser Workflow eine lauffähige, aber
-# absichtlich datenbankfreie Version (SQLite/File-Driver, frisch
-# gesicherter APP_KEY, s. Schritt "APP_KEY auf dem Server sichern") – nur damit auf test.dpsg-trier.de
-# sichtbar wird, dass die neue CMS-Basis läuft. Sobald echte Secrets
-# vorliegen, wird dieser Workflow entsprechend erweitert (s. TODO-Marker
-# unten).
+# Datenbank: MariaDB, sobald die Secrets DB_HOST und DB_DATABASE gesetzt
+# sind (dazu DB_PORT, DB_USERNAME, DB_PASSWORD), sonst SQLite in
+# database/database.sqlite. Beim ersten Deploy mit MariaDB werden die
+# Inhalte einmalig aus der SQLite-Datei übernommen (db:copy-from-sqlite);
+# die Datei bleibt als Sicherung liegen. Ist MariaDB nicht erreichbar,
+# läuft die Seite mit SQLite weiter und der Lauf wird rot.
 #
 # Voraussetzung: In den Repository-Einstellungen unter
 # "Settings" → "Secrets and variables" → "Actions" müssen folgende Secrets
@@ -43,6 +41,8 @@ name: Deploy auf Netcup-Webspace
 #   SSH_TARGET_DIR  – (optional) absoluter Server-Pfad für den SSH-Schritt,
 #                     falls er vom FTP-Chroot-Pfad (FTP_SERVER_DIR)
 #                     abweicht; sonst wird FTP_SERVER_DIR verwendet
+#   DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME, DB_PASSWORD
+#                   – MariaDB aus dem Hosting-Panel (utf8mb4)
 #
 # Hinweis: Trotz der Secret-Namen "FTP_*" wird hier SFTP (Port 22) verwendet
 # – FTP und SFTP nutzen bei den meisten Hostern dieselben Zugangsdaten.
@@ -70,6 +70,21 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # Produktiv läuft MariaDB – die Tests laufen daher zusätzlich dagegen
+    # (SQLite prüft z. B. keine Spaltenlängen).
+    services:
+      mariadb:
+        image: mariadb:10.11
+        env:
+          MARIADB_DATABASE: dpsg_test
+          MARIADB_USER: dpsg
+          MARIADB_PASSWORD: dpsg
+          MARIADB_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s --health-timeout=5s --health-retries=20
     steps:
       - name: Repository auschecken
         uses: actions/checkout@v4
@@ -108,6 +123,16 @@ jobs:
           sed -i 's/^DB_CONNECTION=.*/DB_CONNECTION=sqlite/' .env
           php artisan test
 
+      - name: Tests gegen MariaDB ausführen
+        env:
+          DB_CONNECTION: mariadb
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: dpsg_test
+          DB_USERNAME: dpsg
+          DB_PASSWORD: dpsg
+        run: php artisan test
+
       # Für das Deployment: nur Produktions-Abhängigkeiten, dann zu einem
       # einzelnen Archiv packen (s. Kommentar oben).
       - name: PHP-Produktionsabhängigkeiten installieren und packen
@@ -116,13 +141,13 @@ jobs:
           composer install --no-dev --optimize-autoloader --no-interaction --no-progress
           tar czf vendor-bundle.tar.gz vendor
 
-      # TODO sobald Secrets für DB_HOST/DB_DATABASE/DB_USERNAME/DB_PASSWORD
-      # hinterlegt sind: hier per env:-Block einlesen und
-      # unten in die .env schreiben statt der SQLite-/File-Platzhalterwerte
-      # (DB bleibt vorerst bewusst SQLite, s. Rücksprache); zusätzlich unten
-      # im SSH-Schritt "php artisan migrate --force" ergänzen.
       - name: .env für die Testumgebung generieren
         env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_DATABASE: ${{ secrets.DB_DATABASE }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           ENTRA_CLIENT_ID: ${{ secrets.ENTRA_CLIENT_ID }}
           ENTRA_CLIENT_SECRET: ${{ secrets.ENTRA_CLIENT_SECRET }}
           ENTRA_TENANT_ID: ${{ secrets.ENTRA_TENANT_ID }}
@@ -138,6 +163,27 @@ jobs:
           BACKUP_WEBDAV_USER: ${{ secrets.BACKUP_WEBDAV_USER }}
           BACKUP_WEBDAV_PASSWORD: ${{ secrets.BACKUP_WEBDAV_PASSWORD }}
         run: |
+          trim() {
+            local var="$1"
+            var="${var#"${var%%[![:space:]]*}"}"
+            var="${var%"${var##*[![:space:]]}"}"
+            printf '%s' "$var"
+          }
+          # MariaDB, sobald die Zugangsdaten als Secrets vorliegen. Werte in
+          # einfachen Anführungszeichen: dort ersetzt dotenv nichts (z. B. $).
+          if [ -n "$(trim "$DB_HOST")" ] && [ -n "$(trim "$DB_DATABASE")" ]; then
+            for value in "$DB_HOST" "$DB_PORT" "$DB_DATABASE" "$DB_USERNAME" "$DB_PASSWORD"; do
+              case "$value" in *"'"*) echo "::error::Ein DB_*-Secret enthält ein einfaches Anführungszeichen – bitte ein anderes Passwort wählen."; exit 1 ;; esac
+            done
+            DB_BLOCK="DB_CONNECTION=mariadb
+          DB_HOST='$(trim "$DB_HOST")'
+          DB_PORT='$(trim "${DB_PORT:-3306}")'
+          DB_DATABASE='$(trim "$DB_DATABASE")'
+          DB_USERNAME='$(trim "$DB_USERNAME")'
+          DB_PASSWORD='$(trim "$DB_PASSWORD")'"
+          else
+            DB_BLOCK="DB_CONNECTION=sqlite"
+          fi
           # Echte Mails nur mit Brevo-SMTP-Zugang UND Test-Umleitung
           # (F-MAIL-06): auf test.dpsg-trier.de bekommt niemand außer der
           # Testadresse Post. Sonst landen Mails nur im Log.
@@ -165,7 +211,7 @@ jobs:
           LOG_CHANNEL=stack
           LOG_STACK=single
           LOG_LEVEL=error
-          DB_CONNECTION=sqlite
+          ${DB_BLOCK}
           SESSION_DRIVER=file
           SESSION_LIFETIME=480
           CACHE_STORE=file
@@ -393,18 +439,61 @@ jobs:
             # überschreiben könnte. Für Fälle wie "neuer Seeder auf
             # bereits bestehender DB nachträglich ausführen" steht der
             # workflow_dispatch-Input "force_seed" (Run workflow im
-            # Actions-Tab) zur Verfügung. TODO: entfällt, sobald eine
-            # echte MySQL-DB angebunden ist (s. Kommentar oben zu
-            # DB_HOST/.../BREVO_API_KEY).
+            # Actions-Tab) zur Verfügung.
+            use_sqlite() {
+              sed -i -E '/^DB_(HOST|PORT|DATABASE|USERNAME|PASSWORD)=/d; s/^DB_CONNECTION=.*/DB_CONNECTION=sqlite/' .env
+            }
             NEEDS_SEED=0
-            if [ ! -f database/database.sqlite ]; then
-              touch database/database.sqlite
-              NEEDS_SEED=1
+            DB_FAILED=0
+            MARKER=storage/app/private/mariadb-initialized
+            if grep -q '^DB_CONNECTION=mariadb' .env; then
+              if ! /usr/bin/php artisan db:show >storage/app/private/db-error.txt 2>&1; then
+                echo "::error::MariaDB nicht erreichbar – die Seite läuft weiter mit SQLite. Meldung:"
+                grep -m1 -o 'SQLSTATE[^(]*' storage/app/private/db-error.txt | cut -c1-200 || true
+                use_sqlite
+                DB_FAILED=1
+              fi
+              rm -f storage/app/private/db-error.txt
             fi
-            /usr/bin/php artisan migrate --force
+            if grep -q '^DB_CONNECTION=mariadb' .env; then
+              if [ ! -f "$MARKER" ] && [ -f database/database.sqlite ]; then
+                # Einmaliger Umzug: erst die SQLite-Datei auf den neuesten
+                # Stand bringen (auch Daten-Migrationen dieses Deploys),
+                # dann das Schema in MariaDB anlegen und alles kopieren.
+                # Echte Umgebungsvariablen haben Vorrang vor der .env.
+                echo "---- Umzug SQLite → MariaDB ----"
+                # Mit && verkettet: bricht ein Schritt ab, greift der
+                # Rückfall auf SQLite (set -e gilt in if-Bedingungen nicht).
+                if DB_CONNECTION=sqlite DB_DATABASE="$PWD/database/database.sqlite" /usr/bin/php artisan migrate --force \
+                  && /usr/bin/php artisan migrate --force \
+                  && /usr/bin/php artisan db:copy-from-sqlite --force; then
+                  date -u +%FT%TZ > "$MARKER"
+                  /usr/bin/php artisan cache:clear || true
+                  echo "Umzug abgeschlossen; database/database.sqlite bleibt als Sicherung liegen."
+                else
+                  echo "::error::Übernahme der Inhalte nach MariaDB fehlgeschlagen – die Seite läuft weiter mit SQLite."
+                  use_sqlite
+                  DB_FAILED=1
+                fi
+              else
+                /usr/bin/php artisan migrate --force
+                if [ ! -f "$MARKER" ]; then
+                  NEEDS_SEED=1
+                  date -u +%FT%TZ > "$MARKER"
+                fi
+              fi
+            fi
+            if grep -q '^DB_CONNECTION=sqlite' .env; then
+              if [ ! -f database/database.sqlite ]; then
+                touch database/database.sqlite
+                NEEDS_SEED=1
+              fi
+              /usr/bin/php artisan migrate --force
+            fi
             if [ "$NEEDS_SEED" = "1" ] || [ "${{ github.event.inputs.force_seed }}" = "true" ]; then
               /usr/bin/php artisan db:seed --force
             fi
+            echo "Datenbank: $(grep -m1 '^DB_CONNECTION=' .env | cut -d= -f2)"
             # Diagnose ohne SSH-Zugang: die letzten Fehlermeldungen aus dem
             # Laravel-Log (nur die Meldungszeile, gekürzt, E-Mail-Adressen und
             # IPs geschwärzt) im Actions-Protokoll anzeigen.
@@ -412,13 +501,14 @@ jobs:
             /usr/bin/php artisan media:variants || true
             /usr/bin/php artisan up
             echo "---- PHP-Fähigkeiten auf dem Server ----"
-            /usr/bin/php -r 'echo "PHP ", PHP_VERSION, " | GD: ", function_exists("imagecreatefromstring") ? "ja" : "NEIN", " | WebP: ", function_exists("imagewebp") ? "ja" : "NEIN", " | Zip: ", class_exists("ZipArchive") ? "ja" : "NEIN", " | Sodium: ", function_exists("sodium_crypto_secretstream_xchacha20poly1305_init_push") ? "ja" : "NEIN", "\n";'
+            /usr/bin/php -r 'echo "PHP ", PHP_VERSION, " | GD: ", function_exists("imagecreatefromstring") ? "ja" : "NEIN", " | WebP: ", function_exists("imagewebp") ? "ja" : "NEIN", " | Zip: ", class_exists("ZipArchive") ? "ja" : "NEIN", " | Sodium: ", function_exists("sodium_crypto_secretstream_xchacha20poly1305_init_push") ? "ja" : "NEIN", " | proc_open: ", function_exists("proc_open") ? "ja" : "NEIN", "\n";'
             command -v mysqldump >/dev/null && echo "mysqldump: vorhanden" || echo "mysqldump: fehlt"
             echo "---- Letzte Fehler im Laravel-Log ----"
             grep -h '\.\(ERROR\|CRITICAL\|ALERT\|EMERGENCY\):' storage/logs/laravel*.log 2>/dev/null \
               | tail -n 15 | cut -c1-400 \
               | sed -E 's/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/<email>/g; s/([0-9]{1,3}\.){3}[0-9]{1,3}/<ip>/g' \
               || echo "(keine)"
+            if [ "$DB_FAILED" = "1" ]; then exit 1; fi
 
       # Falls ein Schritt oben fehlschlägt, darf die Seite nicht im
       # Wartungsmodus hängen bleiben.

@@ -7,6 +7,7 @@ use App\Services\Backup\BackupService;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use PHPUnit\Framework\Attributes\TestDox;
@@ -17,10 +18,16 @@ use Tests\TestCase;
  */
 class BackupTest extends TestCase
 {
-    // Kein RefreshDatabase: SQLite erlaubt VACUUM INTO nicht innerhalb einer Transaktion.
+    // Kein RefreshDatabase: SQLite erlaubt VACUUM INTO nicht innerhalb einer Transaktion,
+    // und mysqldump sähe die Daten einer offenen Transaktion nicht.
     use DatabaseMigrations;
 
     private string $dir;
+
+    private function isSqlite(): bool
+    {
+        return DB::connection()->getDriverName() === 'sqlite';
+    }
 
     protected function setUp(): void
     {
@@ -44,7 +51,9 @@ class BackupTest extends TestCase
         $this->assertNotNull($file);
         $this->assertStringNotContainsString('buero@dpsg-trier.de', file_get_contents($file), 'Backup muss verschlüsselt sein');
 
-        $this->artisan('backup:verify')->expectsOutputToContain('Datenbank ok (1 Benutzer)')->assertSuccessful();
+        $this->artisan('backup:verify')
+            ->expectsOutputToContain($this->isSqlite() ? 'Datenbank ok (1 Benutzer)' : 'SQL-Dump vollständig')
+            ->assertSuccessful();
         $this->assertTrue(Cache::get(BackupService::LAST_VERIFY_KEY)['ok']);
 
         config(['dpsg.backup.password' => 'ein-ganz-anderes-passwort']);
@@ -74,10 +83,10 @@ class BackupTest extends TestCase
 
         $this->artisan('backup:restore', ['file' => $file, '--to' => $target])->assertSuccessful();
 
-        $this->assertFileExists($target.'/database/database.sqlite');
+        $this->assertFileExists($target.'/database/'.($this->isSqlite() ? 'database.sqlite' : 'database.sql'));
         $manifest = json_decode(file_get_contents($target.'/manifest.json'), true);
         $this->assertSame(1, $manifest['counts']['users']);
-        $this->assertSame('sqlite', $manifest['driver']);
+        $this->assertSame(DB::connection()->getDriverName(), $manifest['driver']);
     }
 
     #[TestDox('Ohne Backup-Passwort gibt es eine klare Fehlermeldung')]

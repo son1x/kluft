@@ -3,7 +3,7 @@
 {{-- Stufenseite: Kopfband in Stufenfarbe mit Maskottchen, Text mit
      Häkchen-Aufzählung, daneben Mitmachen / Ansprechpersonen / Termine,
      unten der Weg durch die Stufen. Erwartet: $page, $stage, $stagePages,
-     $previous, $next, $people, $staemmeCount, $events --}}
+     $previous, $next, $dak, $staemmeCount, $events --}}
 
 @section('seo_title', $page->seo_title ?: $page->title.' ('.$stage['age'].') – DPSG Diözesanverband Trier')
 @section('seo_description', $page->seo_description ?: $stage['label'].' ('.$stage['age'].'): '.$stage['tagline'].'. Die Stufe in der DPSG im Bistum Trier.')
@@ -67,27 +67,21 @@
                 </a>
             </div>
 
-            <div class="rounded-lg bg-white p-5 shadow-md">
-                <h2 class="font-serif text-lg font-bold">Im Diözesanverband</h2>
-                @if ($people->isNotEmpty())
-                    <ul class="mt-3 space-y-4">
-                        @foreach ($people as $person)
-                            <li class="flex items-center gap-3">
-                                @include('partials.person-avatar', ['person' => $person, 'size' => 'h-12 w-12 text-base'])
-                                <div class="min-w-0 text-sm">
-                                    <a href="{{ $person->pageUrl() }}" class="font-bold hover:text-dpsg-rot">{{ $person->name }}</a>
-                                    @if ($person->role)<p class="text-text-secondary">{{ $person->role }}</p>@endif
-                                    @if ($person->email)<a href="mailto:{{ $person->email }}" class="block truncate text-dpsg-rot underline">{{ $person->email }}</a>@endif
-                                </div>
-                            </li>
+            <a href="#dak" class="flex items-center gap-4 rounded-lg bg-white p-5 shadow-md hover:shadow-lg">
+                @if ($dak->isNotEmpty())
+                    <span class="flex -space-x-3" aria-hidden="true">
+                        @foreach ($dak->take(4) as $person)
+                            <span class="rounded-full ring-2 ring-white">@include('partials.person-avatar', ['person' => $person, 'size' => 'h-11 w-11 text-sm'])</span>
                         @endforeach
-                    </ul>
+                    </span>
                 @else
-                    <p class="mt-2 text-sm text-text-secondary">
-                        Fragen zur Stufe beantwortet das <a href="{{ url('/dioezesanbuero') }}" class="text-dpsg-rot underline">Diözesanbüro</a>.
-                    </p>
+                    <x-heroicon-o-user-group class="h-10 w-10 shrink-0 text-(--stufe)" aria-hidden="true" />
                 @endif
-            </div>
+                <span>
+                    <span class="block font-serif text-lg font-bold leading-tight">Diözesanarbeitskreis</span>
+                    <span class="text-sm text-text-secondary">{{ $dak->isNotEmpty() ? 'Wer die Stufe im Diözesanverband gestaltet' : 'Mitmachen im DAK' }}</span>
+                </span>
+            </a>
 
             <div class="rounded-lg bg-white p-5 shadow-md">
                 <h2 class="font-serif text-lg font-bold">Termine</h2>
@@ -113,8 +107,35 @@
         </aside>
     </div>
 
+    {{-- Diözesanarbeitskreis (DAK) der Stufe --}}
+    <section id="dak" class="stufe-{{ $page->stage }} mt-6 scroll-mt-24 border-y-4 border-(--stufe) bg-white py-12" aria-labelledby="dak-heading">
+        <div class="mx-auto max-w-6xl px-4">
+            <p class="text-sm font-bold uppercase tracking-wider text-text-secondary">DAK {{ $stage['label'] }}</p>
+            <h2 id="dak-heading" class="mt-1 font-serif text-3xl font-bold">Der Diözesanarbeitskreis</h2>
+            <p class="mt-3 max-w-3xl text-text-secondary">
+                Im Diözesanarbeitskreis (DAK) gestalten Ehrenamtliche gemeinsam mit den Stufenreferent*innen die Arbeit der Stufe im Diözesanverband:
+                Sie planen Aktionen und Fortbildungen, unterstützen die Leiter*innen in den Stämmen und bringen die Stufe in die Gremien ein.
+            </p>
+        </div>
+        @if ($dak->isNotEmpty())
+            <div class="mt-8">
+                @include('partials.team', ['people' => $dak, 'teamPhoto' => null])
+            </div>
+        @endif
+        <div class="mx-auto max-w-6xl px-4">
+            <p class="mt-2 flex flex-wrap items-center gap-3 rounded-lg bg-surface-muted p-4 text-sm">
+                <x-heroicon-o-hand-raised class="h-5 w-5 shrink-0 text-(--stufe)" aria-hidden="true" />
+                <span>Lust, im DAK {{ $stage['label'] }} mitzuarbeiten? Melde dich gern
+                    @if ($dak->firstWhere('email'))
+                        bei <a href="mailto:{{ $dak->firstWhere('email')->email }}" class="text-dpsg-rot underline">{{ $dak->firstWhere('email')->email }}</a> oder
+                    @endif
+                    im <a href="{{ url('/dioezesanbuero') }}" class="text-dpsg-rot underline">Diözesanbüro</a>.</span>
+            </p>
+        </div>
+    </section>
+
     {{-- Weg durch die Stufen --}}
-    <nav aria-label="Alle Stufen" class="mx-auto mt-6 max-w-6xl px-4">
+    <nav aria-label="Alle Stufen" class="mx-auto mt-14 max-w-6xl px-4">
         <h2 class="mb-6 font-serif text-2xl font-bold">Der Weg durch die Stufen</h2>
         <div class="relative">
         <span class="absolute inset-x-[10%] top-8 h-1 rounded bg-surface-muted md:top-11" aria-hidden="true"></span>

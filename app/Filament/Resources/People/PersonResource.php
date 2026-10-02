@@ -14,6 +14,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
@@ -49,7 +50,15 @@ class PersonResource extends Resource
                     TextInput::make('name')->label('Name')->required()->maxLength(150),
                     TextInput::make('role')->label('Funktion')->placeholder('z. B. Referentin der Wölflingsstufe')->maxLength(150),
                     Select::make('gremium')->label('Gremium')->options($gremien)->in(array_keys($gremien))->required()->native(false)
-                        ->helperText('Bestimmt, auf welcher Seite die Person erscheint.'),
+                        ->live()
+                        ->helperText('Bestimmt, auf welcher Seite die Person erscheint. DAK-Mitglieder erscheinen auf der Seite ihrer Stufe.'),
+                    Select::make('stage')->label('Stufe')
+                        ->options(collect(config('dpsg.stages'))->map(fn (array $s) => $s['label'])->all())
+                        ->in(array_keys(config('dpsg.stages')))
+                        ->placeholder('–')
+                        ->native(false)
+                        ->required(fn (Get $get) => $get('gremium') === 'dak')
+                        ->helperText('Für Stufenreferent*innen und DAK-Mitglieder: Sie erscheinen dann auf der Stufenseite.'),
                     TextInput::make('subgroup')->label('Zwischenüberschrift')
                         ->placeholder('z. B. Diözesanvorstand')
                         ->datalist(fn () => Person::query()->whereNotNull('subgroup')->distinct()->orderBy('subgroup')->pluck('subgroup')->all())
@@ -59,11 +68,11 @@ class PersonResource extends Resource
                         ->in(array_keys(config('dpsg.person_badges')))
                         ->placeholder('DPSG-Blau')
                         ->native(false),
-                    Select::make('section')->label('Ansprechperson für Sektion')
+                    Select::make('section')->label('Ansprechperson für Fachbereich')
                         ->options(collect(config('dpsg.sections'))->map(fn (array $s) => $s['label'])->all())
                         ->placeholder('–')
                         ->native(false)
-                        ->helperText('Erscheint dann auf der Startseite der Sektion als Ansprechperson.'),
+                        ->helperText('Erscheint dann auf der Startseite des Fachbereichs als Ansprechperson.'),
                     TextInput::make('email')->label('E-Mail (Funktionsadresse)')->email()->maxLength(255),
                     Textarea::make('bio')->label('Vorstellungstext')->rows(6)->maxLength(3000)->columnSpanFull()
                         ->helperText('Absätze mit einer Leerzeile trennen. Lange Texte werden mit „Mehr lesen“ eingeklappt.'),

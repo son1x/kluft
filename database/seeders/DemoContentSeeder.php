@@ -43,6 +43,20 @@ class DemoContentSeeder extends Seeder
         <p>Der Diözesanverband Trier gliedert sich in 10 Bezirke im gesamten Bistum Trier, von der Mosel über Eifel und Hunsrück bis ins Saarland, mit mehr als 60 Stämmen und Siedlungen und über 5.000 Mitgliedern. Alle Bezirke und Stämme mit Kontakt und Karte findest du unter <a href="/bezirke-staemme">Bezirke &amp; Stämme</a>.</p>
         HTML;
 
+    public const FACHBEREICHE_BODY = <<<'HTML'
+        <p>Neben den Stufen gibt es im Diözesanverband Fachbereiche. Sie kümmern sich um Themen, die alle Altersstufen betreffen, und unterstützen Stämme, Bezirke und Leiter*innen mit Ideen, Material und Aktionen.</p>
+        HTML;
+
+    public const GERECHTIGKEIT_BODY = <<<'HTML'
+        <p>Der Fachbereich Internationale Gerechtigkeit beschäftigt sich mit globalen Zusammenhängen: Wie leben Menschen in anderen Teilen der Welt, was hat unser Alltag damit zu tun, und wie können wir als Pfadfinder*innen zu einer gerechteren Welt beitragen?</p>
+        <p>Dazu gehören Themen wie fairer Handel, Begegnungen über Grenzen hinweg und Aktionen, die Gruppen in ihren Gruppenstunden aufgreifen können.</p>
+        HTML;
+
+    public const INKLUSION_BODY = <<<'HTML'
+        <p>Pfadfinden ist für alle da – mit und ohne Behinderung. Der Fachbereich Inklusion („Ich-Du-Wir“) unterstützt Stämme und Leiter*innen dabei, Gruppenstunden, Lager und Aktionen so zu gestalten, dass alle mitmachen können.</p>
+        <p>Bei Fragen rund um Inklusion in deiner Gruppe hilft der Fachbereich gern weiter.</p>
+        HTML;
+
     public const SPENDEN_BODY = <<<'HTML'
         <p>Mit deiner Spende unterstützt du die Projekte unserer Partner*innen in Bolivien. Die Partnerschaft lebt von Begegnung und Austausch – und von Menschen, die sie mittragen.</p>
         <h2>Bankverbindung</h2>
@@ -89,16 +103,44 @@ class DemoContentSeeder extends Seeder
                     HTML,
             ],
             [
+                'slug' => 'fachbereiche',
+                'title' => 'Fachbereiche',
+                'show_in_nav' => true,
+                'nav_sort' => 30,
+                'body' => self::FACHBEREICHE_BODY,
+            ],
+            [
                 'slug' => 'bolivien',
                 'title' => 'Bolivienpartnerschaft',
                 'section' => 'bolivien',
+                'parent' => 'fachbereiche',
                 'seo_description' => 'Partnerschaft mit Pfadfinder*innen in Bolivien',
                 'show_in_nav' => true,
-                'nav_sort' => 40,
+                'nav_sort' => 10,
                 'body' => <<<'HTML'
                     <p>Eingebettet in die Bolivienpartnerschaft des Bistums Trier pflegt der Diözesanverband Kontakte zu Pfadfinder*innen in Bolivien. Begegnungen, gemeinsame Projekte und der Austausch über Ländergrenzen hinweg machen Pfadfinden als weltweite Bewegung erlebbar.</p>
                     <p>[TODO: Aktuelle Projekte, Ansprechperson und Spendenmöglichkeiten ergänzen.]</p>
                     HTML,
+            ],
+            [
+                'slug' => 'internationale-gerechtigkeit',
+                'title' => 'Internationale Gerechtigkeit',
+                'section' => 'internationale-gerechtigkeit',
+                'parent' => 'fachbereiche',
+                'seo_description' => 'Global denken, gemeinsam handeln',
+                'show_in_nav' => true,
+                'nav_sort' => 20,
+                'body' => self::GERECHTIGKEIT_BODY,
+            ],
+            [
+                'slug' => 'inklusion',
+                'title' => 'Inklusion',
+                'section' => 'inklusion',
+                'parent' => 'fachbereiche',
+                'seo_description' => 'Pfadfinden für alle – Ich, Du, Wir',
+                'show_in_nav' => true,
+                'nav_sort' => 30,
+                'body' => self::INKLUSION_BODY,
             ],
             [
                 'slug' => 'georgsbote',
@@ -133,6 +175,9 @@ class DemoContentSeeder extends Seeder
             ],
             [
                 'slug' => 'stufe-biber',
+                'parent' => 'stufen',
+                'show_in_nav' => true,
+                'nav_sort' => 10,
                 'title' => 'Biber',
                 'stage' => 'biber',
                 'seo_title' => 'Biber (4 bis 7 Jahre) – DPSG Diözesanverband Trier',
@@ -149,6 +194,9 @@ class DemoContentSeeder extends Seeder
             ],
             [
                 'slug' => 'stufe-woelflinge',
+                'parent' => 'stufen',
+                'show_in_nav' => true,
+                'nav_sort' => 20,
                 'title' => 'Wölflinge',
                 'stage' => 'woelflinge',
                 'seo_title' => 'Wölflinge (6 bis 10 Jahre) – DPSG Diözesanverband Trier',
@@ -165,6 +213,9 @@ class DemoContentSeeder extends Seeder
             ],
             [
                 'slug' => 'stufe-jupfi',
+                'parent' => 'stufen',
+                'show_in_nav' => true,
+                'nav_sort' => 30,
                 'title' => 'Jungpfadfinder*innen',
                 'stage' => 'jupfi',
                 'seo_title' => 'Jungpfadfinder*innen (10 bis 13 Jahre) – DPSG Diözesanverband Trier',
@@ -181,6 +232,9 @@ class DemoContentSeeder extends Seeder
             ],
             [
                 'slug' => 'stufe-pfadi',
+                'parent' => 'stufen',
+                'show_in_nav' => true,
+                'nav_sort' => 40,
                 'title' => 'Pfadfinder*innen',
                 'stage' => 'pfadi',
                 'seo_title' => 'Pfadfinder*innen (13 bis 15 Jahre) – DPSG Diözesanverband Trier',
@@ -196,6 +250,9 @@ class DemoContentSeeder extends Seeder
             ],
             [
                 'slug' => 'stufe-rover',
+                'parent' => 'stufen',
+                'show_in_nav' => true,
+                'nav_sort' => 50,
                 'title' => 'Rover',
                 'stage' => 'rover',
                 'seo_title' => 'Rover (15 bis 20 Jahre) – DPSG Diözesanverband Trier',

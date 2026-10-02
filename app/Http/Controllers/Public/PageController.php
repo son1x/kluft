@@ -25,6 +25,10 @@ class PageController extends Controller
             return $this->stageOverview($page);
         }
 
+        if ($slug === config('dpsg.sections_page')) {
+            return $this->sectionOverview($page);
+        }
+
         // Gremiumsseiten (z. B. Diözesanleitung) zeigen ihre Personen und
         // das Gruppenfoto unter dem Seitentext (F-CMS-12).
         $gremium = collect(config('dpsg.gremien'))->search(fn (array $g) => $g['page'] === $slug);
@@ -53,11 +57,49 @@ class PageController extends Controller
             'stagePages' => $stagePages,
             'previous' => $index === false || $index === 0 ? null : $stagePages[$index - 1],
             'next' => $index === false ? null : $stagePages->get($index + 1),
-            'people' => Person::query()->visible()->where('stage', $page->stage)->with('photo')->orderBy('sort')->get(),
+            'dak' => $this->dak($page->stage),
             'staemmeCount' => $this->staemmeCounts()[$page->stage] ?? 0,
             'events' => Event::query()->visible()->upcoming()->where('stage', $page->stage)
                 ->orderBy('starts_at')->limit(3)->get(),
         ]);
+    }
+
+    /**
+     * Diözesanarbeitskreis einer Stufe: Stufenreferent*innen aus der
+     * Diözesanleitung zuerst, dann die DAK-Mitglieder. Die Zwischen-
+     * überschrift wird nur für die Anzeige gesetzt, nicht gespeichert.
+     *
+     * @return Collection<int, Person>
+     */
+    private function dak(string $stage): Collection
+    {
+        return Person::query()->visible()->where('stage', $stage)->whereIn('gremium', ['leitung', 'dak'])
+            ->with('photo')->orderByRaw("gremium = 'dak'")->orderBy('sort')->orderBy('name')->get()
+            ->each(fn (Person $p) => $p->subgroup = $p->gremium === 'dak' ? 'Im Arbeitskreis' : 'Stufenreferent*innen');
+    }
+
+    /**
+     * Fachbereiche: je Sektion Kachel mit Farbe, Kurzbeschreibung und
+     * Ansprechpersonen, in der Reihenfolge der Navigation.
+     */
+    private function sectionOverview(Page $page): View
+    {
+        $sections = config('dpsg.sections');
+        $landings = Page::query()->published()->whereIn('slug', array_column($sections, 'landing'))->get()->keyBy('slug');
+        $contacts = Person::query()->visible()->whereIn('section', array_keys($sections))->orderBy('sort')->get()->groupBy('section');
+
+        $items = collect($sections)
+            ->filter(fn (array $s) => $landings->has($s['landing']))
+            ->map(fn (array $s, string $key) => [
+                'key' => $key,
+                'config' => $s,
+                'page' => $landings[$s['landing']],
+                'contacts' => $contacts->get($key, collect()),
+            ])
+            ->sortBy(fn (array $item) => [$item['page']->nav_sort, $item['page']->title])
+            ->values();
+
+        return view('pages.sections', ['page' => $page, 'items' => $items]);
     }
 
     private function stageOverview(Page $page): View

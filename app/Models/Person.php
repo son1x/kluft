@@ -8,7 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 
 /**
- * Person in Diözesanleitung oder Diözesanbüro (Personenvorstellung).
+ * Person in Diözesanleitung, Diözesanbüro oder einem Diözesanarbeitskreis
+ * (Personenvorstellung).
  */
 class Person extends Model
 {
@@ -59,11 +60,22 @@ class Person extends Model
 
     public function gremiumLabel(): string
     {
+        if ($this->gremium === 'dak' && $this->stage) {
+            return 'DAK '.config("dpsg.stages.{$this->stage}.label", $this->stage);
+        }
+
         return config("dpsg.gremien.{$this->gremium}.label", $this->gremium);
     }
 
     public function pageUrl(): string
     {
-        return url('/'.config("dpsg.gremien.{$this->gremium}.page", '')).'#'.$this->anchor();
+        $slug = config("dpsg.gremien.{$this->gremium}.page");
+
+        // DAK-Mitglieder stehen auf der Seite ihrer Stufe.
+        if ($slug === null && $this->stage) {
+            $slug = Page::query()->published()->where('stage', $this->stage)->value('slug');
+        }
+
+        return url('/'.($slug ?? '')).'#'.$this->anchor();
     }
 }

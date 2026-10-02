@@ -187,6 +187,13 @@ class Roadmap
                 'done' => null,
             ],
             [
+                'key' => 'fachbereiche-dak',
+                'phase' => 'Abnahme',
+                'title' => 'Fachbereiche und Diözesanarbeitskreise mit Inhalt füllen',
+                'detail' => 'Die Seiten „Internationale Gerechtigkeit“ und „Inklusion“ haben einen allgemeinen Starttext – bitte von den Fachbereichen prüfen bzw. ergänzen lassen und eine Ansprechperson zuordnen (Personen → „Ansprechperson für Fachbereich“). DAK-Mitglieder je Stufe im Backend unter „Personen“ mit Gremium „Diözesanarbeitskreis“ und der Stufe eintragen (mit Einwilligung).',
+                'done' => null,
+            ],
+            [
                 'key' => 'backups',
                 'phase' => 'Abnahme',
                 'title' => 'Backups einschalten',

@@ -54,12 +54,12 @@ class PageForm
                         ->helperText('Nur setzen, wenn diese Seite zu einer bestimmten Stufe gehört.'),
 
                     Select::make('section')
-                        ->label('Sektion')
+                        ->label('Fachbereich')
                         ->options(fn () => self::sectionOptions())
                         ->native(false)
                         ->visible(fn () => self::sectionOptions() !== [])
                         ->required(fn (Get $get) => ! self::isGlobal() && blank($get('stage')))
-                        ->helperText('Seiten einer Sektion erscheinen in deren Navigation (z. B. Bolivienpartnerschaft).'),
+                        ->helperText('Seiten eines Fachbereichs erscheinen in dessen Navigation (z. B. Bolivienpartnerschaft).'),
 
                     Select::make('status')
                         ->label('Status')
@@ -69,7 +69,8 @@ class PageForm
                         ->required(),
 
                     Toggle::make('show_in_nav')
-                        ->label('In Hauptnavigation anzeigen'),
+                        ->label('In Hauptnavigation anzeigen')
+                        ->helperText('Mit übergeordneter Seite erscheint sie als Unterpunkt (z. B. unter „Die Stufen“ oder „Fachbereiche“).'),
 
                     TextInput::make('nav_sort')
                         ->label('Reihenfolge in der Navigation')

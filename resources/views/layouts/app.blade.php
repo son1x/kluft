@@ -50,7 +50,16 @@
             <ul class="divide-y divide-surface-muted pt-12 font-bold">
                 <li><a href="{{ url('/') }}" @class(['block px-4 py-3', 'text-dpsg-rot' => $isHome])>Start</a></li>
                 @foreach ($navPages ?? [] as $navPage)
-                    <li><a href="{{ url('/'.$navPage->slug) }}" @class(['block px-4 py-3', 'text-dpsg-rot' => request()->is($navPage->slug)])>{{ $navPage->title }}</a></li>
+                    <li>
+                        <a href="{{ url('/'.$navPage->slug) }}" @class(['block px-4 py-3', 'text-dpsg-rot' => request()->is($navPage->slug)])>{{ $navPage->title }}</a>
+                        @if ($navPage->navChildren->isNotEmpty())
+                            <ul class="-mt-2 pb-2 font-normal">
+                                @foreach ($navPage->navChildren as $child)
+                                    <li><a href="{{ url('/'.$child->slug) }}" @class(['block py-1.5 pr-4 pl-8', 'text-dpsg-rot font-bold' => request()->is($child->slug)])>{{ $child->title }}</a></li>
+                                @endforeach
+                            </ul>
+                        @endif
+                    </li>
                 @endforeach
                 <li><a href="{{ url('/bezirke-staemme') }}" @class(['block px-4 py-3', 'text-dpsg-rot' => request()->is('bezirke-staemme')])>Bezirke &amp; Stämme</a></li>
                 <li><a href="{{ url('/veranstaltungen') }}" @class(['block px-4 py-3', 'text-dpsg-rot' => request()->is('veranstaltungen*')])>Veranstaltungen</a></li>
@@ -89,10 +98,55 @@
                     <a href="{{ url('/') }}" @class(['block px-3 py-1 hover:text-dpsg-rot', 'text-dpsg-rot' => $isHome]) @if ($isHome) aria-current="page" @endif>Start</a>
                 </li>
                 @foreach ($navPages ?? [] as $navPage)
-                    @php($active = request()->is($navPage->slug))
-                    <li class="flex-1 border-l border-dpsg-mittelbeige text-center">
-                        <a href="{{ url('/'.$navPage->slug) }}" @class(['block px-3 py-1 hover:text-dpsg-rot', 'text-dpsg-rot' => $active]) @if ($active) aria-current="page" @endif>{{ $navPage->title }}</a>
-                    </li>
+                    @php($children = $navPage->navChildren)
+                    @php($current = request()->is($navPage->slug))
+                    @php($active = $current || $children->contains(fn ($child) => request()->is($child->slug)))
+                    @if ($children->isEmpty())
+                        <li class="flex-1 border-l border-dpsg-mittelbeige text-center">
+                            <a href="{{ url('/'.$navPage->slug) }}" @class(['block px-3 py-1 hover:text-dpsg-rot', 'text-dpsg-rot' => $active]) @if ($current) aria-current="page" @endif>{{ $navPage->title }}</a>
+                        </li>
+                    @else
+                        {{-- Unterpunkte: aufklappen bei Maus darüber, per Pfeil-Knopf
+                             (Tastatur/Touch) oder Fokus; Esc schließt. --}}
+                        <li class="relative flex-1 border-l border-dpsg-mittelbeige text-center"
+                            x-data="{ open: false }"
+                            @mouseenter="open = true" @mouseleave="open = false"
+                            @keydown.escape="open = false; $refs.toggle.focus()"
+                            @focusout="$el.contains($event.relatedTarget) || (open = false)">
+                            <div class="flex items-center justify-center">
+                                <a href="{{ url('/'.$navPage->slug) }}" @class(['block py-1 pl-3 hover:text-dpsg-rot', 'text-dpsg-rot' => $active]) @if ($current) aria-current="page" @endif>{{ $navPage->title }}</a>
+                                <button type="button" x-ref="toggle" class="px-1 py-1 hover:text-dpsg-rot" @click="open = ! open" x-bind:aria-expanded="open.toString()" aria-expanded="false" aria-controls="subnav-{{ $navPage->slug }}">
+                                    <span class="sr-only">Unterpunkte von {{ $navPage->title }}</span>
+                                    <x-heroicon-m-chevron-down class="h-4 w-4 transition" x-bind:class="open && 'rotate-180'" aria-hidden="true" />
+                                </button>
+                            </div>
+                            <div id="subnav-{{ $navPage->slug }}" class="absolute left-1/2 top-full z-50 -translate-x-1/2 pt-3" x-show="open" x-transition.opacity x-cloak>
+                                <ul class="min-w-60 border-t-4 border-dpsg-rot bg-white py-2 text-left whitespace-nowrap shadow-xl">
+                                    <li><a href="{{ url('/'.$navPage->slug) }}" @class(['block px-4 py-2 text-xs uppercase tracking-wide text-text-secondary hover:text-dpsg-rot', 'text-dpsg-rot' => $current])>Übersicht {{ $navPage->title }}</a></li>
+                                    @foreach ($children as $child)
+                                        @php($childActive = request()->is($child->slug))
+                                        <li>
+                                            <a href="{{ url('/'.$child->slug) }}" @class(['flex items-center gap-2 px-4 py-2 hover:bg-surface-muted hover:text-dpsg-rot', 'text-dpsg-rot' => $childActive, 'font-normal' => ! $childActive]) @if ($childActive) aria-current="page" @endif>
+                                                @if ($child->stage)
+                                                    <span @class([
+                                                        'h-2.5 w-2.5 shrink-0 rounded-full',
+                                                        'bg-stufe-biber' => $child->stage === 'biber',
+                                                        'bg-stufe-woelflinge' => $child->stage === 'woelflinge',
+                                                        'bg-stufe-jupfi' => $child->stage === 'jupfi',
+                                                        'bg-stufe-pfadi' => $child->stage === 'pfadi',
+                                                        'bg-stufe-rover' => $child->stage === 'rover',
+                                                    ]) aria-hidden="true"></span>
+                                                @elseif ($child->section && config('dpsg.sections.'.$child->section.'.color'))
+                                                    <span class="fach-{{ config('dpsg.sections.'.$child->section.'.color') }} h-2.5 w-2.5 shrink-0 rounded-full bg-(--fach)" aria-hidden="true"></span>
+                                                @endif
+                                                {{ $child->title }}
+                                            </a>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </li>
+                    @endif
                 @endforeach
                 <li class="flex-1 border-l border-dpsg-mittelbeige text-center">
                     <a href="{{ url('/bezirke-staemme') }}" @class(['block px-3 py-1 hover:text-dpsg-rot', 'text-dpsg-rot' => request()->is('bezirke-staemme')])>Bezirke &amp; Stämme</a>
@@ -122,6 +176,9 @@
                 <ul class="space-y-2">
                     @foreach ($navPages ?? [] as $navPage)
                         <li><a href="{{ url('/'.$navPage->slug) }}" class="hover:underline">{{ $navPage->title }}</a></li>
+                        @foreach ($navPage->navChildren->whereNull('stage') as $child)
+                            <li class="pl-3"><a href="{{ url('/'.$child->slug) }}" class="hover:underline">{{ $child->title }}</a></li>
+                        @endforeach
                     @endforeach
                     <li><a href="{{ url('/bezirke-staemme') }}" class="hover:underline">Bezirke &amp; Stämme</a></li>
                     <li><a href="{{ url('/veranstaltungen') }}" class="hover:underline">Veranstaltungen</a></li>

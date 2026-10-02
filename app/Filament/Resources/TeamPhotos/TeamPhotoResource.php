@@ -40,7 +40,8 @@ class TeamPhotoResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-        $gremien = collect(config('dpsg.gremien'))->map(fn (array $g) => $g['label'])->all();
+        // Gruppenfotos nur für Gremien mit eigener Seite (nicht je DAK).
+        $gremien = collect(config('dpsg.gremien'))->filter(fn (array $g) => $g['page'] !== null)->map(fn (array $g) => $g['label'])->all();
 
         return $schema->components([
             Section::make()

@@ -51,6 +51,18 @@ class Page extends Model
     }
 
     /**
+     * Unterpunkte im Hauptmenü: veröffentlichte Unterseiten mit
+     * „In Hauptnavigation anzeigen“.
+     *
+     * @return HasMany<Page, $this>
+     */
+    public function navChildren(): HasMany
+    {
+        return $this->children()->published()->where('show_in_nav', true)
+            ->orderBy('nav_sort')->orderBy('title');
+    }
+
+    /**
      * @return BelongsTo<Media, $this>
      */
     public function coverMedia(): BelongsTo

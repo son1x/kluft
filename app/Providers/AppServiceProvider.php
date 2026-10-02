@@ -42,7 +42,9 @@ class AppServiceProvider extends ServiceProvider
             $stageOrder = array_keys(config('dpsg.stages'));
 
             $view->with([
-                'navPages' => Page::query()->published()->where('show_in_nav', true)->orderBy('nav_sort')->get(),
+                // Hauptmenü: oberste Ebene, Unterseiten als Unterpunkte.
+                'navPages' => Page::query()->published()->where('show_in_nav', true)->whereNull('parent_id')
+                    ->with('navChildren')->orderBy('nav_sort')->get(),
                 'stagePages' => Page::query()->published()->whereNotNull('stage')->get()
                     ->sortBy(fn (Page $page) => array_search($page->stage, $stageOrder, true))
                     ->unique('stage')

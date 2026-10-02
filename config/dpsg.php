@@ -24,13 +24,16 @@ return [
     'stages_page' => 'stufen',
 
     /*
-    | Sektionen mit eigener Landingpage, Navigation und Farbakzent
-    | (Pflichtenheft 6.2). Der Schlüssel ist zugleich der Rollen-Scope
-    | (sektionsadmin|section|<schlüssel>) und pages/posts.section.
+    | Fachbereiche („Sektionen“) mit eigener Landingpage, Navigation und
+    | Farbakzent (Pflichtenheft 6.2). Der Schlüssel ist zugleich der
+    | Rollen-Scope (sektionsadmin|section|<schlüssel>) und
+    | pages/posts.section. `color` = Fachbereichsfarbe aus dem CD
+    | (Klasse .fach-<color> in app.css).
     */
     'sections' => [
         'bolivien' => [
             'label' => 'Bolivienpartnerschaft',
+            'color' => 'internationales',
             'landing' => 'bolivien',
             'domains' => ['bolivienpartnerschaft.de', 'www.bolivienpartnerschaft.de'],
             // Partnerschaftslogo „Amistad – Freundschaft“ (ohne Endung; .webp/.png)
@@ -39,7 +42,22 @@ return [
             // Seiten, die nur dezent unten verlinkt werden (nicht in Navigation/Kacheln)
             'quiet_pages' => ['bolivien-spenden'],
         ],
+        'internationale-gerechtigkeit' => [
+            'label' => 'Internationale Gerechtigkeit',
+            'color' => 'globale-gerechtigkeit',
+            'icon' => 'globe-europe-africa',
+            'landing' => 'internationale-gerechtigkeit',
+        ],
+        'inklusion' => [
+            'label' => 'Inklusion',
+            'color' => 'inklusion',
+            'icon' => 'user-group',
+            'landing' => 'inklusion',
+        ],
     ],
+
+    // Übersichtsseite der Fachbereiche (Hauptmenüpunkt mit Unterpunkten).
+    'sections_page' => 'fachbereiche',
 
     'contact' => [
         'name' => 'DPSG Diözesanverband Trier',
@@ -81,6 +99,9 @@ return [
     'gremien' => [
         'leitung' => ['label' => 'Diözesanleitung', 'page' => 'dioezesanleitung'],
         'buero' => ['label' => 'Diözesanbüro', 'page' => 'dioezesanbuero'],
+        // Je Stufe ein Diözesanarbeitskreis; die Person erscheint auf der
+        // Seite ihrer Stufe (Feld „Stufe“), daher keine feste Seite.
+        'dak' => ['label' => 'Diözesanarbeitskreis (DAK) einer Stufe', 'page' => null],
     ],
 
     /*

@@ -50,7 +50,7 @@
             <div class="grid gap-6 lg:grid-cols-5">
                 {{-- Ohne JavaScript bleibt die Karte ausgeblendet (x-cloak), die Liste ist vollständig nutzbar. --}}
                 <div x-cloak :class="view === 'karte' ? 'block' : 'hidden lg:block'" class="lg:col-span-3">
-                    <div class="relative lg:sticky lg:top-4">
+                    <div class="relative lg:sticky lg:top-20">
                         <div
                             data-gruppierungen-map
                             data-pmtiles="{{ asset(config('dpsg.map.pmtiles')) }}"

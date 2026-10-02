@@ -18,15 +18,17 @@
      Servicezeile mit hängendem Logo-Badge, Hero bzw. Kopfband, darüber
      schwebende Hauptnavigation, mehrspaltiger Footer. Farben/Schriften
      ausschließlich DPSG-CD (7.2). --}}
-<body class="min-h-screen flex flex-col bg-surface font-sans text-text" x-data="{ navOpen: false }">
+<body class="min-h-screen flex flex-col bg-surface font-sans text-text" x-data="{ navOpen: false, scrolled: false }" @scroll.window.throttle.50ms="scrolled = window.scrollY > 40">
     <a href="#inhalt" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-2 focus:bg-white focus:px-4 focus:py-2 focus:text-dpsg-blau">Zum Inhalt springen</a>
 
     @php($isHome = request()->routeIs('home'))
 
-    <header class="relative z-30 bg-dpsg-blau text-white">
+    {{-- Mobil bleibt die blaue Kopfzeile beim Scrollen oben stehen; das
+         hängende Logo schrumpft dann in die Zeile hinein. --}}
+    <header class="sticky top-0 z-40 bg-dpsg-blau text-white md:relative md:z-30">
         <div class="relative mx-auto flex h-12 max-w-6xl items-center justify-end gap-6 px-4">
-            <a href="{{ url('/') }}" class="absolute left-4 top-0 rounded-b-lg bg-white px-3 pb-3 pt-2 shadow-lg">
-                <img src="{{ asset('images/logo-dv-trier.png') }}" alt="DPSG Diözesanverband Trier – zur Startseite" class="h-14 w-auto md:h-20" width="300" height="223" />
+            <a href="{{ url('/') }}" class="absolute left-4 top-0 rounded-b-lg bg-white px-3 shadow-lg transition-all duration-200 md:pb-3 md:pt-2" :class="scrolled ? 'pb-1 pt-1' : 'pb-3 pt-2'">
+                <img src="{{ asset('images/logo-dv-trier.png') }}" alt="DPSG Diözesanverband Trier – zur Startseite" class="h-14 w-auto transition-all duration-200 md:h-20" :class="scrolled && 'max-md:h-10'" width="300" height="223" />
             </a>
 
             <nav aria-label="Service" class="hidden text-sm md:block">
@@ -65,9 +67,24 @@
         <div class="h-20 bg-dpsg-blau md:h-28" aria-hidden="true"></div>
     @endif
 
-    <div class="relative z-20 mx-auto hidden w-full max-w-6xl px-4 md:-mt-7 md:block">
-        <nav aria-label="Hauptnavigation" class="bg-white shadow-lg">
-            <ul class="flex items-center py-3 text-sm font-bold">
+    {{-- Schwebende Hauptnavigation wie auf bistum-trier.de: liegt zunächst
+         halb über dem Hero und bleibt beim Scrollen oben kleben. Sobald sie
+         klebt, wird sie zur durchgehenden weißen Leiste mit kleinem Logo.
+         Der Sentinel davor meldet, wann die Leiste oben angekommen ist. --}}
+    <div class="hidden md:-mt-7 md:block" aria-hidden="true"
+         x-data
+         x-init="new IntersectionObserver(([e]) => $dispatch('nav-stuck', e.boundingClientRect.top < 0 && ! e.isIntersecting)).observe($el)"></div>
+    <div class="sticky top-0 z-40 hidden w-full transition-[background-color,box-shadow] duration-200 md:block"
+         x-data="{ stuck: false }"
+         @nav-stuck.window="stuck = $event.detail"
+         :class="stuck && 'bg-white shadow-md'">
+        <nav aria-label="Hauptnavigation" class="mx-auto max-w-6xl px-4">
+            <ul class="flex items-center bg-white text-sm font-bold lg:whitespace-nowrap transition-[padding,box-shadow] duration-200" :class="stuck ? 'py-2' : 'py-3 shadow-lg'">
+                <li class="hidden shrink-0 lg:block" x-show="stuck" x-transition.opacity x-cloak>
+                    <a href="{{ url('/') }}" class="block pr-4" tabindex="-1" aria-hidden="true">
+                        <img src="{{ asset('images/logo-dv-trier.png') }}" alt="" class="h-9 w-auto" width="300" height="223" />
+                    </a>
+                </li>
                 <li class="flex-1 text-center">
                     <a href="{{ url('/') }}" @class(['block px-3 py-1 hover:text-dpsg-rot', 'text-dpsg-rot' => $isHome]) @if ($isHome) aria-current="page" @endif>Start</a>
                 </li>

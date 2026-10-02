@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Calendar;
 use App\Services\CalendarSync;
 use Illuminate\Console\Command;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 use Throwable;
 
@@ -85,7 +86,11 @@ class CalendarCheckCommand extends Command
             $allowed = in_array($host, $hosts, true);
             $state = $calendar->active ? 'aktiv' : 'inaktiv';
             $sync = $calendar->last_synced_at ? 'zuletzt abgerufen '.$calendar->last_synced_at->timezone('Europe/Berlin')->format('d.m.Y H:i') : 'noch nie abgerufen';
-            $line = "Kalender „{$calendar->label}“ ({$state}): Host ".($allowed ? 'freigegeben' : 'NICHT in NEXTCLOUD_ALLOWED_HOSTS')."; {$sync}";
+            $total = $calendar->events()->count();
+            $upcoming = $calendar->events()->where('starts_at', '>=', now())->count();
+            $next = $calendar->events()->where('starts_at', '>=', now())->orderBy('starts_at')->value('starts_at');
+            $line = "Kalender „{$calendar->label}“ ({$state}): Host ".($allowed ? 'freigegeben' : 'NICHT in NEXTCLOUD_ALLOWED_HOSTS')."; {$sync}; "
+                ."{$total} Termin(e) gespeichert, davon {$upcoming} künftig".($next ? ' (nächster am '.Carbon::parse($next)->timezone('Europe/Berlin')->format('d.m.Y').')' : '');
             if ($calendar->last_error) {
                 $line .= '; letzter Fehler: '.$calendar->last_error;
             }

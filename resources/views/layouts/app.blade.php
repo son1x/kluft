@@ -70,7 +70,9 @@
     @hasSection('hero')
         @yield('hero')
     @else
-        <div class="h-20 bg-dpsg-blau md:h-28" aria-hidden="true"></div>
+        {{-- Seiten ohne Hero: blauer Streifen etwas höher als das hängende
+             Logo (Desktop 132 px), damit die Menüleiste nicht am Logo klebt. --}}
+        <div class="h-20 bg-dpsg-blau md:h-36" aria-hidden="true"></div>
     @endif
 
     {{-- Schwebende Hauptnavigation wie auf bistum-trier.de: liegt zunächst

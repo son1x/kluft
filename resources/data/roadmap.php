@@ -76,7 +76,7 @@ return [
         '9.4' => ['title' => 'Newsletter-Double-Opt-In', 'status' => 'done', 'note' => ''],
         '9.5' => ['title' => 'Consent / Cookies', 'status' => 'done', 'note' => ''],
         '10' => ['title' => 'Nichtfunktionale Anforderungen', 'status' => 'partial', 'note' => ''],
-        '10.1' => ['title' => 'Sicherheit', 'status' => 'partial', 'note' => 'CSRF, HTML-Bereinigung, Rate-Limits, Upload-Schutz fertig. Offen: Security-Header/CSP, automatische Schwachstellenprüfung.'],
+        '10.1' => ['title' => 'Sicherheit', 'status' => 'partial', 'note' => 'CSRF, HTML-Bereinigung, Rate-Limits, Upload-Schutz, Security-Header mit CSP und HSTS fertig. Offen: automatische Schwachstellenprüfung (composer audit/Dependabot).'],
         '10.2' => ['title' => 'Betrieb und Wartung', 'status' => 'open', 'note' => 'Backups, Monitoring sowie Betriebs- und Redaktionshandbuch fehlen noch.'],
         '10.3' => ['title' => 'Performance und Verfügbarkeit', 'status' => 'partial', 'note' => 'Caching und Lazy-Loading da. Offen: WebP, Messung.'],
         '10.4' => ['title' => 'Kompatibilität', 'status' => 'done', 'note' => 'Lesen und Anmelden funktionieren ohne JavaScript.'],

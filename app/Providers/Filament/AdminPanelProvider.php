@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\AvatarProviders\InitialsAvatarProvider;
 use App\Filament\Resources\Gruppierungen\Pages\CreateGruppierung;
 use App\Filament\Resources\Gruppierungen\Pages\EditGruppierung;
 use Filament\Http\Middleware\Authenticate;
@@ -13,7 +14,6 @@ use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\View\PanelsRenderHook;
-use Illuminate\Support\Facades\Blade;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -21,6 +21,7 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
@@ -36,6 +37,8 @@ class AdminPanelProvider extends PanelProvider
             // Routen-Übersicht 11.2). Der Notfall-Super-Admin hat einen
             // separaten, nicht verlinkten Pfad (/notfall-login, s. 5.2).
             ->login(fn () => redirect()->route('auth.entra.redirect'))
+            // Avatare lokal statt über ui-avatars.com (keine Namen an Dritte).
+            ->defaultAvatarProvider(InitialsAvatarProvider::class)
             ->colors([
                 'primary' => Color::hex('#003056'), // dpsg-blau, s. Pflichtenheft 7.2
                 'danger' => Color::hex('#810a1a'), // dpsg-rot

@@ -32,7 +32,7 @@ class BrevoCheckTest extends TestCase
             ->assertSuccessful();
     }
 
-    #[TestDox('Gesperrte IP und Vorlage ohne Bestätigungslink werden verständlich gemeldet, ohne Adressen')]
+    #[TestDox('Gesperrte Server-IP (zum Freigeben) und Vorlage ohne Bestätigungslink werden gemeldet, ohne E-Mail-Adressen')]
     public function test_reports_problems_without_personal_data(): void
     {
         Http::fake([
@@ -42,10 +42,9 @@ class BrevoCheckTest extends TestCase
         ]);
 
         $this->artisan('brevo:check')
-            ->expectsOutputToContain('unrecognised IP address <ip>')
+            ->expectsOutputToContain('unrecognised IP address 203.0.113.5')
             ->expectsOutputToContain('✗ Link {{ doubleoptin }} enthalten')
             ->expectsOutputToContain('✗ aktiv')
-            ->doesntExpectOutputToContain('203.0.113.5')
             ->doesntExpectOutputToContain('a@b.de')
             ->assertFailed();
     }

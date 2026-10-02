@@ -103,11 +103,12 @@ class BrevoCheckCommand extends Command
         return 'HTTP '.$response->status().' – '.self::scrub((string) ($response->json('message') ?? $response->json('code') ?? ''));
     }
 
-    /** E-Mail-Adressen und IPs aus Fehlermeldungen entfernen. */
+    /**
+     * E-Mail-Adressen aus Fehlermeldungen entfernen. IPs bleiben stehen:
+     * Brevo nennt nur die des eigenen Servers (für die IP-Freigabe nötig).
+     */
     public static function scrub(string $message): string
     {
-        $message = preg_replace('/[^\s@]+@[^\s@]+\.[a-z]{2,}/i', '<email>', $message) ?? '';
-
-        return Str::limit(preg_replace('/\b(\d{1,3}\.){3}\d{1,3}\b|\b[0-9a-f]{0,4}(:[0-9a-f]{0,4}){3,7}\b/i', '<ip>', $message) ?? '', 300);
+        return Str::limit(preg_replace('/[^\s@]+@[^\s@]+\.[a-z]{2,}/i', '<email>', $message) ?? '', 300);
     }
 }

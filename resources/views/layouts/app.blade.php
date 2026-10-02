@@ -28,7 +28,7 @@
     <header class="sticky top-0 z-40 bg-dpsg-blau text-white md:relative md:z-30">
         <div class="relative mx-auto flex h-12 max-w-6xl items-center justify-end gap-6 px-4">
             <a href="{{ url('/') }}" class="absolute left-4 top-0 rounded-b-lg bg-white px-3 shadow-lg transition-all duration-200 md:pb-3 md:pt-2" :class="scrolled ? 'pb-1 pt-1' : 'pb-3 pt-2'">
-                <img src="{{ asset('images/logo-dv-trier.png') }}" alt="DPSG Diözesanverband Trier – zur Startseite" class="h-14 w-auto transition-all duration-200 md:h-20" :class="scrolled && 'max-md:h-10'" width="300" height="223" />
+                <img src="{{ asset('images/logo-dv-trier.png') }}" alt="DPSG Diözesanverband Trier – zur Startseite" class="h-16 w-auto transition-all duration-200 md:h-28" :class="scrolled && 'max-md:h-10'" width="300" height="223" />
             </a>
 
             <nav aria-label="Service" class="hidden text-sm md:block">
@@ -165,45 +165,10 @@
     </main>
 
     @php($contact = config('dpsg.contact'))
+    {{-- Schlanker Footer (Rückmeldung Talia): kein zweites Menü, nur
+         Kontakt, Service und der Georgsbrief. --}}
     <footer class="mt-20 bg-dpsg-hellbeige text-text">
-        <div class="mx-auto grid max-w-6xl gap-10 px-4 py-12 text-sm sm:grid-cols-2 lg:grid-cols-4">
-            <div>
-                <h2 class="mb-4 font-serif text-base font-bold">Verband</h2>
-                <ul class="space-y-2">
-                    @foreach ($navPages ?? [] as $navPage)
-                        <li><a href="{{ url('/'.$navPage->slug) }}" class="hover:underline">{{ $navPage->title }}</a></li>
-                        @foreach ($navPage->navChildren->whereNull('stage') as $child)
-                            <li class="pl-3"><a href="{{ url('/'.$child->slug) }}" class="hover:underline">{{ $child->title }}</a></li>
-                        @endforeach
-                    @endforeach
-                    <li><a href="{{ url('/veranstaltungen') }}" class="hover:underline">Veranstaltungen</a></li>
-                    <li><a href="{{ url('/kalender') }}" class="hover:underline">Kalender</a></li>
-                    <li><a href="{{ url('/aktuelles') }}" class="hover:underline">Aktuelles</a></li>
-                    <li><a href="https://www.dpsg.de" target="_blank" rel="noopener" class="hover:underline">DPSG Bundesebene</a></li>
-                    <li><a href="https://www.bistum-trier.de" target="_blank" rel="noopener" class="hover:underline">Bistum Trier</a></li>
-                </ul>
-            </div>
-            <div>
-                <h2 class="mb-4 font-serif text-base font-bold">Stufen</h2>
-                <ul class="space-y-2">
-                    @foreach ($stagePages ?? [] as $stagePage)
-                        <li><a href="{{ url('/'.$stagePage->slug) }}" class="hover:underline">{{ config('dpsg.stages.'.$stagePage->stage.'.label') }}</a></li>
-                    @endforeach
-                </ul>
-            </div>
-            <div>
-                <h2 class="mb-4 font-serif text-base font-bold">Service</h2>
-                <ul class="space-y-2">
-                    <li><a href="{{ url('/kontakt') }}" class="hover:underline">Kontakt</a></li>
-                    <li><a href="{{ url('/dioezesanbuero') }}" class="hover:underline">Diözesanbüro</a></li>
-                    <li><a href="{{ url('/impressum') }}" class="hover:underline">Impressum</a></li>
-                    <li><a href="{{ url('/datenschutz') }}" class="hover:underline">Datenschutz</a></li>
-                    <li>
-                        <button type="button" onclick="window.dispatchEvent(new CustomEvent('open-consent-settings'))" class="hover:underline">Datenschutz-Einstellungen</button>
-                    </li>
-                    <li><a href="{{ url('/admin') }}" class="hover:underline">Redaktions-Login</a></li>
-                </ul>
-            </div>
+        <div class="mx-auto grid max-w-6xl gap-10 px-4 py-12 text-sm md:grid-cols-3">
             <div>
                 <h2 class="mb-4 font-serif text-base font-bold">{{ $contact['name'] }}</h2>
                 <p class="font-bold">{{ $contact['office'] }}</p>
@@ -213,13 +178,43 @@
                     <li class="flex items-center gap-2"><x-heroicon-o-envelope class="h-4 w-4 shrink-0" aria-hidden="true" /><a href="mailto:{{ $contact['email'] }}" class="hover:underline">{{ $contact['email'] }}</a></li>
                 </ul>
             </div>
+            <div>
+                <h2 class="mb-4 font-serif text-base font-bold">Service</h2>
+                <ul class="space-y-2">
+                    <li><a href="{{ url('/kontakt') }}" class="hover:underline">Kontakt</a></li>
+                    <li><a href="{{ url('/dioezesanbuero') }}" class="hover:underline">Diözesanbüro</a></li>
+                    <li>
+                        <button type="button" onclick="window.dispatchEvent(new CustomEvent('open-consent-settings'))" class="hover:underline">Datenschutz-Einstellungen</button>
+                    </li>
+                    <li><a href="{{ url('/admin') }}" class="hover:underline">Redaktions-Login</a></li>
+                </ul>
+                <h2 class="mb-3 mt-6 font-serif text-base font-bold">DPSG im Netz</h2>
+                <ul class="space-y-2">
+                    <li><a href="https://www.dpsg.de" target="_blank" rel="noopener" class="hover:underline">dpsg.de – Bundesebene</a></li>
+                    <li><a href="https://www.bistum-trier.de" target="_blank" rel="noopener" class="hover:underline">Bistum Trier</a></li>
+                </ul>
+            </div>
+            <div>
+                <a href="{{ route('georgsbrief.index') }}" class="group block overflow-hidden bg-white shadow-sm hover:shadow-md">
+                    <span class="block bg-[#eff2f7] px-4 py-3">
+                        <picture>
+                            <source type="image/webp" srcset="{{ asset('images/georgsbrief-logo.webp') }}" />
+                            <img src="{{ asset('images/georgsbrief-logo.png') }}" alt="Georgsbrief – der DPSG Trier Newsletter" width="970" height="251" class="h-auto w-full" loading="lazy" />
+                        </picture>
+                    </span>
+                    <span class="block p-4">
+                        Termine und Neuigkeiten aus dem Diözesanverband direkt ins Postfach.
+                        <span class="mt-2 block font-bold text-dpsg-rot group-hover:underline">Georgsbrief abonnieren →</span>
+                    </span>
+                </a>
+            </div>
         </div>
         <div class="bg-dpsg-blau text-white">
             <div class="mx-auto flex max-w-6xl flex-wrap gap-x-6 gap-y-2 px-4 py-4 text-sm">
                 <span>© {{ date('Y') }} {{ $contact['name'] }}</span>
                 <a href="{{ url('/impressum') }}" class="hover:underline">Impressum</a>
                 <a href="{{ url('/datenschutz') }}" class="hover:underline">Datenschutz</a>
-                <span class="sm:ml-auto">Stufen-Maskottchen und Rover-Lilie: DPSG (dpsg.de, rover.de)</span>
+                <span class="sm:ml-auto">Stufen-Maskottchen, Rover- und Inklusions-Lilie: DPSG (dpsg.de, rover.de)</span>
             </div>
         </div>
     </footer>

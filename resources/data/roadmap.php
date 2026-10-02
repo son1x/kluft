@@ -102,10 +102,10 @@ return [
         'Talia' => [
             ['status' => 'open', 'title' => 'Aktuelles weiter nach vorne', 'note' => 'Empfehlung: im Menü direkt hinter „Start“ und auf der Startseite die Meldungen vor den Begrüßungstext. Funktioniert nur, wenn regelmäßig neue Beiträge kommen – sonst steht ganz oben Veraltetes.'],
             ['status' => 'open', 'title' => 'Suche', 'note' => 'Im Pflichtenheft als Soll vorgesehen (F-CMS-07). Empfehlung: einfache Suche über Seiten, Beiträge, Veranstaltungen und Stämme jetzt bauen (Lupe im Kopf); bessere Trefferreihenfolge mit dem Umzug auf MySQL.'],
-            ['status' => 'open', 'title' => 'Footer ohne Wiederholung des Menüs', 'note' => 'Empfehlung: ja. Seit das Menü beim Scrollen mitläuft, ist die Wiederholung überflüssig. Footer auf Kontakt, Service/Rechtliches, Georgsbrief-Anmeldung und Partnerlinks (dpsg.de, Bistum) reduzieren.'],
+            ['status' => 'done', 'title' => 'Footer ohne Wiederholung des Menüs', 'note' => 'Umgesetzt: Footer nur noch mit Kontakt, Service, „DPSG im Netz“ und Georgsbrief-Anmeldung.'],
             ['status' => 'open', 'title' => 'Weniger Beige', 'note' => 'Die Farben sind die des DPSG-CD (Leitfaden April 2026); Beige ist dort für Flächen und Fußzeile vorgesehen, aber kein Muss. Empfehlung: Footer in DPSG-Blau, Infoboxen hellgrau/weiß, Beige nur noch sparsam.'],
-            ['status' => 'open', 'title' => 'Diözesan-Logo größer', 'note' => 'Empfehlung: moderat größer (Desktop ca. 1,4-fach). Für eine scharfe Darstellung in groß bräuchten wir das Logo als Vektordatei (SVG/PDF) vom Diözesanbüro.'],
-            ['status' => 'open', 'title' => 'Inklusions-Lilie für den Fachbereich Inklusion', 'note' => 'Empfehlung: ja, analog zum Amistad-Logo bei Bolivien (Seite, Kachel, Menüpunkt). Benötigt die Datei (am besten SVG) und die Nutzungsfreigabe.'],
+            ['status' => 'done', 'title' => 'Diözesan-Logo größer', 'note' => 'Umgesetzt: Logo im Kopf 1,4-fach (Desktop). Für noch größer und gestochen scharf: Logo als SVG/PDF aus dem Diözesanbüro.'],
+            ['status' => 'done', 'title' => 'Inklusions-Lilie für den Fachbereich Inklusion', 'note' => 'Umgesetzt: Inklusions-Lilie von dpsg.de (für die Arbeit in der DPSG frei verfügbar) im Kopf der Inklusionsseite und auf der Fachbereichsübersicht.'],
         ],
     ],
 

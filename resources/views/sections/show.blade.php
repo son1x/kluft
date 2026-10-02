@@ -10,6 +10,9 @@
 
 @php($fach = 'fach-'.($config['color'] ?? 'internationales'))
 @php($heroInk = $landing?->coverMedia ? 'text-white' : 'text-(--fach-ink)')
+{{-- Quer-Logos (Amistad) stehen neben dem Text, quadratische Zeichen (Lilie) im Kopfband. --}}
+@php($squareLogo = ($config['logo'] ?? null) && ($config['logo_size'][0] ?? 744) <= ($config['logo_size'][1] ?? 335) * 1.3)
+@php($cardLogo = ($config['logo'] ?? null) && ! $squareLogo)
 
 @section('hero')
     <section class="{{ $fach }} relative flex h-64 items-center overflow-hidden bg-(--fach) md:h-96">
@@ -27,6 +30,15 @@
             @endif
             <span @class(['mt-5 block h-1.5 w-40 rounded-full', 'bg-dpsg-yellow' => ($config['color'] ?? null) !== 'inklusion', 'bg-dpsg-blau' => ($config['color'] ?? null) === 'inklusion']) aria-hidden="true"></span>
         </div>
+        {{-- Quadratisches Fachbereichszeichen (z. B. Inklusions-Lilie) groß im Kopfband --}}
+        @if ($squareLogo)
+            <div class="absolute right-[max(1rem,calc((100vw-72rem)/2+1rem))] top-1/2 hidden h-56 w-56 -translate-y-1/2 items-center justify-center rounded-full bg-white p-8 shadow-xl ring-8 ring-white/30 md:flex" aria-hidden="true">
+                <picture>
+                    <source type="image/webp" srcset="{{ asset($config['logo'].'.webp') }}" />
+                    <img src="{{ asset($config['logo'].'.png') }}" alt="" width="{{ $config['logo_size'][0] }}" height="{{ $config['logo_size'][1] }}" class="h-auto w-full" />
+                </picture>
+            </div>
+        @endif
     </section>
 @endsection
 
@@ -36,13 +48,20 @@
     <div class="mx-auto max-w-6xl px-4">
         @if ($landing)
             <section class="mt-12 grid items-center gap-8 bg-white p-8 shadow-lg md:grid-cols-5">
-                @if ($config['logo'] ?? null)
-                    <picture class="md:order-last md:col-span-2">
+                @if ($squareLogo)
+                    {{-- Mobil steht das Zeichen nicht im Kopfband, daher hier klein. --}}
+                    <picture class="mx-auto block w-28 md:hidden">
                         <source type="image/webp" srcset="{{ asset($config['logo'].'.webp') }}" />
-                        <img src="{{ asset($config['logo'].'.png') }}" alt="{{ $config['logo_alt'] ?? '' }}" width="744" height="335" class="mx-auto h-auto w-full max-w-sm" />
+                        <img src="{{ asset($config['logo'].'.png') }}" alt="{{ $config['logo_alt'] ?? '' }}" width="{{ $config['logo_size'][0] }}" height="{{ $config['logo_size'][1] }}" class="h-auto w-full" />
                     </picture>
                 @endif
-                <div @class(['prose max-w-none prose-headings:font-serif prose-a:text-dpsg-rot', 'md:col-span-3' => $config['logo'] ?? null, 'md:col-span-5' => ! ($config['logo'] ?? null)])>{!! str($landing->body)->sanitizeHtml() !!}</div>
+                @if ($cardLogo)
+                    <picture class="md:order-last md:col-span-2">
+                        <source type="image/webp" srcset="{{ asset($config['logo'].'.webp') }}" />
+                        <img src="{{ asset($config['logo'].'.png') }}" alt="{{ $config['logo_alt'] ?? '' }}" width="{{ $config['logo_size'][0] ?? 744 }}" height="{{ $config['logo_size'][1] ?? 335 }}" class="mx-auto h-auto w-full max-w-sm" />
+                    </picture>
+                @endif
+                <div @class(['prose max-w-none prose-headings:font-serif prose-a:text-dpsg-rot', 'md:col-span-3' => $cardLogo, 'md:col-span-5' => ! $cardLogo])>{!! str($landing->body)->sanitizeHtml() !!}</div>
             </section>
         @endif
 

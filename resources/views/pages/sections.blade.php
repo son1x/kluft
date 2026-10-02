@@ -35,10 +35,11 @@
                 <article class="fach-{{ $item['config']['color'] ?? 'internationales' }} group relative flex flex-col overflow-hidden rounded-lg bg-white shadow-md transition hover:-translate-y-0.5 hover:shadow-xl">
                     <div class="stufe-pattern flex h-40 items-center justify-center bg-(--fach) p-6 [--stufe-ink:var(--fach-ink)]">
                         @if ($item['config']['logo'] ?? null)
-                            <span class="flex h-full items-center rounded-lg bg-white px-4 py-2 shadow-md">
+                            @php($squareLogo = ($item['config']['logo_size'][0] ?? 744) <= ($item['config']['logo_size'][1] ?? 335) * 1.3)
+                            <span @class(['flex items-center bg-white shadow-md', 'h-full rounded-lg px-4 py-2' => ! $squareLogo, 'h-28 w-28 justify-center rounded-full p-4' => $squareLogo])>
                                 <picture>
                                     <source type="image/webp" srcset="{{ asset($item['config']['logo'].'.webp') }}" />
-                                    <img src="{{ asset($item['config']['logo'].'.png') }}" alt="" width="744" height="335" class="h-auto max-h-24 w-auto" loading="lazy" />
+                                    <img src="{{ asset($item['config']['logo'].'.png') }}" alt="" width="{{ $item['config']['logo_size'][0] ?? 744 }}" height="{{ $item['config']['logo_size'][1] ?? 335 }}" class="h-auto max-h-24 w-auto" loading="lazy" />
                                 </picture>
                             </span>
                         @else

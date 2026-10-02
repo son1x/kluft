@@ -39,6 +39,7 @@ return [
             // Partnerschaftslogo „Amistad – Freundschaft“ (ohne Endung; .webp/.png)
             'logo' => 'images/bolivien/amistad-freundschaft',
             'logo_alt' => 'Amistad – Freundschaft: ASB Cochabamba & DPSG Trier',
+            'logo_size' => [744, 335],
             // Seiten, die nur dezent unten verlinkt werden (nicht in Navigation/Kacheln)
             'quiet_pages' => ['bolivien-spenden'],
         ],
@@ -52,6 +53,11 @@ return [
             'label' => 'Inklusion',
             'color' => 'inklusion',
             'icon' => 'user-group',
+            // Inklusions-Lilie der DPSG (dpsg.de → Logos, Material & Vorlagen;
+            // für die Arbeit in der DPSG frei verfügbar).
+            'logo' => 'images/fachbereiche/inklusion-lilie',
+            'logo_alt' => 'Inklusions-Lilie der DPSG: Lilie mit bunten Punkten',
+            'logo_size' => [600, 591],
             'landing' => 'inklusion',
         ],
     ],

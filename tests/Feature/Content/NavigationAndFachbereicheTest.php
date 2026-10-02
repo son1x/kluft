@@ -150,7 +150,7 @@ class NavigationAndFachbereicheTest extends TestCase
         $this->get('/dioezesanverband')->assertOk()->assertSeeInOrder(['Diözesanleitung', 'Bezirke &amp; Stämme', 'Georgsbote', 'Georgsbrief'], false);
         $this->get('/bezirke-staemme')->assertOk()->assertSee('Wo finde ich meinen Stamm?');
         $this->get('/georgsbrief')->assertOk()->assertSee('georgsbrief-logo', false)->assertSee('Georgsbrief abonnieren');
-        $this->get('/georgsbote')->assertOk()->assertDontSee('Georgsbrief abonnieren')->assertSee('Zum Georgsbrief');
+        $this->get('/georgsbote')->assertOk()->assertDontSee('name="einwilligung"', false)->assertSee('Zum Georgsbrief');
         $this->get('/georgsbote/danke')->assertRedirect('/georgsbrief/danke');
     }
 }

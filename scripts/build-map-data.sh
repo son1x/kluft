@@ -9,9 +9,11 @@
 set -euo pipefail
 
 PMTILES_BIN="${1:-go-pmtiles}"
-BUILD_DATE="$(php -r 'echo (require "config/dpsg.php")["map"]["build"];')"
-TARGET="public/$(php -r 'echo (require "config/dpsg.php")["map"]["pmtiles"];')"
-BBOX="$(php -r 'echo implode(",", (require "config/dpsg.php")["map"]["bbox"]);')"
+# config/dpsg.php ohne Laravel lesen: env() liefert hier nur den Standardwert.
+MAP_PHP='if (! function_exists("env")) { function env($k, $d = null) { return $d; } } $m = (require "config/dpsg.php")["map"];'
+BUILD_DATE="$(php -r "$MAP_PHP"' echo $m["build"];')"
+TARGET="public/$(php -r "$MAP_PHP"' echo $m["pmtiles"];')"
+BBOX="$(php -r "$MAP_PHP"' echo implode(",", $m["bbox"]);')"
 
 if [ -f "$TARGET" ]; then
   echo "Kartendaten bereits vorhanden: $TARGET"

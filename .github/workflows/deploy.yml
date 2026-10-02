@@ -197,22 +197,39 @@ jobs:
       # Selbstgehostete Kartendaten (F-MAP-04, ~140 MB) – zu groß fürs
       # Repository. Werden aus dem Protomaps-Tagesbuild ausgeschnitten und
       # gecacht; der Dateiname enthält das Build-Datum aus config/dpsg.php.
+      # Cache-Schlüssel hängt nur an den Karteneinstellungen, nicht an der
+      # ganzen config/dpsg.php – sonst baut jede Config-Änderung 140 MB neu.
+      - name: Kartendaten-Schlüssel bestimmen
+        id: mapkey
+        run: |
+          MAP_PHP='if (! function_exists("env")) { function env($k, $d = null) { return $d; } } $m = (require "config/dpsg.php")["map"];'
+          echo "key=map-data-$(php -r "$MAP_PHP"' echo $m["build"], "-", substr(md5(json_encode($m)), 0, 12);')" >> "$GITHUB_OUTPUT"
+          echo "file=public/$(php -r "$MAP_PHP"' echo $m["pmtiles"];')" >> "$GITHUB_OUTPUT"
+
       - name: Kartendaten aus dem Cache holen
         id: mapcache
         uses: actions/cache@v4
         with:
           path: public/maps/data
-          key: map-data-${{ hashFiles('config/dpsg.php') }}
+          key: ${{ steps.mapkey.outputs.key }}
+          # Fallback auf den letzten Stand: liegt die passende Datei schon
+          # darin, entfällt der Neuaufbau.
+          restore-keys: map-data-
+
+      - name: Kartendatei vorhanden?
+        id: mapfile
+        run: |
+          if [ -f "${{ steps.mapkey.outputs.file }}" ]; then echo "exists=true" >> "$GITHUB_OUTPUT"; else echo "exists=false" >> "$GITHUB_OUTPUT"; fi
 
       - name: Go einrichten (für go-pmtiles)
-        if: steps.mapcache.outputs.cache-hit != 'true'
+        if: steps.mapfile.outputs.exists != 'true'
         uses: actions/setup-go@v5
         with:
           go-version: '1.24'
           cache: false
 
       - name: Kartendaten erzeugen
-        if: steps.mapcache.outputs.cache-hit != 'true'
+        if: steps.mapfile.outputs.exists != 'true'
         run: |
           go install github.com/protomaps/go-pmtiles@v1.31.2
           scripts/build-map-data.sh "$(go env GOPATH)/bin/go-pmtiles"
@@ -403,7 +420,8 @@ jobs:
       # Falls ein Schritt oben fehlschlägt, darf die Seite nicht im
       # Wartungsmodus hängen bleiben.
       - name: Wartungsmodus sicher beenden
-        if: always()
+        # Nur wenn die Server-Zugangsdaten schon geladen wurden.
+        if: always() && env.SSH_HOST != ''
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ env.SSH_HOST }}

@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
 use App\Models\Page;
+use App\Models\Person;
 use App\Models\Post;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 
 /**
  * Sektionen mit eigener Landingpage (Pflichtenheft 6.2), z. B.
@@ -24,6 +26,9 @@ class SectionController extends Controller
             'config' => $config,
             'landing' => Page::query()->published()->with('coverMedia')->where('slug', $config['landing'])->first(),
             'pages' => $this->sectionPages($section, $config['landing']),
+            // Dezent verlinkte Seiten (z. B. Spenden) nur als kleiner Hinweis unten.
+            'quietPages' => Page::query()->published()->whereIn('slug', $config['quiet_pages'] ?? [])->orderBy('title')->get(),
+            'contacts' => Person::query()->visible()->where('section', $section)->with('photo')->orderBy('sort')->get(),
             'posts' => Post::query()->published()->with('coverMedia')
                 ->where('section', $section)
                 ->orderByDesc('published_at')
@@ -48,13 +53,14 @@ class SectionController extends Controller
     }
 
     /**
-     * @return \Illuminate\Support\Collection<int, Page>
+     * @return Collection<int, Page>
      */
     public static function sectionPages(string $section, string $landingSlug)
     {
         return Page::query()->published()
             ->where('section', $section)
             ->where('slug', '!=', $landingSlug)
+            ->whereNotIn('slug', config("dpsg.sections.{$section}.quiet_pages", []))
             ->orderBy('nav_sort')->orderBy('title')
             ->get();
     }

@@ -32,8 +32,35 @@
 
     <div class="mx-auto max-w-6xl px-4">
         @if ($landing)
-            <section class="mt-12 bg-white p-8 shadow-lg">
-                <div class="prose max-w-none prose-headings:font-serif prose-a:text-dpsg-rot">{!! str($landing->body)->sanitizeHtml() !!}</div>
+            <section class="mt-12 grid items-center gap-8 bg-white p-8 shadow-lg md:grid-cols-5">
+                @if ($config['logo'] ?? null)
+                    <picture class="md:order-last md:col-span-2">
+                        <source type="image/webp" srcset="{{ asset($config['logo'].'.webp') }}" />
+                        <img src="{{ asset($config['logo'].'.png') }}" alt="{{ $config['logo_alt'] ?? '' }}" width="744" height="335" class="mx-auto h-auto w-full max-w-sm" />
+                    </picture>
+                @endif
+                <div @class(['prose max-w-none prose-headings:font-serif prose-a:text-dpsg-rot', 'md:col-span-3' => $config['logo'] ?? null, 'md:col-span-5' => ! ($config['logo'] ?? null)])>{!! str($landing->body)->sanitizeHtml() !!}</div>
+            </section>
+        @endif
+
+        @if ($contacts->isNotEmpty())
+            <section class="mt-16" aria-labelledby="ansprechperson-heading">
+                @include('partials.section-heading', ['id' => 'ansprechperson-heading', 'title' => $contacts->count() > 1 ? 'Ansprechpersonen' : 'Ansprechperson'])
+                <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    @foreach ($contacts as $person)
+                        <li class="flex items-center gap-4 bg-white p-5 shadow-md">
+                            @include('partials.person-avatar', ['person' => $person])
+                            <div>
+                                <p class="font-serif text-lg font-bold leading-tight">{{ $person->name }}</p>
+                                @if ($person->role)<p class="text-sm text-text-secondary">{{ $person->role }}</p>@endif
+                                <p class="mt-1 text-sm">
+                                    <a href="mailto:{{ $person->email ?: config('dpsg.contact.email') }}" class="text-dpsg-rot underline">{{ $person->email ?: config('dpsg.contact.email') }}</a>
+                                </p>
+                                <a href="{{ $person->pageUrl() }}" class="mt-1 inline-block text-sm underline hover:text-dpsg-rot">Mehr über {{ \Illuminate\Support\Str::before($person->name, ' ') }}</a>
+                            </div>
+                        </li>
+                    @endforeach
+                </ul>
             </section>
         @endif
 
@@ -74,5 +101,17 @@
                 <a href="{{ route('sections.posts', $section) }}" class="mt-8 inline-block border border-dpsg-rot px-4 py-2 text-dpsg-rot hover:bg-dpsg-rot hover:text-white">Alle Meldungen</a>
             @endif
         </section>
+
+        @if ($quietPages->isNotEmpty())
+            <p class="mt-16 text-sm text-text-secondary">
+                @foreach ($quietPages as $quietPage)
+                    @if ($quietPage->slug === 'bolivien-spenden')
+                        Du möchtest die Partnerschaft unterstützen? <a href="{{ url('/'.$quietPage->slug) }}" class="underline hover:text-dpsg-rot">Informationen zu Spenden</a>
+                    @else
+                        <a href="{{ url('/'.$quietPage->slug) }}" class="underline hover:text-dpsg-rot">{{ $quietPage->title }}</a>
+                    @endif
+                @endforeach
+            </p>
+        @endif
     </div>
 @endsection

@@ -15,7 +15,7 @@ class Person extends Model
     protected $table = 'people';
 
     protected $fillable = [
-        'gremium', 'subgroup', 'name', 'role', 'stage', 'email', 'bio',
+        'gremium', 'section', 'subgroup', 'name', 'role', 'stage', 'badge', 'email', 'bio',
         'photo_media_id', 'consent', 'active', 'sort',
     ];
 

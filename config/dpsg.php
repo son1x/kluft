@@ -25,6 +25,11 @@ return [
             'label' => 'Bolivienpartnerschaft',
             'landing' => 'bolivien',
             'domains' => ['bolivienpartnerschaft.de', 'www.bolivienpartnerschaft.de'],
+            // Partnerschaftslogo „Amistad – Freundschaft“ (ohne Endung; .webp/.png)
+            'logo' => 'images/bolivien/amistad-freundschaft',
+            'logo_alt' => 'Amistad – Freundschaft: ASB Cochabamba & DPSG Trier',
+            // Seiten, die nur dezent unten verlinkt werden (nicht in Navigation/Kacheln)
+            'quiet_pages' => ['bolivien-spenden'],
         ],
     ],
 
@@ -54,6 +59,17 @@ return [
     | Gremien mit Personenvorstellung (Pflichtenheft 6.1 F-CMS-12). Die
     | Personen erscheinen auf der jeweiligen Seite unter dem Seitentext.
     */
+    // Gestaltung der Initialen-Kreise: Stufenfarben plus Muster.
+    'person_badges' => [
+        'biber' => 'Biber (Stufenfarbe)',
+        'woelflinge' => 'Wölflinge (Stufenfarbe)',
+        'jupfi' => 'Jungpfadfinder*innen (Stufenfarbe)',
+        'pfadi' => 'Pfadfinder*innen (Stufenfarbe)',
+        'rover' => 'Rover (Stufenfarbe)',
+        'inklusion' => 'Ich-Du-Wir / Inklusion (weiß mit bunten Punkten)',
+        'bolivien' => 'Bolivienpartnerschaft (Streifen)',
+    ],
+
     'gremien' => [
         'leitung' => ['label' => 'Diözesanleitung', 'page' => 'dioezesanleitung'],
         'buero' => ['label' => 'Diözesanbüro', 'page' => 'dioezesanbuero'],

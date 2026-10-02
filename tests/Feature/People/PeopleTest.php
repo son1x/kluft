@@ -44,10 +44,11 @@ class PeopleTest extends TestCase
 
     public function test_leitung_page_shows_people_photo_and_caption(): void
     {
-        $this->get('/dioezesanleitung')->assertOk()
+        $response = $this->get('/dioezesanleitung');
+        $this->assertMatchesRegularExpression('/>\s*TM\s*</', $response->getContent());
+        $this->assertMatchesRegularExpression('/>\s*HF\s*</', $response->getContent());
+        $response->assertOk()
             ->assertSeeInOrder(['Unsere Diözesanleitung', 'Diözesanvorstand', 'Till Mang', 'Referent*innen', 'Heike Franz'])
-            ->assertSee('>TM<', false)
-            ->assertSee('>HF<', false)
             ->assertSee('bg-stufe-woelflinge', false)
             ->assertSee('Gut Pfad!')
             // Bildunterschrift „von links“ nach x-Position, Büro-Person verlinkt auf ihre Seite
@@ -60,6 +61,35 @@ class PeopleTest extends TestCase
         $this->get('/dioezesanbuero')->assertOk()
             ->assertSee('id="person-axel-hemgesberg"', false)
             ->assertDontSee('Till Mang');
+    }
+
+    public function test_badge_patterns_and_section_contact_on_bolivien_page(): void
+    {
+        Person::query()->where('name', 'Heike Franz')->update(['badge' => 'woelflinge']);
+        Person::query()->create(['gremium' => 'leitung', 'name' => 'Bianca Boltze', 'role' => 'Referentin Inklusion', 'badge' => 'inklusion', 'consent' => true, 'sort' => 5]);
+        Person::query()->create(['gremium' => 'leitung', 'section' => 'bolivien', 'name' => 'Jannis Odrosek', 'role' => 'Referent der Bolivienpartnerschaft', 'badge' => 'bolivien', 'consent' => true, 'sort' => 6]);
+        Page::query()->updateOrCreate(['slug' => 'bolivien'], ['title' => 'Bolivienpartnerschaft', 'section' => 'bolivien', 'body' => '<p>Amistad</p>', 'status' => 'published', 'published_at' => now()->subDay()]);
+        Page::query()->updateOrCreate(['slug' => 'bolivien-spenden'], ['title' => 'Spenden', 'section' => 'bolivien', 'body' => '<p>IBAN</p>', 'status' => 'published', 'published_at' => now()->subDay()]);
+        Page::query()->updateOrCreate(['slug' => 'bolivien-projekt'], ['title' => 'Schulprojekt', 'section' => 'bolivien', 'body' => '<p>x</p>', 'status' => 'published', 'published_at' => now()->subDay()]);
+
+        $this->get('/dioezesanleitung')->assertOk()
+            ->assertSee('avatar-inklusion', false)
+            ->assertSee('avatar-bolivien', false)
+            ->assertSee('bg-stufe-woelflinge', false);
+
+        $response = $this->get('/bolivien')->assertOk()
+            ->assertSee('amistad-freundschaft.webp', false)
+            ->assertSee('Ansprechperson')
+            ->assertSee('Jannis Odrosek')
+            ->assertSee('/dioezesanleitung#person-jannis-odrosek', false)
+            ->assertSee('Informationen zu Spenden')
+            ->assertSee('Schulprojekt');
+
+        // Spenden nur dezent unten: nicht in der Sektionsnavigation und nicht als Kachel.
+        $html = $response->getContent();
+        $nav = substr($html, strpos($html, 'aria-label="Bolivienpartnerschaft"'), 1500);
+        $this->assertStringNotContainsString('bolivien-spenden', $nav);
+        $this->assertSame(1, substr_count($html, '/bolivien-spenden'));
     }
 
     public function test_spots_of_people_without_consent_are_hidden(): void

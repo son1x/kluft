@@ -54,10 +54,16 @@ class PersonResource extends Resource
                         ->placeholder('z. B. Diözesanvorstand')
                         ->datalist(fn () => Person::query()->whereNotNull('subgroup')->distinct()->orderBy('subgroup')->pluck('subgroup')->all())
                         ->maxLength(100),
-                    Select::make('stage')->label('Stufenfarbe (Initialen-Kreis)')
-                        ->options(collect(config('dpsg.stages'))->map(fn (array $s) => $s['label'])->all())
+                    Select::make('badge')->label('Gestaltung des Initialen-Kreises')
+                        ->options(config('dpsg.person_badges'))
+                        ->in(array_keys(config('dpsg.person_badges')))
                         ->placeholder('DPSG-Blau')
                         ->native(false),
+                    Select::make('section')->label('Ansprechperson für Sektion')
+                        ->options(collect(config('dpsg.sections'))->map(fn (array $s) => $s['label'])->all())
+                        ->placeholder('–')
+                        ->native(false)
+                        ->helperText('Erscheint dann auf der Startseite der Sektion als Ansprechperson.'),
                     TextInput::make('email')->label('E-Mail (Funktionsadresse)')->email()->maxLength(255),
                     Textarea::make('bio')->label('Vorstellungstext')->rows(6)->maxLength(3000)->columnSpanFull()
                         ->helperText('Absätze mit einer Leerzeile trennen. Lange Texte werden mit „Mehr lesen“ eingeklappt.'),

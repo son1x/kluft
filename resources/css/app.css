@@ -62,3 +62,25 @@
 [x-cloak] {
     display: none !important;
 }
+
+/*
+| Personen-Kreise mit Muster (Personenvorstellung): Punkte-Halstuch wie
+| beim Arbeitskreis „Ich-Du-Wir“ (Inklusion) und Bolivien-Streifen.
+*/
+.avatar-inklusion {
+    background-color: #ffffff;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='10' cy='14' r='4.2' fill='%23cc1f2f'/%3E%3Ccircle cx='25' cy='7' r='3.2' fill='%23ffcc00'/%3E%3Ccircle cx='41' cy='11' r='4.6' fill='%232f53a7'/%3E%3Ccircle cx='55' cy='18' r='3.4' fill='%2300823c'/%3E%3Ccircle cx='7' cy='31' r='3.4' fill='%23e6007e'/%3E%3Ccircle cx='57' cy='35' r='4.4' fill='%23ff6400'/%3E%3Ccircle cx='12' cy='49' r='4.6' fill='%23009fe3'/%3E%3Ccircle cx='27' cy='57' r='3.6' fill='%2300823c'/%3E%3Ccircle cx='43' cy='55' r='4.2' fill='%23cc1f2f'/%3E%3Ccircle cx='56' cy='51' r='3' fill='%23662483'/%3E%3Ccircle cx='22' cy='23' r='2.4' fill='%23ff6400'/%3E%3Ccircle cx='47' cy='27' r='2.4' fill='%23e6007e'/%3E%3Ccircle cx='20' cy='42' r='2.4' fill='%23ffcc00'/%3E%3Ccircle cx='36' cy='45' r='2.2' fill='%232f53a7'/%3E%3Ccircle cx='33' cy='30' r='1.8' fill='%2300823c'/%3E%3C/svg%3E");
+    background-size: cover;
+    box-shadow: inset 0 0 0 1px var(--color-dpsg-mittelbeige);
+    color: var(--color-dpsg-blau);
+    text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 6px #fff;
+}
+
+.avatar-bolivien {
+    background-image: linear-gradient(to bottom,
+        #d0443a 0 14.29%, #e3c955 14.29% 28.57%, #468a63 28.57% 42.86%,
+        #ececee 42.86% 57.14%, #2f282b 57.14% 71.43%, #d0443a 71.43% 85.71%,
+        #e3c955 85.71% 100%);
+    color: #ffffff;
+    text-shadow: 0 0 3px rgba(0, 0, 0, .9), 0 1px 2px rgba(0, 0, 0, .9);
+}

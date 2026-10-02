@@ -30,6 +30,9 @@ final class CalendarItem
         public readonly ?string $url = null,
         public readonly ?string $badge = null,
         public readonly bool $cancelled = false,
+        // Nextcloud-UID des Termins bzw. – bei Veranstaltungen – des
+        // Termins, aus dem sie angelegt wurde.
+        public readonly ?string $uid = null,
     ) {}
 
     public static function fromCalendarEvent(CalendarEvent $e): self
@@ -43,6 +46,7 @@ final class CalendarItem
             description: $e->description,
             sourceLabel: $e->calendar->label,
             color: $e->calendar->color,
+            uid: $e->uid,
         );
     }
 
@@ -69,6 +73,7 @@ final class CalendarItem
                 default => null,
             },
             cancelled: $state === 'abgesagt',
+            uid: $e->calendar_uid,
         );
     }
 
@@ -88,14 +93,20 @@ final class CalendarItem
     }
 
     /**
-     * Gleicher Termin? Gleicher Starttag und (nahezu) gleicher Titel –
-     * damit eine Veranstaltung, die zusätzlich in der Nextcloud steht,
-     * nur einmal (mit Anmeldung) erscheint.
+     * Gleicher Termin? Gleicher Starttag und gleiche Nextcloud-UID (aus dem
+     * Termin angelegt) oder (nahezu) gleicher Titel – damit eine
+     * Veranstaltung, die zusätzlich in der Nextcloud steht, nur einmal (mit
+     * Anmeldung) erscheint. Wiederkehrende Termine teilen sich eine UID,
+     * daher zählt immer auch der Tag.
      */
     public function sameAs(self $other): bool
     {
         if (! $this->starts_at->isSameDay($other->starts_at)) {
             return false;
+        }
+
+        if ($this->uid !== null && $this->uid === $other->uid) {
+            return true;
         }
 
         $a = self::normalize($this->title);

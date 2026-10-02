@@ -6,6 +6,7 @@ use App\Models\Event;
 use App\Support\RoleCatalog;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -38,6 +39,8 @@ class EventForm
                         ->alphaDash()
                         ->helperText('Erreichbar unter /veranstaltungen/{slug}'),
                     TextInput::make('location')->label('Ort')->maxLength(255),
+                    // Nextcloud-Termin, aus dem die Veranstaltung angelegt wurde.
+                    Hidden::make('calendar_uid'),
                     DateTimePicker::make('starts_at')->label('Beginn')->required()->seconds(false),
                     DateTimePicker::make('ends_at')->label('Ende')->seconds(false)->afterOrEqual('starts_at'),
                     Select::make('stage')
@@ -123,7 +126,7 @@ class EventForm
     /**
      * @return array<string, string>
      */
-    private static function stageOptions(): array
+    public static function stageOptions(): array
     {
         $all = collect(config('dpsg.stages'))->map(fn (array $stage) => $stage['label']);
 

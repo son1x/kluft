@@ -24,7 +24,7 @@ class Event extends Model
         'title', 'slug', 'teaser', 'description', 'starts_at', 'ends_at', 'location',
         'stage', 'section', 'target_group', 'cover_media_id', 'contact_name', 'contact_email',
         'cost_info', 'reg_opens_at', 'reg_closes_at', 'capacity', 'waitlist_enabled',
-        'status', 'form_fields', 'retention_days', 'created_by',
+        'status', 'form_fields', 'retention_days', 'created_by', 'calendar_uid',
     ];
 
     protected function casts(): array

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\CalendarItem;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -29,6 +30,18 @@ class CalendarEvent extends Model
     public function calendar(): BelongsTo
     {
         return $this->belongsTo(Calendar::class);
+    }
+
+    /**
+     * Veranstaltung mit Anmeldung zu diesem Termin, falls es eine gibt
+     * (aus dem Termin angelegt oder gleicher Tag und Titel).
+     */
+    public function matchingEvent(): ?Event
+    {
+        $item = CalendarItem::fromCalendarEvent($this);
+
+        return Event::query()->whereDate('starts_at', $this->starts_at->toDateString())->get()
+            ->first(fn (Event $event) => CalendarItem::fromEvent($event)->sameAs($item));
     }
 
     /**

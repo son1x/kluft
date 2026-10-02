@@ -180,6 +180,13 @@ class Roadmap
                 'done' => null,
             ],
             [
+                'key' => 'personen-freigabe',
+                'phase' => 'Abnahme',
+                'title' => 'Personenvorstellung mit den Personen abstimmen',
+                'detail' => 'Die 15 Personen auf den Seiten Diözesanleitung und Diözesanbüro samt Vorstellungstexten und Gruppenfoto stammen von der bisherigen Website und sind als „abgestimmt“ markiert. Bitte kurz bestätigen lassen; Porträtfotos lassen sich im Backend unter „Personen“ ergänzen.',
+                'done' => null,
+            ],
+            [
                 'key' => 'backups',
                 'phase' => 'Abnahme',
                 'title' => 'Backups einschalten',

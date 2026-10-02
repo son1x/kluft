@@ -51,6 +51,15 @@ return [
     ],
 
     /*
+    | Gremien mit Personenvorstellung (Pflichtenheft 6.1 F-CMS-12). Die
+    | Personen erscheinen auf der jeweiligen Seite unter dem Seitentext.
+    */
+    'gremien' => [
+        'leitung' => ['label' => 'Diözesanleitung', 'page' => 'dioezesanleitung'],
+        'buero' => ['label' => 'Diözesanbüro', 'page' => 'dioezesanbuero'],
+    ],
+
+    /*
     | Formular-Baukasten für Veranstaltungsanmeldungen (F-EV-03). Name und
     | E-Mail sind immer Pflicht; alles hier wird je Veranstaltung als
     | "nicht abfragen / optional / Pflicht" eingestellt. Gesundheitsdaten

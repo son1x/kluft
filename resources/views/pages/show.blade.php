@@ -25,4 +25,8 @@
             {!! str($page->body)->sanitizeHtml() !!}
         </div>
     </article>
+
+    @if (($teamPhoto ?? null) || ($people ?? collect())->isNotEmpty())
+        @include('partials.team', ['people' => $people, 'teamPhoto' => $teamPhoto])
+    @endif
 @endsection

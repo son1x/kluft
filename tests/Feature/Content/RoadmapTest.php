@@ -8,6 +8,7 @@ use Illuminate\Encryption\Encrypter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 /**
@@ -17,6 +18,7 @@ class RoadmapTest extends TestCase
 {
     use RefreshDatabase;
 
+    #[TestDox('Roadmap enthält jede Überschrift des Pflichtenhefts')]
     public function test_roadmap_covers_every_heading_of_the_pflichtenheft(): void
     {
         preg_match_all('/^#{2,3} (\d+(?:\.\d+)?)\.? (.+)$/m', file_get_contents(base_path('docs/pflichtenheft.md')), $m, PREG_SET_ORDER);
@@ -31,6 +33,7 @@ class RoadmapTest extends TestCase
         $this->assertCount(count($m), $sections, 'roadmap.php enthält Abschnitte, die es im Pflichtenheft nicht mehr gibt');
     }
 
+    #[TestDox('Roadmap zeigt Abschnitte und automatisch geprüfte offene Punkte')]
     public function test_page_shows_sections_and_auto_checked_todos(): void
     {
         $this->get('/roadmap')->assertOk()

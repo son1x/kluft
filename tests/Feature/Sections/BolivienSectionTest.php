@@ -9,6 +9,7 @@ use App\Models\User;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 /**
@@ -31,6 +32,7 @@ class BolivienSectionTest extends TestCase
         return $user->fresh();
     }
 
+    #[TestDox('Bolivien-Startseite zeigt nur eigene Seiten und Beiträge')]
     public function test_landing_page_shows_section_pages_and_posts_only(): void
     {
         $this->page('bolivien', ['title' => 'Bolivienpartnerschaft', 'section' => 'bolivien']);
@@ -50,6 +52,7 @@ class BolivienSectionTest extends TestCase
         $this->get('/bolivien-projekt')->assertOk()->assertSee('aria-label="Bolivienpartnerschaft"', false);
     }
 
+    #[TestDox('bolivienpartnerschaft.de zeigt die Bolivienseite direkt an')]
     public function test_alias_domain_shows_landing_page_without_redirect_and_with_canonical(): void
     {
         config(['app.url' => 'https://www.dpsg-trier.de']);
@@ -66,6 +69,7 @@ class BolivienSectionTest extends TestCase
         $this->get('https://www.dpsg-trier.de/')->assertOk()->assertSee('Startseite DV');
     }
 
+    #[TestDox('Sektionsadmins verwalten nur Inhalte ihrer Sektion')]
     public function test_sektionsadmin_manages_only_section_content(): void
     {
         $sektionsadmin = $this->user('bolivien@dpsg-trier.de', 'sektionsadmin', 'section', 'bolivien');

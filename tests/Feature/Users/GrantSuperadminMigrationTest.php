@@ -6,8 +6,13 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\User as SocialiteUser;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
+/**
+ * Vorab eingetragenes Projektleitungs-Konto mit vollen Rechten (Super-Admin),
+ * das sich bei der ersten M365-Anmeldung verknüpft.
+ */
 class GrantSuperadminMigrationTest extends TestCase
 {
     use RefreshDatabase;
@@ -28,6 +33,7 @@ class GrantSuperadminMigrationTest extends TestCase
         $this->get('/auth/entra/callback')->assertRedirect('/admin');
     }
 
+    #[TestDox('Vorab angelegtes Konto wird bei der ersten M365-Anmeldung verknüpft')]
     public function test_preprovisioned_account_links_on_first_m365_login(): void
     {
         $this->runMigration();
@@ -40,6 +46,7 @@ class GrantSuperadminMigrationTest extends TestCase
         $this->get('/admin/integrations')->assertOk();
     }
 
+    #[TestDox('Wartendes Konto wird freigeschaltet, Notfall-Account bleibt getrennt')]
     public function test_pending_account_from_earlier_login_is_activated_and_break_glass_freed(): void
     {
         $breakGlass = User::query()->create(['name' => 'Notfall', 'email' => 's.hafner@dpsg-trier.de', 'status' => 'active', 'is_local_admin' => true, 'entra_oid' => 'oid-sh']);

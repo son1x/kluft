@@ -5,6 +5,7 @@ namespace Tests\Feature\Content;
 use App\Models\User;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 /**
@@ -14,6 +15,7 @@ class SecurityHeadersTest extends TestCase
 {
     use RefreshDatabase;
 
+    #[TestDox('Öffentliche Seiten senden strenge Sicherheits-Header ohne Inline-Skripte')]
     public function test_public_pages_send_strict_headers_without_inline_scripts(): void
     {
         config(['app.url' => 'https://test.dpsg-trier.de']);
@@ -32,6 +34,7 @@ class SecurityHeadersTest extends TestCase
             ->assertHeader('Strict-Transport-Security', 'max-age=31536000');
     }
 
+    #[TestDox('Backend erlaubt nötige Skripte und lädt Profilbilder nicht von Dritten')]
     public function test_backend_allows_inline_scripts_and_uses_local_avatars(): void
     {
         Filament::setCurrentPanel('admin');

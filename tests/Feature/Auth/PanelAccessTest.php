@@ -4,6 +4,7 @@ namespace Tests\Feature\Auth;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 /**
@@ -14,6 +15,7 @@ class PanelAccessTest extends TestCase
 {
     use RefreshDatabase;
 
+    #[TestDox('Noch nicht freigeschaltete Nutzer*innen ohne Rolle kommen nicht ins Backend')]
     public function test_pending_user_without_role_cannot_access_admin_panel(): void
     {
         $user = User::query()->create([
@@ -26,6 +28,7 @@ class PanelAccessTest extends TestCase
         $this->assertFalse($user->canAccessPanel(filament()->getCurrentOrDefaultPanel()));
     }
 
+    #[TestDox('Aktive Nutzer*innen mit Rolle kommen ins Backend')]
     public function test_active_user_with_role_can_access_admin_panel(): void
     {
         $user = User::query()->create([
@@ -44,6 +47,7 @@ class PanelAccessTest extends TestCase
         $this->assertTrue($user->canAccessPanel(filament()->getCurrentOrDefaultPanel()));
     }
 
+    #[TestDox('Deaktivierte Nutzer*innen kommen trotz Rolle nicht ins Backend')]
     public function test_disabled_user_cannot_access_admin_panel_even_with_role(): void
     {
         $user = User::query()->create([
@@ -61,6 +65,7 @@ class PanelAccessTest extends TestCase
         $this->assertFalse($user->canAccessPanel(filament()->getCurrentOrDefaultPanel()));
     }
 
+    #[TestDox('Rollen werden je Stufe korrekt unterschieden')]
     public function test_scope_helper_distinguishes_stage_assignments(): void
     {
         $user = User::query()->create([

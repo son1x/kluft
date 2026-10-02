@@ -5,6 +5,7 @@ namespace Tests\Feature\Content;
 use App\Models\Post;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 /**
@@ -32,6 +33,7 @@ class PostPolicyTest extends TestCase
         return $user->fresh();
     }
 
+    #[TestDox('Autor*innen bearbeiten nur eigene Beiträge')]
     public function test_autor_can_only_edit_own_posts(): void
     {
         $autor = $this->makeUser('autor');
@@ -53,6 +55,7 @@ class PostPolicyTest extends TestCase
         $this->assertFalse($autor->can('update', $foreignPost));
     }
 
+    #[TestDox('Stufenadmins verwalten nur Beiträge der eigenen Stufe')]
     public function test_stufenadmin_can_manage_posts_of_their_own_stage_only(): void
     {
         $stufenadminBiber = $this->makeUser('stufenadmin', 'stage', 'biber');
@@ -71,6 +74,7 @@ class PostPolicyTest extends TestCase
         $this->assertFalse($stufenadminBiber->can('update', $woelflingePost));
     }
 
+    #[TestDox('Nur berechtigte Rollen dürfen direkt veröffentlichen')]
     public function test_only_scoped_roles_may_publish_directly(): void
     {
         $autor = $this->makeUser('autor');
@@ -82,6 +86,7 @@ class PostPolicyTest extends TestCase
         $this->assertTrue($verwaltung->can('publish', Post::class));
     }
 
+    #[TestDox('Verwaltung darf alle Beiträge bearbeiten')]
     public function test_verwaltung_can_manage_any_post(): void
     {
         $verwaltung = $this->makeUser('verwaltung', 'global');

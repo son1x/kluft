@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Testing\TestResponse;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\User as SocialiteUser;
+use PHPUnit\Framework\Attributes\TestDox;
 use PragmaRX\Google2FA\Google2FA;
 use Tests\TestCase;
 
@@ -50,6 +51,7 @@ class BreakGlassEntraScenarioTest extends TestCase
         ]);
     }
 
+    #[TestDox('Notfall-Account und M365-Konto mit unterschiedlicher Adresse bleiben getrennt')]
     public function test_different_m365_address(): void
     {
         [$admin, $secret] = $this->breakGlass('notfall@dpsg-trier.de');
@@ -67,6 +69,7 @@ class BreakGlassEntraScenarioTest extends TestCase
         $this->get($response->headers->get('Location'))->assertOk();
     }
 
+    #[TestDox('Eine M365-Anmeldung wird nie mit dem Notfall-Account verknüpft')]
     public function test_m365_login_never_links_to_the_break_glass_account(): void
     {
         [$admin, $secret] = $this->breakGlass('sebastian@dpsg-trier.de');
@@ -81,6 +84,7 @@ class BreakGlassEntraScenarioTest extends TestCase
         $this->assertAuthenticatedAs($admin);
     }
 
+    #[TestDox('Neu-Einrichten des Notfall-Accounts vergibt eigene Adresse und neues TOTP-Geheimnis')]
     public function test_reset_command_gives_break_glass_its_own_address_and_new_secret(): void
     {
         [$admin] = $this->breakGlass('sebastian@dpsg-trier.de');
@@ -105,6 +109,7 @@ class BreakGlassEntraScenarioTest extends TestCase
         $this->assertMatchesRegularExpression('/^[A-Z2-7]{16,}$/', $admin->totp_secret);
     }
 
+    #[TestDox('Unlesbares TOTP-Geheimnis führt zu klarer Meldung statt Fehler 500')]
     public function test_unreadable_totp_secret_gives_clear_message_instead_of_500(): void
     {
         [$admin, $secret] = $this->breakGlass('notfall@dpsg-trier.de');

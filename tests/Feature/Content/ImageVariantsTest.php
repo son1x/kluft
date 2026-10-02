@@ -6,6 +6,7 @@ use App\Models\Media;
 use App\Models\Post;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 /**
@@ -31,6 +32,7 @@ class ImageVariantsTest extends TestCase
         return Media::query()->create(['path' => 'media/foto.jpg', 'mime' => $mime, 'size' => 1, 'alt_text' => 'Lager', 'credit' => 'DPSG']);
     }
 
+    #[TestDox('Bild-Upload erzeugt WebP-Varianten, ohne kleine Bilder hochzuskalieren')]
     public function test_upload_creates_webp_variants_without_upscaling(): void
     {
         $media = $this->upload(1200, 800)->fresh();
@@ -47,6 +49,7 @@ class ImageVariantsTest extends TestCase
         $this->assertSame([300], array_map('intval', array_keys($small->variants)));
     }
 
+    #[TestDox('Varianten werden mit dem Bild gelöscht; PDFs bleiben unberührt')]
     public function test_variants_are_removed_with_the_image_and_pdfs_are_skipped(): void
     {
         $media = $this->upload(1000, 600)->fresh();
@@ -61,6 +64,7 @@ class ImageVariantsTest extends TestCase
         $this->assertNull($pdf->fresh()->variants);
     }
 
+    #[TestDox('Website liefert WebP in passenden Größen mit Original als Rückfall')]
     public function test_frontend_serves_webp_srcset_with_original_fallback(): void
     {
         $media = $this->upload(1600, 900);
@@ -74,6 +78,7 @@ class ImageVariantsTest extends TestCase
             ->assertSee('width="1600" height="900"', false);
     }
 
+    #[TestDox('Befehl erzeugt Varianten für bereits vorhandene Bilder')]
     public function test_command_backfills_existing_images(): void
     {
         $media = $this->upload(800, 600);

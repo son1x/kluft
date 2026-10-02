@@ -12,6 +12,7 @@ use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 /**
@@ -42,6 +43,7 @@ class PeopleTest extends TestCase
         $this->photo->spots()->create(['person_id' => $axel->id, 'x' => 10, 'y' => 40]);
     }
 
+    #[TestDox('Diözesanleitung zeigt Personen, Gruppenfoto und Bildunterschrift')]
     public function test_leitung_page_shows_people_photo_and_caption(): void
     {
         $response = $this->get('/dioezesanleitung');
@@ -63,6 +65,7 @@ class PeopleTest extends TestCase
             ->assertDontSee('Till Mang');
     }
 
+    #[TestDox('Initialen-Kreise mit Mustern; Ansprechperson auf der Bolivienseite')]
     public function test_badge_patterns_and_section_contact_on_bolivien_page(): void
     {
         Person::query()->where('name', 'Heike Franz')->update(['badge' => 'woelflinge']);
@@ -92,6 +95,7 @@ class PeopleTest extends TestCase
         $this->assertSame(1, substr_count($html, '/bolivien-spenden'));
     }
 
+    #[TestDox('Personen ohne Einwilligung werden auf dem Gruppenfoto nicht markiert')]
     public function test_spots_of_people_without_consent_are_hidden(): void
     {
         Person::query()->where('name', 'Till Mang')->update(['consent' => false]);
@@ -101,6 +105,7 @@ class PeopleTest extends TestCase
             ->assertSee('Von links:');
     }
 
+    #[TestDox('Nur die Verwaltung pflegt Personen; Markierungen werden gespeichert')]
     public function test_only_verwaltung_manages_people_and_spots_are_saved(): void
     {
         Filament::setCurrentPanel('admin');

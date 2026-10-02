@@ -9,6 +9,7 @@ use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 /**
@@ -35,6 +36,7 @@ class BackupTest extends TestCase
         parent::tearDown();
     }
 
+    #[TestDox('Backup lässt sich wiederherstellen; mit falschem Passwort nicht lesbar')]
     public function test_backup_round_trip_and_wrong_password(): void
     {
         $this->artisan('backup:run')->assertSuccessful();
@@ -50,6 +52,7 @@ class BackupTest extends TestCase
         $this->assertFalse(Cache::get(BackupService::LAST_VERIFY_KEY)['ok']);
     }
 
+    #[TestDox('Manipulierte oder abgeschnittene Backups werden erkannt')]
     public function test_tampered_or_truncated_files_are_detected(): void
     {
         $file = app(BackupService::class)->create();
@@ -63,6 +66,7 @@ class BackupTest extends TestCase
         $this->assertFalse(app(BackupService::class)->verify($file)['ok']);
     }
 
+    #[TestDox('Wiederherstellung entpackt in ein eigenes Verzeichnis statt die Live-Daten zu überschreiben')]
     public function test_restore_extracts_into_separate_directory(): void
     {
         $file = app(BackupService::class)->create();
@@ -76,12 +80,14 @@ class BackupTest extends TestCase
         $this->assertSame('sqlite', $manifest['driver']);
     }
 
+    #[TestDox('Ohne Backup-Passwort gibt es eine klare Fehlermeldung')]
     public function test_missing_password_fails_clearly(): void
     {
         config(['dpsg.backup.password' => '']);
         $this->artisan('backup:run')->expectsOutputToContain('BACKUP_PASSWORD fehlt')->assertFailed();
     }
 
+    #[TestDox('Backups werden 14 Tage aufbewahrt, mindestens aber drei')]
     public function test_rotation_keeps_fourteen_days_and_at_least_three(): void
     {
         File::ensureDirectoryExists($this->dir);
@@ -100,6 +106,7 @@ class BackupTest extends TestCase
         $this->assertNotContains('backup-'.now()->subDays(16)->format('Y-m-d').'-020000.dpsgbak', $names);
     }
 
+    #[TestDox('Kopie außerhalb des Webspace per WebDAV, inklusive Aufräumen dort')]
     public function test_offsite_copy_via_webdav_and_remote_rotation(): void
     {
         config(['dpsg.backup.webdav_url' => 'https://cloud.example.org/remote.php/dav/files/backup/dpsg', 'dpsg.backup.webdav_user' => 'backup', 'dpsg.backup.webdav_password' => 'app-pw']);

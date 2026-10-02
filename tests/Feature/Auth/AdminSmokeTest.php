@@ -5,6 +5,7 @@ namespace Tests\Feature\Auth;
 use App\Models\User;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 /**
@@ -15,6 +16,7 @@ class AdminSmokeTest extends TestCase
 {
     use RefreshDatabase;
 
+    #[TestDox('Jede Übersichts-, Anlegen- und Sonderseite im Backend lädt ohne Fehler')]
     public function test_every_resource_index_and_create_page_renders(): void
     {
         $panel = Filament::getPanel('admin');

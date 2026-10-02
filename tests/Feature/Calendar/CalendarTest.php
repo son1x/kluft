@@ -13,6 +13,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 /**
@@ -60,6 +61,7 @@ class CalendarTest extends TestCase
         return Calendar::query()->create(['label' => 'Wölflinge', 'ics_url' => self::URL, 'color' => '#ff6400', 'stage' => 'woelflinge', ...$attrs]);
     }
 
+    #[TestDox('Kalenderabruf löst Serientermine auf und speichert keine E-Mail-Adressen')]
     public function test_sync_expands_recurrences_and_never_stores_email_addresses(): void
     {
         Http::fake([self::URL => Http::response($this->ics(), 200, ['Content-Type' => 'text/calendar'])]);
@@ -78,6 +80,7 @@ class CalendarTest extends TestCase
         $this->assertNotNull($calendar->fresh()->last_synced_at);
     }
 
+    #[TestDox('Fehlgeschlagener Kalenderabruf behält die letzten gültigen Termine')]
     public function test_failed_sync_keeps_last_valid_events(): void
     {
         Http::fakeSequence(self::URL)
@@ -94,6 +97,7 @@ class CalendarTest extends TestCase
         $this->get('/kalender')->assertOk()->assertSee('Gruppenstunde Wölflinge');
     }
 
+    #[TestDox('Kalenderabruf nur von erlaubten Servern, nur HTTPS, ohne Umleitungen und Riesendateien')]
     public function test_ssrf_protection_blocks_foreign_hosts_plain_http_redirects_and_large_files(): void
     {
         Http::fake([
@@ -119,6 +123,7 @@ class CalendarTest extends TestCase
         Http::assertNotSent(fn ($request) => str_contains($request->url(), 'intern.example.org') || str_starts_with($request->url(), 'http://'));
     }
 
+    #[TestDox('Kalender zeigt Liste und Monatsansicht und filtert nach Stufe')]
     public function test_list_month_filter_and_api(): void
     {
         Http::fake([self::URL => Http::response($this->ics())]);
@@ -140,6 +145,7 @@ class CalendarTest extends TestCase
         $this->assertStringNotContainsString('@example.org', json_encode($json));
     }
 
+    #[TestDox('Konfiguration für Kalender und Instagram ist vollständig')]
     public function test_services_config_keeps_the_calendar_and_instagram_keys(): void
     {
         // Liest die echte config/services.php (ohne Test-Override aus setUp):
@@ -150,11 +156,13 @@ class CalendarTest extends TestCase
         $this->assertArrayHasKey('graph_url', $config['instagram']);
     }
 
+    #[TestDox('Kalenderseite funktioniert auch ohne eingetragenen Kalender')]
     public function test_calendar_page_works_without_any_calendar(): void
     {
         $this->get('/kalender')->assertOk()->assertSee('Der Kalender wird gerade eingerichtet');
     }
 
+    #[TestDox('Nur Admins verwalten Kalender; der geheime Kalenderlink erreicht nie den Browser')]
     public function test_only_admins_manage_calendars_and_stored_link_is_never_sent_to_browser(): void
     {
         Filament::setCurrentPanel('admin');

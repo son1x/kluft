@@ -5,6 +5,7 @@ namespace Tests\Feature\Content;
 use App\Models\Page;
 use App\Models\Post;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 /**
@@ -18,6 +19,7 @@ class HtmlSanitizingTest extends TestCase
 
     private const EVIL = '<p>Hallo <strong>Welt</strong> <a href="https://dpsg.de">Link</a></p><script>alert(1)</script><img src="x" onerror="alert(2)"><a href="javascript:alert(3)">x</a>';
 
+    #[TestDox('Seiten und Beiträge entfernen Skripte, behalten aber die Formatierung')]
     public function test_pages_and_posts_strip_scripts_but_keep_formatting(): void
     {
         Page::query()->create(['slug' => 'test', 'title' => 'Test', 'body' => self::EVIL, 'status' => 'published', 'published_at' => now()->subDay()]);

@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 /**
@@ -42,6 +43,7 @@ class GeorgsboteTest extends TestCase
         return $user->fresh();
     }
 
+    #[TestDox('Archiv zeigt nur veröffentlichte und datenschutzgeprüfte Ausgaben')]
     public function test_archive_lists_only_published_and_checked_issues(): void
     {
         Storage::fake('local');
@@ -57,6 +59,7 @@ class GeorgsboteTest extends TestCase
             ->assertDontSee('Zukunft');
     }
 
+    #[TestDox('PDF nur für veröffentlichte Ausgaben; Abrufe werden gezählt')]
     public function test_pdf_is_served_only_for_published_issues_and_counted(): void
     {
         Storage::fake('local');
@@ -70,6 +73,7 @@ class GeorgsboteTest extends TestCase
         $this->get('/georgsbote/2025/9.pdf')->assertNotFound();
     }
 
+    #[TestDox('Ausgabe lässt sich ohne Datenschutzprüfung nicht veröffentlichen')]
     public function test_issue_cannot_be_published_without_privacy_check(): void
     {
         Storage::fake('local');
@@ -95,6 +99,7 @@ class GeorgsboteTest extends TestCase
         Storage::disk('local')->assertExists($issue->pdf_path);
     }
 
+    #[TestDox('Nur die Verwaltung pflegt das Archiv')]
     public function test_only_verwaltung_manages_archive(): void
     {
         $autor = User::query()->create(['name' => 'Autor', 'email' => 'autor@dpsg-trier.de', 'status' => 'active']);
@@ -104,6 +109,7 @@ class GeorgsboteTest extends TestCase
         $this->actingAs($this->verwaltung())->get('/admin/georgsbote')->assertOk();
     }
 
+    #[TestDox('Newsletter-Anmeldung ohne Brevo-Zugang bleibt folgenlos')]
     public function test_newsletter_signup_without_brevo_config_does_nothing(): void
     {
         Http::fake();
@@ -116,6 +122,7 @@ class GeorgsboteTest extends TestCase
         Http::assertNothingSent();
     }
 
+    #[TestDox('Newsletter-Anmeldung per Bestätigungsmail, ohne Adresse bei uns zu speichern')]
     public function test_newsletter_signup_requests_double_opt_in_and_stores_no_address(): void
     {
         config(['services.brevo' => ['api_key' => 'test-key', 'newsletter_list_id' => '7', 'doi_template_id' => '12', 'doi_redirect_url' => 'https://test.dpsg-trier.de/georgsbote/danke']]);
@@ -141,6 +148,7 @@ class GeorgsboteTest extends TestCase
         }
     }
 
+    #[TestDox('Newsletter-Anmeldung braucht Einwilligung und ignoriert Bots')]
     public function test_newsletter_signup_requires_consent_and_ignores_bots(): void
     {
         config(['services.brevo' => ['api_key' => 'k', 'newsletter_list_id' => '1', 'doi_template_id' => '1', 'doi_redirect_url' => null]]);

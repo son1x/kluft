@@ -9,6 +9,7 @@ use App\Models\User;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 /**
@@ -26,6 +27,7 @@ class AiLabelTest extends TestCase
         ]);
     }
 
+    #[TestDox('KI-Hinweistexte entsprechen dem CD-Leitfaden')]
     public function test_notice_texts_follow_the_cd_guide(): void
     {
         $author = User::query()->create(['name' => 'Lisa Leiterin', 'email' => 'lisa@dpsg-trier.de', 'status' => 'active']);
@@ -40,6 +42,7 @@ class AiLabelTest extends TestCase
             $this->blogPost(['slug' => 'e', 'ai_level' => 'partial', 'ai_tool' => 'Claude', 'ai_person' => 'Max Muster', 'author_id' => $author->id])->aiNotice());
     }
 
+    #[TestDox('Beitragsseite zeigt Bildnachweis und KI-Hinweis')]
     public function test_post_page_shows_credit_and_notice(): void
     {
         $media = Media::query()->create(['path' => 'media/x.jpg', 'mime' => 'image/jpeg', 'size' => 1, 'alt_text' => 'Zeltlager', 'credit' => 'Foto: Jana Beispiel']);
@@ -55,6 +58,7 @@ class AiLabelTest extends TestCase
         $this->get('/aktuelles/ohne')->assertOk()->assertDontSee('KI-Hinweis');
     }
 
+    #[TestDox('Bei KI-Einsatz muss das verwendete Werkzeug angegeben werden')]
     public function test_editor_requires_tool_when_ai_was_used(): void
     {
         Filament::setCurrentPanel('admin');

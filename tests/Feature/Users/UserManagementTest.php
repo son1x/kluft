@@ -13,6 +13,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\User as SocialiteUser;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 /**
@@ -39,6 +40,7 @@ class UserManagementTest extends TestCase
         return $user->fresh();
     }
 
+    #[TestDox('Verwaltung legt Konten vorab mit Rolle an')]
     public function test_verwaltung_preprovisions_account_with_role(): void
     {
         $verwaltung = $this->makeUser('buero@dpsg-trier.de', [['verwaltung', 'global', null]]);
@@ -62,6 +64,7 @@ class UserManagementTest extends TestCase
         $this->assertTrue(AuditLog::query()->where('action', 'role.granted:stufenadmin|stage|woelflinge')->where('user_id', $verwaltung->id)->exists());
     }
 
+    #[TestDox('Stufenadmins schalten Wartende als Autor*in der eigenen Stufe frei')]
     public function test_stufenadmin_can_unlock_pending_user_as_autor_in_own_stage(): void
     {
         $stufenadmin = $this->makeUser('biber-admin@dpsg-trier.de', [['stufenadmin', 'stage', 'biber']]);
@@ -80,6 +83,7 @@ class UserManagementTest extends TestCase
         $this->assertTrue($pending->hasRoleInScope('autor', 'own', 'biber'));
     }
 
+    #[TestDox('Stufenadmins verändern keine Rollen außerhalb ihrer Stufe')]
     public function test_stufenadmin_edit_keeps_assignments_outside_own_scope(): void
     {
         $stufenadmin = $this->makeUser('biber-admin@dpsg-trier.de', [['stufenadmin', 'stage', 'biber']]);
@@ -103,6 +107,7 @@ class UserManagementTest extends TestCase
         $this->assertSame('doppelt@dpsg-trier.de', $person->email);
     }
 
+    #[TestDox('Stufenadmins können keine fremden Rollen vergeben')]
     public function test_stufenadmin_cannot_grant_roles_outside_own_scope(): void
     {
         $stufenadmin = $this->makeUser('biber-admin@dpsg-trier.de', [['stufenadmin', 'stage', 'biber']]);
@@ -122,6 +127,7 @@ class UserManagementTest extends TestCase
         $this->assertFalse(User::query()->where('email', 'versuch@dpsg-trier.de')->whereHas('roleAssignments')->exists());
     }
 
+    #[TestDox('Stufenadmins sehen nur eigene und wartende Nutzer*innen')]
     public function test_stufenadmin_only_sees_users_in_own_scope_and_pending_ones(): void
     {
         $stufenadmin = $this->makeUser('biber-admin@dpsg-trier.de', [['stufenadmin', 'stage', 'biber']]);
@@ -138,6 +144,7 @@ class UserManagementTest extends TestCase
         $this->assertFalse($stufenadmin->can('update', $roverAutor));
     }
 
+    #[TestDox('Verwaltung kann Admins und Notfall-Account nicht ändern')]
     public function test_verwaltung_cannot_manage_admins_or_breakglass_account(): void
     {
         $verwaltung = $this->makeUser('buero@dpsg-trier.de', [['verwaltung', 'global', null]]);
@@ -150,6 +157,7 @@ class UserManagementTest extends TestCase
         Livewire::test(ListUsers::class)->assertCanNotSeeTableRecords([$breakGlass]);
     }
 
+    #[TestDox('Benutzerverwaltung nur für die Verwaltung, nicht für Autor*innen')]
     public function test_user_management_pages_render_for_verwaltung_and_are_forbidden_for_autor(): void
     {
         $verwaltung = $this->makeUser('buero@dpsg-trier.de', [['verwaltung', 'global', null]]);
@@ -163,6 +171,7 @@ class UserManagementTest extends TestCase
         $this->assertFalse($autor->can('viewAny', User::class));
     }
 
+    #[TestDox('Deaktivieren entzieht den Backend-Zugang sofort')]
     public function test_disabling_user_revokes_panel_access_immediately(): void
     {
         $user = $this->makeUser('weg@dpsg-trier.de', [['autor', 'own', null]]);
@@ -174,6 +183,7 @@ class UserManagementTest extends TestCase
         $this->assertTrue(AuditLog::query()->where('action', 'user.status:disabled')->where('subject_id', $user->id)->exists());
     }
 
+    #[TestDox('Erste M365-Anmeldung findet das vorab angelegte Konto unabhängig von Groß-/Kleinschreibung')]
     public function test_first_entra_login_links_preprovisioned_account_case_insensitively(): void
     {
         $preprovisioned = $this->makeUser('max.muster@dpsg-trier.de', [['autor', 'own', 'biber']]);

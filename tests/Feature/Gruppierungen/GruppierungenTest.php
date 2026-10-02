@@ -6,9 +6,12 @@ use App\Filament\Resources\Gruppierungen\Pages\CreateGruppierung;
 use App\Filament\Resources\Gruppierungen\Pages\EditGruppierung;
 use App\Models\Gruppierung;
 use App\Models\User;
+use Database\Seeders\GruppierungenSeeder;
+use Database\Seeders\StaemmeSeeder;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 /**
@@ -26,19 +29,21 @@ class GruppierungenTest extends TestCase
         Gruppierung::query()->delete();
     }
 
+    #[TestDox('Die zehn Bezirke werden angelegt, ohne Positionen zu erfinden')]
     public function test_migration_creates_the_ten_bezirke_without_inventing_positions(): void
     {
-        $this->seed(\Database\Seeders\GruppierungenSeeder::class);
+        $this->seed(GruppierungenSeeder::class);
 
         $this->assertSame(10, Gruppierung::query()->where('typ', 'bezirk')->count());
         $this->assertSame(0, Gruppierung::query()->where('typ', 'stamm')->count());
         $this->assertSame(0, Gruppierung::query()->whereNotNull('lat')->count());
     }
 
+    #[TestDox('Stämme-Import ist vollständig, nummeriert und wiederholbar')]
     public function test_import_from_dpsg_trier_is_complete_numbered_and_idempotent(): void
     {
-        $this->seed(\Database\Seeders\GruppierungenSeeder::class);
-        $this->seed(\Database\Seeders\StaemmeSeeder::class);
+        $this->seed(GruppierungenSeeder::class);
+        $this->seed(StaemmeSeeder::class);
 
         $this->assertSame(10, Gruppierung::query()->where('typ', 'bezirk')->whereNotNull('nummer')->count());
         $this->assertSame(68, Gruppierung::query()->where('typ', 'stamm')->count());
@@ -50,12 +55,13 @@ class GruppierungenTest extends TestCase
 
         // Erneuter Lauf: keine Duplikate, im Backend gepflegte Angaben bleiben.
         $stamm->update(['website_url' => 'https://neu.example', 'name' => 'Umbenannt']);
-        $this->seed(\Database\Seeders\StaemmeSeeder::class);
+        $this->seed(StaemmeSeeder::class);
         $this->assertSame(68, Gruppierung::query()->where('typ', 'stamm')->count());
         $this->assertSame('https://neu.example', $stamm->fresh()->website_url);
         $this->assertSame('Umbenannt', $stamm->fresh()->name);
     }
 
+    #[TestDox('Bezirke und Stämme sind nach DPSG-Nummer sortiert')]
     public function test_bezirke_and_staemme_are_ordered_by_dpsg_number(): void
     {
         $b2 = $this->bezirk('zweiter', ['nummer' => '21-02-00', 'name' => 'Zweiter']);
@@ -73,6 +79,7 @@ class GruppierungenTest extends TestCase
         ]);
     }
 
+    #[TestDox('Importierte Positionen gelten als ungefähr, bis sie im Backend gesetzt werden')]
     public function test_imported_position_is_marked_approximate_until_set_in_backend(): void
     {
         $stamm = $this->stamm('x', null, ['nummer' => '21-01-01', 'lat' => 49.7, 'lng' => 6.6]);
@@ -86,6 +93,7 @@ class GruppierungenTest extends TestCase
         $this->assertFalse($this->getJson('/api/gruppierungen.geojson')->json('features.0.properties.ungefaehr'));
     }
 
+    #[TestDox('Backend prüft das Format der DPSG-Nummer')]
     public function test_backend_validates_dpsg_number_format(): void
     {
         Filament::setCurrentPanel('admin');
@@ -125,6 +133,7 @@ class GruppierungenTest extends TestCase
         return $user->fresh();
     }
 
+    #[TestDox('Kartendaten enthalten nur aktive Einträge mit Position und beachten Filter')]
     public function test_geojson_contains_only_active_entries_with_position_and_respects_filters(): void
     {
         $trier = $this->bezirk('trier');
@@ -147,6 +156,7 @@ class GruppierungenTest extends TestCase
         $this->getJson('/api/gruppierungen.geojson?bezirk=gibtsnicht&stufe=<x>')->assertOk()->assertJsonCount(2, 'features');
     }
 
+    #[TestDox('Ansprechperson nur mit Einwilligung; unsichere Links werden verworfen')]
     public function test_contact_person_only_published_with_consent_and_unsafe_links_are_dropped(): void
     {
         $this->stamm('a', null, ['lat' => 49.7, 'lng' => 6.6, 'ansprechperson' => 'Erika Muster', 'ansprechperson_einwilligung' => false, 'website_url' => 'javascript:alert(1)']);
@@ -161,6 +171,7 @@ class GruppierungenTest extends TestCase
         $this->get('/bezirke-staemme')->assertOk()->assertDontSee('Erika Muster')->assertSee('Max Muster')->assertDontSee('javascript:alert', false);
     }
 
+    #[TestDox('Kartendaten werden nach Änderungen sofort aktualisiert')]
     public function test_geojson_cache_is_invalidated_on_change(): void
     {
         $stamm = $this->stamm('x', null, ['lat' => 49.7, 'lng' => 6.6]);
@@ -174,6 +185,7 @@ class GruppierungenTest extends TestCase
         $this->assertSame(['pfadi'], $this->getJson('/api/gruppierungen.geojson')->json('features.0.properties.stufen'));
     }
 
+    #[TestDox('Stämme-Verzeichnis funktioniert ohne JavaScript')]
     public function test_directory_page_works_without_javascript_and_shows_placeholders(): void
     {
         $trier = $this->bezirk('trier');
@@ -193,6 +205,7 @@ class GruppierungenTest extends TestCase
         $this->get('/bezirke-staemme?stufe=biber')->assertOk()->assertDontSee('Stamm st-georg')->assertSee('Für diese Auswahl ist noch keine Gruppierung erfasst.');
     }
 
+    #[TestDox('Karte lädt nichts von fremden Servern')]
     public function test_page_does_not_reference_external_map_hosts(): void
     {
         $html = $this->get('/bezirke-staemme')->assertOk()->getContent();
@@ -201,6 +214,7 @@ class GruppierungenTest extends TestCase
         $this->assertDoesNotMatchRegularExpression('#https?://(?!localhost|127\.0\.0\.1)[^"\']*(tile|maps?\.|protomaps|openstreetmap)#i', $html);
     }
 
+    #[TestDox('Nur die Verwaltung pflegt Einträge; wer die Position setzte, wird vermerkt')]
     public function test_only_verwaltung_manages_entries_and_position_author_is_tracked(): void
     {
         Filament::setCurrentPanel('admin');
@@ -231,6 +245,7 @@ class GruppierungenTest extends TestCase
         $this->actingAs($verwaltung)->get("/admin/gruppierungen/{$stamm->id}/edit")->assertOk()->assertSee('data-map-picker', false);
     }
 
+    #[TestDox('Name der Ansprechperson nur mit bestätigter Einwilligung')]
     public function test_contact_name_requires_consent_in_backend(): void
     {
         Filament::setCurrentPanel('admin');

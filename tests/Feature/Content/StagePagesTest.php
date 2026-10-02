@@ -7,6 +7,7 @@ use App\Models\Page;
 use App\Models\Person;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 /**
@@ -24,6 +25,7 @@ class StagePagesTest extends TestCase
         ]);
     }
 
+    #[TestDox('Stufenseite zeigt Kopfband, Referent*innen, Stämme und Nachbarstufen')]
     public function test_stage_page_shows_hero_referents_staemme_and_neighbours(): void
     {
         $this->page('stufen', 'Die Stufen');
@@ -56,6 +58,7 @@ class StagePagesTest extends TestCase
             ->assertSee('Die Stufen');
     }
 
+    #[TestDox('Stufenübersicht zeigt Altersleiste und Kacheln in pädagogischer Reihenfolge')]
     public function test_overview_shows_age_bar_and_cards_in_pedagogical_order(): void
     {
         $this->page('stufen', 'Die Stufen', null, '<p>Einleitung</p>');
@@ -69,6 +72,7 @@ class StagePagesTest extends TestCase
             ->assertSee(config('dpsg.stages.rover.tagline'));
     }
 
+    #[TestDox('Doppelte Texte werden nur entfernt, wenn sie unverändert sind')]
     public function test_migration_removes_duplicated_age_line_and_stage_list_only_when_unchanged(): void
     {
         $biber = $this->page('stufe-biber', 'Biber', 'biber', "<p><strong>4 bis 7 Jahre</strong> – neugierig durch die Welt gehen</p>\n<p>Ab dem Alter von vier Jahren …</p>");

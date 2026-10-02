@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 /**
@@ -80,6 +81,7 @@ class InstagramTest extends TestCase
         ]);
     }
 
+    #[TestDox('Teilen veröffentlicht ein JPEG und merkt sich den Instagram-Link')]
     public function test_sharing_publishes_jpeg_and_stores_permalink(): void
     {
         $this->connect();
@@ -113,6 +115,7 @@ class InstagramTest extends TestCase
         $this->assertSame([], Storage::disk('public')->files('instagram'));
     }
 
+    #[TestDox('Bild wird auf ein von Instagram erlaubtes Seitenverhältnis zugeschnitten')]
     public function test_image_is_cropped_to_allowed_aspect_ratio(): void
     {
         $path = app(InstagramImage::class)->prepare($this->blogPost()->coverMedia);
@@ -122,6 +125,7 @@ class InstagramTest extends TestCase
         $this->assertSame([600, 750], [$w, $h]);
     }
 
+    #[TestDox('Fehler werden angezeigt, ohne den Zugangsschlüssel preiszugeben')]
     public function test_errors_are_shown_without_leaking_the_token(): void
     {
         $this->connect();
@@ -140,6 +144,7 @@ class InstagramTest extends TestCase
         $this->assertStringNotContainsString('IGAA-geheim', (string) DB::table('integration_tokens')->value('access_token'));
     }
 
+    #[TestDox('Nur Berechtigte können teilen, und nur wenn alles bereit ist')]
     public function test_permissions_and_preconditions(): void
     {
         $post = $this->blogPost();
@@ -163,6 +168,7 @@ class InstagramTest extends TestCase
         $this->assertSame(0, SocialPost::query()->count());
     }
 
+    #[TestDox('Nur Admins hinterlegen den Instagram-Zugang; er wird geprüft')]
     public function test_only_admins_manage_the_token_and_it_is_validated(): void
     {
         $this->actingAs($this->user('buero@dpsg-trier.de', 'verwaltung'))->get('/admin/integrations')->assertForbidden();
@@ -186,6 +192,7 @@ class InstagramTest extends TestCase
         $this->get('/admin/integrations')->assertSee('@dpsgtrier')->assertDontSee('IGAA-geheim');
     }
 
+    #[TestDox('Zugang wird verlängert; bei Problemen werden Admins benachrichtigt')]
     public function test_token_refresh_and_admin_alert_on_failure(): void
     {
         Notification::fake();

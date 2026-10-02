@@ -6,6 +6,7 @@ use App\Models\AuditLog;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use PHPUnit\Framework\Attributes\TestDox;
 use PragmaRX\Google2FA\Google2FA;
 use Tests\TestCase;
 
@@ -37,6 +38,7 @@ class BreakGlassLoginTest extends TestCase
         return [$user, $secret, $password];
     }
 
+    #[TestDox('Notfall-Login klappt mit richtigem Passwort und TOTP-Code')]
     public function test_login_succeeds_with_correct_password_and_totp(): void
     {
         [$user, $secret, $password] = $this->makeSuperAdmin();
@@ -56,6 +58,7 @@ class BreakGlassLoginTest extends TestCase
         ]);
     }
 
+    #[TestDox('Notfall-Login scheitert mit falschem TOTP-Code')]
     public function test_login_fails_with_wrong_totp(): void
     {
         [$user, , $password] = $this->makeSuperAdmin();
@@ -75,6 +78,7 @@ class BreakGlassLoginTest extends TestCase
         ]);
     }
 
+    #[TestDox('Nach fünf Fehlversuchen wird der Notfall-Login gesperrt')]
     public function test_login_is_rate_limited_after_five_failed_attempts(): void
     {
         [$user, , $password] = $this->makeSuperAdmin();
@@ -98,6 +102,7 @@ class BreakGlassLoginTest extends TestCase
         $this->assertGuest();
     }
 
+    #[TestDox('M365-Nutzer*innen können den Notfall-Login nicht benutzen')]
     public function test_entra_users_cannot_use_the_breakglass_path(): void
     {
         $entraUser = User::query()->create([

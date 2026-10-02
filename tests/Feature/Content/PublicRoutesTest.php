@@ -4,7 +4,11 @@ namespace Tests\Feature\Content;
 
 use App\Models\Page;
 use App\Models\Post;
+use Database\Seeders\DemoContentSeeder;
+use Database\Seeders\RequiredPagesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 /**
@@ -15,6 +19,7 @@ class PublicRoutesTest extends TestCase
 {
     use RefreshDatabase;
 
+    #[TestDox('Veröffentlichte Seite ist sichtbar')]
     public function test_published_page_is_visible(): void
     {
         Page::query()->create([
@@ -28,6 +33,7 @@ class PublicRoutesTest extends TestCase
         $this->get('/ueber-uns')->assertOk()->assertSee('Über uns');
     }
 
+    #[TestDox('Entwurf ist öffentlich nicht sichtbar')]
     public function test_draft_page_is_not_publicly_visible(): void
     {
         Page::query()->create([
@@ -40,6 +46,7 @@ class PublicRoutesTest extends TestCase
         $this->get('/entwurf-seite')->assertNotFound();
     }
 
+    #[TestDox('Für später geplante Seite ist noch nicht sichtbar')]
     public function test_page_scheduled_in_the_future_is_not_yet_visible(): void
     {
         Page::query()->create([
@@ -53,11 +60,13 @@ class PublicRoutesTest extends TestCase
         $this->get('/zukuenftig')->assertNotFound();
     }
 
+    #[TestDox('Startseite zeigt Platzhalter, solange keine Startseite veröffentlicht ist')]
     public function test_homepage_falls_back_to_placeholder_without_start_page(): void
     {
         $this->get('/')->assertOk()->assertSee('im Aufbau');
     }
 
+    #[TestDox('Startseite erscheint, sobald sie veröffentlicht ist')]
     public function test_homepage_shows_start_page_once_published(): void
     {
         Page::query()->create([
@@ -71,6 +80,7 @@ class PublicRoutesTest extends TestCase
         $this->get('/')->assertOk()->assertSee('Echte Startseite');
     }
 
+    #[TestDox('Startseite zeigt neueste Beiträge und Stufenkacheln')]
     public function test_homepage_shows_latest_published_posts_and_stage_tiles(): void
     {
         Page::query()->create(['title' => 'Start', 'slug' => 'start', 'body' => '<p>x</p>', 'status' => 'published', 'published_at' => now()->subDay()]);
@@ -86,12 +96,13 @@ class PublicRoutesTest extends TestCase
             ->assertSee('4 bis 7 Jahre');
     }
 
+    #[TestDox('Diözesanleitung ist Hauptseite, Diözesanbüro Unterseite von Kontakt')]
     public function test_dioezesanleitung_is_main_page_and_buero_is_subpage_of_kontakt(): void
     {
-        $this->seed(\Database\Seeders\RequiredPagesSeeder::class);
-        $this->seed(\Database\Seeders\DemoContentSeeder::class);
+        $this->seed(RequiredPagesSeeder::class);
+        $this->seed(DemoContentSeeder::class);
 
-        $nav = fn (string $html) => \Illuminate\Support\Str::between($html, 'aria-label="Hauptnavigation"', '</nav>');
+        $nav = fn (string $html) => Str::between($html, 'aria-label="Hauptnavigation"', '</nav>');
 
         $start = $this->get('/stufen')->assertOk()->getContent();
         $this->assertStringContainsString('Diözesanleitung', $nav($start));
@@ -104,6 +115,7 @@ class PublicRoutesTest extends TestCase
             ->assertDontSee('Diözesankurat');
     }
 
+    #[TestDox('Veröffentlichter Beitrag erscheint in Übersicht und Einzelansicht')]
     public function test_published_post_appears_in_index_and_show(): void
     {
         Post::query()->create([
@@ -119,6 +131,7 @@ class PublicRoutesTest extends TestCase
         $this->get('/aktuelles/erster-beitrag')->assertOk()->assertSee('Kurzer Teaser');
     }
 
+    #[TestDox('Beitragsentwurf erscheint nirgends öffentlich')]
     public function test_draft_post_does_not_appear_in_index_or_show(): void
     {
         Post::query()->create([
@@ -133,6 +146,7 @@ class PublicRoutesTest extends TestCase
         $this->get('/aktuelles/unveroeffentlicht')->assertNotFound();
     }
 
+    #[TestDox('Impressum und Datenschutzerklärung sind erreichbar')]
     public function test_required_legal_pages_are_reachable(): void
     {
         Page::query()->create(['title' => 'Impressum', 'slug' => 'impressum', 'body' => 'x', 'status' => 'published', 'published_at' => now()->subDay()]);

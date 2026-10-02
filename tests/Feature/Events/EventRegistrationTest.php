@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Testing\TestResponse;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 /**
@@ -85,6 +86,7 @@ class EventRegistrationTest extends TestCase
         return $token;
     }
 
+    #[TestDox('Anmeldung mit Bestätigungsmail; Zusatzangaben werden verschlüsselt gespeichert')]
     public function test_double_opt_in_flow_with_encrypted_extra_data(): void
     {
         $event = $this->event();
@@ -124,6 +126,7 @@ class EventRegistrationTest extends TestCase
         Mail::assertSent(EventRegistrationMail::class, fn ($m) => $m->kind === 'cancelled');
     }
 
+    #[TestDox('Warteliste mit automatischem Nachrücken')]
     public function test_waitlist_and_automatic_promotion(): void
     {
         $event = $this->event(['capacity' => 1, 'waitlist_enabled' => true]);
@@ -145,6 +148,7 @@ class EventRegistrationTest extends TestCase
         Mail::assertSent(EventRegistrationMail::class, fn ($m) => $m->kind === 'promoted' && $m->registration->is($second) && $m->token);
     }
 
+    #[TestDox('Volle Veranstaltung ohne Warteliste nimmt keine Anmeldungen mehr an')]
     public function test_full_event_without_waitlist_rejects_further_registrations(): void
     {
         $event = $this->event(['capacity' => 1]);
@@ -168,6 +172,7 @@ class EventRegistrationTest extends TestCase
         $this->assertSame(1, EventRegistration::query()->count());
     }
 
+    #[TestDox('Minderjährige brauchen die Einwilligung der Sorgeberechtigten')]
     public function test_minors_need_guardian_consent(): void
     {
         $event = $this->event();
@@ -184,6 +189,7 @@ class EventRegistrationTest extends TestCase
         $this->assertTrue($registration->guardian_consent);
     }
 
+    #[TestDox('Eingaben werden geprüft, Spam-Bots abgewiesen, geschlossene Anmeldungen gesperrt')]
     public function test_validation_honeypot_and_unavailable_events(): void
     {
         $event = $this->event();
@@ -203,6 +209,7 @@ class EventRegistrationTest extends TestCase
         Mail::assertNothingSent();
     }
 
+    #[TestDox('Unbestätigte und abgelaufene Anmeldungen werden gelöscht')]
     public function test_unconfirmed_and_expired_registrations_are_purged(): void
     {
         $event = $this->event();
@@ -230,6 +237,7 @@ class EventRegistrationTest extends TestCase
         $this->assertNull($confirmed->fresh());
     }
 
+    #[TestDox('Teilnehmendenlisten nur für Berechtigte; Export wird protokolliert')]
     public function test_participant_access_follows_scope_and_export_is_audited_and_masked(): void
     {
         Filament::setCurrentPanel('admin');
@@ -276,6 +284,7 @@ class EventRegistrationTest extends TestCase
         $this->assertSame('Muster', ParticipantExport::mask('Muster'));
     }
 
+    #[TestDox('Stufenadmins legen Veranstaltungen nur für die eigene Stufe an')]
     public function test_stufenadmin_creates_event_only_for_own_stage(): void
     {
         Filament::setCurrentPanel('admin');

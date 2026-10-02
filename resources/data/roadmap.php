@@ -13,7 +13,7 @@ return [
 
     // Erledigte Punkte, die /roadmap nicht automatisch prüfen kann
     // (Schlüssel aus App\Support\Roadmap::todoList()).
-    'todos_done' => [],
+    'todos_done' => ['brevo-domain'],
 
     'phases' => [
         ['0', 'Setup', 'done'],

@@ -49,8 +49,8 @@
                                 'bg-stufe-pfadi' => $event->stage === 'pfadi',
                                 'bg-stufe-rover' => $event->stage === 'rover',
                             ])>
-                                @if ($cover = $event->coverMedia?->url())
-                                    <img src="{{ $cover }}" alt="" class="h-full w-full object-cover" loading="lazy" />
+                                @if ($event->coverMedia)
+                                    <x-picture :media="$event->coverMedia" alt="" sizes="(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw" class="h-full w-full object-cover" />
                                 @elseif ($event->stage && ($mascot = config("dpsg.stages.{$event->stage}.mascot")))
                                     <img src="{{ asset($mascot) }}" alt="" class="absolute -bottom-4 right-4 h-4/5 opacity-90" loading="lazy" />
                                 @else

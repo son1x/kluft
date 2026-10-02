@@ -8,7 +8,7 @@
 @section('hero')
     <section class="relative flex h-72 items-center overflow-hidden bg-dpsg-blau md:h-[30rem]">
         @if ($page->coverMedia)
-            <img src="{{ $page->coverMedia->url() }}" alt="{{ $page->coverMedia->alt_text }}" class="absolute inset-0 h-full w-full object-cover" />
+            <x-picture :media="$page->coverMedia" loading="eager" fetchpriority="high" class="absolute inset-0 h-full w-full object-cover" />
             <div class="absolute inset-0 bg-gradient-to-r from-black/55 via-black/25 to-transparent" aria-hidden="true"></div>
             @if ($page->coverMedia->credit)
                 <span class="absolute bottom-9 right-2 bg-black/50 px-1 text-[10px] text-white">© {{ $page->coverMedia->credit }}</span>
@@ -77,7 +77,7 @@
                     <article class="flex flex-col bg-white shadow-md">
                         <a href="{{ url('/aktuelles/'.$post->slug) }}" class="block aspect-[16/9] overflow-hidden" tabindex="-1" aria-hidden="true">
                             @if ($post->coverMedia)
-                                <img src="{{ $post->coverMedia->url() }}" alt="" class="h-full w-full object-cover" loading="lazy" />
+                                <x-picture :media="$post->coverMedia" alt="" sizes="(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw" class="h-full w-full object-cover" />
                             @else
                                 <div class="flex h-full w-full items-center justify-center bg-dpsg-hellbeige">
                                     <img src="{{ asset('images/logo-dv-trier.png') }}" alt="" class="h-20 w-auto opacity-80" loading="lazy" />

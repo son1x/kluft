@@ -11,7 +11,7 @@
 @section('hero')
     <section class="relative flex h-64 items-center overflow-hidden bg-fach-internationales md:h-96">
         @if ($landing?->coverMedia)
-            <img src="{{ $landing->coverMedia->url() }}" alt="{{ $landing->coverMedia->alt_text }}" class="absolute inset-0 h-full w-full object-cover" />
+            <x-picture :media="$landing->coverMedia" loading="eager" fetchpriority="high" class="absolute inset-0 h-full w-full object-cover" />
             <div class="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent" aria-hidden="true"></div>
         @else
             <div class="absolute inset-0 bg-gradient-to-br from-fach-internationales via-fach-internationales to-dpsg-blau" aria-hidden="true"></div>
@@ -61,7 +61,7 @@
                     @foreach ($posts as $post)
                         <article class="flex flex-col bg-white shadow-md">
                             @if ($post->coverMedia)
-                                <img src="{{ $post->coverMedia->url() }}" alt="" class="aspect-[16/9] w-full object-cover" loading="lazy" />
+                                <x-picture :media="$post->coverMedia" alt="" sizes="(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw" class="aspect-[16/9] w-full object-cover" />
                             @endif
                             <div class="flex flex-1 flex-col p-5">
                                 <h3 class="font-serif text-lg font-bold text-dpsg-rot"><a href="{{ url('/aktuelles/'.$post->slug) }}" class="hover:underline">{{ $post->title }}</a></h3>

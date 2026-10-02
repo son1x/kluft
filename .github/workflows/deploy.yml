@@ -380,6 +380,8 @@ jobs:
             # Diagnose ohne SSH-Zugang: die letzten Fehlermeldungen aus dem
             # Laravel-Log (nur die Meldungszeile, gekürzt, E-Mail-Adressen und
             # IPs geschwärzt) im Actions-Protokoll anzeigen.
+            # WebP-Varianten für Bilder ohne Varianten nachziehen (F-CMS-04).
+            /usr/bin/php artisan media:variants || true
             /usr/bin/php artisan up
             echo "---- Letzte Fehler im Laravel-Log ----"
             grep -h '\.\(ERROR\|CRITICAL\|ALERT\|EMERGENCY\):' storage/logs/laravel*.log 2>/dev/null \

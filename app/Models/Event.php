@@ -192,7 +192,8 @@ class Event extends Model
      */
     public function days(): array
     {
-        if (! $this->starts_at) {
+        // Ungespeicherte Veranstaltung im Formular: noch kein Beginn.
+        if ($this->getAttribute('starts_at') === null) {
             return [];
         }
 

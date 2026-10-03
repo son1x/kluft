@@ -107,6 +107,8 @@ Bis dahin ist ein gemeinsames CMS die einfachere, sicherere und günstigere Lös
 
 ## 6. Stand und nächste Schritte
 
+Auf /roadmap hat jede Projekt-Domain einen eigenen Meilenstein: **„Bolivien“** (bolivienpartnerschaft.de) und **„Beraten“** (beraten-online.de, Pflichtenheft Phase 2).
+
 | Schritt | Stand |
 |---|---|
 | Bolivienpartnerschaft als Bereich mit eigener Startseite, Domain-Erkennung | erledigt |
@@ -116,3 +118,5 @@ Bis dahin ist ein gemeinsames CMS die einfachere, sicherere und günstigere Lös
 | Gruppenfoto der Berater*innen | offen, nur mit Einwilligung der Abgebildeten |
 | DNS und Plesk-Alias für beide Domains, Zertifikate | bei der Migration |
 | Alte WordPress-Installation von beraten-online.de abschalten | nach der DNS-Umstellung |
+| Bankverbindung für Bolivien-Spenden | offen |
+| Bisherige Inhalte von bolivienpartnerschaft.de prüfen (Domain liefert derzeit nur ein ungültiges Zertifikat aus) | offen |

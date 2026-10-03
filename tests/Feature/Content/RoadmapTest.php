@@ -34,6 +34,25 @@ class RoadmapTest extends TestCase
         $this->assertCount(count($m), $sections, 'roadmap.php enthält Abschnitte, die es im Pflichtenheft nicht mehr gibt');
     }
 
+    #[TestDox('Offene Punkte und Rückmeldungen gehören zu bekannten Meilensteinen, je Projekt-Domain ein eigener')]
+    public function test_todos_and_feedback_belong_to_known_milestones(): void
+    {
+        $roadmap = app(Roadmap::class);
+        $milestones = array_column($roadmap->data()['phases'], 0);
+
+        foreach ($roadmap->todos() as $todo) {
+            $this->assertContains($todo['phase'], $milestones, "Meilenstein von „{$todo['key']}“ unbekannt");
+        }
+        foreach (array_keys($roadmap->data()['feedback']) as $milestone) {
+            $this->assertContains($milestone, $milestones);
+        }
+
+        $this->get('/roadmap')->assertOk()
+            ->assertSee('Meilenstein Bolivien – bolivienpartnerschaft.de')
+            ->assertSee('Meilenstein Beraten – beraten-online.de (Phase 2)')
+            ->assertSee('Postfach beratung@dpsg-trier.de anlegen');
+    }
+
     #[TestDox('Roadmap zeigt Abschnitte und automatisch geprüfte offene Punkte')]
     public function test_page_shows_sections_and_auto_checked_todos(): void
     {

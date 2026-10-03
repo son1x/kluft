@@ -55,7 +55,9 @@ class ImageVariants
 
                 ob_start();
                 imagewebp($img, null, self::QUALITY);
-                $path = 'media/variants/'.$media->id.'-'.$target.'.webp';
+                // Kennung aus dem Pfad: ein ausgetauschtes Bild bekommt neue
+                // Dateinamen, damit Browser nicht die alte Variante zeigen.
+                $path = 'media/variants/'.$media->id.'-'.substr(md5($media->path), 0, 8).'-'.$target.'.webp';
                 $disk->put($path, (string) ob_get_clean());
                 imagedestroy($img);
 

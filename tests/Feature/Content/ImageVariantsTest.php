@@ -78,6 +78,30 @@ class ImageVariantsTest extends TestCase
             ->assertSee('width="1600" height="900"', false);
     }
 
+    #[TestDox('Ausgetauschtes Bild bekommt neue Varianten unter neuen Dateinamen; die alten verschwinden')]
+    public function test_replacing_the_image_renames_variants(): void
+    {
+        $media = $this->upload(800, 600)->fresh();
+        $old = array_values($media->variants);
+
+        $img = imagecreatetruecolor(1000, 500);
+        ob_start();
+        imagejpeg($img);
+        Storage::disk('public')->put('media/neu.jpg', ob_get_clean());
+        $media->update(['path' => 'media/neu.jpg']);
+
+        $new = $media->fresh();
+        $this->assertSame([480, 960, 1000], array_map('intval', array_keys($new->variants)));
+        $this->assertSame([1000, 500], [$new->width, $new->height]);
+        $this->assertEmpty(array_intersect($old, $new->variants));
+        foreach ($old as $path) {
+            Storage::disk('public')->assertMissing($path);
+        }
+        foreach ($new->variants as $path) {
+            Storage::disk('public')->assertExists($path);
+        }
+    }
+
     #[TestDox('Befehl erzeugt Varianten für bereits vorhandene Bilder')]
     public function test_command_backfills_existing_images(): void
     {

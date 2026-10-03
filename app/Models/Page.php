@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -84,8 +85,8 @@ class Page extends Model
     }
 
     /**
-     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
-     * @return \Illuminate\Database\Eloquent\Builder<self>
+     * @param  Builder<self>  $query
+     * @return Builder<self>
      */
     public function scopePublished($query)
     {

@@ -10,6 +10,10 @@ export default defineConfig({
         }),
         tailwindcss(),
     ],
+    // Web-Worker (MapLibre) als ES-Modul bündeln.
+    worker: {
+        format: 'es',
+    },
     server: {
         watch: {
             ignored: ['**/storage/framework/views/**'],

@@ -1,0 +1,54 @@
+name: Qualität und Sicherheit
+
+# Pflichtenheft 10.1/10.5: bekannte Sicherheitslücken in Abhängigkeiten
+# (composer audit, npm audit), Code-Stil (Pint) und statische Analyse
+# (Larastan). Läuft bei jedem Push, jeden Montag (neue Sicherheitsmeldungen
+# auch ohne Code-Änderung) und auf Knopfdruck. Schlägt ein Lauf fehl,
+# schickt GitHub eine Mail; der Deploy läuft davon unabhängig weiter.
+
+on:
+  push:
+    branches:
+      - claude/dpsg-trier-homepage-design-jwdgs4
+  schedule:
+    - cron: '17 5 * * 1'
+  workflow_dispatch:
+
+jobs:
+  sicherheit:
+    name: Sicherheitslücken in Abhängigkeiten
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - name: PHP-Pakete (composer audit)
+        run: composer audit --no-interaction --locked
+      - name: JavaScript-Pakete (npm audit, ab „hoch“)
+        run: npm audit --audit-level=high
+
+  code:
+    name: Code-Stil und statische Analyse
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: intl, mbstring, gd, zip, xml, curl, openssl, pdo_sqlite
+          coverage: none
+      - name: PHP-Abhängigkeiten installieren
+        run: composer install --no-interaction --no-progress
+      - name: Code-Stil (Pint)
+        run: vendor/bin/pint --test
+      - name: Statische Analyse (Larastan)
+        run: |
+          cp .env.example .env
+          php artisan key:generate --no-interaction
+          vendor/bin/phpstan analyse --no-progress --memory-limit=1G --error-format=table

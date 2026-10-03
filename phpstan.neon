@@ -1,0 +1,13 @@
+# Statische Analyse mit Larastan (Pflichtenheft 10.5). Läuft in GitHub
+# Actions (Workflow „Qualität“).
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    level: 5
+    paths:
+        - app
+        - config
+        - routes
+        - database
+    tmpDir: storage/framework/cache/phpstan

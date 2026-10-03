@@ -1,10 +1,15 @@
 // Selbstgehostete Karte (Pflichtenheft F-MAP-04): Vektorkacheln aus einer
 // PMTiles-Datei auf dem eigenen Server, Schriften und Symbole ebenfalls
 // lokal – es gehen keine Anfragen an externe Kartendienste.
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
+// MapLibre 6 lädt seinen Web-Worker als eigene Datei; Vite bündelt ihn
+// samt gemeinsamem Code und liefert die URL (gleiche Herkunft, CSP 'self').
+import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { FetchSource, PMTiles, Protocol } from 'pmtiles';
 import { layers, namedFlavor } from '@protomaps/basemaps';
+
+maplibregl.setWorkerUrl(workerUrl);
 
 const protocol = new Protocol();
 maplibregl.addProtocol('pmtiles', protocol.tile);

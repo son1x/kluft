@@ -3,10 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * Zugangstoken externer Dienste (8.2 `integration_tokens`), verschlüsselt
  * gespeichert und nie an den Browser ausgeliefert.
+ *
+ * @property Carbon|null $expires_at
+ * @property Carbon|null $refreshed_at
  */
 class IntegrationToken extends Model
 {

@@ -4,7 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property Carbon|null $last_synced_at
+ */
 class Calendar extends Model
 {
     protected $fillable = ['label', 'ics_url', 'color', 'stage', 'active', 'last_synced_at', 'last_hash', 'last_error'];

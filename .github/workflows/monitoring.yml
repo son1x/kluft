@@ -1,0 +1,38 @@
+name: Monitoring
+
+# Überwachung von außen (Pflichtenheft 10.2): alle 30 Minuten Startseite und
+# /status.json abrufen. Schlägt das fehl (Seite down, Cronjob steht, Mails
+# hängen, Backup fehlt), wird der Lauf rot und GitHub schickt eine Mail.
+# Ergänzt den Alarm vom Server selbst (monitor:check), der nur läuft,
+# solange der Cronjob läuft.
+
+on:
+  schedule:
+    - cron: '7,37 * * * *'
+  workflow_dispatch:
+
+env:
+  SITE: ${{ vars.MONITOR_URL || 'https://test.dpsg-trier.de' }}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Startseite erreichbar
+        run: |
+          code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 "$SITE/")
+          echo "Startseite: HTTP $code"
+          [ "$code" = "200" ]
+
+      - name: Systemstatus
+        run: |
+          body=$(curl -s --max-time 30 "$SITE/status.json") || { echo "Status nicht abrufbar"; exit 1; }
+          echo "$body" | jq -r '.checks | to_entries[] | "\(.value.status)\t\(.key): \(.value.message)"'
+          status=$(echo "$body" | jq -r '.status')
+          {
+            echo "### Systemstatus: $status"
+            echo
+            echo "$body" | jq -r '.checks | to_entries[] | "- **\(.key)** – \(.value.status): \(.value.message)"'
+          } >> "$GITHUB_STEP_SUMMARY"
+          [ "$status" != "fehler" ]

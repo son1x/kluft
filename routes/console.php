@@ -26,6 +26,9 @@ Schedule::command('queue:work --stop-when-empty --max-time=50 --sleep=1')
     ->name('mail-warteschlange');
 Schedule::command('queue:prune-failed --hours=336')->dailyAt('03:45');
 
+// Monitoring (Pflichtenheft 10.2): Störungen per Mail an die Admins.
+Schedule::command('monitor:check')->everyFifteenMinutes()->withoutOverlapping();
+
 // Lebenszeichen des Schedulers, damit /roadmap anzeigen kann, ob der
 // Cronjob auf dem Server läuft.
 Schedule::call(fn () => Cache::forever(Roadmap::HEARTBEAT_KEY, now()->timestamp))->everyMinute()->name('scheduler-heartbeat');

@@ -217,6 +217,7 @@
                         <button type="button" onclick="window.dispatchEvent(new CustomEvent('open-consent-settings'))" class="hover:underline">Datenschutz-Einstellungen</button>
                     </li>
                     <li><a href="{{ url('/admin') }}" class="hover:underline">Redaktions-Login</a></li>
+                    <li><a href="{{ url('/status') }}" class="hover:underline">Systemstatus</a></li>
                 </ul>
                 <h2 class="mb-3 mt-6 font-serif text-base font-bold">DPSG im Netz</h2>
                 <ul class="space-y-2">

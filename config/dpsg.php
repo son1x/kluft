@@ -138,6 +138,8 @@ return [
             'teilweise' => 'Teilweise – bitte in den Anmerkungen angeben',
             'ohne' => 'Ohne Übernachtung',
         ]],
+        // Nur bei mehrtägigen Veranstaltungen: „ganze Zeit“ oder einzelne Tage.
+        'tage' => ['label' => 'Anwesenheit (Tage)', 'type' => 'days', 'hint' => 'Nur bei mehrtägigen Veranstaltungen'],
         'comment' => ['label' => 'Anmerkungen', 'type' => 'textarea'],
     ],
 

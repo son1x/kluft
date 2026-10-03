@@ -141,6 +141,31 @@
                                         <input id="{{ $key }}" name="{{ $key }}" type="text" list="staemme" @required($field['required']) value="{{ old($key) }}" class="{{ $input }}" />
                                         <datalist id="staemme">@foreach ($staemme as $name)<option value="{{ $name }}"></option>@endforeach</datalist>
                                         @break
+                                    @case('days')
+                                        {{-- „Ganze Zeit“ oder einzelne Tage; die Tage klappen erst bei
+                                             „nur an einzelnen Tagen“ auf (ohne JavaScript immer sichtbar). --}}
+                                        @php($days = $event->days())
+                                        <div class="mt-1 space-y-2" x-data="{ modus: @js(old($key.'_modus')) }">
+                                            <label class="flex items-center gap-2">
+                                                <input id="{{ $key }}" type="radio" name="{{ $key }}_modus" value="alle" x-model="modus" @checked(old($key.'_modus') === 'alle') @required($field['required']) />
+                                                Die ganze Zeit ({{ \Illuminate\Support\Arr::first($days) }} bis {{ \Illuminate\Support\Arr::last($days) }})
+                                            </label>
+                                            <label class="flex items-center gap-2">
+                                                <input type="radio" name="{{ $key }}_modus" value="teilweise" x-model="modus" @checked(old($key.'_modus') === 'teilweise') />
+                                                Nur an einzelnen Tagen
+                                            </label>
+                                            <fieldset class="ml-6 flex flex-wrap gap-2" x-show="modus === 'teilweise'" x-transition.opacity>
+                                                <legend class="mb-1 text-xs text-text-secondary">An welchen Tagen bist du dabei?</legend>
+                                                @foreach ($days as $date => $dayLabel)
+                                                    <label class="inline-flex items-center gap-2 border border-dpsg-mittelbeige bg-white px-3 py-1.5 text-sm has-[:checked]:border-dpsg-blau has-[:checked]:bg-dpsg-blau has-[:checked]:text-white">
+                                                        <input type="checkbox" name="{{ $key }}[]" value="{{ $date }}" @checked(in_array($date, (array) old($key, []), true)) class="accent-white" />
+                                                        {{ $dayLabel }}
+                                                    </label>
+                                                @endforeach
+                                            </fieldset>
+                                        </div>
+                                        @error($key.'_modus')<p class="mt-1 text-sm text-dpsg-rot">{{ $message }}</p>@enderror
+                                        @break
                                     @default
                                         <input id="{{ $key }}" name="{{ $key }}" type="text" @required($field['required']) value="{{ old($key) }}" class="{{ $input }}" />
                                 @endswitch

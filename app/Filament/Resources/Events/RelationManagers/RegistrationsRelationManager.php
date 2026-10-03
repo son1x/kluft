@@ -49,6 +49,7 @@ class RegistrationsRelationManager extends RelationManager
         $fields = $event->formFields();
 
         return $table
+            ->description(fn () => $this->attendancePerDay($event, $fields))
             ->recordTitle(fn (EventRegistration $record) => $record->fullName())
             ->columns([
                 TextColumn::make('last_name')->label('Name')
@@ -65,6 +66,10 @@ class RegistrationsRelationManager extends RelationManager
                         'cancelled' => 'danger',
                         default => 'gray',
                     }),
+                ...collect($fields)->filter(fn (array $f) => $f['type'] === 'days')
+                    ->map(fn (array $f, string $key) => TextColumn::make("data.{$key}")->label('Tage')
+                        ->state(fn (EventRegistration $record) => $event->fieldValueLabel($f, $record->data[$key] ?? null))
+                        ->placeholder('–'))->values()->all(),
                 TextColumn::make('guardian_name')->label('Angemeldet durch')->placeholder('–')->toggleable(),
                 TextColumn::make('confirmed_at')->label('Bestätigt am')->dateTime('d.m.Y H:i')->sortable(),
             ])
@@ -122,6 +127,33 @@ class RegistrationsRelationManager extends RelationManager
                     ->modalDescription('Die Person bekommt eine Stornierungsmail; ein frei werdender Platz geht an die Warteliste.')
                     ->action(fn (EventRegistration $record) => $this->changeStatus($record, 'cancel')),
             ]);
+    }
+
+    /**
+     * „Anwesend (bestätigt): Fr, 20.11.: 34 · Sa, 21.11.: 41 · …“ – nur bei
+     * aktivierter Tage-Abfrage. Die Angaben sind verschlüsselt gespeichert,
+     * daher wird in PHP gezählt.
+     *
+     * @param  array<string, array<string, mixed>>  $fields
+     */
+    private function attendancePerDay(Event $event, array $fields): ?string
+    {
+        $key = collect($fields)->search(fn (array $f) => $f['type'] === 'days');
+        if ($key === false) {
+            return null;
+        }
+
+        $counts = array_fill_keys(array_keys($event->days()), 0);
+        $event->registrations()->where('status', 'confirmed')->get()
+            ->each(function (EventRegistration $r) use ($key, &$counts) {
+                foreach ((array) ($r->data[$key] ?? []) as $day) {
+                    if (array_key_exists($day, $counts)) {
+                        $counts[$day]++;
+                    }
+                }
+            });
+
+        return 'Anwesend (bestätigt): '.collect($counts)->map(fn (int $n, string $day) => $event->days()[$day].': '.$n)->implode(' · ');
     }
 
     private function changeStatus(EventRegistration $record, string $method): void

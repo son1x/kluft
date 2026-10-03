@@ -90,6 +90,10 @@ class Event extends Model
         $fields = [];
 
         foreach (config('dpsg.event_fields') as $key => $field) {
+            // Tage-Auswahl ergibt nur bei mehrtägigen Veranstaltungen Sinn.
+            if ($field['type'] === 'days' && count($this->days()) < 2) {
+                continue;
+            }
             if (in_array($config[$key] ?? null, ['optional', 'required'], true)) {
                 $fields[$key] = [...$field, 'required' => $config[$key] === 'required'];
             }
@@ -166,6 +170,47 @@ class Event extends Model
         }
 
         return 'Diözesanverband';
+    }
+
+    /**
+     * Kalendertage der Veranstaltung, z. B. ['2026-11-20' => 'Fr, 20.11.', …]
+     * (höchstens 31 Tage).
+     *
+     * @return array<string, string>
+     */
+    public function days(): array
+    {
+        if (! $this->starts_at) {
+            return [];
+        }
+
+        $end = ($this->ends_at ?? $this->starts_at)->copy()->startOfDay();
+        $days = [];
+        for ($day = $this->starts_at->copy()->startOfDay(); $day->lte($end) && count($days) < 31; $day = $day->copy()->addDay()) {
+            $days[$day->toDateString()] = $day->locale('de')->isoFormat('dd, D.M.');
+        }
+
+        return $days;
+    }
+
+    /**
+     * Lesbarer Wert eines Baukasten-Felds (Teilnehmerliste, Export).
+     *
+     * @param  array{type: string, options?: array<string, string>}  $field
+     */
+    public function fieldValueLabel(array $field, mixed $value): ?string
+    {
+        if ($value === null || $value === '' || $value === []) {
+            return null;
+        }
+
+        return match ($field['type']) {
+            'select' => $field['options'][$value] ?? (string) $value,
+            'days' => array_values((array) $value) === array_keys($this->days())
+                ? 'ganze Zeit'
+                : collect((array) $value)->map(fn (string $d) => $this->days()[$d] ?? $d)->implode(' · '),
+            default => is_array($value) ? implode(', ', $value) : (string) $value,
+        };
     }
 
     public function dateLabel(): string

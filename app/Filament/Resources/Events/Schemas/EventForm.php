@@ -96,6 +96,7 @@ class EventForm
                 ->columnSpanFull()
                 ->components(collect(config('dpsg.event_fields'))->map(fn (array $field, string $key) => Select::make("form_fields.{$key}")
                     ->label($field['label'])
+                    ->helperText($field['hint'] ?? null)
                     ->options(['none' => 'Nicht abfragen', 'optional' => 'Optional', 'required' => 'Pflichtfeld'])
                     ->in(['none', 'optional', 'required'])
                     ->default('none')

@@ -4,7 +4,7 @@
     <div><dt class="font-semibold">Status</dt><dd>{{ $registration->statusLabel() }}</dd></div>
     @foreach ($fields as $key => $field)
         @php($value = $key === 'birth_year' ? $registration->birth_year : ($registration->data[$key] ?? null))
-        <div><dt class="font-semibold">{{ $field['label'] }}</dt><dd>{{ $field['type'] === 'select' ? ($field['options'][$value] ?? $value ?? '–') : ($value ?? '–') }}</dd></div>
+        <div><dt class="font-semibold">{{ $field['label'] }}</dt><dd>{{ $registration->event->fieldValueLabel($field, $value) ?? '–' }}</dd></div>
     @endforeach
     @if ($registration->guardian_name)
         <div><dt class="font-semibold">Angemeldet durch (sorgeberechtigt)</dt><dd>{{ $registration->guardian_name }} – Einwilligung {{ $registration->guardian_consent ? 'erteilt' : 'fehlt' }}</dd></div>

@@ -74,6 +74,14 @@ class EventController extends Controller
         ];
 
         foreach ($fields as $key => $field) {
+            // Tage: „ganze Zeit“ oder einzelne Tage (Checkboxen).
+            if ($field['type'] === 'days') {
+                $rules["{$key}_modus"] = [$field['required'] ? 'required' : 'nullable', Rule::in(['alle', 'teilweise'])];
+                $rules[$key] = ['nullable', 'array', "required_if:{$key}_modus,teilweise"];
+                $rules["{$key}.*"] = [Rule::in(array_keys($event->days()))];
+
+                continue;
+            }
             $base = [$field['required'] ? 'required' : 'nullable'];
             $rules[$key] = [...$base, ...match ($field['type']) {
                 'year' => ['integer', 'between:'.(now()->year - 100).','.now()->year],
@@ -92,6 +100,8 @@ class EventController extends Controller
             'email' => 'Bitte gib eine gültige E-Mail-Adresse an.',
             'between' => 'Bitte gib ein gültiges Geburtsjahr an.',
             'regex' => 'Bitte nur Ziffern, Leerzeichen und + ( ) / - verwenden.',
+            'required_if' => 'Bitte wähle mindestens einen Tag aus.',
+            'in' => 'Bitte wähle eine der angebotenen Möglichkeiten.',
         ]);
 
         // Unter 16 nur mit Einwilligung der Personensorgeberechtigten (F-EV-14).
@@ -110,12 +120,28 @@ class EventController extends Controller
             'last_name' => $data['last_name'],
             'email' => $data['email'],
             'birth_year' => $data['birth_year'] ?? null,
-            'data' => collect($fields)->keys()->reject(fn ($k) => $k === 'birth_year')
-                ->mapWithKeys(fn ($k) => [$k => $data[$k] ?? null])->all(),
+            'data' => collect($fields)->except('birth_year')
+                ->map(fn (array $field, string $k) => $field['type'] === 'days' ? $this->selectedDays($event, $data, $k) : ($data[$k] ?? null))
+                ->all(),
             'guardian_name' => $request->boolean('by_guardian') ? $data['guardian_name'] : null,
             'guardian_consent' => $request->boolean('by_guardian') && $request->boolean('guardian_consent'),
         ]);
 
         return $done();
+    }
+
+    /**
+     * Gewählte Tage als Liste von Datumswerten; „ganze Zeit“ = alle Tage.
+     *
+     * @param  array<string, mixed>  $data
+     * @return list<string>|null
+     */
+    private function selectedDays(Event $event, array $data, string $key): ?array
+    {
+        return match ($data["{$key}_modus"] ?? null) {
+            'alle' => array_keys($event->days()),
+            'teilweise' => array_values(array_intersect(array_keys($event->days()), (array) ($data[$key] ?? []))),
+            default => null,
+        };
     }
 }

@@ -100,6 +100,57 @@ class EventRegistrationTest extends TestCase
         $this->assertSame(['gremium' => 'Delegierte Bezirk Saar-Hochwald', 'uebernachtung' => 'komplett'], EventRegistration::query()->sole()->data);
     }
 
+    #[TestDox('Anwesenheit nach Tagen: ganze Zeit oder einzelne Tage, Zählung je Tag und Spalten im Export')]
+    public function test_attendance_days(): void
+    {
+        $event = $this->event([
+            'starts_at' => '2026-11-20 17:00:00', 'ends_at' => '2026-11-22 13:30:00',
+            'form_fields' => ['tage' => 'required'],
+        ]);
+
+        $this->get('/veranstaltungen/woelflingstag')->assertOk()
+            ->assertSee('Anwesenheit (Tage) *')
+            ->assertSee('Die ganze Zeit (Fr, 20.11. bis So, 22.11.)')
+            ->assertSeeInOrder(['Nur an einzelnen Tagen', 'Fr, 20.11.', 'Sa, 21.11.', 'So, 22.11.']);
+
+        $this->register($event, ['email' => 'a@example.org'])->assertSessionHasErrors('tage_modus');
+        $this->register($event, ['email' => 'a@example.org', 'tage_modus' => 'teilweise'])->assertSessionHasErrors('tage');
+        $this->register($event, ['email' => 'a@example.org', 'tage_modus' => 'teilweise', 'tage' => ['2026-11-25']])->assertSessionHasErrors('tage.0');
+
+        $this->register($event, ['email' => 'a@example.org', 'tage_modus' => 'alle'])->assertSessionHasNoErrors();
+        $this->register($event, ['email' => 'b@example.org', 'first_name' => 'Ben', 'tage_modus' => 'teilweise', 'tage' => ['2026-11-21', '2026-11-20']])->assertSessionHasNoErrors();
+
+        $registrations = EventRegistration::query()->orderBy('id')->get();
+        $this->assertSame(['2026-11-20', '2026-11-21', '2026-11-22'], $registrations[0]->data['tage']);
+        $this->assertSame(['2026-11-20', '2026-11-21'], $registrations[1]->data['tage']);
+        $this->assertSame('ganze Zeit', $event->fieldValueLabel($event->formFields()['tage'], $registrations[0]->data['tage']));
+        $this->assertSame('Fr, 20.11. · Sa, 21.11.', $event->fieldValueLabel($event->formFields()['tage'], $registrations[1]->data['tage']));
+
+        $registrations->each(fn ($r) => $r->update(['status' => 'confirmed', 'confirmed_at' => now()]));
+        $export = app(ParticipantExport::class);
+        $headings = $export->headings($event);
+        $this->assertSame(['Anwesenheit (Tage)', 'Fr, 20.11.', 'Sa, 21.11.', 'So, 22.11.'], array_slice($headings, 5, 4));
+        $rows = $export->rows($event);
+        $this->assertSame(['ganze Zeit', 'x', 'x', 'x'], array_slice($rows[0], 5, 4));
+        $this->assertSame(['Fr, 20.11. · Sa, 21.11.', 'x', 'x', ''], array_slice($rows[1], 5, 4));
+
+        Filament::setCurrentPanel('admin');
+        $this->actingAs($this->user('buero@dpsg-trier.de', 'verwaltung'));
+        Livewire::test(RegistrationsRelationManager::class, ['ownerRecord' => $event, 'pageClass' => EditEvent::class])
+            ->assertSee('Anwesend (bestätigt): Fr, 20.11.: 2 · Sa, 21.11.: 2 · So, 22.11.: 1')
+            ->assertSee('Fr, 20.11. · Sa, 21.11.');
+    }
+
+    #[TestDox('Bei eintägigen Veranstaltungen erscheint die Tage-Abfrage nicht')]
+    public function test_days_field_hidden_for_single_day_events(): void
+    {
+        $event = $this->event(['form_fields' => ['tage' => 'required', 'birth_year' => 'optional']]);
+
+        $this->assertArrayNotHasKey('tage', $event->formFields());
+        $this->get('/veranstaltungen/woelflingstag')->assertOk()->assertDontSee('Anwesenheit (Tage)');
+        $this->register($event)->assertSessionHasNoErrors();
+    }
+
     #[TestDox('Anmeldung mit Bestätigungsmail; Zusatzangaben werden verschlüsselt gespeichert')]
     public function test_double_opt_in_flow_with_encrypted_extra_data(): void
     {

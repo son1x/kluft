@@ -20,9 +20,12 @@ class ParticipantExport
      */
     public function headings(Event $event): array
     {
-        $fields = collect($event->formFields())->map(fn (array $field) => $field['label'])->all();
+        // Bei der Tage-Abfrage zusätzlich eine Spalte je Tag (zum Zählen).
+        $fields = collect($event->formFields())
+            ->flatMap(fn (array $field) => $field['type'] === 'days' ? [$field['label'], ...array_values($event->days())] : [$field['label']])
+            ->all();
 
-        return ['Nr.', 'Status', 'Vorname', 'Nachname', 'E-Mail', ...array_values($fields), 'Angemeldet durch (sorgeberechtigt)', 'Bestätigt am'];
+        return ['Nr.', 'Status', 'Vorname', 'Nachname', 'E-Mail', ...$fields, 'Angemeldet durch (sorgeberechtigt)', 'Bestätigt am'];
     }
 
     /**
@@ -38,11 +41,16 @@ class ParticipantExport
             ->orderBy('confirmed_at')
             ->get()
             ->values()
-            ->map(function (EventRegistration $r, int $i) use ($fields) {
+            ->map(function (EventRegistration $r, int $i) use ($fields, $event) {
                 $extra = [];
                 foreach ($fields as $key => $field) {
                     $value = $key === 'birth_year' ? $r->birth_year : ($r->data[$key] ?? null);
-                    $extra[] = $field['type'] === 'select' ? ($field['options'][$value] ?? $value) : $value;
+                    $extra[] = $key === 'birth_year' ? $value : $event->fieldValueLabel($field, $value);
+                    if ($field['type'] === 'days') {
+                        foreach (array_keys($event->days()) as $day) {
+                            $extra[] = in_array($day, (array) $value, true) ? 'x' : '';
+                        }
+                    }
                 }
 
                 return array_map(self::mask(...), [

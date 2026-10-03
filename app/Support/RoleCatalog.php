@@ -125,6 +125,33 @@ class RoleCatalog
         return ['role' => $role, 'scope_type' => $scopeType, 'scope_key' => $scopeKey === '' ? null : $scopeKey];
     }
 
+    /**
+     * Rolle mit kurzer Erklärung für Mails an die betroffene Person.
+     */
+    public static function describe(string $key): string
+    {
+        $role = self::decode($key)['role'];
+        $what = [
+            'autor' => 'eigene Beiträge schreiben und bearbeiten',
+            'stufenadmin' => 'Stufenseite, Beiträge und Veranstaltungen der Stufe pflegen, Autor:innen freischalten',
+            'sektionsadmin' => 'Seiten, Beiträge und Veranstaltungen des Bereichs pflegen, Autor:innen freischalten',
+            'vorstand' => 'Vorstandsseiten pflegen, Beiträge freigeben',
+            'verwaltung' => 'alle Inhalte und Veranstaltungen, Benutzer und Datenschutz-Anfragen',
+            'admin' => 'Technik: Integrationen und Einstellungen',
+            'superadmin' => 'Notfallzugang',
+        ][$role] ?? null;
+
+        return (self::all()[$key] ?? $key).($what ? " ({$what})" : '');
+    }
+
+    /**
+     * Rollen, bei deren Vergabe die Technik-Admins informiert werden.
+     */
+    public static function isPrivileged(string $key): bool
+    {
+        return in_array(self::decode($key)['role'], ['verwaltung', 'admin', 'superadmin'], true);
+    }
+
     public static function label(RoleAssignment $assignment): string
     {
         return self::all()[self::encode($assignment)] ?? self::encode($assignment);

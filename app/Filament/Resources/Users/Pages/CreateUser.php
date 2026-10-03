@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Users\Pages;
 
 use App\Filament\Resources\Users\Pages\Concerns\ActivatesOnFirstRole;
+use App\Filament\Resources\Users\Pages\Concerns\NotifiesAboutNewRoles;
 use App\Filament\Resources\Users\UserResource;
 use App\Models\User;
 use App\Services\DirectoryUnavailable;
@@ -14,6 +15,7 @@ use Filament\Support\Exceptions\Halt;
 class CreateUser extends CreateRecord
 {
     use ActivatesOnFirstRole;
+    use NotifiesAboutNewRoles;
 
     protected static string $resource = UserResource::class;
 
@@ -62,5 +64,6 @@ class CreateUser extends CreateRecord
     protected function afterCreate(): void
     {
         $this->activateIfRoleAssigned();
+        $this->notifyAboutNewRoles(newAccount: true);
     }
 }

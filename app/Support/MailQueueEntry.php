@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use Illuminate\Mail\SendQueuedMailable;
+use Illuminate\Notifications\SendQueuedNotifications;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Str;
 use Throwable;
@@ -18,6 +19,8 @@ class MailQueueEntry
         'App\Mail\EventRegistrationMail' => 'Veranstaltungsanmeldung',
         'App\Mail\ContactMessageMail' => 'Kontaktformular',
         'App\Mail\RegistrationDocumentMail' => 'Dokument zur Anmeldung',
+        'App\Notifications\RolesGrantedNotification' => 'Zugang/neue Rechte',
+        'App\Notifications\PrivilegedRoleGrantedNotification' => 'Hinweis an Admins: weitreichende Rechte',
     ];
 
     /**
@@ -38,6 +41,10 @@ class MailQueueEntry
             if ($job instanceof SendQueuedMailable) {
                 $class = $job->mailable::class;
                 $recipient = $job->mailable->to[0]['address'] ?? null;
+            }
+            if ($job instanceof SendQueuedNotifications) {
+                $class = $job->notification::class;
+                $recipient = collect($job->notifiables)->first()?->email;
             }
         } catch (Throwable) {
             // z. B. Anmeldung inzwischen gelöscht – dann nur die Art anzeigen.

@@ -57,6 +57,12 @@ class Event extends Model
         return $this->belongsTo(Media::class, 'cover_media_id');
     }
 
+    protected static function booted(): void
+    {
+        // Anmeldungen fallen per Fremdschlüssel weg; deren Dateien hier.
+        static::deleting(fn (self $event) => RegistrationDocument::purgeFor($event->registrations()->pluck('id')));
+    }
+
     /**
      * Öffentlich sichtbar ist alles außer Entwürfen.
      *

@@ -3,9 +3,11 @@
 namespace App\Console\Commands;
 
 use App\Models\EventRegistration;
+use App\Models\RegistrationDocument;
 use App\Services\EventRegistrations;
 use App\Support\AuditLogger;
 use Illuminate\Console\Command;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Löschfristen der Veranstaltungsanmeldungen, Pflichtenheft 9.3 und 11.4:
@@ -20,14 +22,12 @@ class PurgeRegistrationsCommand extends Command
 
     public function handle(): int
     {
-        $unconfirmed = EventRegistration::query()
+        $unconfirmed = $this->purge(EventRegistration::query()
             ->where('status', 'pending')
-            ->where('created_at', '<', now()->subHours(EventRegistrations::CONFIRM_HOURS))
-            ->delete();
+            ->where('created_at', '<', now()->subHours(EventRegistrations::CONFIRM_HOURS)));
 
-        $expired = $this->option('unconfirmed') ? 0 : EventRegistration::query()
-            ->where('purge_at', '<=', now())
-            ->delete();
+        $expired = $this->option('unconfirmed') ? 0 : $this->purge(EventRegistration::query()
+            ->where('purge_at', '<=', now()));
 
         if ($unconfirmed + $expired > 0) {
             AuditLogger::log("registrations.purge:{$unconfirmed}+{$expired}");
@@ -36,5 +36,17 @@ class PurgeRegistrationsCommand extends Command
         $this->info("Gelöscht: {$unconfirmed} unbestätigt, {$expired} abgelaufen.");
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Löscht samt hochgeladener Dokumente (Rechnungen, Bescheinigungen).
+     *
+     * @param  Builder<EventRegistration>  $query
+     */
+    private function purge(Builder $query): int
+    {
+        RegistrationDocument::purgeFor($query->clone()->pluck('id'));
+
+        return $query->delete();
     }
 }

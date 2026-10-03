@@ -35,6 +35,7 @@
                 <ul class="flex gap-6">
                     <li><a href="{{ url('/kontakt') }}" class="hover:underline">Kontakt</a></li>
                     <li><a href="{{ url('/dioezesanbuero') }}" class="hover:underline">Diözesanbüro</a></li>
+                    <li><a href="{{ url('/meine-anmeldungen') }}" class="hover:underline">Meine Anmeldungen</a></li>
                     <li><a href="https://www.dpsg.de" target="_blank" rel="noopener" class="hover:underline">dpsg.de</a></li>
                 </ul>
             </nav>
@@ -66,6 +67,7 @@
                 <li><a href="{{ url('/kalender') }}" @class(['block px-4 py-3', 'text-dpsg-rot' => request()->is('kalender')])>Kalender</a></li>
                 <li><a href="{{ url('/aktuelles') }}" @class(['block px-4 py-3', 'text-dpsg-rot' => request()->is('aktuelles*')])>Aktuelles</a></li>
                 <li><a href="{{ url('/kontakt') }}" class="block px-4 py-3">Kontakt</a></li>
+                <li><a href="{{ url('/meine-anmeldungen') }}" class="block px-4 py-3">Meine Anmeldungen</a></li>
             </ul>
         </nav>
     </header>
@@ -185,6 +187,7 @@
                 <ul class="space-y-2">
                     <li><a href="{{ url('/kontakt') }}" class="hover:underline">Kontakt</a></li>
                     <li><a href="{{ url('/dioezesanbuero') }}" class="hover:underline">Diözesanbüro</a></li>
+                    <li><a href="{{ url('/meine-anmeldungen') }}" class="hover:underline">Meine Anmeldungen</a></li>
                     <li>
                         <button type="button" onclick="window.dispatchEvent(new CustomEvent('open-consent-settings'))" class="hover:underline">Datenschutz-Einstellungen</button>
                     </li>

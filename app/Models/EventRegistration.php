@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Anmeldung zu einer Veranstaltung (Pflichtenheft 8.2). Zusatzangaben aus
@@ -39,12 +40,25 @@ class EventRegistration extends Model
         ];
     }
 
+    protected static function booted(): void
+    {
+        static::deleting(fn (self $registration) => RegistrationDocument::purgeFor([$registration->id]));
+    }
+
     /**
      * @return BelongsTo<Event, $this>
      */
     public function event(): BelongsTo
     {
         return $this->belongsTo(Event::class);
+    }
+
+    /**
+     * @return HasMany<RegistrationDocument, $this>
+     */
+    public function documents(): HasMany
+    {
+        return $this->hasMany(RegistrationDocument::class)->orderBy('type')->orderByDesc('id');
     }
 
     public function fullName(): string

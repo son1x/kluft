@@ -10,5 +10,8 @@
         <div><dt class="font-semibold">Angemeldet durch (sorgeberechtigt)</dt><dd>{{ $registration->guardian_name }} – Einwilligung {{ $registration->guardian_consent ? 'erteilt' : 'fehlt' }}</dd></div>
     @endif
     <div><dt class="font-semibold">Einwilligung</dt><dd>{{ $registration->consent_at?->format('d.m.Y H:i') }}, Textversion {{ $registration->consent_text_version }}</dd></div>
+    @if ($registration->documents->isNotEmpty())
+        <div><dt class="font-semibold">Dokumente</dt><dd>{{ $registration->documents->map(fn ($d) => $d->label().' ('.$d->created_at->format('d.m.Y').')')->implode(', ') }}</dd></div>
+    @endif
     <div><dt class="font-semibold">Wird gelöscht am</dt><dd>{{ $registration->purge_at?->format('d.m.Y') }}</dd></div>
 </dl>

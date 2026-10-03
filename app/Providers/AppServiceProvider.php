@@ -5,8 +5,11 @@ namespace App\Providers;
 use App\Mail\TestRecipientFilter;
 use App\Models\Page;
 use App\Services\Glossary;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Stringable;
@@ -28,6 +31,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // „Meine Anmeldungen“: eigene Zähler, damit Codeeingaben nicht das
+        // Anfordern oder andere Formulare blockieren (throttle:x,y teilt
+        // sich sonst einen Zähler pro IP).
+        RateLimiter::for('teilnehmende-code', fn (Request $request) => [
+            Limit::perMinutes(10, 5)->by('code-ip|'.$request->ip()),
+            Limit::perHour(5)->by('code-mail|'.mb_strtolower(trim((string) $request->input('email')))),
+        ]);
+        RateLimiter::for('teilnehmende-anmelden', fn (Request $request) => Limit::perMinutes(10, 10)->by('anmelden|'.$request->ip()));
+        RateLimiter::for('teilnehmende', fn (Request $request) => Limit::perMinutes(10, 60)->by('teilnehmende|'.$request->ip()));
+
         // Begriffs-Hover im redaktionellen HTML: str($html)->sanitizeHtml()->glossar()
         Stringable::macro('glossar', function () {
             /** @var Stringable $this */

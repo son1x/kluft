@@ -2,21 +2,31 @@
 
 namespace App\Filament\Resources\Events\RelationManagers;
 
+use App\Mail\RegistrationDocumentMail;
 use App\Models\Event;
 use App\Models\EventRegistration;
+use App\Models\RegistrationDocument;
 use App\Services\EventRegistrations;
 use App\Services\ParticipantExport;
 use App\Support\AuditLogger;
 use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Facades\Filament;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\HtmlString;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Throwable;
 
 /**
  * Teilnehmerübersicht (F-EV-05/06) und Export (F-EV-20..22). Nur für
@@ -49,6 +59,7 @@ class RegistrationsRelationManager extends RelationManager
         $fields = $event->formFields();
 
         return $table
+            ->modifyQueryUsing(fn ($query) => $query->with('documents'))
             ->description(fn () => $this->attendancePerDay($event, $fields))
             ->recordTitle(fn (EventRegistration $record) => $record->fullName())
             ->columns([
@@ -70,6 +81,10 @@ class RegistrationsRelationManager extends RelationManager
                     ->map(fn (array $f, string $key) => TextColumn::make("data.{$key}")->label('Tage')
                         ->state(fn (EventRegistration $record) => $event->fieldValueLabel($f, $record->data[$key] ?? null))
                         ->placeholder('–'))->values()->all(),
+                TextColumn::make('documents_count')->label('Dokumente')->counts('documents')
+                    ->formatStateUsing(fn (int $state) => $state ?: '–')
+                    ->tooltip(fn (EventRegistration $record) => $record->documents->map->label()->implode(', ') ?: null)
+                    ->toggleable(),
                 TextColumn::make('guardian_name')->label('Angemeldet durch')->placeholder('–')->toggleable(),
                 TextColumn::make('confirmed_at')->label('Bestätigt am')->dateTime('d.m.Y H:i')->sortable(),
             ])
@@ -103,6 +118,60 @@ class RegistrationsRelationManager extends RelationManager
                         'registration' => $record,
                         'fields' => $fields,
                     ])->render())),
+                ActionGroup::make([
+                    Action::make('uploadDocument')
+                        ->label('Dokument hochladen')
+                        ->icon('heroicon-o-arrow-up-tray')
+                        ->modalHeading(fn (EventRegistration $record) => 'Dokument für '.$record->fullName())
+                        ->modalDescription('Die Person findet das PDF unter „Meine Anmeldungen“ (Anmeldung per E-Mail und Einmalcode). Es wird mit der Anmeldung gelöscht.')
+                        ->schema([
+                            Select::make('type')->label('Art')->options(RegistrationDocument::TYPES)->default('rechnung')->required()->live(),
+                            TextInput::make('title')->label('Bezeichnung (optional)')->placeholder('z. B. Rechnung Nr. 2026-117')->maxLength(120),
+                            FileUpload::make('path')->label('PDF')
+                                ->disk(RegistrationDocument::DISK)
+                                ->directory('anmeldungen/'.$event->id)
+                                ->visibility('private')
+                                ->acceptedFileTypes(['application/pdf'])
+                                ->maxSize(10240)
+                                ->storeFileNamesIn('original_name')
+                                ->required(),
+                            Toggle::make('replace')->label('Bisherige Dokumente dieser Art ersetzen')->default(true),
+                            Toggle::make('notify')->label('Person per E-Mail informieren')->default(true),
+                        ])
+                        ->action(fn (EventRegistration $record, array $data) => $this->storeDocument($record, $data)),
+                    Action::make('downloadDocument')
+                        ->label('Dokument ansehen')
+                        ->icon('heroicon-o-document-arrow-down')
+                        ->visible(fn (EventRegistration $record) => $record->documents->isNotEmpty())
+                        ->schema(fn (EventRegistration $record) => [
+                            Select::make('document')->label('Dokument')->required()
+                                ->options($record->documents->mapWithKeys(fn (RegistrationDocument $d) => [$d->id => $d->label().' ('.$d->created_at->format('d.m.Y').')']))
+                                ->default($record->documents->first()?->id),
+                        ])
+                        ->modalSubmitActionLabel('Herunterladen')
+                        ->action(function (EventRegistration $record, array $data) {
+                            abort_unless(Filament::auth()->user()?->can('manageParticipants', $this->getOwnerRecord()), 403);
+                            $document = $record->documents()->findOrFail($data['document']);
+
+                            return Storage::disk(RegistrationDocument::DISK)->download($document->path, $document->downloadName());
+                        }),
+                    Action::make('deleteDocument')
+                        ->label('Dokument löschen')
+                        ->icon('heroicon-o-trash')
+                        ->color('danger')
+                        ->visible(fn (EventRegistration $record) => $record->documents->isNotEmpty())
+                        ->schema(fn (EventRegistration $record) => [
+                            Select::make('document')->label('Dokument')->required()
+                                ->options($record->documents->mapWithKeys(fn (RegistrationDocument $d) => [$d->id => $d->label().' ('.$d->created_at->format('d.m.Y').')'])),
+                        ])
+                        ->modalSubmitActionLabel('Löschen')
+                        ->action(function (EventRegistration $record, array $data) {
+                            abort_unless(Filament::auth()->user()?->can('manageParticipants', $this->getOwnerRecord()), 403);
+                            $record->documents()->findOrFail($data['document'])->delete();
+                            AuditLogger::log('registration.document.delete', Filament::auth()->user(), EventRegistration::class, $record->getKey(), request());
+                            Notification::make()->title('Dokument gelöscht.')->success()->send();
+                        }),
+                ])->label('Dokumente')->icon('heroicon-o-document-text')->button()->outlined()->size('sm'),
                 Action::make('promote')
                     ->label('Platz geben')
                     ->icon('heroicon-o-check-circle')
@@ -154,6 +223,38 @@ class RegistrationsRelationManager extends RelationManager
             });
 
         return 'Anwesend (bestätigt): '.collect($counts)->map(fn (int $n, string $day) => $event->days()[$day].': '.$n)->implode(' · ');
+    }
+
+    /**
+     * @param  array{type: string, title?: string|null, path: string, original_name?: string|null, replace?: bool, notify?: bool}  $data
+     */
+    private function storeDocument(EventRegistration $record, array $data): void
+    {
+        abort_unless(Filament::auth()->user()?->can('manageParticipants', $this->getOwnerRecord()), 403);
+
+        if ($data['replace'] ?? false) {
+            $record->documents()->where('type', $data['type'])->get()->each->delete();
+        }
+
+        $document = $record->documents()->create([
+            'type' => $data['type'],
+            'title' => filled($data['title'] ?? null) ? $data['title'] : null,
+            'path' => $data['path'],
+            'original_name' => $data['original_name'] ?? basename($data['path']),
+            'size' => (int) Storage::disk(RegistrationDocument::DISK)->size($data['path']),
+            'uploaded_by' => Filament::auth()->id(),
+        ]);
+        AuditLogger::log('registration.document.upload', Filament::auth()->user(), EventRegistration::class, $record->getKey(), request());
+
+        if ($data['notify'] ?? false) {
+            try {
+                Mail::to($record->email)->send(new RegistrationDocumentMail($document));
+            } catch (Throwable $e) {
+                report($e);
+            }
+        }
+
+        Notification::make()->title('Dokument gespeichert'.(($data['notify'] ?? false) ? ' – die Person wurde per E-Mail informiert.' : '.'))->success()->send();
     }
 
     private function changeStatus(EventRegistration $record, string $method): void

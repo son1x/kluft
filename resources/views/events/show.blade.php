@@ -62,6 +62,7 @@
 
         <section id="anmeldung" aria-labelledby="anmeldung-heading" class="mt-12 max-w-3xl scroll-mt-24">
             <h2 id="anmeldung-heading" class="font-serif text-2xl font-bold">Anmeldung</h2>
+            <p class="mt-1 text-sm text-text-secondary">Schon angemeldet? Unter <a href="{{ route('participants.index') }}" class="underline">Meine Anmeldungen</a> kannst du stornieren und Unterlagen abrufen.</p>
 
             @if (session('anmeldung') === 'angefragt')
                 <div class="mt-4 border-l-4 border-stufe-pfadi bg-white p-4 shadow" role="status">

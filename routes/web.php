@@ -10,6 +10,7 @@ use App\Http\Controllers\Public\GeorgsbriefController;
 use App\Http\Controllers\Public\GruppierungController;
 use App\Http\Controllers\Public\HomeController;
 use App\Http\Controllers\Public\PageController;
+use App\Http\Controllers\Public\ParticipantController;
 use App\Http\Controllers\Public\PostController;
 use App\Http\Controllers\Public\RegistrationController;
 use App\Http\Controllers\Public\RoadmapController;
@@ -68,6 +69,25 @@ Route::middleware('throttle:20,10')->group(function () {
     Route::get('/anmeldung/stornieren/{token}', [RegistrationController::class, 'showCancel'])->name('registrations.cancel');
     Route::post('/anmeldung/stornieren/{token}', [RegistrationController::class, 'cancel'])->name('registrations.cancel.submit');
 });
+
+// Meine Anmeldungen: Übersicht für Teilnehmende mit E-Mail und Einmalcode.
+Route::get('/meine-anmeldungen', [ParticipantController::class, 'index'])->name('participants.index');
+Route::post('/meine-anmeldungen/code', [ParticipantController::class, 'sendCode'])
+    ->middleware('throttle:teilnehmende-code')
+    ->name('participants.code');
+Route::post('/meine-anmeldungen/anmelden', [ParticipantController::class, 'verify'])
+    ->middleware('throttle:teilnehmende-anmelden')
+    ->name('participants.verify');
+Route::post('/meine-anmeldungen/neu', [ParticipantController::class, 'restart'])->name('participants.restart');
+Route::post('/meine-anmeldungen/abmelden', [ParticipantController::class, 'logout'])->name('participants.logout');
+Route::post('/meine-anmeldungen/{registration}/stornieren', [ParticipantController::class, 'cancel'])
+    ->whereNumber('registration')
+    ->middleware('throttle:teilnehmende')
+    ->name('participants.cancel');
+Route::get('/meine-anmeldungen/dokument/{document}', [ParticipantController::class, 'document'])
+    ->whereNumber('document')
+    ->middleware('throttle:teilnehmende')
+    ->name('participants.document');
 
 // Projektstand nach Pflichtenheft (außerhalb des CMS).
 Route::get('/roadmap', RoadmapController::class)->name('roadmap');

@@ -36,6 +36,10 @@ Falls du doch nicht teilnehmen kannst, storniere bitte über diesen Link, damit 
 [Anmeldung stornieren]({{ $cancelUrl }})
 @endif
 
+@if ($kind !== 'doi')
+Alle deine Anmeldungen, Rechnungen und Bescheinigungen findest du unter [Meine Anmeldungen]({{ route('participants.index') }}).
+
+@endif
 @if ($event->contact_email)
 Fragen beantwortet {{ $event->contact_name ?: 'das Team' }} unter {{ $event->contact_email }}.
 @endif

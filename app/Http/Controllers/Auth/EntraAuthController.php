@@ -15,6 +15,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification;
 use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\Two\AbstractProvider;
 use Laravel\Socialite\Two\User as SocialiteUser;
 use Throwable;
 
@@ -57,7 +58,10 @@ class EntraAuthController extends Controller
 
         $request->session()->put('entra.flow', 'verzeichnis');
 
-        return Socialite::driver('microsoft')
+        /** @var AbstractProvider $driver */
+        $driver = Socialite::driver('microsoft');
+
+        return $driver
             ->setScopes(['User.Read', 'User.ReadBasic.All'])
             ->with(['login_hint' => $user->upn ?? $user->email])
             ->redirect();
@@ -172,7 +176,7 @@ class EntraAuthController extends Controller
             return $back;
         }
 
-        app(EntraDirectory::class)->remember((string) $entraUser->token, (int) ($entraUser->expiresIn ?? 3600));
+        app(EntraDirectory::class)->remember((string) $entraUser->token, (int) ($entraUser->expiresIn ?: 3600));
         AuditLogger::log('entra.verzeichnis.verbunden', $user, request: $request);
 
         return $back;

@@ -101,7 +101,7 @@ return [
     */
     'feedback' => [
         'Testing' => [
-            ['status' => 'done', 'title' => 'Echte Mails an ausgewählte Tester*innen', 'note' => 'Auf test.dpsg-trier.de gehen alle Mails an die Testadresse – außer an bis zu fünf freigeschaltete Personen (GitHub-Secret MAIL_TEST_ALLOWLIST), die ihre Bestätigungen, Antworten usw. direkt bekommen. Die Testadresse sieht im Mail-Kopf „X-Test-Umgeleitet-Von“, an wen eine umgeleitete Mail gegangen wäre. Mit dem Livegang entfallen Umleitung und Ausnahmen.'],
+            ['status' => 'done', 'title' => 'Echte Mails an ausgewählte Tester*innen', 'note' => 'Auf test.dpsg-trier.de gehen alle Mails an die Testadresse – außer an bis zu fünf freigeschaltete Einträge (GitHub-Secret MAIL_TEST_ALLOWLIST: einzelne Adressen oder eine ganze Domain wie „@dpsg-trier.de“); diese Empfänger*innen ihre Bestätigungen, Antworten usw. direkt bekommen. Die Testadresse sieht im Mail-Kopf „X-Test-Umgeleitet-Von“, an wen eine umgeleitete Mail gegangen wäre. Mit dem Livegang entfallen Umleitung und Ausnahmen.'],
         ],
         'Talia' => [
             ['status' => 'open', 'title' => 'Aktuelles weiter nach vorne', 'note' => 'Empfehlung: im Menü direkt hinter „Start“ und auf der Startseite die Meldungen vor den Begrüßungstext. Funktioniert nur, wenn regelmäßig neue Beiträge kommen – sonst steht ganz oben Veraltetes.'],

@@ -178,7 +178,7 @@ class Roadmap
                 'key' => 'test-empfaenger',
                 'phase' => 'Testing',
                 'title' => 'Tester*innen für echte Mails freischalten',
-                'detail' => 'GitHub-Secret MAIL_TEST_ALLOWLIST anlegen: bis zu fünf E-Mail-Adressen, kommagetrennt (z. B. „a@example.org,b@example.org“). Diese Personen bekommen Mails auf test.dpsg-trier.de direkt, alle anderen Mails gehen weiter an MAIL_TEST_REDIRECT_TO. Nach dem nächsten Deploy aktiv; vor dem Livegang wieder löschen.',
+                'detail' => 'GitHub-Secret MAIL_TEST_ALLOWLIST anlegen: bis zu fünf Einträge, kommagetrennt – einzelne Adressen oder eine ganze Domain (z. B. „a@example.org,@dpsg-trier.de“). Diese Personen bekommen Mails auf test.dpsg-trier.de direkt, alle anderen Mails gehen weiter an MAIL_TEST_REDIRECT_TO. Nach dem nächsten Deploy aktiv; vor dem Livegang wieder löschen.',
                 'done' => TestRecipientFilter::allowlist() !== [],
             ],
             [

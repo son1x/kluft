@@ -67,6 +67,19 @@ class TestRecipientFilterTest extends TestCase
         $this->assertSame(['test@example.org'], $this->to($this->send(['f@x.de'])));
     }
 
+    #[TestDox('Ganze Domain freischalten („@dpsg-trier.de“ oder „*@dpsg-trier.de“); Subdomains und ähnliche Namen zählen nicht')]
+    public function test_domain_entries(): void
+    {
+        config(['mail.test_allowlist' => ['*@DPSG-Trier.de', '@kaputt', 'tester@example.org']]);
+
+        $this->assertSame(['@dpsg-trier.de', 'tester@example.org'], TestRecipientFilter::allowlist());
+        $this->assertSame(['Referent@dpsg-trier.de'], $this->to($this->send(['Referent@dpsg-trier.de'])));
+
+        $email = $this->send(['referent@dpsg-trier.de', 'x@mail.dpsg-trier.de', 'y@nicht-dpsg-trier.de']);
+        $this->assertSame(['referent@dpsg-trier.de', 'test@example.org'], $this->to($email));
+        $this->assertSame('x@mail.dpsg-trier.de, y@nicht-dpsg-trier.de', $email->getHeaders()->get('X-Test-Umgeleitet-Von')->getBodyAsString());
+    }
+
     #[TestDox('Ohne Testadresse (Produktion) bleiben alle Empfänger unverändert')]
     public function test_production_is_untouched(): void
     {

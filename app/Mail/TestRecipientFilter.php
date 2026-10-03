@@ -8,8 +8,9 @@ use Symfony\Component\Mime\Address;
 /**
  * Testumgebung (F-MAIL-06): Mails gehen an die Testadresse statt an echte
  * Personen – außer an die wenigen freigeschalteten Tester*innen
- * (MAIL_TEST_ALLOWLIST, höchstens fünf). Ist keine Testadresse gesetzt
- * (Produktion), bleibt alles unverändert.
+ * (MAIL_TEST_ALLOWLIST, höchstens fünf Einträge). Ein Eintrag ist eine
+ * Adresse oder eine ganze Domain („@dpsg-trier.de“). Ist keine Testadresse
+ * gesetzt (Produktion), bleibt alles unverändert.
  */
 class TestRecipientFilter
 {
@@ -26,7 +27,7 @@ class TestRecipientFilter
         $allowed = self::allowlist();
         $all = [...$message->getTo(), ...$message->getCc(), ...$message->getBcc()];
 
-        $keep = array_values(array_filter($all, fn (Address $a) => in_array(mb_strtolower($a->getAddress()), $allowed, true)));
+        $keep = array_values(array_filter($all, fn (Address $a) => self::isAllowed($a->getAddress(), $allowed)));
         if (count($keep) === count($all)) {
             return;
         }
@@ -43,12 +44,32 @@ class TestRecipientFilter
     }
 
     /**
+     * Gültige Einträge, kleingeschrieben. Domains werden als „@domain.de“ notiert, „*@domain.de“ geht auch.
+     *
      * @return list<string>
      */
     public static function allowlist(): array
     {
-        $list = array_map(fn ($a) => mb_strtolower(trim((string) $a)), (array) config('mail.test_allowlist', []));
+        $list = array_map(
+            fn ($a) => (string) preg_replace('/^\*@/', '@', mb_strtolower(trim((string) $a))),
+            (array) config('mail.test_allowlist', []),
+        );
 
-        return array_slice(array_values(array_unique(array_filter($list, fn ($a) => filter_var($a, FILTER_VALIDATE_EMAIL)))), 0, self::MAX_ALLOWED);
+        $valid = array_filter($list, fn (string $a) => str_starts_with($a, '@')
+            ? (bool) preg_match('/^@([a-z0-9-]+\.)+[a-z]{2,}$/', $a)
+            : filter_var($a, FILTER_VALIDATE_EMAIL) !== false);
+
+        return array_slice(array_values(array_unique($valid)), 0, self::MAX_ALLOWED);
+    }
+
+    /**
+     * @param  list<string>  $allowed
+     */
+    private static function isAllowed(string $address, array $allowed): bool
+    {
+        $address = mb_strtolower($address);
+        $domain = '@'.substr(strrchr($address, '@') ?: '', 1);
+
+        return in_array($address, $allowed, true) || in_array($domain, $allowed, true);
     }
 }

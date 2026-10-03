@@ -9,7 +9,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
 
 /**
- * Statusseite (/status) und maschinenlesbarer Status (/status.json) für
+ * Statusseite (/status) und maschinenlesbarer Status (/api/status) für
  * externe Überwachung: HTTP 503, sobald ein Bereich „fehler“ meldet.
  * Ergebnisse werden eine Minute zwischengespeichert.
  */

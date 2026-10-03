@@ -1,7 +1,7 @@
 name: Monitoring
 
 # Überwachung von außen (Pflichtenheft 10.2): alle 30 Minuten Startseite und
-# /status.json abrufen. Schlägt das fehl (Seite down, Cronjob steht, Mails
+# /api/status abrufen. Schlägt das fehl (Seite down, Cronjob steht, Mails
 # hängen, Backup fehlt), wird der Lauf rot und GitHub schickt eine Mail.
 # Ergänzt den Alarm vom Server selbst (monitor:check), der nur läuft,
 # solange der Cronjob läuft.
@@ -27,7 +27,7 @@ jobs:
 
       - name: Systemstatus
         run: |
-          body=$(curl -s --max-time 30 "$SITE/status.json") || { echo "Status nicht abrufbar"; exit 1; }
+          body=$(curl -s --max-time 30 "$SITE/api/status") || { echo "Status nicht abrufbar"; exit 1; }
           echo "$body" | jq -r '.checks | to_entries[] | "\(.value.status)\t\(.key): \(.value.message)"'
           status=$(echo "$body" | jq -r '.status')
           {

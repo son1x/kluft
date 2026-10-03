@@ -37,6 +37,6 @@
             @endforeach
         </ul>
 
-        <p class="mt-6 text-sm text-text-secondary">Maschinenlesbar für Überwachungsdienste: <a href="{{ route('status.json') }}" class="underline">/status.json</a> (bei einer Störung HTTP 503). Probleme bitte an <a href="mailto:{{ config('dpsg.contact.email') }}" class="underline">{{ config('dpsg.contact.email') }}</a>.</p>
+        <p class="mt-6 text-sm text-text-secondary">Maschinenlesbar für Überwachungsdienste: <a href="{{ route('status.json') }}" class="underline">/api/status</a> (bei einer Störung HTTP 503). Probleme bitte an <a href="mailto:{{ config('dpsg.contact.email') }}" class="underline">{{ config('dpsg.contact.email') }}</a>.</p>
     </div>
 @endsection

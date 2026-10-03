@@ -27,6 +27,8 @@
 # Browser-Cache (Pflichtenheft 10.3): Dateien aus dem Build tragen eine
 # Kennung im Namen und ändern sich nie – ein Jahr. Statische Bilder und
 # Kartendaten eine Woche. Seiten selbst nicht (die setzt Laravel).
+# Hinweis: Liefert nginx (Plesk) statische Dateien selbst aus, gilt das
+# hier nicht – dann in Plesk unter „Apache & nginx“ einstellen.
 <IfModule mod_headers.c>
     <If "%{REQUEST_URI} =~ m#^/build/assets/#">
         Header set Cache-Control "public, max-age=31536000, immutable"

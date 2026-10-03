@@ -96,7 +96,7 @@ Route::get('/meine-anmeldungen/dokument/{document}', [ParticipantController::cla
 
 // Systemstatus für Menschen und Überwachungsdienste (Pflichtenheft 10.2).
 Route::get('/status', [StatusController::class, 'show'])->name('status');
-Route::get('/status.json', [StatusController::class, 'json'])->middleware('throttle:60,1')->name('status.json');
+Route::get('/api/status', [StatusController::class, 'json'])->middleware('throttle:60,1')->name('status.json');
 
 // Projektstand nach Pflichtenheft (außerhalb des CMS).
 Route::get('/roadmap', RoadmapController::class)->name('roadmap');

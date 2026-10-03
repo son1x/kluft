@@ -27,13 +27,13 @@ class StatusTest extends TestCase
         return $user;
     }
 
-    #[TestDox('Alles in Ordnung: /status zeigt die Bereiche, /status.json liefert 200')]
+    #[TestDox('Alles in Ordnung: /status zeigt die Bereiche, /api/status liefert 200')]
     public function test_healthy(): void
     {
         Cache::forever(Roadmap::HEARTBEAT_KEY, now()->timestamp);
 
         $this->get('/status')->assertOk()->assertSee('Systemstatus')->assertSee('Geplante Aufgaben (Cronjob)')->assertSee('Datenbank');
-        $json = $this->getJson('/status.json')->assertOk()->json();
+        $json = $this->getJson('/api/status')->assertOk()->json();
         $this->assertSame('warnung', $json['status']); // Backups noch nicht eingeschaltet
         $this->assertSame('ok', $json['checks']['cronjob']['status']);
         $this->assertSame('warnung', $json['checks']['backups']['status']);
@@ -47,7 +47,7 @@ class StatusTest extends TestCase
         Cache::forever(Roadmap::HEARTBEAT_KEY, now()->subMinutes(30)->timestamp);
         DB::table('jobs')->insert(['queue' => 'default', 'payload' => '{}', 'attempts' => 0, 'available_at' => now()->subHour()->timestamp, 'created_at' => now()->subHour()->timestamp]);
 
-        $json = $this->getJson('/status.json')->assertStatus(503)->json();
+        $json = $this->getJson('/api/status')->assertStatus(503)->json();
         $this->assertSame('fehler', $json['checks']['cronjob']['status']);
         $this->assertSame('fehler', $json['checks']['mails']['status']);
 

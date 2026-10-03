@@ -99,7 +99,7 @@
                     @foreach ($pages as $sectionPage)
                         <a href="{{ url('/'.$sectionPage->slug) }}" class="{{ $fach }} group flex flex-col border-t-4 border-(--fach) bg-white p-6 shadow-md transition hover:-translate-y-0.5 hover:shadow-lg">
                             <h3 class="font-serif text-lg font-bold group-hover:text-dpsg-rot">{{ $sectionPage->title }}</h3>
-                            <p class="mt-2 flex-1 text-sm">{{ \Illuminate\Support\Str::limit(trim(\Illuminate\Support\Str::before(strip_tags($sectionPage->body), '[TODO')), 160) }}</p>
+                            <p class="mt-2 flex-1 text-sm">{{ $sectionPage->seo_description ?: \Illuminate\Support\Str::limit(\Illuminate\Support\Str::squish(html_entity_decode(strip_tags(str_replace('<', ' <', \Illuminate\Support\Str::before((string) $sectionPage->body, '[TODO'))))), 160) }}</p>
                             <span class="mt-4 text-sm text-dpsg-rot">Weiterlesen</span>
                         </a>
                     @endforeach

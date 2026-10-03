@@ -49,6 +49,18 @@ return [
             'icon' => 'globe-europe-africa',
             'landing' => 'internationale-gerechtigkeit',
         ],
+        // Beraten-Online (Pflichtenheft 6.3): BeratungsPower & Coaching für
+        // ehrenamtliche Leitungskräfte, eigene Domain wie Bolivien.
+        'beratung' => [
+            'label' => 'BeratungsPower & Coaching',
+            'color' => 'oekologie',
+            'landing' => 'beratung',
+            'domains' => ['beraten-online.de', 'www.beraten-online.de'],
+            // „Let's make a Better Place – Wir beraten euch!“ (ohne Endung; .webp/.png)
+            'logo' => 'images/beratung/lets-make-a-better-place',
+            'logo_alt' => 'Let’s make a Better Place – Wir beraten euch! BP BeratungsPower',
+            'logo_size' => [303, 222],
+        ],
         'inklusion' => [
             'label' => 'Inklusion',
             'color' => 'inklusion',

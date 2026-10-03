@@ -21,6 +21,9 @@
             <div class="mb-2">@include('partials.stufe-badge', ['stage' => $page->stage])</div>
         @endif
         <h1 class="font-serif text-3xl font-bold mb-6">{{ $page->title }}</h1>
+        @if ($page->coverMedia)
+            @include('partials.cover-figure', ['media' => $page->coverMedia, 'class' => 'mb-6'])
+        @endif
         @if ($page->slug === 'rechtstraeger')
             @include('partials.rechtstraeger-struktur')
         @endif

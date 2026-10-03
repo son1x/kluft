@@ -147,6 +147,13 @@ class Roadmap
                 'done' => null,
             ],
             [
+                'key' => 'beraten-online',
+                'phase' => '2',
+                'title' => 'Beraten-Online: Inhalte prüfen und Domain umstellen',
+                'detail' => 'Die Seiten „BeratungsPower & Coaching“, „BeratungsPower“, „Coaching“ und „Stöbern & Schmökern“ sind von beraten-online.de übernommen (Backend → Seiten → Reiter „beraten-online.de“). Bitte prüfen: Name und Platz im Menü (derzeit unter Fachbereiche), Empfänger*in der Kontaktanfragen (derzeit Marc Basenach), Gruppenfoto (Einwilligung der Abgebildeten) und Cartoons (Rechte der Zeichnerin) – beides bewusst noch nicht übernommen. Danach DNS von beraten-online.de auf das Webhosting zeigen lassen, in Plesk als Alias anlegen und Zertifikat ausstellen; dann die alte WordPress-Seite abschalten.',
+                'done' => null,
+            ],
+            [
                 'key' => 'spenden-bank',
                 'phase' => '1b',
                 'title' => 'Bankverbindung für Bolivien-Spenden eintragen',

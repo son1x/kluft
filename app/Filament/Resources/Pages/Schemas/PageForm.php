@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Pages\Schemas;
 
 use App\Support\RoleCatalog;
+use App\Support\Websites;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
@@ -54,12 +55,12 @@ class PageForm
                         ->helperText('Nur setzen, wenn diese Seite zu einer bestimmten Stufe gehört.'),
 
                     Select::make('section')
-                        ->label('Fachbereich')
+                        ->label('Fachbereich / Website')
                         ->options(fn () => self::sectionOptions())
                         ->native(false)
                         ->visible(fn () => self::sectionOptions() !== [])
                         ->required(fn (Get $get) => ! self::isGlobal() && blank($get('stage')))
-                        ->helperText('Seiten eines Fachbereichs erscheinen in dessen Navigation (z. B. Bolivienpartnerschaft).'),
+                        ->helperText('Seiten eines Fachbereichs erscheinen in dessen Navigation. Fachbereiche mit eigener Domain (in Klammern) sind zugleich eine eigene Website.'),
 
                     Select::make('status')
                         ->label('Status')
@@ -130,7 +131,8 @@ class PageForm
      */
     private static function sectionOptions(): array
     {
-        $all = collect(RoleCatalog::sections());
+        // Mit Domain, wenn die Sektion eine eigene Website hat.
+        $all = collect(RoleCatalog::sections())->map(fn (string $label, string $key) => Websites::domainFor($key) === Websites::MAIN_DOMAIN ? $label : $label.' ('.Websites::domainFor($key).')');
 
         return self::isGlobal()
             ? $all->all()

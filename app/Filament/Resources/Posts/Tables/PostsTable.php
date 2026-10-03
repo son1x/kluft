@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Posts\Tables;
 
 use App\Models\Post;
 use App\Models\SocialPost;
+use App\Support\Websites;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -18,6 +19,11 @@ class PostsTable
     {
         return $table
             ->columns([
+                TextColumn::make('website')
+                    ->label('Website')
+                    ->state(fn ($record) => Websites::domainFor($record->section))
+                    ->badge()
+                    ->color(fn (string $state) => $state === Websites::MAIN_DOMAIN ? 'gray' : 'info'),
                 TextColumn::make('title')
                     ->label('Titel')
                     ->searchable(),

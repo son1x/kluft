@@ -25,7 +25,7 @@ return [
         ['Talia', 'Feedback Talia', 'open'],
         ['Testing', 'Testphase', 'partial'],
         ['Abnahme', 'Abnahme', 'open'],
-        ['2', 'Beraten-Online', 'later'],
+        ['2', 'Beraten-Online', 'partial'],
     ],
 
     'sections' => [
@@ -54,7 +54,7 @@ return [
         '6' => ['title' => 'Funktionale Anforderungen', 'status' => 'partial', 'note' => ''],
         '6.1' => ['title' => 'Redaktionelle Inhalte (Basis) – Phase 1', 'status' => 'partial', 'note' => 'Seiten, Blog, Mediathek, Stufenseiten, Rechtsseiten und Freigabe-Workflow fertig. KI-Kennzeichnung, Bildnachweis, WebP-Varianten und Personenvorstellung mit anklickbarem Gruppenfoto und Porträt-Upload (quadratischer Zuschnitt) fertig, Begriffs-Hover (Glossar) fertig. Kontaktformular mit Themen (Empfänger im Backend einstellbar, keine Speicherung, Spamschutz ohne Captcha) und „Frage zur Veranstaltung“ fertig. Offen: Versionierung, Suche, Freigabe-Mail.'],
         '6.2' => ['title' => 'Bolivienpartnerschaft – Phase 1', 'status' => 'partial', 'note' => 'Landingpage, eigene Navigation und Sektionsrechte fertig. Eigener RSS-Feed (/bolivien/feed) fertig. Offen: Domain-Alias, Bankverbindung.'],
-        '6.3' => ['title' => 'Beraten-Online – Phase 2 (konzeptionell vorbereitet)', 'status' => 'later', 'note' => 'Phase 2.'],
+        '6.3' => ['title' => 'Beraten-Online – Phase 2 (konzeptionell vorbereitet)', 'status' => 'partial', 'note' => 'Umgesetzt als Sektion „BeratungsPower & Coaching“ mit eigener Domain beraten-online.de (wie Bolivien): Inhalte, eigene Grafiken und Klappkarten von der alten WordPress-Seite übernommen, Kontaktthema „Beratung & Coaching“, alte Adressen leiten weiter. Im Backend sind Seiten und Beiträge je Website (Reiter dpsg-trier.de / bolivienpartnerschaft.de / beraten-online.de) getrennt auffindbar. Offen: DNS-Umstellung, Gruppenfoto und Cartoons (Rechte), später Ausbildungstermine (Veranstaltungsmodul, F-BER-03); Zuordnung von Berater*innen (F-BER-04) erst nach Datenschutz-Folgenabschätzung.'],
         '6.4' => ['title' => 'Instagram-Integration – Phase 1 (S) / Phase 2', 'status' => 'partial', 'note' => 'Teilen aus dem Blog-Editor, Bildaufbereitung, Status/Permalink, Rechteprüfung und automatische Token-Erneuerung fertig (gegen simulierte API getestet). Es fehlt nur noch das echte Instagram-Konto.'],
         '6.5' => ['title' => 'Nextcloud-Kalender – Phase 1', 'status' => 'done', 'note' => 'Sync, Wiederholungen, Liste/Monat, Filter und SSRF-Schutz fertig; Teilen-Links aus Nextcloud werden automatisch umgewandelt. Veranstaltungen aus dem Backend erscheinen automatisch mit im Kalender (mit Anmeldelink, ohne Doppelung mit Nextcloud-Terminen). Im Backend unter „Kalendertermine“ lässt sich zu einem Nextcloud-Termin direkt eine Anmeldung anlegen (vorausgefüllt und verknüpft). Erster Kalender (Diözesanleitung) eingetragen, Abruf läuft per Cronjob.'],
         '6.6' => ['title' => 'Georgsbote (Brevo) – Phase 1', 'status' => 'done', 'note' => 'Georgsbote (PDF-Zeitschrift): Archiv mit Veröffentlichungsprüfung fertig. Georgsbrief (Newsletter): eigene Seite mit Double-Opt-In fertig. Brevo angebunden (API, Liste, Double-Opt-In-Vorlage geprüft). Alte Jahrgänge lassen sich als mehrere PDFs auf einmal hochladen (Jahrgang/Ausgabe aus dem Dateinamen, zunächst offline).'],

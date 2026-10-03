@@ -6,6 +6,7 @@ use App\Models\Event;
 use App\Models\Post;
 use App\Policies\PostPolicy;
 use App\Support\RoleCatalog;
+use App\Support\Websites;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Radio;
@@ -195,7 +196,8 @@ class PostForm
     private static function sectionOptions(): array
     {
         $user = Filament::auth()->user();
-        $all = collect(RoleCatalog::sections());
+        // Mit Domain, wenn die Sektion eine eigene Website hat.
+        $all = collect(RoleCatalog::sections())->map(fn (string $label, string $key) => Websites::domainFor($key) === Websites::MAIN_DOMAIN ? $label : $label.' ('.Websites::domainFor($key).')');
 
         if (! $user || $user->isVerwaltung() || $user->hasRole('vorstand')) {
             return $all->all();

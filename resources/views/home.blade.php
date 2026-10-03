@@ -50,7 +50,7 @@
     <section class="mx-auto mt-12 max-w-6xl px-4">
         <div class="grid bg-white shadow-lg lg:grid-cols-3">
             <div class="prose max-w-none p-8 lg:col-span-2 prose-headings:font-serif prose-a:text-dpsg-rot">
-                {!! str($page->body)->sanitizeHtml() !!}
+                {!! str($page->body)->sanitizeHtml()->embeds() !!}
             </div>
             <aside class="flex flex-col justify-between gap-6 bg-dpsg-hellbeige p-8">
                 <div>

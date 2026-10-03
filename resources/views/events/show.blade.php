@@ -39,7 +39,7 @@
                 @if ($event->teaser)
                     <p class="mt-6 text-lg">{{ $event->teaser }}</p>
                 @endif
-                <div class="prose mt-4 max-w-none">{!! str($event->description ?? '')->sanitizeHtml()->glossar() !!}</div>
+                <div class="prose mt-4 max-w-none">{!! str($event->description ?? '')->sanitizeHtml()->glossar()->embeds() !!}</div>
             </div>
 
             <aside class="self-start bg-dpsg-hellbeige p-6" aria-labelledby="eckdaten">

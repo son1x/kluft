@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Mail\TestRecipientFilter;
 use App\Models\Page;
 use App\Services\Glossary;
+use App\Support\Embeds;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Mail\Events\MessageSending;
@@ -44,6 +45,12 @@ class AppServiceProvider extends ServiceProvider
         ]);
         RateLimiter::for('teilnehmende-anmelden', fn (Request $request) => Limit::perMinutes(10, 10)->by('anmelden|'.$request->ip()));
         RateLimiter::for('teilnehmende', fn (Request $request) => Limit::perMinutes(10, 60)->by('teilnehmende|'.$request->ip()));
+
+        // Zwei-Klick-Einbettungen für Video- und Kartenlinks: str($html)->sanitizeHtml()->embeds()
+        Stringable::macro('embeds', function () {
+            /** @var Stringable $this */
+            return new Stringable(Embeds::render((string) $this));
+        });
 
         // Begriffs-Hover im redaktionellen HTML: str($html)->sanitizeHtml()->glossar()
         Stringable::macro('glossar', function () {

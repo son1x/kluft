@@ -71,7 +71,7 @@ class EventForm
                         ->searchable()
                         ->preload(),
                     Textarea::make('teaser')->label('Kurzbeschreibung')->maxLength(500)->rows(2)->columnSpan(2),
-                    RichEditor::make('description')->label('Beschreibung')->columnSpan(2),
+                    RichEditor::make('description')->label('Beschreibung')->helperText('Video oder Karte einbetten: Link auf YouTube, Vimeo, OpenStreetMap oder Google Maps allein in eine eigene Zeile setzen – auf der Website erscheint ein Platzhalter, der erst nach Klick lädt.')->columnSpan(2),
                 ]),
 
             Section::make('Anmeldung')

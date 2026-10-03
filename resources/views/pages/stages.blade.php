@@ -36,7 +36,7 @@
 @section('content')
     <div class="mx-auto max-w-6xl px-4 py-12">
         <div class="prose prose-lg max-w-3xl">
-            {!! str($page->body)->sanitizeHtml()->glossar() !!}
+            {!! str($page->body)->sanitizeHtml()->glossar()->embeds() !!}
         </div>
 
         {{-- Altersleiste --}}

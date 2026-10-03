@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\Embeds;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Vite;
@@ -45,7 +46,8 @@ class SecurityHeaders
             'connect-src' => $connectSrc,
             'worker-src' => ["'self'", 'blob:'],
             'child-src' => ["'self'", 'blob:'],
-            'frame-src' => ["'self'"],
+            // Zwei-Klick-Einbettungen (Videos, Karten) – erst nach Klick geladen.
+            'frame-src' => ["'self'", ...Embeds::frameSources()],
             'frame-ancestors' => ["'self'"],
             'object-src' => ["'none'"],
             'base-uri' => ["'self'"],

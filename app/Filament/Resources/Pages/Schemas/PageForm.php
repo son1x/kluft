@@ -89,6 +89,7 @@ class PageForm
                     RichEditor::make('body')
                         ->label('Inhalt')
                         ->required()
+                        ->helperText('Video oder Karte einbetten: Link auf YouTube, Vimeo, OpenStreetMap oder Google Maps allein in eine eigene Zeile setzen – auf der Website erscheint ein Platzhalter, der erst nach Klick lädt.')
                         ->columnSpanFull(),
                 ]),
 

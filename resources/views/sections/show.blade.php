@@ -61,7 +61,7 @@
                         <img src="{{ asset($config['logo'].'.png') }}" alt="{{ $config['logo_alt'] ?? '' }}" width="{{ $config['logo_size'][0] ?? 744 }}" height="{{ $config['logo_size'][1] ?? 335 }}" class="mx-auto h-auto w-full max-w-sm" />
                     </picture>
                 @endif
-                <div @class(['prose max-w-none prose-headings:font-serif prose-a:text-dpsg-rot', 'md:col-span-3' => $cardLogo, 'md:col-span-5' => ! $cardLogo])>{!! str($landing->body)->sanitizeHtml()->glossar() !!}</div>
+                <div @class(['prose max-w-none prose-headings:font-serif prose-a:text-dpsg-rot', 'md:col-span-3' => $cardLogo, 'md:col-span-5' => ! $cardLogo])>{!! str($landing->body)->sanitizeHtml()->glossar()->embeds() !!}</div>
             </section>
         @endif
 

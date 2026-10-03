@@ -32,6 +32,7 @@
             try {
                 localStorage.setItem(this.STORAGE_KEY, JSON.stringify({ prefs: this.prefs, savedAt: Date.now() }));
             } catch (e) {}
+            window.dispatchEvent(new CustomEvent('consent-changed', { detail: { ...this.prefs } }));
             this.open = false;
         },
         acceptAll() {

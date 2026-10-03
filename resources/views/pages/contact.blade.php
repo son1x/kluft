@@ -11,7 +11,7 @@
         <article class="lg:col-span-2">
             <h1 class="mb-6 font-serif text-3xl font-bold">{{ $page->title }}</h1>
             <div class="prose max-w-none">
-                {!! str($page->body)->sanitizeHtml()->glossar() !!}
+                {!! str($page->body)->sanitizeHtml()->glossar()->embeds() !!}
             </div>
         </article>
 

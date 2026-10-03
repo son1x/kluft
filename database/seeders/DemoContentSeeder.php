@@ -47,6 +47,60 @@ class DemoContentSeeder extends Seeder
         <p>Die Deutsche Pfadfinderschaft Sankt Georg (DPSG) ist organisiert in Stämmen vor Ort, die sich zu Bezirken zusammenschließen. Mehrere Bezirke bilden einen Diözesanverband – für das Bistum Trier ist das der Diözesanverband Trier, mit 10 Bezirken von der Mosel über Eifel und Hunsrück bis ins Saarland.</p>
         HTML;
 
+    public const RECHTSTRAEGER_BODY = <<<'HTML'
+        <p>Der Diözesanverband Trier ist Teil der Deutschen Pfadfinder*innenschaft Sankt Georg (DPSG). Als Verband gestaltet er die pfadfinderische Arbeit: Die Diözesanversammlung entscheidet, die Diözesanleitung leitet. Für alles, wofür es eine juristische Person braucht – Arbeitsverträge, Haushalt, Zuschüsse, Häuser und Verträge –, gibt es eigene Rechtsträger.</p>
+        <h2>Landesamt St. Georg e. V.</h2>
+        <p>Der eingetragene Verein ist der Rechtsträger des Diözesanverbands. Er verfolgt ausschließlich und unmittelbar gemeinnützige Zwecke: Er fördert die DPSG im Bistum Trier als gemeinnützigen Verband der Jugendpflege und beschafft und verwaltet die dafür nötigen Geld- und Sachmittel. Dazu gehören unter anderem:</p>
+        <ul>
+        <li>Personal- und Sachmittel für die Verbandsarbeit,</li>
+        <li>ein Diözesanzentrum als Beleghaus für Kinder, Jugendliche und Erwachsene innerhalb und außerhalb des Verbands,</li>
+        <li>die Unterstützung nationaler und internationaler Hilfsprogramme – etwa der Partnerschaft mit der Asociación de Scouts de Bolivia im Distrikt Cochabamba,</li>
+        <li>alternative Umweltprojekte,</li>
+        <li>die Einrichtung und Förderung einer Stiftung zur finanziellen Unterstützung der DPSG-Arbeit.</li>
+        </ul>
+        <p>Außerdem pflegt der Verein den Schullandheimgedanken.</p>
+        <p>Geschäftsführer des Rechtsträgers ist Marc Basenach, geschäftsführender Bildungsreferent im <a href="/dioezesanbuero">Diözesanbüro</a>.</p>
+        <h2>dpsg trevirensis gemeinnützige GmbH</h2>
+        <p>Die gemeinnützige GmbH ist eine Tochtergesellschaft des Landesamts St. Georg e. V. Gegenstand der Gesellschaft ist die Förderung der Kinder- und Jugendhilfe sowie der Bildung – insbesondere durch Maßnahmen der Kinder- und Jugendhilfe im In- und Ausland, den Betrieb von Bildungshäusern und Schullandheimen und die Beschaffung von Mitteln für die DPSG im Bistum Trier als freier Träger der Jugendhilfe.</p>
+        <h2>Stiftung und Förderverein</h2>
+        <p>Langfristig unterstützt wird die Arbeit von der <a href="/stiftung">Stiftung DPSG Diözesanverband Trier</a> und vom Verein <a href="/freunde-und-foerderer">Freunde und Förderer der DPSG – Diözesanverband Trier e. V.</a></p>
+        HTML;
+
+    public const STIFTUNG_BODY = <<<'HTML'
+        <p>Die Idee zu dieser Stiftung entstand und besteht, um pfadfinderisches Lernen und Leben auch in den nächsten Jahrzehnten zu stärken. Unser gemeinsamer Einsatz für Gerechtigkeit, Frieden, die Bewahrung der Schöpfung und das Engagement für Benachteiligte ist uns zu wichtig, um ihn dem Zufall der aktuellen Zuschusssituation zu überlassen.</p>
+        <p>Neben staatlichen und kirchlichen Zuschüssen sowie den Beiträgen der Mitglieder schaffen wir deshalb ein zusätzliches, dauerhaftes und zweckgebundenes finanzielles Standbein. Ziel der Stiftung ist es, unsere Arbeit mit Kindern und Jugendlichen langfristig abzusichern und unsere ehrenamtlichen Leitungskräfte gut auszubilden und zu unterstützen.</p>
+        <p>Die Stiftung DPSG Diözesanverband Trier steht unter dem Dach der Stiftung GLAUBEN LEBEN im Bistum Trier.</p>
+        <h2>Förderung beantragen</h2>
+        <p>Stämme, Bezirke und Arbeitskreise können bei der Stiftung Förderung beantragen. Die Fördergrundsätze und das Antragsverfahren gibt es im Diözesanbüro; bei Fragen hilft dir das <a href="/kontakt?thema=allgemein#kontaktformular">Diözesanbüro</a> weiter. [TODO: Fördergrundsätze, Broschüre und Infoflyer als PDF hochladen und hier verlinken; Link zum Online-Antrag in der Nextcloud ergänzen.]</p>
+        <h2>Spenden und Zustiftungen</h2>
+        <p>Pax-Bank eG Trier<br>
+        IBAN: DE68 3706 0193 3018 0110 17<br>
+        BIC: GENODED1PAX<br>
+        Empfänger: Stiftung GLAUBEN LEBEN im Bistum Trier<br>
+        Verwendungszweck: Spende oder Zustiftung Stiftung DPSG DV Trier</p>
+        <p>Fragen zur Stiftung beantwortet das Diözesanbüro: 0651 4 629 829 0, <a href="mailto:stiftung@dpsg-trier.de">stiftung@dpsg-trier.de</a>.</p>
+        HTML;
+
+    public const FOERDERER_BODY = <<<'HTML'
+        <p>Im Verein „Freunde und Förderer der DPSG – Diözesanverband Trier e. V.“ unterstützen Ehemalige, aktive Mitglieder und Freund*innen der DPSG Kinder, Jugendliche und junge Erwachsene in der DPSG – zum Beispiel durch die Förderung</p>
+        <ul>
+        <li>der Ausbildung von Leiter*innen,</li>
+        <li>von Veranstaltungen und Aktivitäten der DPSG,</li>
+        <li>von Schwerpunkten wie entwicklungspolitischem Engagement, der Arbeit mit Menschen mit Behinderung und interkultureller Arbeit.</li>
+        </ul>
+        <p>Als „Ehemalige“ bleiben wir untereinander und mit der DPSG in Kontakt: bei der jährlichen Mitgliederversammlung mit Zeit für Gespräche und Austausch, bei gemeinsamen Unternehmungen wie dem jährlichen Wandertag und über Zeitschriften und Informationsmaterial.</p>
+        <h2>Mitglied werden</h2>
+        <p>Wir laden „Ehemalige“, aktive Mitglieder und Freund*innen der DPSG herzlich ein. Dabei geht es nicht um Vereinsmeierei, sondern darum, die Ziele gemeinsam umzusetzen. Örtliche und überörtliche Fördergemeinschaften der DPSG können als korporative Mitglieder aufgenommen werden. [TODO: Flyer und Anmeldeformular als PDF hochladen und hier verlinken.]</p>
+        <h2>Finanzielle Unterstützung</h2>
+        <p>Alle Förderbeiträge und Spenden fließen in die Arbeit der DPSG. Sie sind steuerlich abzugsfähig; der Verein ist vom Finanzamt Koblenz als gemeinnützig anerkannt.</p>
+        <p>IBAN: DE51 3706 0193 3002 6270 26</p>
+        <h2>Vorstand</h2>
+        <p>1. Vorsitzender: Norbert Wagner<br>
+        2. Vorsitzender: Albert Ottenbreit<br>
+        Schatzmeister: Heinz-W. Mauscherning</p>
+        <p>Kontakt zum Vorstand vermittelt das Diözesanbüro: Weberbach 71, 54290 Trier, 0651 4 629 829 0, <a href="mailto:info@dpsg-trier.de">info@dpsg-trier.de</a>.</p>
+        HTML;
+
     public const GEORGSBOTE_BODY = <<<'HTML'
         <p>Der Georgsbote ist die Zeitschrift des DPSG Diözesanverbands Trier mit Berichten aus Stufen, Bezirken und Stämmen. Hier findest du alle Ausgaben als PDF. Kurz und regelmäßig informiert dich unser Newsletter, der Georgsbrief.</p>
         HTML;
@@ -191,6 +245,33 @@ class DemoContentSeeder extends Seeder
                 'show_in_nav' => true,
                 'nav_sort' => 20,
                 'body' => self::STAEMME_BODY,
+            ],
+            [
+                'slug' => 'rechtstraeger',
+                'title' => 'Rechtsträger',
+                'parent' => 'dioezesanverband',
+                'seo_description' => 'Landesamt St. Georg e. V., dpsg trevirensis gGmbH, Stiftung und Förderverein',
+                'show_in_nav' => true,
+                'nav_sort' => 50,
+                'body' => self::RECHTSTRAEGER_BODY,
+            ],
+            [
+                'slug' => 'stiftung',
+                'title' => 'Stiftung DPSG Diözesanverband Trier',
+                'parent' => 'rechtstraeger',
+                'seo_description' => 'Pfadfinderisches Lernen und Leben langfristig stärken',
+                'show_in_nav' => true,
+                'nav_sort' => 10,
+                'body' => self::STIFTUNG_BODY,
+            ],
+            [
+                'slug' => 'freunde-und-foerderer',
+                'title' => 'Freunde & Förderer',
+                'parent' => 'rechtstraeger',
+                'seo_description' => 'Der Förderverein für Ehemalige, Mitglieder und Freund*innen der DPSG',
+                'show_in_nav' => true,
+                'nav_sort' => 20,
+                'body' => self::FOERDERER_BODY,
             ],
             [
                 'slug' => 'dioezesanleitung',

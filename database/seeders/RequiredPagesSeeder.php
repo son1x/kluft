@@ -16,37 +16,45 @@ use Illuminate\Database\Seeder;
  */
 class RequiredPagesSeeder extends Seeder
 {
+    /** Impressum; die Migration 2026_10_03_090000 setzt es auf bestehenden Installationen. */
+    public const IMPRESSUM_BODY = <<<'HTML'
+        <p><strong>Hinweis:</strong> Dieses Impressum orientiert sich an den Angaben von dpsg-trier.de und ist vor Veröffentlichung von der Verwaltung zu prüfen.</p>
+        <h2>Angaben gemäß § 5 DDG</h2>
+        <p>DPSG Diözesanverband Trier<br>
+        Rechtsträger: Landesamt St. Georg e. V.<br>
+        Weberbach 71<br>
+        54290 Trier</p>
+        <h2>Vertreten durch</h2>
+        <p>Den Vorstand des Landesamts St. Georg e. V. [TODO: Namen der vertretungsberechtigten Vorstandsmitglieder ergänzen.]<br>
+        Geschäftsführer: Marc Basenach</p>
+        <h2>Registereintrag</h2>
+        <p>[TODO: Registergericht und Vereinsregisternummer des Landesamts St. Georg e. V. ergänzen.]</p>
+        <h2>Kontakt</h2>
+        <p>Telefon: 0651 4 629 829 0<br>
+        E-Mail: <a href="mailto:info@dpsg-trier.de">info@dpsg-trier.de</a></p>
+        <h2>Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</h2>
+        <p>Marc Basenach, Geschäftsführender Bildungsreferent<br>
+        Weberbach 71, 54290 Trier<br>
+        E-Mail: <a href="mailto:m.basenach@dpsg-trier.de">m.basenach@dpsg-trier.de</a></p>
+        <h2>Zugehörigkeit zum Verband</h2>
+        <p>Der DPSG Diözesanverband Trier ist Teil der Deutschen Pfadfinderschaft Sankt Georg (DPSG). Bundesweite Informationen unter <a href="https://www.dpsg.de" target="_blank" rel="noopener">www.dpsg.de</a>, Informationen zum Bistum Trier unter <a href="https://www.bistum-trier.de" target="_blank" rel="noopener">www.bistum-trier.de</a>. Zu Rechtsträger, Stiftung und Förderverein siehe <a href="/rechtstraeger">Rechtsträger</a>.</p>
+        <h2>EU-Streitschlichtung</h2>
+        <p>Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit: <a href="https://ec.europa.eu/consumers/odr/" target="_blank" rel="noopener">ec.europa.eu/consumers/odr</a>. Wir sind nicht verpflichtet und nicht bereit, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.</p>
+        <h2>Haftung für Inhalte</h2>
+        <p>Als Diensteanbieter sind wir gemäß § 7 Abs. 1 DDG für eigene Inhalte auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich. Nach §§ 8 bis 10 DDG sind wir als Diensteanbieter jedoch nicht verpflichtet, übermittelte oder gespeicherte fremde Informationen zu überwachen.</p>
+        <h2>Haftung für Links</h2>
+        <p>Unser Angebot enthält Links zu externen Websites Dritter, auf deren Inhalte wir keinen Einfluss haben. Für die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter verantwortlich.</p>
+        <h2>Bildnachweise</h2>
+        <p>Stufen-Maskottchen und Verbandslogo: offizielles Bildmaterial der DPSG, Quelle dpsg.de. [TODO: Angaben zu eigenem Bildmaterial ergänzen, sobald verwendet.]</p>
+        HTML;
+
     public function run(): void
     {
         $pages = [
             [
                 'slug' => 'impressum',
                 'title' => 'Impressum',
-                'body' => <<<'HTML'
-                    <p><strong>Hinweis:</strong> Dieses Impressum orientiert sich an den Angaben von dpsg-trier.de und ist vor Veröffentlichung von der Verwaltung zu prüfen.</p>
-                    <h2>Angaben gemäß § 5 DDG</h2>
-                    <p>DPSG Diözesanverband Trier<br>
-                    [TODO: Name der/des aktuellen Diözesanvorsitzenden]<br>
-                    Weberbach 71<br>
-                    54290 Trier</p>
-                    <h2>Vertreten durch</h2>
-                    <p>Der DPSG Diözesanverband Trier wird durch die Diözesanleitung vertreten. [TODO: Namen der gesetzlich vertretungsberechtigten Diözesanvorsitzenden ergänzen.]</p>
-                    <h2>Kontakt</h2>
-                    <p>Telefon: 0651 4 629 829 0<br>
-                    E-Mail: <a href="mailto:info@dpsg-trier.de">info@dpsg-trier.de</a></p>
-                    <h2>Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</h2>
-                    <p>[TODO: Name, Anschrift wie oben]</p>
-                    <h2>Zugehörigkeit zum Verband</h2>
-                    <p>Der DPSG Diözesanverband Trier ist Teil der Deutschen Pfadfinderschaft Sankt Georg (DPSG). Bundesweite Informationen unter <a href="https://www.dpsg.de" target="_blank" rel="noopener">www.dpsg.de</a>, Informationen zum Bistum Trier unter <a href="https://www.bistum-trier.de" target="_blank" rel="noopener">www.bistum-trier.de</a>.</p>
-                    <h2>EU-Streitschlichtung</h2>
-                    <p>Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit: <a href="https://ec.europa.eu/consumers/odr/" target="_blank" rel="noopener">ec.europa.eu/consumers/odr</a>. Wir sind nicht verpflichtet und nicht bereit, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.</p>
-                    <h2>Haftung für Inhalte</h2>
-                    <p>Als Diensteanbieter sind wir gemäß § 7 Abs. 1 DDG für eigene Inhalte auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich. Nach §§ 8 bis 10 DDG sind wir als Diensteanbieter jedoch nicht verpflichtet, übermittelte oder gespeicherte fremde Informationen zu überwachen.</p>
-                    <h2>Haftung für Links</h2>
-                    <p>Unser Angebot enthält Links zu externen Websites Dritter, auf deren Inhalte wir keinen Einfluss haben. Für die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter verantwortlich.</p>
-                    <h2>Bildnachweise</h2>
-                    <p>Stufen-Maskottchen und Verbandslogo: offizielles Bildmaterial der DPSG, Quelle dpsg.de. [TODO: Angaben zu eigenem Bildmaterial ergänzen, sobald verwendet.]</p>
-                    HTML,
+                'body' => self::IMPRESSUM_BODY,
             ],
             [
                 'slug' => 'datenschutz',

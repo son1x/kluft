@@ -21,6 +21,9 @@
             <div class="mb-2">@include('partials.stufe-badge', ['stage' => $page->stage])</div>
         @endif
         <h1 class="font-serif text-3xl font-bold mb-6">{{ $page->title }}</h1>
+        @if ($page->slug === 'rechtstraeger')
+            @include('partials.rechtstraeger-struktur')
+        @endif
         <div class="prose max-w-none">
             {!! str($page->body)->sanitizeHtml()->glossar() !!}
         </div>

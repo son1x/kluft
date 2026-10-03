@@ -202,6 +202,13 @@ class Roadmap
                 'done' => null,
             ],
             [
+                'key' => 'rechtstraeger-angaben',
+                'phase' => 'Abnahme',
+                'title' => 'Rechtsträger und Impressum vervollständigen',
+                'detail' => 'Seiten „Rechtsträger“, „Stiftung“ und „Freunde & Förderer“ prüfen (Struktur, Bankverbindungen, Vorstand des Fördervereins). Im Impressum Vorstand und Vereinsregisternummer des Landesamts St. Georg e. V. ergänzen. Fördergrundsätze, Flyer und Anmeldeformulare als PDF in die Mediathek laden und verlinken.',
+                'done' => ($impressum = Page::query()->where('slug', 'impressum')->value('body')) !== null && ! str_contains($impressum, 'TODO'),
+            ],
+            [
                 'key' => 'backups',
                 'phase' => 'Abnahme',
                 'title' => 'Backups einschalten',

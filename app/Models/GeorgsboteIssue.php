@@ -57,6 +57,29 @@ class GeorgsboteIssue extends Model
         return $this->cover_path ? Storage::disk('public')->url($this->cover_path) : null;
     }
 
+    /**
+     * Jahrgang und Ausgabe aus einem Dateinamen raten, z. B.
+     * „Georgsbote_2019_2.pdf“, „GB 3-2018.pdf“ oder „2017-04 Georgsbote.pdf“.
+     * Null, wenn kein vierstelliger Jahrgang oder keine Ausgabennummer
+     * erkennbar ist.
+     *
+     * @return array{year: int, issue_no: int}|null
+     */
+    public static function guessFromFilename(string $filename): ?array
+    {
+        $name = pathinfo($filename, PATHINFO_FILENAME);
+        if (! preg_match('/(?<!\d)(19[5-9]\d|20\d\d)(?!\d)/', $name, $year, PREG_OFFSET_CAPTURE)) {
+            return null;
+        }
+
+        $rest = substr_replace($name, ' ', $year[0][1], 4);
+        if (! preg_match('/(?<!\d)0?([1-9]\d?)(?!\d)/', $rest, $issue)) {
+            return null;
+        }
+
+        return ['year' => (int) $year[1][0], 'issue_no' => (int) $issue[1]];
+    }
+
     public function label(): string
     {
         return "Ausgabe {$this->issue_no}/{$this->year}";

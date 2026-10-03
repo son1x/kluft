@@ -3,6 +3,7 @@
 namespace Tests\Feature\Georgsbote;
 
 use App\Filament\Resources\GeorgsboteIssues\Pages\CreateGeorgsboteIssue;
+use App\Filament\Resources\GeorgsboteIssues\Pages\ListGeorgsboteIssues;
 use App\Models\AuditLog;
 use App\Models\GeorgsboteIssue;
 use App\Models\User;
@@ -98,6 +99,47 @@ class GeorgsboteTest extends TestCase
         $this->assertTrue($issue->published);
         $this->assertSame($verwaltung->id, $issue->privacy_checked_by);
         Storage::disk('local')->assertExists($issue->pdf_path);
+    }
+
+    #[TestDox('Jahrgang und Ausgabe werden aus typischen Dateinamen erkannt')]
+    public function test_guess_from_filename(): void
+    {
+        $this->assertSame(['year' => 2019, 'issue_no' => 2], GeorgsboteIssue::guessFromFilename('Georgsbote_2019_2.pdf'));
+        $this->assertSame(['year' => 2018, 'issue_no' => 3], GeorgsboteIssue::guessFromFilename('GB 3-2018.pdf'));
+        $this->assertSame(['year' => 2017, 'issue_no' => 4], GeorgsboteIssue::guessFromFilename('2017-04 Georgsbote.pdf'));
+        $this->assertSame(['year' => 1999, 'issue_no' => 2], GeorgsboteIssue::guessFromFilename('GB_2_1999_final.pdf'));
+        $this->assertNull(GeorgsboteIssue::guessFromFilename('Georgsbote 2021.pdf'));
+        $this->assertNull(GeorgsboteIssue::guessFromFilename('scan.pdf'));
+    }
+
+    #[TestDox('Mehrere PDFs auf einmal: Ausgaben werden offline angelegt, Unklares und Doppeltes übersprungen')]
+    public function test_bulk_upload(): void
+    {
+        Storage::fake('local');
+        Filament::setCurrentPanel('admin');
+        $this->actingAs($this->verwaltung());
+        $this->issue(2018, 3);
+
+        Livewire::test(ListGeorgsboteIssues::class)
+            ->callAction('mehrere', [
+                'files' => [
+                    UploadedFile::fake()->create('Georgsbote_2019_2.pdf', 50, 'application/pdf'),
+                    UploadedFile::fake()->create('2017-04 Georgsbote.pdf', 50, 'application/pdf'),
+                    UploadedFile::fake()->create('GB 3-2018.pdf', 50, 'application/pdf'),
+                    UploadedFile::fake()->create('scan.pdf', 50, 'application/pdf'),
+                ],
+            ])
+            ->assertHasNoActionErrors()
+            ->assertNotified();
+
+        $this->assertSame(['2017-4', '2018-3', '2019-2'], GeorgsboteIssue::query()->orderBy('year')->get()->map(fn ($i) => "{$i->year}-{$i->issue_no}")->all());
+        $neu = GeorgsboteIssue::query()->where('year', 2019)->sole();
+        $this->assertFalse($neu->published);
+        $this->assertFalse($neu->privacy_checked);
+        $this->assertSame('Georgsbote 2/2019', $neu->title);
+        Storage::disk('local')->assertExists($neu->pdf_path);
+        // Übersprungene Dateien bleiben nicht liegen: 2 neue + 1 vorhandene Ausgabe.
+        $this->assertCount(3, Storage::disk('local')->files('georgsbote'));
     }
 
     #[TestDox('Nur die Verwaltung pflegt das Archiv')]

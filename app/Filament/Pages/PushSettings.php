@@ -19,6 +19,8 @@ use Illuminate\Support\Str;
 /**
  * Push-Benachrichtigungen über ntfy – jede Person schaltet sie für sich
  * selbst frei und wählt, worüber sie informiert werden will.
+ *
+ * @property Schema $form
  */
 class PushSettings extends Page
 {

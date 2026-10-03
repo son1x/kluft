@@ -4,6 +4,9 @@ namespace App\Notifications;
 
 use App\Mail\Concerns\SentViaQueue;
 use App\Models\User;
+use App\Notifications\Concerns\PushesViaNtfy;
+use App\Notifications\Messages\NtfyMessage;
+use App\Support\PushEvents;
 use App\Support\RoleCatalog;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeEncrypted;
@@ -17,7 +20,7 @@ use Illuminate\Notifications\Notification;
  */
 class RolesGrantedNotification extends Notification implements ShouldBeEncrypted, ShouldQueue
 {
-    use Queueable, SentViaQueue;
+    use PushesViaNtfy, Queueable, SentViaQueue;
 
     /**
      * @param  list<string>  $assignments  Schlüssel „rolle|scope_type|scope_key“
@@ -33,7 +36,7 @@ class RolesGrantedNotification extends Notification implements ShouldBeEncrypted
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return $this->withPush($notifiable, PushEvents::RECHTE);
     }
 
     public function toMail(object $notifiable): MailMessage
@@ -59,5 +62,15 @@ class RolesGrantedNotification extends Notification implements ShouldBeEncrypted
             ->action('Zum Redaktionsbereich', url('/admin'))
             ->line('Du meldest dich mit deinem Microsoft-365-Konto ('.$email.') an; ein eigenes Passwort gibt es nicht.')
             ->line('Hast du damit nicht gerechnet? Dann melde dich bitte beim Diözesanbüro.');
+    }
+
+    public function toNtfy(object $notifiable): NtfyMessage
+    {
+        return new NtfyMessage(
+            title: 'Neue Rechte im Redaktionsbereich',
+            message: implode(', ', array_map(fn (string $key) => RoleCatalog::all()[$key] ?? $key, $this->assignments)),
+            click: url('/admin'),
+            tags: ['key'],
+        );
     }
 }

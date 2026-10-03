@@ -165,6 +165,9 @@ jobs:
           BACKUP_WEBDAV_URL: ${{ secrets.BACKUP_WEBDAV_URL }}
           BACKUP_WEBDAV_USER: ${{ secrets.BACKUP_WEBDAV_USER }}
           BACKUP_WEBDAV_PASSWORD: ${{ secrets.BACKUP_WEBDAV_PASSWORD }}
+          # Optional: eigener ntfy-Server statt ntfy.sh (Push-Nachrichten).
+          NTFY_SERVER: ${{ secrets.NTFY_SERVER }}
+          NTFY_TOKEN: ${{ secrets.NTFY_TOKEN }}
         run: |
           trim() {
             local var="$1"
@@ -242,6 +245,8 @@ jobs:
           BACKUP_WEBDAV_URL=${BACKUP_WEBDAV_URL}
           BACKUP_WEBDAV_USER="${BACKUP_WEBDAV_USER}"
           BACKUP_WEBDAV_PASSWORD="${BACKUP_WEBDAV_PASSWORD}"
+          NTFY_SERVER=${NTFY_SERVER}
+          NTFY_TOKEN="${NTFY_TOKEN}"
           ENV
 
       # Selbstgehostete Kartendaten (F-MAP-04, ~140 MB) – zu groß fürs

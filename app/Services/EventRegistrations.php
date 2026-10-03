@@ -114,6 +114,7 @@ class EventRegistrations
         }
 
         $this->send($registration, $result, $cancelToken);
+        app(PushNotifier::class)->registration($registration, $result);
 
         return [$result, $registration];
     }
@@ -132,6 +133,7 @@ class EventRegistrations
         ]);
 
         $this->send($registration, 'cancelled');
+        app(PushNotifier::class)->registration($registration, 'cancelled');
 
         if ($wasConfirmed) {
             $this->fillFromWaitlist($registration->event);

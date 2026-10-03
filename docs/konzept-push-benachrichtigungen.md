@@ -1,6 +1,6 @@
 # Push-Benachrichtigungen bei Anmeldungen und Fragen – Abwägung
 
-Stand: 2. Oktober 2026 · Status: **Entscheidung offen**
+Stand: 4. Oktober 2026 · Status: **entschieden: ntfy, umgesetzt** (siehe unten „Umsetzung mit ntfy“)
 
 ## Ziel
 
@@ -77,3 +77,24 @@ Bei Fragen zu Veranstaltungen gilt dasselbe: Die Benachrichtigung nennt nur Vera
 - Benachrichtigungen laufen über die vorhandene **Warteschlange** (wie die Instagram-Veröffentlichung), damit eine Anmeldung nie an einem nicht erreichbaren Chat-Dienst scheitert; Fehlschläge werden protokolliert und erneut versucht.
 - Zuordnung Ereignis → Kanal je Stufe/Fachbereich im Backend einstellbar.
 - Tests mit simuliertem Chat-Dienst (wie bei Instagram).
+
+## Umsetzung mit ntfy (Entscheidung 3./4. Oktober 2026)
+
+Gewählt wurde **ntfy** (App für Android und iPhone, ohne Konto, Open Source). Gründe: läuft ohne eigenen Server direkt vom Webspace, jede Person entscheidet selbst, und es passt auch für Ehrenamtliche ohne Teams.
+
+- **Je Person freiwillig:** Backend → „Meine Push-Nachrichten“ → „Einschalten“. Jede Person bekommt ein eigenes, zufälliges Thema (wirkt wie ein Passwort, verschlüsselt gespeichert) und wählt die Ereignisse.
+- **Nur passend zu den Rechten** (dieselben Prüfungen wie im Backend):
+
+| Ereignis | Wer kann es abonnieren |
+|---|---|
+| Anmeldungen zu Veranstaltungen (neu, Warteliste, Storno) | Verwaltung; Stufen-/Sektionsadmins nur für Veranstaltungen ihres Bereichs |
+| Beiträge, die auf Freigabe warten | wer freigeben darf, nur für Beiträge des eigenen Bereichs; nicht die Autor:in selbst |
+| Neu veröffentlichte Beiträge | alle mit Backend-Zugang |
+| Neue Rechte für mich | alle |
+| Konten zur Freischaltung, weitreichende Rechtevergaben | Verwaltung |
+| Störungen der Website (Monitoring) | Admin (Technik) |
+
+- **Ohne personenbezogene Daten:** z. B. „Neue Anmeldung – Wölflingstag: 12/30 Plätze belegt“ mit Link ins Backend. Keine Namen, Adressen oder Fragetexte.
+- **Zusätzlich zur E-Mail:** Mails laufen unverändert weiter. Push-Fehler werden protokolliert und brechen nie eine Anmeldung oder Mail ab.
+- **Server:** Standard ntfy.sh; ein eigener ntfy-Server ist über die Secrets `NTFY_SERVER` und `NTFY_TOKEN` möglich (z. B. später auf einem eigenen Server des Verbands).
+- **Datenschutz:** ntfy.sh ist ein externer Dienst (Betreiber in den USA, Nachrichten werden kurz zwischengespeichert). Weil die Nachrichten keine personenbezogenen Daten enthalten und die Nutzung freiwillig ist, ist das vertretbar; im Verzeichnis der Verarbeitungstätigkeiten beim Redaktions-Login vermerken.

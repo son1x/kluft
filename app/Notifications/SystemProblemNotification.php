@@ -2,6 +2,9 @@
 
 namespace App\Notifications;
 
+use App\Notifications\Concerns\PushesViaNtfy;
+use App\Notifications\Messages\NtfyMessage;
+use App\Support\PushEvents;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -11,6 +14,8 @@ use Illuminate\Notifications\Notification;
  */
 class SystemProblemNotification extends Notification
 {
+    use PushesViaNtfy;
+
     /**
      * @param  list<array{label: string, message: string}>  $problems
      */
@@ -21,7 +26,7 @@ class SystemProblemNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return $this->withPush($notifiable, PushEvents::SYSTEM);
     }
 
     public function toMail(object $notifiable): MailMessage
@@ -36,5 +41,16 @@ class SystemProblemNotification extends Notification
         return $mail
             ->line('Diese Mail kommt höchstens alle sechs Stunden je Störung.')
             ->action('Zur Statusseite', route('status'));
+    }
+
+    public function toNtfy(object $notifiable): NtfyMessage
+    {
+        return new NtfyMessage(
+            title: 'Störung auf '.parse_url((string) config('app.url'), PHP_URL_HOST),
+            message: implode("\n", array_map(fn (array $p) => $p['label'].': '.$p['message'], $this->problems)),
+            click: route('status'),
+            tags: ['rotating_light'],
+            priority: 4,
+        );
     }
 }

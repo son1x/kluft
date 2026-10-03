@@ -3,6 +3,9 @@
 namespace App\Notifications;
 
 use App\Models\User;
+use App\Notifications\Concerns\PushesViaNtfy;
+use App\Notifications\Messages\NtfyMessage;
+use App\Support\PushEvents;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -14,7 +17,7 @@ use Illuminate\Notifications\Notification;
  */
 class NewPendingUserNotification extends Notification
 {
-    use Queueable;
+    use PushesViaNtfy, Queueable;
 
     public function __construct(public User $pendingUser) {}
 
@@ -23,7 +26,7 @@ class NewPendingUserNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return $this->withPush($notifiable, PushEvents::BENUTZER);
     }
 
     public function toMail(object $notifiable): MailMessage
@@ -37,5 +40,15 @@ class NewPendingUserNotification extends Notification
             ))
             ->action('Rolle zuweisen', url('/admin/users/'.$this->pendingUser->id.'/edit'))
             ->line('Ohne Rollenzuweisung hat das Konto keinen Zugriff.');
+    }
+
+    public function toNtfy(object $notifiable): NtfyMessage
+    {
+        return new NtfyMessage(
+            title: 'Neues Konto wartet auf Freischaltung',
+            message: 'Ohne Rolle hat das Konto keinen Zugriff. Im Backend zuweisen.',
+            click: url('/admin/users/'.$this->pendingUser->id.'/edit'),
+            tags: ['bust_in_silhouette'],
+        );
     }
 }

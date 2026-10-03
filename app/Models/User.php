@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Support\AuditLogger;
+use App\Support\PushEvents;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
@@ -14,6 +15,8 @@ use Illuminate\Support\Carbon;
 
 /**
  * @property Carbon|null $last_login_at
+ * @property string|null $ntfy_topic
+ * @property list<string>|null $ntfy_events
  */
 class User extends Authenticatable implements FilamentUser
 {
@@ -36,6 +39,8 @@ class User extends Authenticatable implements FilamentUser
         'totp_secret',
         'provisioned_by',
         'last_login_at',
+        'ntfy_topic',
+        'ntfy_events',
     ];
 
     /**
@@ -47,6 +52,7 @@ class User extends Authenticatable implements FilamentUser
         'password',
         'remember_token',
         'totp_secret',
+        'ntfy_topic',
     ];
 
     /**
@@ -62,6 +68,8 @@ class User extends Authenticatable implements FilamentUser
             'password' => 'hashed',
             'is_local_admin' => 'boolean',
             'totp_secret' => 'encrypted',
+            'ntfy_topic' => 'encrypted',
+            'ntfy_events' => 'array',
         ];
     }
 
@@ -127,6 +135,18 @@ class User extends Authenticatable implements FilamentUser
     public function isVerwaltung(): bool
     {
         return $this->hasRole('verwaltung') || $this->isAdmin();
+    }
+
+    /**
+     * Ob die Person Push-Nachrichten (ntfy) für dieses Ereignis will und
+     * es mit ihren Rechten bekommen darf, s. App\Support\PushEvents.
+     */
+    public function wantsPush(string $event): bool
+    {
+        return $this->status === 'active'
+            && filled($this->ntfy_topic)
+            && in_array($event, $this->ntfy_events ?? [], true)
+            && array_key_exists($event, PushEvents::availableFor($this));
     }
 
     public function isActive(): bool

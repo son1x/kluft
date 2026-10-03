@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\PushNotifier;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -45,6 +46,21 @@ class Post extends Model
     ];
 
     public const AI_CONTENT_TYPES = ['Text', 'Bild', 'Video', 'Text und Bild'];
+
+    /**
+     * Push an Abonnierende (ntfy), wenn ein Beitrag zur Freigabe vorgelegt
+     * oder veröffentlicht wird.
+     */
+    protected static function booted(): void
+    {
+        $push = function (Post $post) {
+            if (in_array($post->status, ['review', 'published'], true)) {
+                app(PushNotifier::class)->post($post);
+            }
+        };
+        static::created($push);
+        static::updated(fn (Post $post) => $post->wasChanged('status') ? $push($post) : null);
+    }
 
     protected function casts(): array
     {

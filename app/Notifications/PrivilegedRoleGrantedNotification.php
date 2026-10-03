@@ -4,6 +4,9 @@ namespace App\Notifications;
 
 use App\Mail\Concerns\SentViaQueue;
 use App\Models\User;
+use App\Notifications\Concerns\PushesViaNtfy;
+use App\Notifications\Messages\NtfyMessage;
+use App\Support\PushEvents;
 use App\Support\RoleCatalog;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeEncrypted;
@@ -17,7 +20,7 @@ use Illuminate\Notifications\Notification;
  */
 class PrivilegedRoleGrantedNotification extends Notification implements ShouldBeEncrypted, ShouldQueue
 {
-    use Queueable, SentViaQueue;
+    use PushesViaNtfy, Queueable, SentViaQueue;
 
     /**
      * @param  list<string>  $assignments
@@ -33,7 +36,7 @@ class PrivilegedRoleGrantedNotification extends Notification implements ShouldBe
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return $this->withPush($notifiable, PushEvents::BENUTZER);
     }
 
     public function toMail(object $notifiable): MailMessage
@@ -49,5 +52,17 @@ class PrivilegedRoleGrantedNotification extends Notification implements ShouldBe
         return $mail
             ->action('Konto ansehen', url('/admin/users/'.$this->target->id.'/edit'))
             ->line('Nur zur Information. War das nicht abgesprochen, bitte die Rolle prüfen; jede Änderung steht im Audit-Log.');
+    }
+
+    public function toNtfy(object $notifiable): NtfyMessage
+    {
+        // Ohne Namen: Push-Dienste sind Dritte.
+        return new NtfyMessage(
+            title: 'Weitreichende Rechte vergeben',
+            message: implode(', ', array_map(fn (string $key) => RoleCatalog::all()[$key] ?? $key, $this->assignments)).' – bitte im Backend prüfen.',
+            click: url('/admin/users/'.$this->target->id.'/edit'),
+            tags: ['warning'],
+            priority: 4,
+        );
     }
 }

@@ -33,10 +33,12 @@ trait SentViaQueue
     }
 
     /**
+     * Das Brevo-Tageslimit gilt nur für Mails, nicht für Push (ntfy).
+     *
      * @return list<object>
      */
-    public function middleware(): array
+    public function middleware(?object $notifiable = null, ?string $channel = null): array
     {
-        return [new RateLimited('brevo-tageslimit')];
+        return $channel !== null && $channel !== 'mail' ? [] : [new RateLimited('brevo-tageslimit')];
     }
 }

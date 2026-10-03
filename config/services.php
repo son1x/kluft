@@ -47,6 +47,21 @@ return [
     | Microsoft Graph mit User.ReadBasic.All (s. 5.6).
     |
     */
+    /*
+    |--------------------------------------------------------------------------
+    | ntfy (Push-Benachrichtigungen, je Person freiwillig)
+    |--------------------------------------------------------------------------
+    |
+    | Standard ist der öffentliche Dienst ntfy.sh; die Themen sind lange
+    | Zufallsnamen und wirken wie ein Passwort. Mit eigenem Server ggf. ein
+    | Zugangstoken (NTFY_TOKEN) mit Schreibrecht.
+    |
+    */
+    'ntfy' => [
+        'server' => env('NTFY_SERVER') ?: 'https://ntfy.sh',
+        'token' => env('NTFY_TOKEN'),
+    ],
+
     'microsoft' => [
         'client_id' => env('ENTRA_CLIENT_ID'),
         'client_secret' => env('ENTRA_CLIENT_SECRET'),

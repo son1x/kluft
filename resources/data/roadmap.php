@@ -122,7 +122,7 @@ return [
             ['status' => 'done', 'title' => 'Meldungen und RSS-Feed', 'note' => 'Bolivien-Meldungen auf der Bereichsstartseite und unter „Aktuelles“; eigener Feed /bolivien/feed.'],
             ['status' => 'done', 'title' => 'Im Backend getrennt auffindbar', 'note' => 'Seiten und Beiträge: Reiter „bolivienpartnerschaft.de“ und Spalte „Website“.'],
             ['status' => 'open', 'title' => 'Bankverbindung für Spenden', 'note' => 'Seite „bolivien-spenden“: Platzhalter durch Kontoinhaber, IBAN und Verwendungszweck ersetzen.'],
-            ['status' => 'open', 'title' => 'Inhalte der bisherigen Website prüfen', 'note' => 'bolivienpartnerschaft.de liefert derzeit nur ein ungültiges (selbst signiertes) Zertifikat aus. Klären, ob es dort noch Inhalte gibt, die übernommen werden sollen.'],
+            ['status' => 'done', 'title' => 'Alte Website wird nicht übernommen', 'note' => 'Entschieden (3.10.2026): Die bisherige Website existiert nicht mehr und war veraltet; es werden keine Inhalte übernommen. Die Domain zeigt nach der Migration auf die neue Bolivien-Startseite.'],
             ['status' => 'open', 'title' => 'DNS, Plesk-Alias und Zertifikat', 'note' => 'Bei der Migration: Domain auf das Webhosting zeigen lassen, in Plesk als Alias anlegen, Let’s-Encrypt-Zertifikat ausstellen.'],
         ],
         'Beraten' => [

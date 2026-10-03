@@ -23,7 +23,7 @@ Ein gemeinsames System spart Pflege, Sicherheitsrisiken und doppelte Rechtstexte
 |---|---|---|---|
 | Was | Hauptseite des Diözesanverbands | Partnerschaft mit der Pfadfinderschaft in Bolivien (Fachbereich) | Beratung und Coaching für Ehrenamtliche (Serviceangebot) |
 | Umfang | groß | Startseite, wenige Unterseiten, Spendenhinweis | 4 Inhaltsseiten, 2 Klappkarten |
-| Bisher | WordPress, wird abgelöst | eigene Domain | eigenes WordPress (6.8, Theme von 2020, Datenschutzerklärung von 2020) |
+| Bisher | WordPress, wird abgelöst | eigene Domain; alte Website existiert nicht mehr | eigenes WordPress (6.8, Theme von 2020, Datenschutzerklärung von 2020) |
 | Verantwortlich | Diözesanverband | Diözesanverband (Fachbereich) | Diözesanverband (Ansprechperson Marc Basenach) |
 
 Alle drei haben **dasselbe Impressum, denselben Träger und dieselben Ansprechpersonen im Diözesanbüro**.
@@ -119,4 +119,4 @@ Auf /roadmap hat jede Projekt-Domain einen eigenen Meilenstein: **„Bolivien“
 | DNS und Plesk-Alias für beide Domains, Zertifikate | bei der Migration |
 | Alte WordPress-Installation von beraten-online.de abschalten | nach der DNS-Umstellung |
 | Bankverbindung für Bolivien-Spenden | offen |
-| Bisherige Inhalte von bolivienpartnerschaft.de prüfen (Domain liefert derzeit nur ein ungültiges Zertifikat aus) | offen |
+| Alte Website bolivienpartnerschaft.de | existiert nicht mehr und war veraltet; keine Übernahme |

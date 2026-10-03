@@ -143,7 +143,7 @@ class Roadmap
                 'key' => 'domain-bolivien',
                 'phase' => 'Bolivien',
                 'title' => 'Domain bolivienpartnerschaft.de aufschalten',
-                'detail' => 'Bei der Migration: DNS auf das Webhosting zeigen lassen, in Plesk als Alias der Website anlegen und Let’s-Encrypt-Zertifikat ausstellen. Vorher klären, ob auf der bisherigen Website noch Inhalte liegen, die übernommen werden sollen.',
+                'detail' => 'Bei der Migration: DNS auf das Webhosting zeigen lassen, in Plesk als Alias der Website anlegen und Let’s-Encrypt-Zertifikat ausstellen.',
                 'done' => null,
             ],
             [

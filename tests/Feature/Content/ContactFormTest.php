@@ -74,7 +74,7 @@ class ContactFormTest extends TestCase
     {
         $this->send()->assertRedirect('/kontakt#kontaktformular')->assertSessionHas('kontakt_status', 'gesendet');
 
-        Mail::assertSent(ContactMessageMail::class, function (ContactMessageMail $mail) {
+        Mail::assertQueued(ContactMessageMail::class, function (ContactMessageMail $mail) {
             $mail->assertHasReplyTo('erika@example.org', 'Erika Muster');
             $mail->assertHasSubject('Allgemeine Frage: Gruppenstunde');
             $mail->assertSeeInText('Gibt es in Wittlich eine Wölflingsgruppe?');
@@ -94,11 +94,11 @@ class ContactFormTest extends TestCase
         Person::query()->create(['gremium' => 'leitung', 'name' => 'Rolf Rover', 'stage' => 'rover', 'consent' => true]);
 
         $this->send(['thema' => 'woelflinge'])->assertSessionHas('kontakt_status', 'gesendet');
-        Mail::assertSent(ContactMessageMail::class, fn (ContactMessageMail $mail) => $mail->hasTo('l.lange@dpsg-trier.de')
+        Mail::assertQueued(ContactMessageMail::class, fn (ContactMessageMail $mail) => $mail->hasTo('l.lange@dpsg-trier.de')
             && $mail->hasTo('woelflinge@dpsg-trier.de') && count($mail->to) === 2);
 
         $this->send(['thema' => 'bolivien']);
-        Mail::assertSent(ContactMessageMail::class, fn (ContactMessageMail $mail) => $mail->hasTo('bolivien@dpsg-trier.de') && count($mail->to) === 1);
+        Mail::assertQueued(ContactMessageMail::class, fn (ContactMessageMail $mail) => $mail->hasTo('bolivien@dpsg-trier.de') && count($mail->to) === 1);
     }
 
     #[TestDox('Ohne Ansprechpersonen geht ein Stufenthema ans Diözesanbüro')]
@@ -130,6 +130,7 @@ class ContactFormTest extends TestCase
         $this->send(['_t' => 'kaputt'])->assertSessionHas('kontakt_status', 'gesendet');
 
         Mail::assertNothingSent();
+        Mail::assertNothingQueued();
     }
 
     #[TestDox('Ein tagelang offenes Formular wird mit Hinweis zurückgegeben, Eingaben bleiben erhalten')]
@@ -140,6 +141,7 @@ class ContactFormTest extends TestCase
             ->assertSessionHas('kontakt_status', 'abgelaufen')
             ->assertSessionHasInput('nachricht');
         Mail::assertNothingSent();
+        Mail::assertNothingQueued();
     }
 
     #[TestDox('Pflichtfelder, unbekanntes Thema, Zeilenumbrüche im Namen und Link-Spam werden abgelehnt')]
@@ -153,6 +155,7 @@ class ContactFormTest extends TestCase
             ->assertSessionHasErrors('nachricht');
 
         Mail::assertNothingSent();
+        Mail::assertNothingQueued();
     }
 
     #[TestDox('Versandfehler: freundliche Meldung, Eingaben bleiben erhalten')]
@@ -179,7 +182,7 @@ class ContactFormTest extends TestCase
 
         $this->post('/veranstaltungen/woelflingstag/frage', ['name' => 'Erika', 'email' => 'erika@example.org', 'nachricht' => 'Gibt es vegetarisches Essen?', '_t' => $this->token()])
             ->assertRedirect('/veranstaltungen/woelflingstag#frage');
-        Mail::assertSent(ContactMessageMail::class, function (ContactMessageMail $mail) {
+        Mail::assertQueued(ContactMessageMail::class, function (ContactMessageMail $mail) {
             $mail->assertHasSubject('Frage zur Veranstaltung: Wölflingstag');
             $mail->assertSeeInText('/veranstaltungen/woelflingstag');
 

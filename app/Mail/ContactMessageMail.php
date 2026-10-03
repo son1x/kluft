@@ -2,7 +2,10 @@
 
 namespace App\Mail;
 
+use App\Mail\Concerns\SentViaQueue;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldBeEncrypted;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Address;
 use Illuminate\Mail\Mailables\Content;
@@ -16,9 +19,9 @@ use Illuminate\Support\Str;
  * als reiner Text: Eingaben der Absender*innen werden nie als HTML oder
  * Markdown dargestellt. „Antworten“ geht direkt an die Absender*in.
  */
-class ContactMessageMail extends Mailable
+class ContactMessageMail extends Mailable implements ShouldBeEncrypted, ShouldQueue
 {
-    use Queueable, SerializesModels;
+    use Queueable, SentViaQueue, SerializesModels;
 
     public function __construct(
         public string $topic,

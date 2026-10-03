@@ -76,7 +76,7 @@ class EventRegistrationTest extends TestCase
     private function sentToken(string $kind): string
     {
         $token = null;
-        Mail::assertSent(EventRegistrationMail::class, function (EventRegistrationMail $mail) use ($kind, &$token) {
+        Mail::assertQueued(EventRegistrationMail::class, function (EventRegistrationMail $mail) use ($kind, &$token) {
             if ($mail->kind === $kind) {
                 $token = $mail->token;
             }
@@ -207,7 +207,7 @@ class EventRegistrationTest extends TestCase
         $this->get("/anmeldung/stornieren/{$cancelToken}")->assertOk()->assertSee('Mia Muster')->assertDontSee('$el.submit()', false);
         $this->post("/anmeldung/stornieren/{$cancelToken}")->assertOk()->assertSee('Anmeldung storniert');
         $this->assertSame('cancelled', $registration->fresh()->status);
-        Mail::assertSent(EventRegistrationMail::class, fn ($m) => $m->kind === 'cancelled');
+        Mail::assertQueued(EventRegistrationMail::class, fn ($m) => $m->kind === 'cancelled');
     }
 
     #[TestDox('Warteliste mit automatischem Nachrücken')]
@@ -229,7 +229,7 @@ class EventRegistrationTest extends TestCase
         app(EventRegistrations::class)->cancel($first);
 
         $this->assertSame('confirmed', $second->fresh()->status);
-        Mail::assertSent(EventRegistrationMail::class, fn ($m) => $m->kind === 'promoted' && $m->registration->is($second) && $m->token);
+        Mail::assertQueued(EventRegistrationMail::class, fn ($m) => $m->kind === 'promoted' && $m->registration->is($second) && $m->token);
     }
 
     #[TestDox('Volle Veranstaltung ohne Warteliste nimmt keine Anmeldungen mehr an')]
@@ -241,7 +241,7 @@ class EventRegistrationTest extends TestCase
         $this->register($event);
         $this->register($event, ['first_name' => 'Ben']);
         $tokens = [];
-        Mail::assertSent(EventRegistrationMail::class, function ($m) use (&$tokens) {
+        Mail::assertQueued(EventRegistrationMail::class, function ($m) use (&$tokens) {
             $tokens[] = $m->token;
 
             return true;
@@ -291,6 +291,7 @@ class EventRegistrationTest extends TestCase
         $this->register($closed);
         $this->assertSame(0, EventRegistration::query()->count());
         Mail::assertNothingSent();
+        Mail::assertNothingQueued();
     }
 
     #[TestDox('Unbestätigte und abgelaufene Anmeldungen werden gelöscht')]

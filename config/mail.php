@@ -128,6 +128,10 @@ return [
     */
     'test_redirect_to' => env('MAIL_TEST_REDIRECT_TO'),
 
+    // Tageslimit des Brevo-Tarifs (kostenlos: 300 Mails/Tag). Mails aus der
+    // Warteschlange warten, wenn es erreicht ist (F-MAIL-05).
+    'daily_limit' => (int) env('MAIL_DAILY_LIMIT', 300),
+
     // Ausnahmen für die Testphase: Diese Adressen (kommagetrennt, höchstens
     // zehn) bekommen ihre Mails trotz Umleitung direkt. Nur als Secret
     // setzen, nie ins Repository schreiben; mit dem Livegang entfällt sie.

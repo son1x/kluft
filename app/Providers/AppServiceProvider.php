@@ -34,6 +34,10 @@ class AppServiceProvider extends ServiceProvider
         // „Meine Anmeldungen“: eigene Zähler, damit Codeeingaben nicht das
         // Anfordern oder andere Formulare blockieren (throttle:x,y teilt
         // sich sonst einen Zähler pro IP).
+        // Tageslimit des Brevo-Tarifs (F-MAIL-05): Mails aus der
+        // Warteschlange warten, bis wieder Kontingent frei ist.
+        RateLimiter::for('brevo-tageslimit', fn () => Limit::perDay(max(1, (int) config('mail.daily_limit')))->by('brevo'));
+
         RateLimiter::for('teilnehmende-code', fn (Request $request) => [
             Limit::perMinutes(10, 5)->by('code-ip|'.$request->ip()),
             Limit::perHour(5)->by('code-mail|'.mb_strtolower(trim((string) $request->input('email')))),

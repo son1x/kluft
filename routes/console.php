@@ -16,6 +16,16 @@ Schedule::command('registrations:purge')->dailyAt('03:00');
 // Audit-Log nach 12 Monaten bereinigen (Pflichtenheft 8.2, 11.4).
 Schedule::command('audit:prune')->dailyAt('03:30');
 
+// Mail-Warteschlange (F-MAIL-05, Pflichtenheft 3/156): ohne Daemon – der
+// Cronjob startet jede Minute einen Worker, der die Schlange abarbeitet und
+// sich dann beendet. Fehlgeschlagene Mails nach 14 Tagen verwerfen.
+Schedule::command('queue:work --stop-when-empty --max-time=50 --sleep=1')
+    ->everyMinute()
+    ->withoutOverlapping(10)
+    ->runInBackground()
+    ->name('mail-warteschlange');
+Schedule::command('queue:prune-failed --hours=336')->dailyAt('03:45');
+
 // Lebenszeichen des Schedulers, damit /roadmap anzeigen kann, ob der
 // Cronjob auf dem Server läuft.
 Schedule::call(fn () => Cache::forever(Roadmap::HEARTBEAT_KEY, now()->timestamp))->everyMinute()->name('scheduler-heartbeat');

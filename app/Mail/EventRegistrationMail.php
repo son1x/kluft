@@ -2,17 +2,24 @@
 
 namespace App\Mail;
 
+use App\Mail\Concerns\SentViaQueue;
 use App\Models\EventRegistration;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldBeEncrypted;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
+use Illuminate\Queue\SerializesModels;
 
 /**
  * Transaktionsmails der Veranstaltungsanmeldung. Datensparsam (F-MAIL-04):
  * nur Veranstaltungstitel, Name, Status und Links – keine Zusatzangaben.
  */
-class EventRegistrationMail extends Mailable
+class EventRegistrationMail extends Mailable implements ShouldBeEncrypted, ShouldQueue
 {
+    use Queueable, SentViaQueue, SerializesModels;
+
     public const SUBJECTS = [
         'doi' => 'Bitte bestätige deine Anmeldung',
         'confirmed' => 'Anmeldung bestätigt',

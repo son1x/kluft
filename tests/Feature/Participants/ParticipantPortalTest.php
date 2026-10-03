@@ -161,7 +161,7 @@ class ParticipantPortalTest extends TestCase
 
         $this->post("/meine-anmeldungen/{$mine->id}/stornieren")->assertRedirect('/meine-anmeldungen');
         $this->assertSame('cancelled', $mine->fresh()->status);
-        Mail::assertSent(EventRegistrationMail::class, fn ($m) => $m->kind === 'cancelled');
+        Mail::assertQueued(EventRegistrationMail::class, fn ($m) => $m->kind === 'cancelled');
         $this->get('/meine-anmeldungen')->assertSee('ist storniert')->assertSee('Storniert');
     }
 
@@ -187,7 +187,7 @@ class ParticipantPortalTest extends TestCase
         $document = RegistrationDocument::query()->sole();
         $this->assertSame($mine->id, $document->event_registration_id);
         Storage::disk('local')->assertExists($document->path);
-        Mail::assertSent(RegistrationDocumentMail::class, fn ($m) => $m->hasTo('eltern@example.org'));
+        Mail::assertQueued(RegistrationDocumentMail::class, fn ($m) => $m->hasTo('eltern@example.org'));
 
         auth()->logout();
         $this->get("/meine-anmeldungen/dokument/{$document->id}")->assertForbidden();
@@ -229,7 +229,7 @@ class ParticipantPortalTest extends TestCase
 
         Storage::disk('local')->assertMissing($old->path);
         $this->assertSame(['bescheinigung', 'rechnung'], $registration->documents()->pluck('type')->sort()->values()->all());
-        Mail::assertNotSent(RegistrationDocumentMail::class);
+        Mail::assertNotQueued(RegistrationDocumentMail::class);
 
         $paths = $registration->documents()->pluck('path')->all();
         $registration->update(['purge_at' => now()->subDay()]);

@@ -218,7 +218,7 @@ jobs:
           SESSION_DRIVER=file
           SESSION_LIFETIME=480
           CACHE_STORE=file
-          QUEUE_CONNECTION=sync
+          QUEUE_CONNECTION=database
           ENTRA_CLIENT_ID=${ENTRA_CLIENT_ID}
           ENTRA_CLIENT_SECRET=${ENTRA_CLIENT_SECRET}
           ENTRA_TENANT_ID=${ENTRA_TENANT_ID}

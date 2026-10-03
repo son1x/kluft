@@ -23,7 +23,7 @@
             <div class="stufe-pattern absolute inset-0 [--stufe-ink:var(--fach-ink)]" aria-hidden="true"></div>
         @endif
         <div class="relative mx-auto w-full max-w-6xl px-4 pt-10 md:pl-32">
-            <p class="{{ $heroInk }} text-sm font-bold uppercase tracking-wider opacity-80">Fachbereich · DPSG Diözesanverband Trier</p>
+            <p class="{{ $heroInk }} text-sm font-bold uppercase tracking-wider opacity-80">{{ $config['kind'] ?? 'Fachbereich' }} · DPSG Diözesanverband Trier</p>
             <h1 @class([$heroInk, 'mt-1 max-w-2xl font-serif text-4xl font-bold md:text-5xl', 'drop-shadow' => $landing?->coverMedia])>{{ $landing?->title ?? $config['label'] }}</h1>
             @if ($landing?->seo_description)
                 <p @class([$heroInk, 'mt-3 max-w-xl text-lg', 'drop-shadow' => $landing?->coverMedia])>{{ $landing->seo_description }}</p>
@@ -110,7 +110,7 @@
         <section class="mt-16" aria-labelledby="sektion-aktuelles">
             @include('partials.section-heading', ['id' => 'sektion-aktuelles', 'title' => 'Aktuelles'])
             @if ($posts->isEmpty())
-                <p class="text-text-secondary">Noch keine Meldungen aus dem Fachbereich {{ $config['label'] }}.</p>
+                <p class="text-text-secondary">Noch keine Meldungen {{ ($config['kind'] ?? 'Fachbereich') === 'Fachbereich' ? 'aus dem Fachbereich' : 'von' }} {{ $config['label'] }}.</p>
             @else
                 <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     @foreach ($posts as $post)

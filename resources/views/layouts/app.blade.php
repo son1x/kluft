@@ -6,6 +6,9 @@
     <title>@yield('seo_title', $title ?? 'DPSG Diözesanverband Trier')</title>
     @hasSection('canonical')
         <link rel="canonical" href="@yield('canonical')" />
+    @elseif (request()->getHost() !== parse_url((string) config('app.url'), PHP_URL_HOST))
+        {{-- Unterseiten unter einer Zusatzdomain (z. B. beraten-online.de/coaching): Suchmaschinen auf die Hauptadresse verweisen, sonst doppelte Inhalte. --}}
+        <link rel="canonical" href="{{ rtrim((string) config('app.url'), '/').'/'.ltrim(request()->path(), '/') }}" />
     @endif
     {{-- Ohne eigene Beschreibung eine allgemeine, damit Suchmaschinen nicht raten. --}}
     <meta name="description" content="@yield('seo_description', 'Deutsche Pfadfinderschaft Sankt Georg im Bistum Trier: Neuigkeiten, Veranstaltungen, Stufen und Stämme zwischen Mosel, Eifel, Hunsrück und Saarland.')" />

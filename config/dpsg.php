@@ -53,6 +53,9 @@ return [
         // ehrenamtliche Leitungskräfte, eigene Domain wie Bolivien.
         'beratung' => [
             'label' => 'BeratungsPower & Coaching',
+            // Kein Fachbereich, sondern ein Serviceangebot des DV: steht
+            // unter „Diözesanverband“, nicht in der Fachbereichs-Übersicht.
+            'kind' => 'Serviceangebot',
             'color' => 'oekologie',
             'landing' => 'beratung',
             'domains' => ['beraten-online.de', 'www.beraten-online.de'],

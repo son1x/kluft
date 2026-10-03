@@ -82,6 +82,24 @@ class WebsitesTest extends TestCase
             ->assertSee('<link rel="canonical" href="https://www.dpsg-trier.de/beratung" />', false);
         // Alte WordPress-Adresse mit Schrägstrich (auf dem Server leitet .htaccess zusätzlich um).
         $this->get('https://beraten-online.de/coaching/')->assertOk()->assertSee('Inhalt coaching');
-        $this->get('https://beraten-online.de/coaching')->assertOk()->assertSee('Inhalt coaching');
+        $this->get('https://beraten-online.de/coaching')->assertOk()->assertSee('Inhalt coaching')
+            ->assertSee('<link rel="canonical" href="https://www.dpsg-trier.de/coaching" />', false);
+        // Unter der Hauptadresse kein zusätzlicher Verweis.
+        $this->get('https://www.dpsg-trier.de/coaching')->assertOk()->assertDontSee('rel="canonical"', false);
+    }
+
+    #[TestDox('BeratungsPower & Coaching ist ein Serviceangebot: Kennzeichnung im Kopf, nicht in der Fachbereichs-Übersicht')]
+    public function test_service_offer_not_in_fachbereiche(): void
+    {
+        $this->page('fachbereiche', ['title' => 'Fachbereiche']);
+        $this->page('inklusion', ['title' => 'Inklusion', 'section' => 'inklusion']);
+        $this->page('beratung', ['title' => 'BeratungsPower & Coaching', 'section' => 'beratung']);
+
+        $this->get('/beratung')->assertOk()->assertSee('Serviceangebot · DPSG Diözesanverband Trier');
+        $this->get('/inklusion')->assertOk()->assertSee('Fachbereich · DPSG Diözesanverband Trier');
+
+        $main = strstr($this->get('/fachbereiche')->assertOk()->getContent(), '<main');
+        $this->assertStringContainsString('Inklusion', $main);
+        $this->assertStringNotContainsString('BeratungsPower', $main);
     }
 }

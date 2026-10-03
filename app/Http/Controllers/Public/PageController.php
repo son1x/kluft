@@ -95,7 +95,8 @@ class PageController extends Controller
      */
     private function sectionOverview(Page $page): View
     {
-        $sections = config('dpsg.sections');
+        // Nur echte Fachbereiche (nicht z. B. das Serviceangebot Beratung).
+        $sections = array_filter(config('dpsg.sections'), fn (array $s) => ($s['kind'] ?? 'Fachbereich') === 'Fachbereich');
         $landings = Page::query()->published()->whereIn('slug', array_column($sections, 'landing'))->get()->keyBy('slug');
         $contacts = Person::query()->visible()->whereIn('section', array_keys($sections))->orderBy('sort')->get()->groupBy('section');
 

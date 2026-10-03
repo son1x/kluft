@@ -1,0 +1,30 @@
+name: Barrierefreiheit und Performance
+
+# Pflichtenheft 7.3 und 10.3: axe (WCAG 2.2 AA) auf den wichtigsten Seiten
+# (Desktop und Handy) und Lighthouse. Jeden Montag und auf Knopfdruck; rot
+# bei Barrierefreiheits-Verstößen. Ergebnisse in der Zusammenfassung des Laufs.
+
+on:
+  schedule:
+    - cron: '41 5 * * 1'
+  workflow_dispatch:
+
+jobs:
+  pruefen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Werkzeuge installieren
+        run: |
+          npm install --no-save --no-package-lock playwright@1 @axe-core/playwright lighthouse@12 chrome-launcher
+          npx playwright install --with-deps chromium
+      - name: Prüfen
+        env:
+          SITE: ${{ vars.MONITOR_URL || 'https://test.dpsg-trier.de' }}
+        run: |
+          export CHROME_PATH="$(node -e "console.log(require('playwright').chromium.executablePath())")"
+          node scripts/web-checks.mjs

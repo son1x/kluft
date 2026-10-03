@@ -27,7 +27,7 @@
                         'border-stufe-pfadi' => $key === 'pfadi',
                         'border-stufe-rover' => $key === 'rover',
                     ])>
-                        <img src="{{ asset($stage['mascot']) }}" alt="" class="max-h-full max-w-full object-contain" />
+                        <x-static-image :src="$stage['mascot']" class="max-h-full max-w-full object-contain" loading="lazy" decoding="async" />
                     </div>
                 @endforeach
             </div>
@@ -80,7 +80,7 @@
                                 <x-picture :media="$post->coverMedia" alt="" sizes="(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw" class="h-full w-full object-cover" />
                             @else
                                 <div class="flex h-full w-full items-center justify-center bg-dpsg-hellbeige">
-                                    <img src="{{ asset('images/logo-dv-trier.png') }}" alt="" class="h-20 w-auto opacity-80" loading="lazy" />
+                                    <x-static-image src="images/logo-dv-trier.png" class="h-20 w-auto opacity-80" loading="lazy" />
                                 </div>
                             @endif
                         </a>
@@ -125,7 +125,7 @@
                             'bg-stufe-rover' => $stagePage->stage === 'rover',
                         ])>
                             <div class="flex aspect-square w-4/5 items-center justify-center rounded-full bg-white/90 p-[12%]">
-                                <img src="{{ asset($stage['mascot']) }}" alt="" class="max-h-full max-w-full object-contain" loading="lazy" />
+                                <x-static-image :src="$stage['mascot']" class="max-h-full max-w-full object-contain" loading="lazy" />
                             </div>
                         </div>
                         <div class="bg-surface-muted px-4 py-3">

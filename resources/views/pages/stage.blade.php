@@ -35,7 +35,7 @@
             </div>
             <div class="order-first justify-self-end md:order-none md:justify-self-auto" aria-hidden="true">
                 <div class="flex h-32 w-32 items-center justify-center rounded-full bg-white p-6 shadow-xl ring-8 ring-white/25 md:h-56 md:w-56 md:p-10">
-                    <img src="{{ asset($stage['mascot']) }}" alt="" class="max-h-full max-w-full object-contain" />
+                    <x-static-image :src="$stage['mascot']" class="max-h-full max-w-full object-contain" />
                 </div>
             </div>
         </div>
@@ -155,9 +155,9 @@
                             'h-16 w-16 md:h-22 md:w-22 shadow-lg ring-4 ring-(--stufe)/30' => $current,
                             'h-16 w-16 md:h-22 md:w-22 opacity-80 grayscale-[35%] group-hover:opacity-100 group-hover:grayscale-0' => ! $current,
                         ])>
-                            <img src="{{ asset($s['mascot']) }}" alt="" class="max-h-full max-w-full object-contain" loading="lazy" />
+                            <x-static-image :src="$s['mascot']" class="max-h-full max-w-full object-contain" loading="lazy" />
                         </span>
-                        <span @class(['mt-2 text-xs font-bold leading-tight sm:block sm:text-sm', 'text-dpsg-rot' => $current, 'hidden group-hover:text-dpsg-rot' => ! $current])>{{ $s['label'] }}</span>
+                        <span @class(['mt-2 text-xs font-bold leading-tight sm:block sm:text-sm', 'text-dpsg-rot' => $current, 'max-sm:sr-only group-hover:text-dpsg-rot' => ! $current])>{{ $s['label'] }}</span>
                         <span class="hidden text-xs text-text-secondary sm:block">{{ $s['age'] }}</span>
                     </a>
                 </li>

@@ -39,6 +39,10 @@
                 @if ($event->teaser)
                     <p class="mt-6 text-lg">{{ $event->teaser }}</p>
                 @endif
+                @if (filled($event->description))
+                    {{-- Für Screenreader: Zwischenüberschriften der Beschreibung (oft h3) folgen so nicht direkt auf h1. --}}
+                    <h2 class="sr-only">Beschreibung</h2>
+                @endif
                 <div class="prose mt-4 max-w-none">{!! str($event->description ?? '')->sanitizeHtml()->glossar()->embeds() !!}</div>
             </div>
 

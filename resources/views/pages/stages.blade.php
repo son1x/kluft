@@ -25,7 +25,7 @@
             <div class="mt-6 flex flex-wrap gap-3" aria-hidden="true">
                 @foreach ($stagePages as $stagePage)
                     <span class="stufe-{{ $stagePage->stage }} flex h-14 w-14 items-center justify-center rounded-full border-4 border-(--stufe) bg-white p-2 md:h-16 md:w-16">
-                        <img src="{{ asset($stages[$stagePage->stage]['mascot']) }}" alt="" class="max-h-full max-w-full object-contain" />
+                        <x-static-image :src="$stages[$stagePage->stage]['mascot']" class="max-h-full max-w-full object-contain" />
                     </span>
                 @endforeach
             </div>
@@ -82,7 +82,7 @@
                 ])>
                     <div @class(['stufe-pattern relative flex items-center justify-center bg-(--stufe) p-8', 'md:order-last' => $loop->even])>
                         <div class="flex h-36 w-36 items-center justify-center rounded-full bg-white p-6 shadow-lg transition duration-300 group-hover:scale-105 md:h-44 md:w-44">
-                            <img src="{{ asset($s['mascot']) }}" alt="" class="max-h-full max-w-full object-contain" loading="lazy" />
+                            <x-static-image :src="$s['mascot']" class="max-h-full max-w-full object-contain" loading="lazy" />
                         </div>
                     </div>
                     <div class="flex flex-col justify-center p-6 md:p-8">

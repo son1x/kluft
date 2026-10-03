@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('seo_title', 'Aktuelles – DPSG Diözesanverband Trier')
+@section('seo_description', 'Neuigkeiten aus dem DPSG Diözesanverband Trier: Berichte, Einladungen und Termine aus Stufen, Fachbereichen und Gremien.')
 
 @section('content')
     <div class="max-w-3xl mx-auto px-4 py-10">

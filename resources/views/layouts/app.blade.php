@@ -7,9 +7,8 @@
     @hasSection('canonical')
         <link rel="canonical" href="@yield('canonical')" />
     @endif
-    @hasSection('seo_description')
-        <meta name="description" content="@yield('seo_description')" />
-    @endif
+    {{-- Ohne eigene Beschreibung eine allgemeine, damit Suchmaschinen nicht raten. --}}
+    <meta name="description" content="@yield('seo_description', 'Deutsche Pfadfinderschaft Sankt Georg im Bistum Trier: Neuigkeiten, Veranstaltungen, Stufen und Stämme zwischen Mosel, Eifel, Hunsrück und Saarland.')" />
     <link rel="icon" href="{{ asset('favicon.ico') }}" />
     <link rel="alternate" type="application/rss+xml" title="DPSG Diözesanverband Trier – Aktuelles" href="{{ route('feed') }}" />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -29,7 +28,7 @@
     <header class="sticky top-0 z-40 bg-dpsg-blau text-white md:relative md:z-30">
         <div class="relative mx-auto flex h-12 max-w-6xl items-center justify-end gap-6 px-4">
             <a href="{{ url('/') }}" class="absolute left-4 top-0 rounded-b-lg bg-white px-3 shadow-lg transition-all duration-200 md:pb-3 md:pt-2" :class="(scrolled || navOpen) ? 'pb-1 pt-1' : 'pb-3 pt-2'">
-                <img src="{{ asset('images/logo-dv-trier.png') }}" alt="DPSG Diözesanverband Trier – zur Startseite" class="h-16 w-auto transition-all duration-200 md:h-28" :class="(scrolled || navOpen) && 'max-md:h-10'" width="300" height="223" />
+                <x-static-image src="images/logo-dv-trier.png" alt="DPSG Diözesanverband Trier – zur Startseite" class="h-16 w-auto transition-all duration-200 md:h-28" x-bind:class="(scrolled || navOpen) && 'max-md:h-10'" width="300" height="223" fetchpriority="high" />
             </a>
 
             <nav aria-label="Service" class="hidden text-sm md:block">
@@ -102,7 +101,7 @@
                      Leiste oben, übernimmt das kleine Logo diese Aufgabe. --}}
                 <li class="shrink-0" x-show="stuck" x-transition.opacity x-cloak>
                     <a href="{{ url('/') }}" class="block pr-4">
-                        <img src="{{ asset('images/logo-dv-trier.png') }}" alt="DPSG Diözesanverband Trier – zur Startseite" class="h-9 w-auto" width="300" height="223" />
+                        <x-static-image src="images/logo-dv-trier.png" alt="DPSG Diözesanverband Trier – zur Startseite" class="h-9 w-auto" width="300" height="223" loading="lazy" />
                     </a>
                 </li>
                 @foreach ($navPages ?? [] as $navPage)

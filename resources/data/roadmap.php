@@ -73,7 +73,7 @@ return [
         '8.3' => ['title' => 'Datenschutz im Datenmodell', 'status' => 'done', 'note' => 'Verschlüsselte Zusatzdaten, Löschdatum je Anmeldung, keine Newsletter-Adressen im CMS.'],
         '9' => ['title' => 'KDG-Konformität', 'status' => 'partial', 'note' => ''],
         '9.1' => ['title' => 'Rechtsgrundlagen und Grundsätze', 'status' => 'partial', 'note' => 'In den Formularen umgesetzt; Abstimmung mit der/dem Datenschutzbeauftragten steht aus.'],
-        '9.2' => ['title' => 'Maßnahmenkatalog', 'status' => 'partial', 'note' => 'Technische Maßnahmen weitgehend fertig. Offen: Auskunft/Löschung pro Person im Backend, VVT, DSFA, AV-Verträge.'],
+        '9.2' => ['title' => 'Maßnahmenkatalog', 'status' => 'partial', 'note' => 'Technische Maßnahmen fertig, inkl. „Datenschutz-Anfragen“ im Backend: Suche per E-Mail, Auskunft als ZIP (Anmeldungen mit Zusatzangaben, Dokumente, Personenvorstellung, Redaktionskonto), Löschung samt Dateien und wartender Mails. Offen (organisatorisch): VVT, DSFA, AV-Verträge.'],
         '9.3' => ['title' => 'Aufbewahrung / Löschung (Standardwerte, konfigurierbar)', 'status' => 'done', 'note' => 'Löschfristen für Anmeldungen samt hochgeladener Dokumente fertig und aktiv (Cronjob läuft). Audit-Log wird nach 12 Monaten bereinigt, fehlgeschlagene Mails nach 14 Tagen. Stufenmodell für längere Aufbewahrung siehe docs/meine-anmeldungen-bedenken.md.'],
         '9.4' => ['title' => 'Newsletter-Double-Opt-In', 'status' => 'done', 'note' => ''],
         '9.5' => ['title' => 'Consent / Cookies', 'status' => 'done', 'note' => ''],

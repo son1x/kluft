@@ -23,6 +23,7 @@ return [
         ['1d', 'Instagram', 'partial'],
         ['1e', 'WordPress-Migration', 'partial'],
         ['Talia', 'Feedback Talia', 'open'],
+        ['Testing', 'Testphase', 'partial'],
         ['Abnahme', 'Abnahme', 'open'],
         ['2', 'Beraten-Online', 'later'],
     ],
@@ -99,6 +100,9 @@ return [
     | oben; 'note' = Einschätzung/Empfehlung.
     */
     'feedback' => [
+        'Testing' => [
+            ['status' => 'done', 'title' => 'Echte Mails an ausgewählte Tester*innen', 'note' => 'Auf test.dpsg-trier.de gehen alle Mails an die Testadresse – außer an bis zu fünf freigeschaltete Personen (GitHub-Secret MAIL_TEST_ALLOWLIST), die ihre Bestätigungen, Antworten usw. direkt bekommen. Die Testadresse sieht im Mail-Kopf „X-Test-Umgeleitet-Von“, an wen eine umgeleitete Mail gegangen wäre. Mit dem Livegang entfallen Umleitung und Ausnahmen.'],
+        ],
         'Talia' => [
             ['status' => 'open', 'title' => 'Aktuelles weiter nach vorne', 'note' => 'Empfehlung: im Menü direkt hinter „Start“ und auf der Startseite die Meldungen vor den Begrüßungstext. Funktioniert nur, wenn regelmäßig neue Beiträge kommen – sonst steht ganz oben Veraltetes.'],
             ['status' => 'open', 'title' => 'Suche', 'note' => 'Im Pflichtenheft als Soll vorgesehen (F-CMS-07). Empfehlung: einfache Suche über Seiten, Beiträge, Veranstaltungen und Stämme jetzt bauen (Lupe im Kopf); mit MariaDB jetzt auch als Volltextsuche mit sinnvoller Trefferreihenfolge möglich.'],

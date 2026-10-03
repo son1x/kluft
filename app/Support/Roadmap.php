@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Mail\TestRecipientFilter;
 use App\Models\Calendar;
 use App\Models\Page;
 use App\Models\Post;
@@ -172,6 +173,13 @@ class Roadmap
                 'title' => 'Brevo-SMTP für Transaktionsmails einrichten',
                 'detail' => 'GitHub-Secrets BREVO_SMTP_LOGIN, BREVO_SMTP_KEY und MAIL_TEST_REDIRECT_TO (Testadresse) setzen. Erst dann können Anmeldungen bestätigt werden.',
                 'done' => config('mail.default') === 'smtp',
+            ],
+            [
+                'key' => 'test-empfaenger',
+                'phase' => 'Testing',
+                'title' => 'Tester*innen für echte Mails freischalten',
+                'detail' => 'GitHub-Secret MAIL_TEST_ALLOWLIST anlegen: bis zu fünf E-Mail-Adressen, kommagetrennt (z. B. „a@example.org,b@example.org“). Diese Personen bekommen Mails auf test.dpsg-trier.de direkt, alle anderen Mails gehen weiter an MAIL_TEST_REDIRECT_TO. Nach dem nächsten Deploy aktiv; vor dem Livegang wieder löschen.',
+                'done' => TestRecipientFilter::allowlist() !== [],
             ],
             [
                 'key' => 'brevo-domain',

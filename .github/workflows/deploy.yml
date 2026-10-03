@@ -158,6 +158,9 @@ jobs:
           BREVO_SMTP_LOGIN: ${{ secrets.BREVO_SMTP_LOGIN }}
           BREVO_SMTP_KEY: ${{ secrets.BREVO_SMTP_KEY }}
           MAIL_TEST_REDIRECT_TO: ${{ secrets.MAIL_TEST_REDIRECT_TO }}
+          # Testphase: bis zu 5 Adressen (kommagetrennt), die ihre Mails trotz
+          # Umleitung direkt bekommen.
+          MAIL_TEST_ALLOWLIST: ${{ secrets.MAIL_TEST_ALLOWLIST }}
           BACKUP_PASSWORD: ${{ secrets.BACKUP_PASSWORD }}
           BACKUP_WEBDAV_URL: ${{ secrets.BACKUP_WEBDAV_URL }}
           BACKUP_WEBDAV_USER: ${{ secrets.BACKUP_WEBDAV_USER }}
@@ -234,6 +237,7 @@ jobs:
           MAIL_FROM_ADDRESS=events@dpsg-trier.de
           MAIL_FROM_NAME="DPSG Diözesanverband Trier"
           MAIL_TEST_REDIRECT_TO=${MAIL_TEST_REDIRECT_TO}
+          MAIL_TEST_ALLOWLIST="$(printf '%s' "$MAIL_TEST_ALLOWLIST" | tr -d '"\r\n ')"
           BACKUP_PASSWORD="${BACKUP_PASSWORD}"
           BACKUP_WEBDAV_URL=${BACKUP_WEBDAV_URL}
           BACKUP_WEBDAV_USER="${BACKUP_WEBDAV_USER}"

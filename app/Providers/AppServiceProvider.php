@@ -2,10 +2,11 @@
 
 namespace App\Providers;
 
+use App\Mail\TestRecipientFilter;
 use App\Models\Page;
 use App\Services\Glossary;
+use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Stringable;
@@ -38,11 +39,9 @@ class AppServiceProvider extends ServiceProvider
         // config/services.php bzw. .env (ENTRA_*).
         Event::listen(SocialiteWasCalled::class, MicrosoftExtendSocialite::class);
 
-        // Test-Umgebung: alle ausgehenden Mails umleiten (F-MAIL-06),
-        // damit beim Testen keine echten Personen angeschrieben werden.
-        if (filled($redirectTo = config('mail.test_redirect_to'))) {
-            Mail::alwaysTo($redirectTo);
-        }
+        // Test-Umgebung: ausgehende Mails an die Testadresse umleiten
+        // (F-MAIL-06), außer an freigeschaltete Tester*innen.
+        Event::listen(MessageSending::class, TestRecipientFilter::class);
 
         // Hauptnavigation steht jeder Seite, die das Layout nutzt, ohne
         // Wiederholung in jedem Controller zur Verfügung (F-CMS-01).

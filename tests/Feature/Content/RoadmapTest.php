@@ -3,6 +3,7 @@
 namespace Tests\Feature\Content;
 
 use App\Models\User;
+use App\Services\Backup\BackupService;
 use App\Support\Roadmap;
 use Illuminate\Encryption\Encrypter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -58,5 +59,22 @@ class RoadmapTest extends TestCase
         DB::table('users')->where('email', 'notfall@example.org')
             ->update(['totp_secret' => (new Encrypter(random_bytes(32), 'aes-256-cbc'))->encryptString('X')]);
         $this->assertFalse(collect(app(Roadmap::class)->todos())->firstWhere('key', 'notfall-login')['done']);
+    }
+
+    #[TestDox('Anleitung „Backups einschalten“ steht ganz oben, bis ein Backup samt Wiederherstellungsprobe gelaufen ist')]
+    public function test_backup_setup_box_until_backups_run(): void
+    {
+        config(['dpsg.backup.password' => 'ein-sehr-geheimes-passwort-123', 'dpsg.backup.webdav_url' => null]);
+
+        $html = $this->get('/roadmap')->assertOk()->getContent();
+        $this->assertStringContainsString('Wichtig: Backups einschalten', $html);
+        $this->assertLessThan(strpos($html, 'Deine offenen Punkte'), strpos($html, 'Wichtig: Backups einschalten'));
+        $this->assertStringContainsString('✅ Backup-Passwort gesetzt', $html);
+        $this->assertStringContainsString('⬜ Kopie extern in Nextcloud', $html);
+        $this->assertStringNotContainsString('ein-sehr-geheimes', $html);
+
+        Cache::forever(BackupService::LAST_RUN_KEY, ['at' => now()->toIso8601String()]);
+        Cache::forever(BackupService::LAST_VERIFY_KEY, ['ok' => true, 'at' => now()->toIso8601String()]);
+        $this->get('/roadmap')->assertOk()->assertDontSee('Wichtig: Backups einschalten');
     }
 }

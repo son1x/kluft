@@ -21,6 +21,10 @@
         <h1 class="font-serif text-3xl font-bold">Roadmap</h1>
         <p class="mt-2 max-w-3xl text-text-secondary">Umsetzungsstand der neuen Website nach Pflichtenheft. Stand: {{ \Illuminate\Support\Carbon::parse($stand)->locale('de')->isoFormat('D. MMMM YYYY') }}.</p>
 
+        @unless ($backup['healthy'])
+            @include('partials.roadmap-backup-setup', ['backup' => $backup])
+        @endunless
+
         {{-- Offene Punkte der Projektleitung --}}
         <section aria-labelledby="todo-heading" class="mt-8 border-l-4 border-dpsg-rot bg-dpsg-hellbeige p-6">
             <div class="flex flex-wrap items-baseline justify-between gap-2">

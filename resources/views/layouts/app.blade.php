@@ -63,11 +63,15 @@
                         @endif
                     </li>
                 @endforeach
-                <li><a href="{{ url('/veranstaltungen') }}" @class(['block px-4 py-3', 'text-dpsg-rot' => request()->is('veranstaltungen*')])>Veranstaltungen</a></li>
+                <li>
+                    <a href="{{ url('/veranstaltungen') }}" @class(['block px-4 py-3', 'text-dpsg-rot' => request()->is('veranstaltungen*')])>Veranstaltungen</a>
+                    <ul class="-mt-2 pb-2 font-normal">
+                        <li><a href="{{ url('/meine-anmeldungen') }}" @class(['block py-1.5 pr-4 pl-8', 'text-dpsg-rot font-bold' => request()->is('meine-anmeldungen*')])>Meine Anmeldungen</a></li>
+                    </ul>
+                </li>
                 <li><a href="{{ url('/kalender') }}" @class(['block px-4 py-3', 'text-dpsg-rot' => request()->is('kalender')])>Kalender</a></li>
                 <li><a href="{{ url('/aktuelles') }}" @class(['block px-4 py-3', 'text-dpsg-rot' => request()->is('aktuelles*')])>Aktuelles</a></li>
                 <li><a href="{{ url('/kontakt') }}" class="block px-4 py-3">Kontakt</a></li>
-                <li><a href="{{ url('/meine-anmeldungen') }}" class="block px-4 py-3">Meine Anmeldungen</a></li>
             </ul>
         </nav>
     </header>
@@ -151,8 +155,28 @@
                         </li>
                     @endif
                 @endforeach
-                <li class="flex-1 border-l border-dpsg-mittelbeige text-center">
-                    <a href="{{ url('/veranstaltungen') }}" @class(['block px-3 py-1 hover:text-dpsg-rot', 'text-dpsg-rot' => request()->is('veranstaltungen*')])>Veranstaltungen</a>
+                {{-- Veranstaltungen mit Unterpunkt „Meine Anmeldungen“; gleiches
+                     Aufklappverhalten wie bei den Seiten oben. --}}
+                @php($eventsCurrent = request()->is('veranstaltungen'))
+                @php($mineActive = request()->is('meine-anmeldungen*'))
+                <li class="relative flex-1 border-l border-dpsg-mittelbeige text-center"
+                    x-data="{ open: false }"
+                    @mouseenter="open = true" @mouseleave="open = false"
+                    @keydown.escape="open = false; $refs.toggle.focus()"
+                    @focusout="$el.contains($event.relatedTarget) || (open = false)">
+                    <div class="flex items-center justify-center">
+                        <a href="{{ url('/veranstaltungen') }}" @class(['block py-1 pl-3 hover:text-dpsg-rot', 'text-dpsg-rot' => request()->is('veranstaltungen*') || $mineActive]) @if ($eventsCurrent) aria-current="page" @endif>Veranstaltungen</a>
+                        <button type="button" x-ref="toggle" class="px-1 py-1 hover:text-dpsg-rot" @click="open = ! open" x-bind:aria-expanded="open.toString()" aria-expanded="false" aria-controls="subnav-veranstaltungen">
+                            <span class="sr-only">Unterpunkte von Veranstaltungen</span>
+                            <x-heroicon-m-chevron-down class="h-4 w-4 transition" x-bind:class="open && 'rotate-180'" aria-hidden="true" />
+                        </button>
+                    </div>
+                    <div id="subnav-veranstaltungen" class="absolute left-1/2 top-full z-50 -translate-x-1/2 pt-3" x-show="open" x-transition.opacity x-cloak>
+                        <ul class="min-w-60 border-t-4 border-dpsg-rot bg-white py-2 text-left whitespace-nowrap shadow-xl">
+                            <li><a href="{{ url('/veranstaltungen') }}" @class(['block px-4 py-2 text-xs uppercase tracking-wide text-text-secondary hover:text-dpsg-rot', 'text-dpsg-rot' => $eventsCurrent])>Übersicht Veranstaltungen</a></li>
+                            <li><a href="{{ url('/meine-anmeldungen') }}" @class(['flex items-center gap-2 px-4 py-2 hover:bg-surface-muted hover:text-dpsg-rot', 'text-dpsg-rot' => $mineActive, 'font-normal' => ! $mineActive]) @if ($mineActive) aria-current="page" @endif>Meine Anmeldungen</a></li>
+                        </ul>
+                    </div>
                 </li>
                 <li class="flex-1 border-l border-dpsg-mittelbeige text-center">
                     <a href="{{ url('/kalender') }}" @class(['block px-3 py-1 hover:text-dpsg-rot', 'text-dpsg-rot' => request()->is('kalender')])>Kalender</a>

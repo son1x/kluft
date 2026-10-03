@@ -102,6 +102,20 @@ class ParticipantPortalTest extends TestCase
         $this->post('/meine-anmeldungen/anmelden', ['code' => $code])->assertSessionHasErrors('code');
     }
 
+    #[TestDox('„Meine Anmeldungen“ steht im Hauptmenü als Unterpunkt von „Veranstaltungen“ (Desktop und mobil)')]
+    public function test_menu_entry_below_events(): void
+    {
+        $html = $this->get('/kalender')->assertOk()->getContent();
+
+        $desktop = substr($html, strpos($html, 'aria-label="Hauptnavigation"'));
+        $this->assertMatchesRegularExpression('#>Veranstaltungen</a>.*id="subnav-veranstaltungen".*Übersicht Veranstaltungen.*>Meine Anmeldungen</a>.*>Kalender</a>#s', $desktop);
+
+        $mobile = substr($html, strpos($html, 'id="mobile-nav"'), 6000);
+        $this->assertMatchesRegularExpression('#>Veranstaltungen</a>\s*<ul[^>]*>\s*<li><a href="[^"]*/meine-anmeldungen"#', $mobile);
+
+        $this->assertMatchesRegularExpression('#aria-current="page"\s*>Meine Anmeldungen#', $this->get('/meine-anmeldungen')->assertOk()->getContent());
+    }
+
     #[TestDox('Unbekannte Adresse: gleiche Antwort, aber keine Mail – so verrät die Seite nicht, wer angemeldet ist')]
     public function test_unknown_email_gets_no_code(): void
     {

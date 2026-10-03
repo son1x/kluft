@@ -2,6 +2,9 @@
 # Actions (Workflow „Qualität“).
 includes:
     - vendor/larastan/larastan/extension.neon
+    # Bestand vom 3.10.2026 (überwiegend Datumsfelder, die Larastan als
+    # Text liest). Neuer Code muss ohne neue Meldungen auskommen.
+    - phpstan-baseline.neon
 
 parameters:
     level: 5

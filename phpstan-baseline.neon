@@ -1,0 +1,419 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Cannot call method timezone\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Console/Commands/CalendarCheckCommand.php
+
+		-
+			message: '#^Cannot call method format\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Console/Commands/RefreshInstagramTokenCommand.php
+
+		-
+			message: '#^Cannot call method gt\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Console/Commands/RefreshInstagramTokenCommand.php
+
+		-
+			message: '#^Comparison operation "\>" between 0 and 0 is always false\.$#'
+			identifier: greater.alwaysFalse
+			count: 1
+			path: app/Console/Commands/WpImportCommand.php
+
+		-
+			message: '#^Offset ''action'' does not exist on string\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: app/Console/Commands/WpImportCommand.php
+
+		-
+			message: '#^Offset ''fehler'' on string\|null on left side of \?\? does not exist\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Console/Commands/WpImportCommand.php
+
+		-
+			message: '#^Offset ''message'' does not exist on string\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: app/Console/Commands/WpImportCommand.php
+
+		-
+			message: '#^Offset ''title'' does not exist on string\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: app/Console/Commands/WpImportCommand.php
+
+		-
+			message: '#^Parameter \#1 \$value of function collect expects Illuminate\\Contracts\\Support\\Arrayable\<\(int\|string\), mixed\>\|iterable\<\(int\|string\), mixed\>\|null, string\|null given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Console/Commands/WpImportCommand.php
+
+		-
+			message: '#^Access to an undefined property App\\Filament\\Pages\\Integrations\:\:\$form\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Filament/Pages/Integrations.php
+
+		-
+			message: '#^Cannot call method format\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Filament/Pages/Integrations.php
+
+		-
+			message: '#^Cannot call method format\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Filament/Resources/CalendarEntries/CalendarEntryResource.php
+
+		-
+			message: '#^Cannot call method locale\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Filament/Resources/CalendarEntries/CalendarEntryResource.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:filter\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: bool\)\|null, Closure\(App\\Models\\CalendarEvent\)\: bool given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Filament/Resources/CalendarEntries/CalendarEntryResource.php
+
+		-
+			message: '#^Cannot call method format\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: app/Filament/Resources/Events/Pages/CreateEvent.php
+
+		-
+			message: '#^Cannot access property \$slug on Illuminate\\Database\\Eloquent\\Model\|int\|string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Filament/Resources/Events/Pages/EditEvent.php
+
+		-
+			message: '#^Cannot access property \$status on Illuminate\\Database\\Eloquent\\Model\|int\|string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Filament/Resources/Events/Pages/EditEvent.php
+
+		-
+			message: '#^Empty array passed to foreach\.$#'
+			identifier: foreach.emptyArray
+			count: 1
+			path: app/Filament/Resources/Events/RelationManagers/RegistrationsRelationManager.php
+
+		-
+			message: '#^Offset string on string\|null on left side of \?\? does not exist\.$#'
+			identifier: nullCoalesce.offset
+			count: 2
+			path: app/Filament/Resources/Events/RelationManagers/RegistrationsRelationManager.php
+
+		-
+			message: '#^Parameter \#1 \$event of method App\\Services\\ParticipantExport\:\:filename\(\) expects App\\Models\\Event, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Filament/Resources/Events/RelationManagers/RegistrationsRelationManager.php
+
+		-
+			message: '#^Parameter \#1 \$event of method App\\Services\\ParticipantExport\:\:write\(\) expects App\\Models\\Event, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Filament/Resources/Events/RelationManagers/RegistrationsRelationManager.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:upcoming\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Filament/Resources/Events/Tables/EventsTable.php
+
+		-
+			message: '#^Cannot access property \$privacy_checked on Illuminate\\Database\\Eloquent\\Model\|int\|string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Filament/Resources/GeorgsboteIssues/Pages/EditGeorgsboteIssue.php
+
+		-
+			message: '#^Cannot access property \$lat on Illuminate\\Database\\Eloquent\\Model\|int\|string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Filament/Resources/Gruppierungen/Pages/EditGruppierung.php
+
+		-
+			message: '#^Cannot access property \$lng on Illuminate\\Database\\Eloquent\\Model\|int\|string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Filament/Resources/Gruppierungen/Pages/EditGruppierung.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:ordered\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Filament/Resources/Gruppierungen/Tables/GruppierungenTable.php
+
+		-
+			message: '#^Cannot access property \$path on Illuminate\\Database\\Eloquent\\Model\|int\|string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Filament/Resources/Media/Pages/EditMedia.php
+
+		-
+			message: '#^Cannot access property \$status on Illuminate\\Database\\Eloquent\\Model\|int\|string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Filament/Resources/Pages/Pages/EditPage.php
+
+		-
+			message: '#^Cannot call method format\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Filament/Resources/Posts/Actions/ShareToInstagramAction.php
+
+		-
+			message: '#^Cannot access property \$status on Illuminate\\Database\\Eloquent\\Model\|int\|string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Filament/Resources/Posts/Pages/EditPost.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>import_issues" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Filament/Resources/Posts/Schemas/PostForm.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Filament/Resources/Posts/Schemas/PostForm.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/Resources/Users/Pages/CreateUser.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:roleAssignments\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Filament/Resources/Users/Pages/CreateUser.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/Resources/Users/Pages/EditUser.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:roleAssignments\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Filament/Resources/Users/Pages/EditUser.php
+
+		-
+			message: '#^Cannot access property \$entra_oid on Illuminate\\Database\\Eloquent\\Model\|int\|string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Filament/Resources/Users/Pages/EditUser.php
+
+		-
+			message: '#^Cannot call method format\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Filament/Resources/Users/Schemas/UserForm.php
+
+		-
+			message: '#^Method App\\Filament\\Resources\\Users\\UserResource\:\:getEloquentQuery\(\) should return Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\> but returns Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Filament/Resources/Users/UserResource.php
+
+		-
+			message: '#^Parameter \#2 \$query of static method App\\Policies\\UserPolicy\:\:visibleTo\(\) expects Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>, Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Filament/Resources/Users/UserResource.php
+
+		-
+			message: '#^Call to an undefined method Laravel\\Socialite\\Contracts\\Provider\:\:scopes\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Auth/EntraAuthController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Public\\ContactController\:\:messageRules\(\) should return array\<string, list\<string\>\> but returns array\{name\: array\{''required'', ''string'', ''max\:100'', ''not_regex\:/\[\\\\r\\\\n\]/''\}, email\: array\{''required'', ''email\:rfc'', ''max\:254''\}, betreff\: array\{''nullable'', ''string'', ''max\:150'', ''not_regex\:/\[\\\\r\\\\n\]/''\}, nachricht\: array\{''required'', ''string'', ''min\:10'', ''max\:5000'', Closure\(string, mixed, Closure\)\: void\}\}\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Controllers/Public/ContactController.php
+
+		-
+			message: '#^Cannot call method gte\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/Public/ParticipantController.php
+
+		-
+			message: '#^Cannot call method isPast\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/Public/ParticipantController.php
+
+		-
+			message: '#^Cannot call method copy\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Models/CalendarEvent.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Models/CalendarEvent.php
+
+		-
+			message: '#^Cannot access property \$year on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Models/Event.php
+
+		-
+			message: '#^Cannot call method copy\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 3
+			path: app/Models/Event.php
+
+		-
+			message: '#^Cannot call method isFuture\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: app/Models/Event.php
+
+		-
+			message: '#^Cannot call method locale\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: app/Models/Event.php
+
+		-
+			message: '#^Method App\\Models\\Event\:\:registrationClosesAt\(\) should return Carbon\\CarbonInterface but returns string\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Models/Event.php
+
+		-
+			message: '#^Cannot call method isPast\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Models/Page.php
+
+		-
+			message: '#^Cannot call method isPast\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Models/Post.php
+
+		-
+			message: '#^Parameter \#1 \$content of method Illuminate\\Http\\Client\\PendingRequest\<false\>\:\:withBody\(\) expects Psr\\Http\\Message\\StreamInterface\|string, resource\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Backup/BackupService.php
+
+		-
+			message: '#^Parameter \#1 \$key of method Illuminate\\Support\\Collection\<int,array\<int, string\>\>\:\:unique\(\) expects \(callable\(array\{string, string\}, int\)\: mixed\)\|string\|null, 0 given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Backup/BackupService.php
+
+		-
+			message: '#^Access to an undefined property Sabre\\VObject\\Component\\VEvent\:\:\$DESCRIPTION\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/CalendarSync.php
+
+		-
+			message: '#^Access to an undefined property Sabre\\VObject\\Component\\VEvent\:\:\$LOCATION\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/CalendarSync.php
+
+		-
+			message: '#^Call to an undefined method Sabre\\VObject\\Document\:\:expand\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/CalendarSync.php
+
+		-
+			message: '#^Cannot call method isFuture\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/Instagram/InstagramClient.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>access_token" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/Instagram/InstagramClient.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>account_id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/Instagram/InstagramClient.php
+
+		-
+			message: '#^Call to function in_array\(\) with arguments string, array\{\}\|array\{int\<0, max\>\} and true will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Services/ParticipantExport.php
+
+		-
+			message: '#^Cannot call method format\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/ParticipantExport.php
+
+		-
+			message: '#^Offset string on string\|null on left side of \?\? does not exist\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Services/ParticipantExport.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>path" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/WordPress/ContentConverter.php
+
+		-
+			message: '#^Parameter \$ends_at of class App\\Support\\CalendarItem constructor expects Carbon\\CarbonInterface\|null, string\|null given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Support/CalendarItem.php
+
+		-
+			message: '#^Parameter \$starts_at of class App\\Support\\CalendarItem constructor expects Carbon\\CarbonInterface, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Support/CalendarItem.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Schema\\ForeignKeyDefinition\:\:comment\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: database/migrations/0001_01_01_000000_create_users_table.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Schema\\ForeignKeyDefinition\:\:comment\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: database/migrations/2026_10_01_193056_create_gruppierungen_table.php
+
+		-
+			identifier: nullCoalesce.offset
+			path: database/seeders/DemoContentSeeder.php

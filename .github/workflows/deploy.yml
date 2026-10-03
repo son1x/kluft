@@ -237,7 +237,7 @@ jobs:
           MAIL_FROM_ADDRESS=events@dpsg-trier.de
           MAIL_FROM_NAME="DPSG Diözesanverband Trier"
           MAIL_TEST_REDIRECT_TO=${MAIL_TEST_REDIRECT_TO}
-          MAIL_TEST_ALLOWLIST="$(printf '%s' "$MAIL_TEST_ALLOWLIST" | tr -d '"\r\n ')"
+          MAIL_TEST_ALLOWLIST="$(printf '%s' "$MAIL_TEST_ALLOWLIST" | tr '\r\n' ',,' | tr -d '" ')"
           BACKUP_PASSWORD="${BACKUP_PASSWORD}"
           BACKUP_WEBDAV_URL=${BACKUP_WEBDAV_URL}
           BACKUP_WEBDAV_USER="${BACKUP_WEBDAV_USER}"

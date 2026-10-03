@@ -80,6 +80,20 @@ class TestRecipientFilterTest extends TestCase
         $this->assertSame('x@mail.dpsg-trier.de, y@nicht-dpsg-trier.de', $email->getHeaders()->get('X-Test-Umgeleitet-Von')->getBodyAsString());
     }
 
+    #[TestDox('mail:check-allowlist zeigt wirksame Einträge gekürzt und warnt bei ignorierten')]
+    public function test_check_command(): void
+    {
+        config(['mail.test_allowlist' => ['talia@example.org', '@dpsg-trier.de', 'kaputt', 'b@x.de', 'c@x.de', 'd@x.de', 'e@x.de']]);
+
+        $this->artisan('mail:check-allowlist')
+            ->expectsOutputToContain('Einträge im Secret: 7 · davon wirksam: 5')
+            ->expectsOutputToContain('1. t…@example.org')
+            ->expectsOutputToContain('2. ganze Domain @dpsg-trier.de')
+            ->expectsOutputToContain('2 Eintrag/Einträge werden ignoriert')
+            ->doesntExpectOutputToContain('talia@')
+            ->assertSuccessful();
+    }
+
     #[TestDox('Ohne Testadresse (Produktion) bleiben alle Empfänger unverändert')]
     public function test_production_is_untouched(): void
     {

@@ -15,6 +15,7 @@ on:
           - calendar:sync
           - cron:info
           - brevo:check
+          - mail:check-allowlist
         default: calendar:check
 
 jobs:
@@ -72,5 +73,7 @@ jobs:
                 grep -h 'Brevo' storage/logs/laravel*.log 2>/dev/null | tail -n 5 | cut -c1-400 \
                   | sed -E 's/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/<email>/g' || echo "(keine)"
                 ;;
+              # Wirksame Ausnahmen der Test-Mail-Umleitung (Adressen gekürzt).
+              mail:check-allowlist) /usr/bin/php artisan mail:check-allowlist ;;
               *) echo "Unbekannte Prüfung"; exit 1 ;;
             esac

@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 /**
  * Beraten-Online nach Rückmeldung (3.10.2026):
@@ -76,7 +77,8 @@ return new class extends Migration
             'path' => $path,
             'mime' => 'image/jpeg',
             'size' => filesize($source),
-            'alt_text' => $alt,
+            // Spalte ist VARCHAR(255); der volle Text steht im <img alt>.
+            'alt_text' => Str::limit($alt, 250),
             'credit' => 'Grundlage: Bilder der DPSG-Bundesebene, bearbeitet für BeratungsPower & Coaching (DPSG Diözesanverband Trier)',
             'rights_confirmed' => true,
             'width' => $width,

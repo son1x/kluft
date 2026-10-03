@@ -86,6 +86,20 @@ class EventRegistrationTest extends TestCase
         return $token;
     }
 
+    #[TestDox('Baukasten-Felder Funktion/Gremium und Übernachtung (z. B. Diözesanversammlung)')]
+    public function test_gremium_and_overnight_fields(): void
+    {
+        $event = $this->event(['form_fields' => ['gremium' => 'required', 'uebernachtung' => 'required']]);
+
+        $this->get('/veranstaltungen/woelflingstag')->assertOk()
+            ->assertSeeInOrder(['Funktion / Gremium', 'Übernachtung *', 'Ganze Zeit mit Übernachtung']);
+
+        $this->register($event, ['gremium' => '', 'uebernachtung' => 'irgendwann'])->assertSessionHasErrors(['gremium', 'uebernachtung']);
+        $this->register($event, ['gremium' => 'Delegierte Bezirk Saar-Hochwald', 'uebernachtung' => 'komplett'])->assertSessionHasNoErrors();
+
+        $this->assertSame(['gremium' => 'Delegierte Bezirk Saar-Hochwald', 'uebernachtung' => 'komplett'], EventRegistration::query()->sole()->data);
+    }
+
     #[TestDox('Anmeldung mit Bestätigungsmail; Zusatzangaben werden verschlüsselt gespeichert')]
     public function test_double_opt_in_flow_with_encrypted_extra_data(): void
     {

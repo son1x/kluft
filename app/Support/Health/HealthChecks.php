@@ -14,7 +14,8 @@ use Throwable;
 
 /**
  * Betriebszustand für Statusseite und Monitoring (Pflichtenheft 10.2/10.3).
- * Liefert je Bereich „ok“, „warnung“ oder „fehler“ mit kurzer Erklärung –
+ * Liefert je Bereich „ok“, „warnung“, „fehler“ oder „aus“ (nicht
+ * eingerichtet) mit kurzer Erklärung –
  * ohne Personendaten oder Geheimnisse, denn /status ist öffentlich.
  */
 class HealthChecks
@@ -24,6 +25,9 @@ class HealthChecks
     public const WARN = 'warnung';
 
     public const FAIL = 'fehler';
+
+    /** Bewusst (noch) nicht eingerichtet – weder in Ordnung noch Störung. */
+    public const OFF = 'aus';
 
     /**
      * @return list<array{key: string, label: string, status: string, message: string}>
@@ -58,6 +62,7 @@ class HealthChecks
      */
     public static function overall(array $results): string
     {
+        // „aus“ zählt nicht mit: Nicht Eingerichtetes ist keine Störung.
         $statuses = array_column($results, 'status');
 
         return in_array(self::FAIL, $statuses, true) ? self::FAIL : (in_array(self::WARN, $statuses, true) ? self::WARN : self::OK);
@@ -129,7 +134,7 @@ class HealthChecks
     {
         $calendars = Calendar::query()->where('active', true)->get(['label', 'last_synced_at', 'last_error']);
         if ($calendars->isEmpty()) {
-            return [self::OK, 'Keine Kalender eingebunden.'];
+            return [self::OFF, 'Keine Kalender eingebunden.'];
         }
         $broken = $calendars->filter(fn ($c) => $c->last_error !== null || $c->last_synced_at === null || $c->last_synced_at->lt(now()->subHours(2)));
 
@@ -143,7 +148,7 @@ class HealthChecks
     {
         $token = IntegrationToken::for(InstagramClient::PROVIDER);
         if (! $token) {
-            return [self::OK, 'Nicht eingerichtet.'];
+            return [self::OFF, 'Noch nicht eingerichtet – es fehlt das Instagram-Konto (siehe Roadmap).'];
         }
         if ($token->expires_at !== null && $token->expires_at->lt(now()->addDays(7))) {
             return [self::WARN, 'Zugang läuft am '.$token->expires_at->format('d.m.Y').' ab.'];

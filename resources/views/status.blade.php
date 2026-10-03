@@ -7,8 +7,8 @@
 @endpush
 
 @php
-    $labels = [\App\Support\Health\HealthChecks::OK => 'In Ordnung', \App\Support\Health\HealthChecks::WARN => 'Hinweis', \App\Support\Health\HealthChecks::FAIL => 'Störung'];
-    $dot = fn (string $s) => match ($s) { 'ok' => 'bg-[#1e8e3e]', 'warnung' => 'bg-[#f2b600]', default => 'bg-[#d93025]' };
+    $labels = [\App\Support\Health\HealthChecks::OK => 'In Ordnung', \App\Support\Health\HealthChecks::WARN => 'Hinweis', \App\Support\Health\HealthChecks::FAIL => 'Störung', \App\Support\Health\HealthChecks::OFF => 'Nicht eingerichtet'];
+    $dot = fn (string $s) => match ($s) { 'ok' => 'bg-[#1e8e3e]', 'warnung' => 'bg-[#f2b600]', 'aus' => 'bg-dpsg-mittelbeige', default => 'bg-[#d93025]' };
 @endphp
 
 @section('content')

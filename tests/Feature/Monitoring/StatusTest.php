@@ -37,6 +37,10 @@ class StatusTest extends TestCase
         $this->assertSame('warnung', $json['status']); // Backups noch nicht eingeschaltet
         $this->assertSame('ok', $json['checks']['cronjob']['status']);
         $this->assertSame('warnung', $json['checks']['backups']['status']);
+        // Nicht Eingerichtetes ist grau („aus“), nicht grün – und keine Störung.
+        $this->assertSame('aus', $json['checks']['instagram']['status']);
+        $this->assertSame('aus', $json['checks']['kalender']['status']);
+        $this->get('/status')->assertSee('Nicht eingerichtet');
     }
 
     #[TestDox('Cronjob steht oder Mails hängen: Störung, HTTP 503 und Alarmmail an Admins – höchstens alle sechs Stunden')]

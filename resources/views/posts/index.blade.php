@@ -16,6 +16,7 @@
                 </h2>
                 <p class="text-sm text-text-secondary mb-2">
                     {{ $post->published_at?->translatedFormat('d. F Y') }}
+                    @if ($post->event?->acceptsRegistrations())<span class="ml-2 inline-flex items-center gap-1 rounded-full bg-dpsg-blau px-2 py-0.5 align-middle text-xs font-bold text-white"><x-heroicon-o-ticket class="h-3.5 w-3.5" aria-hidden="true" />Anmeldung offen</span>@endif
                 </p>
                 <p>{{ $post->teaser }}</p>
             </article>

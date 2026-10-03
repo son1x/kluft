@@ -36,7 +36,7 @@ class HomeController extends Controller
 
         $posts = Post::query()
             ->published()
-            ->with('coverMedia')
+            ->with(['coverMedia', 'event'])
             ->orderByDesc('published_at')
             ->limit(6)
             ->get();

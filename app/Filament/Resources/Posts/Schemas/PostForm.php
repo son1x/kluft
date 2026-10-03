@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Posts\Schemas;
 
+use App\Models\Event;
 use App\Models\Post;
 use App\Policies\PostPolicy;
 use App\Support\RoleCatalog;
@@ -16,6 +17,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\HtmlString;
 
 class PostForm
@@ -112,6 +114,14 @@ class PostForm
                         ->label('Titelbild')
                         ->relationship('coverMedia', 'alt_text')
                         ->searchable()
+                        ->preload(),
+
+                    Select::make('event_id')
+                        ->label('Anmeldung zu Veranstaltung')
+                        ->helperText('Zeigt im Beitrag einen auffälligen Kasten mit Termin, Anmeldeschluss und Button zur Anmeldung.')
+                        ->relationship('event', 'title', fn (Builder $query) => $query->where('status', '!=', 'draft')->orderByDesc('starts_at'))
+                        ->getOptionLabelFromRecordUsing(fn (Event $record) => $record->title.' ('.$record->dateLabel().')')
+                        ->searchable(['title'])
                         ->preload(),
                 ]),
 

@@ -92,6 +92,9 @@
                                 <a href="{{ url('/aktuelles/'.$post->slug) }}" class="hover:underline">{{ $post->title }}</a>
                             </h3>
                             <p class="mt-1 text-xs text-text-secondary">{{ $post->published_at?->locale('de')->isoFormat('dddd, D. MMMM YYYY') }}</p>
+                            @if ($post->event?->acceptsRegistrations())
+                                <p class="mt-2"><span class="inline-flex items-center gap-1 rounded-full bg-dpsg-blau px-2 py-0.5 text-xs font-bold text-white"><x-heroicon-o-ticket class="h-3.5 w-3.5" aria-hidden="true" />Anmeldung offen</span></p>
+                            @endif
                             <p class="mt-3 flex-1">{{ $post->teaser }}</p>
                             <a href="{{ url('/aktuelles/'.$post->slug) }}" class="mt-5 self-start border border-dpsg-rot px-3 py-1 text-sm text-dpsg-rot hover:bg-dpsg-rot hover:text-white">
                                 Mehr<span class="sr-only"> zu „{{ $post->title }}“</span>

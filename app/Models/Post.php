@@ -18,6 +18,7 @@ class Post extends Model
         'teaser',
         'body',
         'cover_media_id',
+        'event_id',
         'status',
         'reviewed_by',
         'published_at',
@@ -76,6 +77,16 @@ class Post extends Model
     public function coverMedia(): BelongsTo
     {
         return $this->belongsTo(Media::class, 'cover_media_id');
+    }
+
+    /**
+     * Veranstaltung, zu der der Beitrag einlädt (Anmelde-Kasten).
+     *
+     * @return BelongsTo<Event, $this>
+     */
+    public function event(): BelongsTo
+    {
+        return $this->belongsTo(Event::class);
     }
 
     /**

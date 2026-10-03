@@ -16,9 +16,15 @@
         @if ($post->coverMedia)
             @include('partials.cover-figure', ['media' => $post->coverMedia, 'class' => 'mb-6'])
         @endif
+        @if ($post->event && $post->event->status !== 'draft')
+            @include('partials.event-cta', ['event' => $post->event])
+        @endif
         <div class="prose max-w-none">
             {!! str($post->body)->sanitizeHtml()->glossar() !!}
         </div>
+        @if ($post->event && $post->event->status !== 'draft')
+            @include('partials.event-cta', ['event' => $post->event, 'compact' => true])
+        @endif
 
         @if ($notice = $post->aiNotice())
             <p class="mt-8 flex items-start gap-2 border-l-4 border-dpsg-mittelbeige bg-surface-muted p-3 text-sm" role="note">

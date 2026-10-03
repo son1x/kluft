@@ -12,6 +12,7 @@ class PostController extends Controller
     {
         $posts = Post::query()
             ->published()
+            ->with('event')
             ->orderByDesc('published_at')
             ->paginate(10);
 
@@ -20,7 +21,7 @@ class PostController extends Controller
 
     public function show(string $slug): View
     {
-        $post = Post::query()->published()->where('slug', $slug)->firstOrFail();
+        $post = Post::query()->published()->with(['coverMedia', 'event'])->where('slug', $slug)->firstOrFail();
 
         return view('posts.show', ['post' => $post]);
     }

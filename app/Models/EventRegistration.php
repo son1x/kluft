@@ -5,16 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
  * Anmeldung zu einer Veranstaltung (Pflichtenheft 8.2). Zusatzangaben aus
  * dem Baukasten liegen verschlüsselt in `data`; Tokens nur als Hash.
  *
  * @property array<string, mixed>|null $data
- * @property \Illuminate\Support\Carbon|null $consent_at
- * @property \Illuminate\Support\Carbon|null $confirmed_at
- * @property \Illuminate\Support\Carbon|null $cancelled_at
- * @property \Illuminate\Support\Carbon|null $purge_at
+ * @property Carbon|null $consent_at
+ * @property Carbon|null $confirmed_at
+ * @property Carbon|null $cancelled_at
+ * @property Carbon|null $purge_at
  */
 class EventRegistration extends Model
 {

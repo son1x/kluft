@@ -9,6 +9,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * Anmeldung zu einer Veranstaltung (Pflichtenheft 8.2). Zusatzangaben aus
  * dem Baukasten liegen verschlüsselt in `data`; Tokens nur als Hash.
+ *
+ * @property array<string, mixed>|null $data
+ * @property \Illuminate\Support\Carbon|null $consent_at
+ * @property \Illuminate\Support\Carbon|null $confirmed_at
+ * @property \Illuminate\Support\Carbon|null $cancelled_at
+ * @property \Illuminate\Support\Carbon|null $purge_at
  */
 class EventRegistration extends Model
 {

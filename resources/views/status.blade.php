@@ -17,10 +17,10 @@
         <p class="mt-2 text-text-secondary">Betriebszustand der Website und ihrer Dienste. Geprüft {{ $checkedAt->timezone(config('app.timezone'))->format('d.m.Y, H:i') }} Uhr.</p>
 
         <div @class([
-            'mt-6 flex items-center gap-3 p-5 font-bold text-white',
-            'bg-[#1e8e3e]' => $overall === 'ok',
-            'bg-[#b07f00]' => $overall === 'warnung',
-            'bg-[#d93025]' => $overall === 'fehler',
+            'mt-6 flex items-center gap-3 p-5 font-bold',
+            'bg-[#1e7a36] text-white' => $overall === 'ok',
+            'bg-[#f2b600] text-text' => $overall === 'warnung',
+            'bg-[#b3261e] text-white' => $overall === 'fehler',
         ]) role="status">
             {{ match ($overall) { 'ok' => 'Alle Systeme laufen.', 'warnung' => 'Alles erreichbar – es gibt Hinweise.', default => 'Es gibt eine Störung.' } }}
         </div>

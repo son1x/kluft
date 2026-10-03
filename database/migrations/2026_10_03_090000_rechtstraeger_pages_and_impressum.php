@@ -1,8 +1,10 @@
 <?php
 
+use App\Models\Redirect;
 use Database\Seeders\DemoContentSeeder;
 use Database\Seeders\RequiredPagesSeeder;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -39,6 +41,8 @@ return new class extends Migration
                     'created_at' => now(), 'updated_at' => now(),
                 ]);
             }
+            // Weiterleitungen sind dauerhaft gecacht; direkte Inserts leeren ihn nicht.
+            Cache::forget(Redirect::CACHE_KEY);
         }
 
         DB::table('people')->where('name', 'Marc Basenach')->where('role', self::OLD_ROLE)

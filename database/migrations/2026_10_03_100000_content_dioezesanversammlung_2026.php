@@ -1,6 +1,8 @@
 <?php
 
+use App\Models\Redirect;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -161,6 +163,8 @@ return new class extends Migration
             'from_path' => '/anmeldung-zur-dioezesanversammlung-2026', 'to_path' => $event,
             'status_code' => 301, 'source' => 'manuell', 'created_at' => now(), 'updated_at' => now(),
         ]);
+        // Weiterleitungen sind dauerhaft gecacht; direkte Inserts leeren ihn nicht.
+        Cache::forget(Redirect::CACHE_KEY);
     }
 
     /**

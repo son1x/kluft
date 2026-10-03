@@ -4,15 +4,20 @@ namespace App\Filament\Resources\Users\Schemas;
 
 use App\Models\RoleAssignment;
 use App\Models\User;
+use App\Services\DirectoryUnavailable;
+use App\Services\EntraDirectory;
 use App\Support\RoleCatalog;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\HtmlString;
 use Illuminate\Validation\ValidationException;
 
 class UserForm
@@ -30,6 +35,8 @@ class UserForm
         $grantable = RoleCatalog::grantableBy($actor);
 
         return $schema->components([
+            self::directorySection(),
+
             Section::make('M365-Konto')
                 ->description('Die Anmeldung erfolgt ausschließlich über Microsoft 365. Wird ein Konto hier vorab angelegt, wird es bei der ersten Anmeldung über die E-Mail-Adresse verknüpft.')
                 ->columns(2)
@@ -90,6 +97,76 @@ class UserForm
                         ->defaultItems(0),
                 ]),
         ]);
+    }
+
+    /**
+     * Suche im Entra-Verzeichnis (F-USR-02), nur beim Anlegen. Ohne
+     * Verbindung bleibt die Eingabe per E-Mail-Adresse (F-USR-03).
+     */
+    private static function directorySection(): Section
+    {
+        $directory = app(EntraDirectory::class);
+
+        return Section::make('Im M365-Verzeichnis suchen')
+            ->description('Person per Name oder Adresse finden; Name und E-Mail werden übernommen und das Konto direkt verknüpft. Es werden nur Name, E-Mail und Konto-ID abgefragt.')
+            ->visible(fn (?User $record) => $record === null)
+            ->components([
+                Select::make('directory_oid')
+                    ->hiddenLabel()
+                    ->placeholder('Name oder E-Mail-Adresse eingeben …')
+                    ->searchable()
+                    ->searchPrompt('Mindestens zwei Buchstaben eingeben')
+                    ->noSearchResultsMessage('Niemand gefunden. Tippfehler? Sonst unten die Adresse von Hand eintragen.')
+                    ->getSearchResultsUsing(fn (string $search) => self::directorySearch($directory, $search))
+                    ->getOptionLabelUsing(fn (?string $value) => self::directoryLabel(session('entra.treffer.'.$value)) ?? $value)
+                    ->live()
+                    ->afterStateUpdated(function (?string $state, Set $set) {
+                        $person = $state ? session('entra.treffer.'.$state) : null;
+                        if (is_array($person)) {
+                            $set('name', $person['name']);
+                            $set('email', $person['email']);
+                        }
+                    })
+                    ->visible(fn () => $directory->connected()),
+                Placeholder::make('directory_connect')
+                    ->hiddenLabel()
+                    ->content(new HtmlString('<a href="'.e(route('auth.entra.verzeichnis')).'" class="fi-link font-semibold text-primary-600 underline">Mit Microsoft verbinden und suchen</a> <span class="text-sm text-gray-500">– einmal pro Sitzung; Microsoft leitet sofort zurück.</span>'))
+                    ->visible(fn () => ! $directory->connected()),
+            ]);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private static function directorySearch(EntraDirectory $directory, string $search): array
+    {
+        try {
+            $people = $directory->search($search);
+        } catch (DirectoryUnavailable $e) {
+            Notification::make()->warning()
+                ->title('Verzeichnissuche nicht möglich ('.$e->getMessage().')')
+                ->body(new HtmlString('Bitte <a href="'.e(route('auth.entra.verzeichnis')).'" class="underline">neu mit Microsoft verbinden</a> oder die Adresse von Hand eintragen.'))
+                ->send();
+
+            return [];
+        }
+
+        // Treffer für die Übernahme merken (nur in der Sitzung).
+        $treffer = [];
+        foreach ($people as $person) {
+            $treffer[$person['id']] = $person;
+        }
+        session()->put('entra.treffer', $treffer);
+
+        return array_map(fn (array $person) => self::directoryLabel($person), $treffer);
+    }
+
+    /**
+     * @param  array{name: string, email: string}|mixed  $person
+     */
+    private static function directoryLabel(mixed $person): ?string
+    {
+        return is_array($person) ? $person['name'].' – '.$person['email'] : null;
     }
 
     /**

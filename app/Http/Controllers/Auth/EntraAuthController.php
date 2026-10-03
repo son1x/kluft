@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Filament\Resources\Users\UserResource;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Notifications\NewPendingUserNotification;
+use App\Services\EntraDirectory;
 use App\Support\AuditLogger;
+use Filament\Notifications\Notification as FilamentNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -13,6 +16,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\User as SocialiteUser;
+use Throwable;
 
 /**
  * Entra-ID-/M365-Login der Redaktion, s. Pflichtenheft 5.1 und 11.2.
@@ -31,8 +35,40 @@ class EntraAuthController extends Controller
             ->redirect();
     }
 
+    /**
+     * Verzeichnissuche verbinden (F-USR-02): eigener, zweiter Schritt mit
+     * User.ReadBasic.All, damit der normale Login nie von dieser
+     * Berechtigung abhängt. Mit erteilter Administratorzustimmung kehrt
+     * Microsoft ohne Rückfrage sofort zurück.
+     */
+    public function connectDirectory(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('create', User::class), 403);
+
+        if (blank($user->entra_oid)) {
+            FilamentNotification::make()->warning()
+                ->title('Verzeichnissuche nur mit M365-Anmeldung')
+                ->body('Mit dem Notfall-Konto ist keine Suche im Verzeichnis möglich. Bitte die E-Mail-Adresse von Hand eintragen.')
+                ->send();
+
+            return redirect(UserResource::getUrl('create'));
+        }
+
+        $request->session()->put('entra.flow', 'verzeichnis');
+
+        return Socialite::driver('microsoft')
+            ->setScopes(['User.Read', 'User.ReadBasic.All'])
+            ->with(['login_hint' => $user->upn ?? $user->email])
+            ->redirect();
+    }
+
     public function callback(Request $request): RedirectResponse|Response
     {
+        if ($request->session()->pull('entra.flow') === 'verzeichnis' && $request->user() instanceof User) {
+            return $this->directoryCallback($request, $request->user());
+        }
+
         /** @var SocialiteUser $entraUser */
         $entraUser = Socialite::driver('microsoft')->user();
 
@@ -101,5 +137,44 @@ class EntraAuthController extends Controller
         AuditLogger::log('login.entra', $user, request: $request);
 
         return redirect()->intended('/admin');
+    }
+
+    private function directoryCallback(Request $request, User $user): RedirectResponse
+    {
+        $back = redirect(UserResource::getUrl('create'));
+
+        try {
+            if ($request->filled('error')) {
+                throw new \RuntimeException((string) $request->query('error'));
+            }
+            /** @var SocialiteUser $entraUser */
+            $entraUser = Socialite::driver('microsoft')->user();
+        } catch (Throwable $e) {
+            AuditLogger::log('entra.verzeichnis.fehlgeschlagen', $user, request: $request);
+            FilamentNotification::make()->danger()
+                ->title('Verzeichnissuche nicht verbunden')
+                ->body('Microsoft hat die Verbindung abgelehnt ('.mb_substr($e->getMessage(), 0, 80).'). Ist die Berechtigung User.ReadBasic.All mit Administratorzustimmung erteilt?')
+                ->persistent()
+                ->send();
+
+            return $back;
+        }
+
+        // Nur das eigene Konto: wer sich bei Microsoft als jemand anderes
+        // meldet, bekommt keinen Verzeichniszugriff in dieser Sitzung.
+        if ($entraUser->getId() !== $user->entra_oid) {
+            AuditLogger::log('entra.verzeichnis.anderes_konto', $user, request: $request);
+            FilamentNotification::make()->danger()
+                ->title('Anderes Microsoft-Konto')
+                ->body('Bitte mit dem Konto verbinden, mit dem du hier angemeldet bist.')
+                ->send();
+
+            return $back;
+        }
+
+        app(EntraDirectory::class)->remember((string) $entraUser->token, (int) ($entraUser->expiresIn ?? 3600));
+        AuditLogger::log('entra.verzeichnis.verbunden', $user, request: $request);
+
+        return $back;
     }
 }

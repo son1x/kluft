@@ -28,6 +28,8 @@ Route::get('/auth/entra/redirect', [EntraAuthController::class, 'redirectToEntra
     ->name('auth.entra.redirect');
 Route::get('/auth/entra/callback', [EntraAuthController::class, 'callback'])
     ->name('auth.entra.callback');
+Route::get('/auth/entra/verzeichnis', [EntraAuthController::class, 'connectDirectory'])
+    ->name('auth.entra.verzeichnis');
 
 // Notfall-Super-Admin (Break-Glass), s. Pflichtenheft 5.2. Bewusst nicht
 // in der Navigation verlinkt und mit eigenem Rate-Limit im Controller

@@ -13,6 +13,9 @@ Schedule::command('calendar:sync')->everyFifteenMinutes()->withoutOverlapping();
 Schedule::command('registrations:purge --unconfirmed')->hourly();
 Schedule::command('registrations:purge')->dailyAt('03:00');
 
+// Audit-Log nach 12 Monaten bereinigen (Pflichtenheft 8.2, 11.4).
+Schedule::command('audit:prune')->dailyAt('03:30');
+
 // Lebenszeichen des Schedulers, damit /roadmap anzeigen kann, ob der
 // Cronjob auf dem Server läuft.
 Schedule::call(fn () => Cache::forever(Roadmap::HEARTBEAT_KEY, now()->timestamp))->everyMinute()->name('scheduler-heartbeat');

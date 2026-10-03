@@ -7,7 +7,7 @@
 */
 
 return [
-    'stand' => '2026-10-02',
+    'stand' => '2026-10-03',
 
     'current_phase' => '1e',
 
@@ -57,11 +57,11 @@ return [
         '6.3' => ['title' => 'Beraten-Online – Phase 2 (konzeptionell vorbereitet)', 'status' => 'later', 'note' => 'Phase 2.'],
         '6.4' => ['title' => 'Instagram-Integration – Phase 1 (S) / Phase 2', 'status' => 'partial', 'note' => 'Teilen aus dem Blog-Editor, Bildaufbereitung, Status/Permalink, Rechteprüfung und automatische Token-Erneuerung fertig (gegen simulierte API getestet). Es fehlt nur noch das echte Instagram-Konto.'],
         '6.5' => ['title' => 'Nextcloud-Kalender – Phase 1', 'status' => 'done', 'note' => 'Sync, Wiederholungen, Liste/Monat, Filter und SSRF-Schutz fertig; Teilen-Links aus Nextcloud werden automatisch umgewandelt. Veranstaltungen aus dem Backend erscheinen automatisch mit im Kalender (mit Anmeldelink, ohne Doppelung mit Nextcloud-Terminen). Im Backend unter „Kalendertermine“ lässt sich zu einem Nextcloud-Termin direkt eine Anmeldung anlegen (vorausgefüllt und verknüpft). Erster Kalender (Diözesanleitung) eingetragen, Abruf läuft per Cronjob.'],
-        '6.6' => ['title' => 'Georgsbote (Brevo) – Phase 1', 'status' => 'partial', 'note' => 'Georgsbote (PDF-Zeitschrift): Archiv mit Veröffentlichungsprüfung fertig. Georgsbrief (Newsletter): eigene Seite mit Double-Opt-In fertig. Offen: Brevo-Zugangsdaten, Bulk-Upload alter Jahrgänge.'],
+        '6.6' => ['title' => 'Georgsbote (Brevo) – Phase 1', 'status' => 'partial', 'note' => 'Georgsbote (PDF-Zeitschrift): Archiv mit Veröffentlichungsprüfung fertig. Georgsbrief (Newsletter): eigene Seite mit Double-Opt-In fertig. Brevo angebunden (API, Liste, Double-Opt-In-Vorlage geprüft). Offen: Bulk-Upload alter Jahrgänge.'],
         '6.7' => ['title' => 'Veranstaltungsmanagement (Eigenentwicklung) – Phase 1', 'status' => 'done', 'note' => 'Anmeldung mit Double-Opt-In, Warteliste, Minderjährigen-Einwilligung, XLSX-Export und Löschfristen fertig.'],
         '6.8' => ['title' => 'Consent-Management – Phase 1', 'status' => 'partial', 'note' => 'Banner, Widerruf und lokale Auslieferung aller Dateien fertig. Offen: Zwei-Klick-Einbettungen.'],
         '6.9' => ['title' => 'WordPress-Migration – Phase 1e', 'status' => 'partial', 'note' => 'Import-Kommando über die WordPress-REST-API mit Testlauf, wiederholbar ohne Duplikate; bereinigt das HTML, übernimmt Bilder und PDFs (auch aus Link-Beiträgen auf den Download-Manager), schreibt interne Links um, legt 301-Weiterleitungen an, übernimmt keine Kommentare/Benutzer. Beiträge kommen als Entwurf mit Nacharbeitsliste; Veröffentlichung erst nach Durchsicht. Bericht im Backend. Testimport auf test.dpsg-trier.de gelaufen (41 Beiträge, 34 Dateien, 41 Weiterleitungen). Offen: die 41 Beiträge durchsehen; alte WordPress-Seiten bei Bedarf von Hand umleiten.'],
-        '6.10' => ['title' => 'E-Mail-Versand über Brevo SMTP – Phase 1', 'status' => 'partial', 'note' => 'Mails, Testumleitung und datensparsame Inhalte fertig. Offen: SMTP-Zugang, Domain-Authentifizierung, Versand über Warteschlange.'],
+        '6.10' => ['title' => 'E-Mail-Versand über Brevo SMTP – Phase 1', 'status' => 'partial', 'note' => 'Versand über Brevo-SMTP aktiv, Absenderdomain authentifiziert; Testumleitung mit bis zu zehn freigeschalteten Tester*innen; datensparsame Inhalte. Offen: DMARC-Eintrag prüfen, Versand über Warteschlange.'],
         '6.11' => ['title' => 'Bezirke- und Stämme-Verzeichnis mit Kartenansicht – Phase 1', 'status' => 'partial', 'note' => 'Karte, Liste, Filter und Backend fertig; 68 Stämme erfasst. Offen: Daten von den Stämmen bestätigen lassen (Links, Biber-Gruppen).'],
         '7' => ['title' => 'Design und UI', 'status' => 'done', 'note' => ''],
         '7.1' => ['title' => 'Layout (Anlehnung an bistum-trier.de)', 'status' => 'done', 'note' => 'Startseite und Navigation nach dem Vorbild bistum-trier.de.'],
@@ -101,7 +101,7 @@ return [
     */
     'feedback' => [
         'Testing' => [
-            ['status' => 'done', 'title' => 'Echte Mails an ausgewählte Tester*innen', 'note' => 'Auf test.dpsg-trier.de gehen alle Mails an die Testadresse – außer an bis zu zehn freigeschaltete Adressen (GitHub-Secret MAIL_TEST_ALLOWLIST); diese Empfänger*innen ihre Bestätigungen, Antworten usw. direkt bekommen. Die Testadresse sieht im Mail-Kopf „X-Test-Umgeleitet-Von“, an wen eine umgeleitete Mail gegangen wäre. Mit dem Livegang entfallen Umleitung und Ausnahmen.'],
+            ['status' => 'done', 'title' => 'Echte Mails an ausgewählte Tester*innen', 'note' => 'Auf test.dpsg-trier.de gehen alle Mails an die Testadresse – außer an bis zu zehn freigeschaltete Adressen (GitHub-Secret MAIL_TEST_ALLOWLIST); diese Empfänger*innen bekommen ihre Bestätigungen, Antworten usw. direkt. Die Testadresse sieht im Mail-Kopf „X-Test-Umgeleitet-Von“, an wen eine umgeleitete Mail gegangen wäre. Mit dem Livegang entfallen Umleitung und Ausnahmen.'],
         ],
         'Talia' => [
             ['status' => 'open', 'title' => 'Aktuelles weiter nach vorne', 'note' => 'Empfehlung: im Menü direkt hinter „Start“ und auf der Startseite die Meldungen vor den Begrüßungstext. Funktioniert nur, wenn regelmäßig neue Beiträge kommen – sonst steht ganz oben Veraltetes.'],
@@ -121,7 +121,7 @@ return [
         ['done', 'Entra-Login mit Rechten nach Rolle'],
         ['partial', 'Notfall-Login mit 2FA und Alarmmail – Account fehlt noch'],
         ['partial', 'bolivienpartnerschaft.de ohne URL-Wechsel – DNS fehlt noch'],
-        ['partial', 'Newsletter nur nach Bestätigung, keine Adresse im CMS – Brevo-Zugang fehlt'],
+        ['done', 'Newsletter nur nach Bestätigung, keine Adresse im CMS'],
         ['done', 'Unbestätigte Anmeldungen nach 48 h gelöscht (Cronjob läuft)'],
         ['done', 'XLSX-Export mit konfigurierten Spalten, Formelschutz und Audit'],
         ['done', 'Ohne Einwilligung keine Anfragen an Drittanbieter'],
@@ -131,7 +131,7 @@ return [
         ['done', 'Stufenadmin sieht nur die eigene Stufe (Negativtests)'],
         ['done', 'Autor:innen bearbeiten nur eigene News, Veröffentlichung nach Freigabe'],
         ['done', 'Verwaltung ohne Systemeinstellungen und Tokens'],
-        ['open', 'Transaktionsmails über Brevo mit SPF/DKIM/DMARC'],
+        ['partial', 'Transaktionsmails über Brevo mit SPF/DKIM/DMARC – Brevo-SMTP aktiv, Domain authentifiziert; DMARC prüfen'],
         ['partial', 'WordPress-Import wiederholbar mit 301-Weiterleitungen – Testimport auf dem Server gelaufen, Durchsicht der Beiträge steht aus'],
         ['partial', 'M365-Konto suchen und Rolle zuweisen – Verzeichnissuche fehlt'],
         ['partial', '.env/vendor/storage nicht erreichbar; Produktiv-Deploy mit Freigabe fehlt'],

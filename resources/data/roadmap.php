@@ -84,7 +84,7 @@ return [
         '10.4' => ['title' => 'Kompatibilität', 'status' => 'done', 'note' => 'Lesen und Anmelden funktionieren ohne JavaScript.'],
         '10.5' => ['title' => 'Wartbarkeit', 'status' => 'partial', 'note' => 'Automatisierte Tests laufen bei jedem Deploy. Offen: Larastan und Pint in CI, ADRs.'],
         '11' => ['title' => 'API-Übersicht', 'status' => 'partial', 'note' => ''],
-        '11.1' => ['title' => 'Öffentliche Endpunkte (Web/JSON)', 'status' => 'partial', 'note' => 'Fast alle Endpunkte da, inkl. Kontaktformular. Offen: RSS-Feed.'],
+        '11.1' => ['title' => 'Öffentliche Endpunkte (Web/JSON)', 'status' => 'done', 'note' => 'Alle Endpunkte da, inkl. Kontaktformular, „Meine Anmeldungen“ und RSS-Feed (/feed, je Sektion z. B. /bolivien/feed).'],
         '11.2' => ['title' => 'Admin-/Interne Endpunkte', 'status' => 'partial', 'note' => 'Offen: Entra-Verzeichnissuche. Instagram läuft als Aktion im Blog-Editor statt als eigene URL.'],
         '11.3' => ['title' => 'Ausgehende Integrationen', 'status' => 'partial', 'note' => 'Entra, Brevo-Newsletter, Nextcloud und Instagram angebunden (Instagram wartet auf das Konto). Offen: Graph, Brevo-SMTP-Zugang.'],
         '11.4' => ['title' => 'Geplante Scheduler-Jobs', 'status' => 'partial', 'note' => 'Kalender-Sync, Löschjobs, Instagram-Token-Erneuerung, Backup und Wiederherstellungstest eingeplant. Offen: Audit-Bereinigung.'],

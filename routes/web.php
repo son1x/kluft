@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\EntraAuthController;
 use App\Http\Controllers\Public\CalendarController;
 use App\Http\Controllers\Public\ContactController;
 use App\Http\Controllers\Public\EventController;
+use App\Http\Controllers\Public\FeedController;
 use App\Http\Controllers\Public\GeorgsboteController;
 use App\Http\Controllers\Public\GeorgsbriefController;
 use App\Http\Controllers\Public\GruppierungController;
@@ -41,6 +42,9 @@ Route::middleware('throttle:20,15')->group(function () {
 // "/aktuelles" nicht als Seiten-Slug interpretiert wird.
 Route::get('/aktuelles', [PostController::class, 'index'])->name('posts.index');
 Route::get('/aktuelles/{slug}', [PostController::class, 'show'])->name('posts.show');
+
+// RSS-Feed der Beiträge (Pflichtenheft 11.1).
+Route::get('/feed', [FeedController::class, 'index'])->name('feed');
 
 // Bezirke- und Stämme-Verzeichnis mit Karte (F-MAP, Pflichtenheft 11.1).
 Route::get('/bezirke-staemme', [GruppierungController::class, 'index'])->name('gruppierungen.index');
@@ -119,6 +123,9 @@ Route::get('/{section}', [SectionController::class, 'show'])
 Route::get('/{section}/aktuelles', [SectionController::class, 'posts'])
     ->whereIn('section', array_keys(config('dpsg.sections')))
     ->name('sections.posts');
+Route::get('/{section}/feed', [FeedController::class, 'section'])
+    ->whereIn('section', array_keys(config('dpsg.sections')))
+    ->name('sections.feed');
 
 // Redaktionelle Seiten (F-CMS-01). Bewusst als letzte Route registriert –
 // fängt jeden sonst nicht zugeordneten Ein-Segment-Pfad als Seiten-Slug ab.

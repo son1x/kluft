@@ -11,6 +11,7 @@
         <meta name="description" content="@yield('seo_description')" />
     @endif
     <link rel="icon" href="{{ asset('favicon.ico') }}" />
+    <link rel="alternate" type="application/rss+xml" title="DPSG Diözesanverband Trier – Aktuelles" href="{{ route('feed') }}" />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
 </head>

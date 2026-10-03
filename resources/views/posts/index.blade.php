@@ -4,7 +4,10 @@
 
 @section('content')
     <div class="max-w-3xl mx-auto px-4 py-10">
-        <h1 class="font-serif text-3xl font-bold mb-8">Aktuelles</h1>
+        <div class="mb-8 flex flex-wrap items-baseline justify-between gap-4">
+            <h1 class="font-serif text-3xl font-bold">Aktuelles</h1>
+            <a href="{{ route('feed') }}" class="inline-flex items-center gap-1 text-sm underline hover:text-dpsg-rot"><svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M4 3a1 1 0 0 0 0 2 11 11 0 0 1 11 11 1 1 0 1 0 2 0A13 13 0 0 0 4 3Zm0 5a1 1 0 0 0 0 2 6 6 0 0 1 6 6 1 1 0 1 0 2 0 8 8 0 0 0-8-8Zm1 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z" /></svg> RSS-Feed</a>
+        </div>
 
         @forelse ($posts as $post)
             <article class="mb-8 pb-8 border-b border-surface-muted">

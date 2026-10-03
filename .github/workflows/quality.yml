@@ -13,6 +13,11 @@ on:
   schedule:
     - cron: '17 5 * * 1'
   workflow_dispatch:
+    inputs:
+      baseline:
+        description: 'Larastan-Baseline neu erzeugen und im Log ausgeben'
+        type: boolean
+        default: false
 
 jobs:
   sicherheit:
@@ -51,4 +56,11 @@ jobs:
         run: |
           cp .env.example .env
           php artisan key:generate --no-interaction
-          vendor/bin/phpstan analyse --no-progress --memory-limit=1G --error-format=table
+          if [ "${{ inputs.baseline }}" = "true" ]; then
+            vendor/bin/phpstan analyse --no-progress --memory-limit=1G --generate-baseline=phpstan-baseline.neon --allow-empty-baseline || true
+            echo "----- BASELINE START -----"
+            cat phpstan-baseline.neon
+            echo "----- BASELINE END -----"
+          else
+            vendor/bin/phpstan analyse --no-progress --memory-limit=1G --error-format=table
+          fi

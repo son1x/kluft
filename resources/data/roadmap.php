@@ -105,6 +105,7 @@ return [
             ['status' => 'done', 'title' => 'Footer ohne Wiederholung des Menüs', 'note' => 'Umgesetzt: Footer nur noch mit Kontakt, Service, „DPSG im Netz“ und Georgsbrief-Anmeldung.'],
             ['status' => 'open', 'title' => 'Weniger Beige', 'note' => 'Die Farben sind die des DPSG-CD (Leitfaden April 2026); Beige ist dort für Flächen und Fußzeile vorgesehen, aber kein Muss. Empfehlung: Footer in DPSG-Blau, Infoboxen hellgrau/weiß, Beige nur noch sparsam.'],
             ['status' => 'done', 'title' => 'Diözesan-Logo größer', 'note' => 'Umgesetzt: Logo im Kopf 1,4-fach (Desktop). Für noch größer und gestochen scharf: Logo als SVG/PDF aus dem Diözesanbüro.'],
+            ['status' => 'done', 'title' => 'Mobiles Menü: nicht alle Punkte erreichbar', 'note' => 'Behoben: Das Menü auf dem Handy ist länger als der Bildschirm und ließ sich nicht scrollen – Veranstaltungen, Kalender und Aktuelles waren nicht erreichbar. Jetzt scrollt das Menü selbst, die Seite dahinter bleibt stehen.'],
             ['status' => 'done', 'title' => 'Inklusions-Lilie für den Fachbereich Inklusion', 'note' => 'Umgesetzt: Inklusions-Lilie von dpsg.de (für die Arbeit in der DPSG frei verfügbar) im Kopf der Inklusionsseite und auf der Fachbereichsübersicht.'],
         ],
     ],

@@ -18,16 +18,17 @@
      Servicezeile mit hängendem Logo-Badge, Hero bzw. Kopfband, darüber
      schwebende Hauptnavigation, mehrspaltiger Footer. Farben/Schriften
      ausschließlich DPSG-CD (7.2). --}}
-<body class="min-h-screen flex flex-col bg-surface font-sans text-text" x-data="{ navOpen: false, scrolled: false }" @scroll.window.throttle.50ms="scrolled = window.scrollY > 40">
+<body class="min-h-screen flex flex-col bg-surface font-sans text-text" x-data="{ navOpen: false, scrolled: false }" @scroll.window.throttle.50ms="scrolled = window.scrollY > 40"
+      :class="navOpen && 'max-md:overflow-hidden'" @keydown.escape.window="navOpen = false">
     <a href="#inhalt" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-2 focus:bg-white focus:px-4 focus:py-2 focus:text-dpsg-blau">Zum Inhalt springen</a>
 
 
     {{-- Mobil bleibt die blaue Kopfzeile beim Scrollen oben stehen; das
-         hängende Logo schrumpft dann in die Zeile hinein. --}}
+         hängende Logo schrumpft dann (und bei offenem Menü) in die Zeile. --}}
     <header class="sticky top-0 z-40 bg-dpsg-blau text-white md:relative md:z-30">
         <div class="relative mx-auto flex h-12 max-w-6xl items-center justify-end gap-6 px-4">
-            <a href="{{ url('/') }}" class="absolute left-4 top-0 rounded-b-lg bg-white px-3 shadow-lg transition-all duration-200 md:pb-3 md:pt-2" :class="scrolled ? 'pb-1 pt-1' : 'pb-3 pt-2'">
-                <img src="{{ asset('images/logo-dv-trier.png') }}" alt="DPSG Diözesanverband Trier – zur Startseite" class="h-16 w-auto transition-all duration-200 md:h-28" :class="scrolled && 'max-md:h-10'" width="300" height="223" />
+            <a href="{{ url('/') }}" class="absolute left-4 top-0 rounded-b-lg bg-white px-3 shadow-lg transition-all duration-200 md:pb-3 md:pt-2" :class="(scrolled || navOpen) ? 'pb-1 pt-1' : 'pb-3 pt-2'">
+                <img src="{{ asset('images/logo-dv-trier.png') }}" alt="DPSG Diözesanverband Trier – zur Startseite" class="h-16 w-auto transition-all duration-200 md:h-28" :class="(scrolled || navOpen) && 'max-md:h-10'" width="300" height="223" />
             </a>
 
             <nav aria-label="Service" class="hidden text-sm md:block">
@@ -45,8 +46,10 @@
             </button>
         </div>
 
-        <nav id="mobile-nav" aria-label="Hauptnavigation (mobil)" class="border-t border-white/20 bg-white text-text shadow-lg md:hidden" x-show="navOpen" x-cloak>
-            <ul class="divide-y divide-surface-muted pt-12 font-bold">
+        {{-- Längeres Menü als der Bildschirm: eigener Scrollbereich bis unter
+             die Kopfzeile, die Seite dahinter ist so lange gesperrt. --}}
+        <nav id="mobile-nav" aria-label="Hauptnavigation (mobil)" class="max-h-[calc(100dvh-3rem)] overflow-y-auto overscroll-contain border-t border-white/20 bg-white text-text shadow-lg md:hidden" x-show="navOpen" x-cloak>
+            <ul class="divide-y divide-surface-muted pt-2 pb-[calc(2rem+env(safe-area-inset-bottom))] font-bold">
                 @foreach ($navPages ?? [] as $navPage)
                     <li>
                         <a href="{{ url('/'.$navPage->slug) }}" @class(['block px-4 py-3', 'text-dpsg-rot' => request()->is($navPage->slug)])>{{ $navPage->title }}</a>

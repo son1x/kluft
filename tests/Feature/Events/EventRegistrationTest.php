@@ -189,8 +189,10 @@ class EventRegistrationTest extends TestCase
         $token = $this->sentToken('doi');
         $this->assertNotSame($token, $raw->confirm_token_hash);
 
-        // GET ändert nichts (Linkscanner), erst POST bestätigt.
-        $this->get("/anmeldung/bestaetigen/{$token}")->assertOk()->assertSee('Ja, Anmeldung bestätigen');
+        // Ein Klick in der Mail reicht: Der Browser sendet das Formular selbst ab
+        // (GET allein ändert nichts – Linkscanner bestätigen also nichts).
+        $this->get("/anmeldung/bestaetigen/{$token}")->assertOk()->assertSee('Ja, Anmeldung bestätigen')
+            ->assertSee('x-init="$nextTick(() => $el.submit())"', false);
         $this->assertSame('pending', $registration->fresh()->status);
         $this->post("/anmeldung/bestaetigen/{$token}")->assertOk()->assertSee('Anmeldung bestätigt');
 
@@ -202,7 +204,7 @@ class EventRegistrationTest extends TestCase
 
         // Stornieren über den Link aus der Bestätigungsmail.
         $cancelToken = $this->sentToken('confirmed');
-        $this->get("/anmeldung/stornieren/{$cancelToken}")->assertOk()->assertSee('Mia Muster');
+        $this->get("/anmeldung/stornieren/{$cancelToken}")->assertOk()->assertSee('Mia Muster')->assertDontSee('$el.submit()', false);
         $this->post("/anmeldung/stornieren/{$cancelToken}")->assertOk()->assertSee('Anmeldung storniert');
         $this->assertSame('cancelled', $registration->fresh()->status);
         Mail::assertSent(EventRegistrationMail::class, fn ($m) => $m->kind === 'cancelled');

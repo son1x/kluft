@@ -19,9 +19,20 @@
                 <p class="text-sm">{{ $event->dateLabel() }}</p>
                 <p class="mt-3">Anmeldung für <strong>{{ $registration->fullName() }}</strong></p>
             </div>
-            <form method="post" action="{{ route($action === 'bestaetigen' ? 'registrations.confirm.submit' : 'registrations.cancel.submit', $token) }}" class="mt-6">
+            {{-- Bestätigen: Der Browser schickt das Formular sofort selbst ab, damit
+                 ein Klick in der Mail reicht. Linkscanner in Mailprogrammen rufen
+                 nur die Seite ab (ohne JavaScript) und bestätigen so nichts; ohne
+                 JavaScript bleibt der Button. Stornieren fragt bewusst nach. --}}
+            <form method="post" action="{{ route($action === 'bestaetigen' ? 'registrations.confirm.submit' : 'registrations.cancel.submit', $token) }}" class="mt-6"
+                  @if ($action === 'bestaetigen') x-data x-init="$nextTick(() => $el.submit())" @endif>
                 @csrf
                 @if ($action === 'bestaetigen')
+                    <template x-if="true">
+                        <p class="mb-4 flex items-center gap-2 font-bold" role="status">
+                            <svg class="h-5 w-5 animate-spin text-dpsg-blau" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" class="opacity-25" /><path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" stroke-width="3" /></svg>
+                            Einen Moment – deine Anmeldung wird bestätigt …
+                        </p>
+                    </template>
                     <button type="submit" class="bg-dpsg-blau px-6 py-3 font-bold text-white hover:bg-dpsg-rot">Ja, Anmeldung bestätigen</button>
                 @else
                     <p class="mb-4">Willst du die Anmeldung wirklich stornieren? Dein Platz wird dann an die nächste Person auf der Warteliste vergeben.</p>

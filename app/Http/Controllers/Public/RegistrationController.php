@@ -9,8 +9,10 @@ use Illuminate\Contracts\View\View;
 
 /**
  * Bestätigung (Double-Opt-In) und Stornierung per Link aus der E-Mail
- * (F-EV-12/13). Der GET-Aufruf zeigt nur einen Button; erst das Absenden
- * ändert etwas – so lösen Linkscanner in Mailprogrammen nichts aus.
+ * (F-EV-12/13). Der GET-Aufruf ändert nichts – so lösen Linkscanner in
+ * Mailprogrammen nichts aus. Beim Bestätigen schickt der Browser das
+ * Formular per JavaScript sofort selbst ab (ein Klick in der Mail reicht),
+ * beim Stornieren muss man den Button bewusst drücken.
  */
 class RegistrationController extends Controller
 {

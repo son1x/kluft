@@ -8,13 +8,14 @@ use Symfony\Component\Mime\Address;
 /**
  * Testumgebung (F-MAIL-06): Mails gehen an die Testadresse statt an echte
  * Personen – außer an die wenigen freigeschalteten Tester*innen
- * (MAIL_TEST_ALLOWLIST, höchstens fünf Einträge). Ein Eintrag ist eine
- * Adresse oder eine ganze Domain („@dpsg-trier.de“). Ist keine Testadresse
+ * (MAIL_TEST_ALLOWLIST, höchstens zehn Einträge). Ein Eintrag ist eine
+ * Adresse oder eine ganze Domain („@dpsg-trier.de“ – Vorsicht: dann
+ * bekommen auch Ehrenamtliche mit Verbandsadresse echte Mails). Ist keine Testadresse
  * gesetzt (Produktion), bleibt alles unverändert.
  */
 class TestRecipientFilter
 {
-    public const MAX_ALLOWED = 5;
+    public const MAX_ALLOWED = 10;
 
     public function handle(MessageSending $event): void
     {

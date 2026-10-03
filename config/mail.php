@@ -129,7 +129,7 @@ return [
     'test_redirect_to' => env('MAIL_TEST_REDIRECT_TO'),
 
     // Ausnahmen für die Testphase: Diese Adressen (kommagetrennt, höchstens
-    // fünf) bekommen ihre Mails trotz Umleitung direkt. Nur als Secret
+    // zehn) bekommen ihre Mails trotz Umleitung direkt. Nur als Secret
     // setzen, nie ins Repository schreiben; mit dem Livegang entfällt sie.
     // Komma oder Semikolon (wie beim Kopieren aus Outlook) als Trenner.
     'test_allowlist' => array_filter(array_map('trim', preg_split('/[,;]/', (string) env('MAIL_TEST_ALLOWLIST', ''))) ?: []),

@@ -122,7 +122,7 @@ class RegistrationsRelationManager extends RelationManager
                     Action::make('uploadDocument')
                         ->label('Dokument hochladen')
                         ->icon('heroicon-o-arrow-up-tray')
-                        ->modalHeading(fn (EventRegistration $record) => 'Dokument für '.$record->fullName())
+                        ->modalHeading(fn (EventRegistration $record) => 'Dokument für '.$record->fullName().' ('.$record->email.')')
                         ->modalDescription('Die Person findet das PDF unter „Meine Anmeldungen“ (Anmeldung per E-Mail und Einmalcode). Es wird mit der Anmeldung gelöscht.')
                         ->schema([
                             Select::make('type')->label('Art')->options(RegistrationDocument::TYPES)->default('rechnung')->required()->live(),

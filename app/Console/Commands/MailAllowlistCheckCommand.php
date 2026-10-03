@@ -30,7 +30,7 @@ class MailAllowlistCheckCommand extends Command
 
         $ignored = count($raw) - count($allowed);
         if ($ignored > 0) {
-            $this->warn("{$ignored} Eintrag/Einträge werden ignoriert (ungültig, doppelt oder über der Grenze von ".TestRecipientFilter::MAX_ALLOWED.'). Tipp: „@dpsg-trier.de“ deckt alle Adressen der Domain mit einem Eintrag ab.');
+            $this->warn("{$ignored} Eintrag/Einträge werden ignoriert (ungültig, doppelt oder über der Grenze von ".TestRecipientFilter::MAX_ALLOWED.').');
         }
 
         return self::SUCCESS;

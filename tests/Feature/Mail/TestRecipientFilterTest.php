@@ -10,7 +10,7 @@ use Symfony\Component\Mime\Email;
 use Tests\TestCase;
 
 /**
- * Testumgebung: Mails an die Testadresse umleiten, außer an höchstens fünf
+ * Testumgebung: Mails an die Testadresse umleiten, außer an höchstens zehn
  * freigeschaltete Tester*innen (Meilenstein „Testing“).
  */
 class TestRecipientFilterTest extends TestCase
@@ -58,13 +58,14 @@ class TestRecipientFilterTest extends TestCase
         $this->assertSame(['tester@example.org', 'test@example.org'], $this->to($email));
     }
 
-    #[TestDox('Höchstens fünf Ausnahmen; ungültige Einträge zählen nicht')]
-    public function test_allowlist_is_limited_to_five(): void
+    #[TestDox('Höchstens zehn Ausnahmen; ungültige Einträge zählen nicht')]
+    public function test_allowlist_is_limited_to_ten(): void
     {
-        config(['mail.test_allowlist' => ['kaputt', 'a@x.de', 'b@x.de', 'c@x.de', 'd@x.de', 'e@x.de', 'f@x.de']]);
+        $valid = array_map(fn (int $i) => "p{$i}@x.de", range(1, 11));
+        config(['mail.test_allowlist' => ['kaputt', ...$valid]]);
 
-        $this->assertSame(['a@x.de', 'b@x.de', 'c@x.de', 'd@x.de', 'e@x.de'], TestRecipientFilter::allowlist());
-        $this->assertSame(['test@example.org'], $this->to($this->send(['f@x.de'])));
+        $this->assertSame(array_slice($valid, 0, 10), TestRecipientFilter::allowlist());
+        $this->assertSame(['test@example.org'], $this->to($this->send(['p11@x.de'])));
     }
 
     #[TestDox('Ganze Domain freischalten („@dpsg-trier.de“ oder „*@dpsg-trier.de“); Subdomains und ähnliche Namen zählen nicht')]
@@ -83,10 +84,10 @@ class TestRecipientFilterTest extends TestCase
     #[TestDox('mail:check-allowlist zeigt wirksame Einträge gekürzt und warnt bei ignorierten')]
     public function test_check_command(): void
     {
-        config(['mail.test_allowlist' => ['talia@example.org', '@dpsg-trier.de', 'kaputt', 'b@x.de', 'c@x.de', 'd@x.de', 'e@x.de']]);
+        config(['mail.test_allowlist' => ['talia@example.org', '@dpsg-trier.de', 'kaputt', ...array_map(fn (int $i) => "p{$i}@x.de", range(1, 9))]]);
 
         $this->artisan('mail:check-allowlist')
-            ->expectsOutputToContain('Einträge im Secret: 7 · davon wirksam: 5')
+            ->expectsOutputToContain('Einträge im Secret: 12 · davon wirksam: 10')
             ->expectsOutputToContain('1. t…@example.org')
             ->expectsOutputToContain('2. ganze Domain @dpsg-trier.de')
             ->expectsOutputToContain('2 Eintrag/Einträge werden ignoriert')

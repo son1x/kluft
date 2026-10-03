@@ -16,6 +16,8 @@ on:
           - cron:info
           - brevo:check
           - mail:check-allowlist
+          - backup:status
+          - backup:run
         default: calendar:check
 
 jobs:
@@ -75,5 +77,9 @@ jobs:
                 ;;
               # Wirksame Ausnahmen der Test-Mail-Umleitung (Adressen gekürzt).
               mail:check-allowlist) /usr/bin/php artisan mail:check-allowlist ;;
+              # Backups: Voraussetzungen und letzter Stand (keine Geheimnisse).
+              backup:status) /usr/bin/php artisan backup:status ;;
+              # Backup sofort erstellen und Wiederherstellung prüfen (sonst täglich 2 Uhr).
+              backup:run) /usr/bin/php artisan backup:run && /usr/bin/php artisan backup:verify; /usr/bin/php artisan backup:status ;;
               *) echo "Unbekannte Prüfung"; exit 1 ;;
             esac

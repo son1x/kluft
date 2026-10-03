@@ -10,6 +10,7 @@ use App\Mail\EventRegistrationMail;
 use App\Models\AuditLog;
 use App\Models\Event;
 use App\Models\EventRegistration;
+use App\Models\Gruppierung;
 use App\Models\User;
 use App\Services\EventRegistrations;
 use App\Services\ParticipantExport;
@@ -149,6 +150,22 @@ class EventRegistrationTest extends TestCase
         $this->assertArrayNotHasKey('tage', $event->formFields());
         $this->get('/veranstaltungen/woelflingstag')->assertOk()->assertDontSee('Anwesenheit (Tage)');
         $this->register($event)->assertSessionHasNoErrors();
+    }
+
+    #[TestDox('Feld „Stamm oder Bezirk“ schlägt aktive Stämme und Bezirke von der Karte vor')]
+    public function test_stamm_field_suggests_staemme_and_bezirke(): void
+    {
+        $bezirk = Gruppierung::query()->create(['typ' => 'bezirk', 'name' => 'Testbezirk', 'slug' => 'testbezirk', 'active' => true]);
+        Gruppierung::query()->create(['typ' => 'stamm', 'name' => 'Testdorf, St. Konrad', 'slug' => 'test-st-konrad', 'ort' => 'Testdorf', 'parent_id' => $bezirk->id, 'active' => true]);
+        Gruppierung::query()->create(['typ' => 'stamm', 'name' => 'Aufgelöst', 'slug' => 'test-aufgeloest', 'active' => false]);
+        $this->event(['form_fields' => ['stamm' => 'required']]);
+
+        $this->get('/veranstaltungen/woelflingstag')->assertOk()
+            ->assertSee('Stamm oder Bezirk *')
+            ->assertSee('<option value="Bezirk Testbezirk">Bezirk</option>', false)
+            ->assertSee('<option value="Testdorf, St. Konrad">Stamm · Bezirk Testbezirk</option>', false)
+            ->assertSee('stammAutocomplete(', false)
+            ->assertDontSee('Aufgelöst');
     }
 
     #[TestDox('Anmeldung mit Bestätigungsmail; Zusatzangaben werden verschlüsselt gespeichert')]
@@ -340,7 +357,7 @@ class EventRegistrationTest extends TestCase
         $this->assertFalse(RegistrationsRelationManager::canViewForRecord($woelflinge, EditEvent::class));
 
         $export = app(ParticipantExport::class);
-        $this->assertSame(['Nr.', 'Status', 'Vorname', 'Nachname', 'E-Mail', 'Geburtsjahr', 'Stamm', 'Verpflegung', 'Angemeldet durch (sorgeberechtigt)', 'Bestätigt am'], $export->headings($woelflinge));
+        $this->assertSame(['Nr.', 'Status', 'Vorname', 'Nachname', 'E-Mail', 'Geburtsjahr', 'Stamm oder Bezirk', 'Verpflegung', 'Angemeldet durch (sorgeberechtigt)', 'Bestätigt am'], $export->headings($woelflinge));
         $row = $export->rows($woelflinge)[0];
         $this->assertSame("'=HYPERLINK(\"x\")", $row[2]);
         $this->assertSame('Vegan', $row[7]);

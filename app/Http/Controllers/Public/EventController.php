@@ -41,9 +41,7 @@ class EventController extends Controller
             'event' => $event,
             'state' => $event->registrationState(),
             'fields' => $event->formFields(),
-            'staemme' => isset($event->formFields()['stamm'])
-                ? Gruppierung::query()->where('typ', 'stamm')->where('active', true)->orderBy('name')->pluck('name')
-                : collect(),
+            'gruppierungen' => isset($event->formFields()['stamm']) ? $this->gruppierungOptions() : [],
         ]);
     }
 
@@ -143,5 +141,21 @@ class EventController extends Controller
             'teilweise' => array_values(array_intersect(array_keys($event->days()), (array) ($data[$key] ?? []))),
             default => null,
         };
+    }
+
+    /**
+     * Vorschläge für das Feld „Stamm“: alle aktiven Bezirke und Stämme von
+     * der Karte; gesucht wird auch über Ort und Bezirk.
+     *
+     * @return list<array{value: string, hint: string, search: string}>
+     */
+    private function gruppierungOptions(): array
+    {
+        return Gruppierung::query()->active()->with('bezirk')->orderBy('typ')->orderBy('name')->get()
+            ->map(fn (Gruppierung $g) => $g->typ === 'bezirk'
+                ? ['value' => 'Bezirk '.$g->name, 'hint' => 'Bezirk', 'search' => 'Bezirk '.$g->name]
+                : ['value' => $g->name, 'hint' => 'Stamm'.($g->bezirk ? ' · Bezirk '.$g->bezirk->name : ''),
+                    'search' => implode(' ', array_filter([$g->name, $g->ort, $g->bezirk?->name]))])
+            ->values()->all();
     }
 }

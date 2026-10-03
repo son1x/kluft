@@ -125,7 +125,7 @@ return [
     */
     'event_fields' => [
         'birth_year' => ['label' => 'Geburtsjahr', 'type' => 'year'],
-        'stamm' => ['label' => 'Stamm', 'type' => 'stamm'],
+        'stamm' => ['label' => 'Stamm oder Bezirk', 'type' => 'stamm'],
         'gremium' => ['label' => 'Funktion / Gremium (z. B. Bezirksvorstand, Delegierte*r, Gast)', 'type' => 'text'],
         'phone' => ['label' => 'Telefonnummer für Rückfragen', 'type' => 'tel'],
         'diet' => ['label' => 'Verpflegung', 'type' => 'select', 'options' => [

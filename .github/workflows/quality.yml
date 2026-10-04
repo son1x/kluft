@@ -10,6 +10,7 @@ on:
   push:
     branches:
       - claude/dpsg-trier-homepage-design-jwdgs4
+      - claude/kluft-instanzen
   schedule:
     - cron: '17 5 * * 1'
   workflow_dispatch:

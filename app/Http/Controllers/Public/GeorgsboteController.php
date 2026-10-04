@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Georgsbote: Archiv der PDF-Ausgaben (F-GB-01..05). Die Newsletter-
- * Anmeldung gehört zum Georgsbrief (GeorgsbriefController).
+ * Anmeldung gehört zum Newsletter (NewsletterController).
  */
 class GeorgsboteController extends Controller
 {

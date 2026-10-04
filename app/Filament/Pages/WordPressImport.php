@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Filament\Resources\Posts\PostResource;
 use App\Models\Post;
 use App\Models\WpImportRun;
+use App\Support\Features;
 use BackedEnum;
 use Filament\Facades\Filament;
 use Filament\Pages\Page;
@@ -27,6 +28,12 @@ class WordPressImport extends Page
     protected static ?string $slug = 'wordpress-import';
 
     protected static ?int $navigationSort = 91;
+
+    // Nur in Instanzen mit WordPress-Übernahme (config dpsg.features).
+    public static function isDiscovered(): bool
+    {
+        return Features::enabled(Features::WP_IMPORT);
+    }
 
     public static function canAccess(): bool
     {

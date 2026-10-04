@@ -8,7 +8,7 @@
             · Tageslimit Brevo: {{ $dailyLimit }} Mails
         </p>
         @if ($pending > 0 && $oldestPending && $oldestPending < now()->subMinutes(10)->timestamp)
-            <p style="margin-top: .75rem; font-size: .875rem;" class="text-danger-600">Mails warten seit über zehn Minuten. Läuft der Cronjob? Oder ist das Tageslimit erreicht? (Siehe /roadmap → Cronjob.)</p>
+            <p style="margin-top: .75rem; font-size: .875rem;" class="text-danger-600">Mails warten seit über zehn Minuten. Läuft der Cronjob? Oder ist das Tageslimit erreicht? @if (\App\Support\Features::enabled('roadmap'))(Siehe /roadmap → Cronjob.)@endif</p>
         @endif
     </x-filament::section>
 

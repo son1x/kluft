@@ -7,6 +7,7 @@ use App\Models\EventRegistration;
 use App\Models\Person;
 use App\Models\RegistrationDocument;
 use App\Models\User;
+use App\Support\Features;
 use App\Support\MailQueueEntry;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -16,7 +17,7 @@ use ZipArchive;
 /**
  * Betroffenenrechte pro Person (Pflichtenheft 9.2): Auskunft (Export) und
  * Löschung über die E-Mail-Adresse. Durchsucht alles, was das CMS zu einer
- * Adresse speichert. Der Georgsbrief-Verteiler liegt nur bei Brevo,
+ * Adresse speichert. Der Newsletter-Verteiler liegt nur bei Brevo,
  * Kontaktnachrichten werden nicht gespeichert.
  */
 class PrivacyRequests
@@ -79,10 +80,10 @@ class PrivacyRequests
                 'rollen' => $u->roleAssignments->map(fn ($a) => trim($a->role.' '.$a->scope_type.' '.$a->scope_key))->all(),
             ])->values()->all(),
             'mails_in_warteschlange' => $found['queued'],
-            'hinweise' => [
-                'Georgsbrief (Newsletter): Die Adressen liegen nur beim Versanddienst Brevo, nicht im CMS. Auskunft/Löschung dort.',
+            'hinweise' => array_values(array_filter([
+                Features::newsletter() ? config('dpsg.newsletter.name').' (Newsletter): Die Adressen liegen nur beim Versanddienst Brevo, nicht im CMS. Auskunft/Löschung dort.' : null,
                 'Nachrichten aus dem Kontaktformular werden nur per Mail zugestellt und nicht im CMS gespeichert.',
-            ],
+            ])),
         ];
 
         $path = tempnam(sys_get_temp_dir(), 'auskunft').'.zip';

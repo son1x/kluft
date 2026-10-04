@@ -47,6 +47,34 @@ return [
         'hashtags' => '#dpsg #pfadfinden #dpsgtrier',
     ],
 
+    'features' => [
+        'georgsbote' => true,
+        'roadmap' => true,
+        'rechtstraeger' => true,
+        'wp_import' => true,
+    ],
+
+    /*
+    | E-Mail-Newsletter (Anmeldung per Double-Opt-In über Brevo). `slug` ist
+    | zugleich die Adresse (/georgsbrief) und die CMS-Seite mit dem
+    | Einleitungstext; `logo` ohne Endung (.png und .webp), optional.
+    */
+    'newsletter' => [
+        'name' => 'Georgsbrief',
+        'slug' => 'georgsbrief',
+        'title' => 'Georgsbrief – der Newsletter der DPSG Trier',
+        'description' => 'Der Georgsbrief ist der Newsletter des DPSG Diözesanverbands Trier: Termine, Neuigkeiten und Infos direkt ins Postfach.',
+        'text' => 'Der Georgsbrief ist unser Newsletter: Termine, Neuigkeiten und Infos aus dem Diözesanverband – direkt in dein Postfach.',
+        'logo' => 'images/georgsbrief-logo',
+        'logo_size' => [970, 251],
+        'logo_alt' => 'Georgsbrief – der DPSG Trier Newsletter',
+    ],
+
+    'redirects' => [
+        // Frühere Adresse der Bestätigungsseite (evtl. schon in Brevo hinterlegt).
+        '/georgsbote/danke' => '/georgsbrief/danke',
+    ],
+
     /*
     | Kacheln unter „Mitmachen“ auf der Startseite: Slug einer CMS-Seite
     | (erscheint nur, wenn veröffentlicht), optional Bild (ohne Endung,

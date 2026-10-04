@@ -197,7 +197,7 @@
 
     @php($contact = config('dpsg.contact'))
     {{-- Schlanker Footer (Rückmeldung Talia): kein zweites Menü, nur
-         Kontakt, Service und der Georgsbrief. --}}
+         Kontakt, Service und der Newsletter. --}}
     <footer class="mt-20 bg-dpsg-hellbeige text-text">
         <div class="mx-auto grid max-w-6xl gap-10 px-4 py-12 text-sm md:grid-cols-3">
             <div>
@@ -229,20 +229,19 @@
                     @endforeach
                 </ul>
             </div>
-            <div>
-                <a href="{{ route('georgsbrief.index') }}" class="group block overflow-hidden bg-white shadow-sm hover:shadow-md">
-                    <span class="block bg-[#eff2f7] px-4 py-3">
-                        <picture>
-                            <source type="image/webp" srcset="{{ asset('images/georgsbrief-logo.webp') }}" />
-                            <img src="{{ asset('images/georgsbrief-logo.png') }}" alt="Georgsbrief – der DPSG Trier Newsletter" width="970" height="251" class="h-auto w-full" loading="lazy" />
-                        </picture>
-                    </span>
-                    <span class="block p-4">
-                        Termine und Neuigkeiten aus dem Diözesanverband direkt ins Postfach.
-                        <span class="mt-2 block font-bold text-dpsg-rot group-hover:underline">Georgsbrief abonnieren →</span>
-                    </span>
-                </a>
-            </div>
+            @if (\App\Support\Features::newsletter())
+                <div>
+                    <a href="{{ route('newsletter.index') }}" class="group block overflow-hidden bg-white shadow-sm hover:shadow-md">
+                        <span class="block bg-[#eff2f7] px-4 py-3">
+                            @include('newsletter.logo', ['class' => 'h-auto w-full', 'lazy' => true])
+                        </span>
+                        <span class="block p-4">
+                            Termine und Neuigkeiten aus dem {{ config('dpsg.site.level') }} direkt ins Postfach.
+                            <span class="mt-2 block font-bold text-dpsg-rot group-hover:underline">{{ config('dpsg.newsletter.name') }} abonnieren →</span>
+                        </span>
+                    </a>
+                </div>
+            @endif
         </div>
         <div class="bg-dpsg-blau text-white">
             <div class="mx-auto flex max-w-6xl flex-wrap gap-x-6 gap-y-2 px-4 py-4 text-sm">

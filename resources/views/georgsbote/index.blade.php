@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('seo_title', 'Georgsbote – DPSG Diözesanverband Trier')
-@section('seo_description', 'Der Georgsbote, die Zeitschrift des DPSG Diözesanverbands Trier: alle Ausgaben als PDF.')
+@section('seo_title', 'Georgsbote – '.config('dpsg.site.name'))
+@section('seo_description', 'Der Georgsbote, die Zeitschrift des '.config('dpsg.site.name_genitive').': alle Ausgaben als PDF.')
 
 @section('content')
     <div class="mx-auto max-w-6xl px-4 py-10">
@@ -44,19 +44,18 @@
                 @endforelse
             </section>
 
-            {{-- Hinweis auf den Newsletter (Georgsbrief) --}}
-            <aside aria-label="Georgsbrief" class="self-start overflow-hidden bg-white shadow-md">
-                <a href="{{ route('georgsbrief.index') }}" class="block bg-[#eff2f7] p-4">
-                    <picture>
-                        <source type="image/webp" srcset="{{ asset('images/georgsbrief-logo.webp') }}" />
-                        <img src="{{ asset('images/georgsbrief-logo.png') }}" alt="Georgsbrief – der DPSG Trier Newsletter" width="970" height="251" class="h-auto w-full" />
-                    </picture>
-                </a>
-                <div class="p-5">
-                    <p class="text-sm">Lieber regelmäßig kurz informiert? Der <strong>Georgsbrief</strong> ist unser Newsletter mit Terminen und Neuigkeiten aus dem Diözesanverband – direkt ins Postfach.</p>
-                    <a href="{{ route('georgsbrief.index') }}" class="mt-4 inline-block bg-dpsg-blau px-4 py-2 text-sm font-bold text-white hover:bg-dpsg-rot">Zum Georgsbrief</a>
-                </div>
-            </aside>
+            {{-- Hinweis auf den Newsletter (beim DV „Georgsbrief“) --}}
+            @if (\App\Support\Features::newsletter())
+                <aside aria-label="{{ config('dpsg.newsletter.name') }}" class="self-start overflow-hidden bg-white shadow-md">
+                    <a href="{{ route('newsletter.index') }}" class="block bg-[#eff2f7] p-4">
+                        @include('newsletter.logo', ['class' => 'h-auto w-full'])
+                    </a>
+                    <div class="p-5">
+                        <p class="text-sm">Lieber regelmäßig kurz informiert? Der <strong>{{ config('dpsg.newsletter.name') }}</strong> ist unser Newsletter mit Terminen und Neuigkeiten aus dem {{ config('dpsg.site.level') }} – direkt ins Postfach.</p>
+                        <a href="{{ route('newsletter.index') }}" class="mt-4 inline-block bg-dpsg-blau px-4 py-2 text-sm font-bold text-white hover:bg-dpsg-rot">Zum {{ config('dpsg.newsletter.name') }}</a>
+                    </div>
+                </aside>
+            @endif
         </div>
     </div>
 @endsection

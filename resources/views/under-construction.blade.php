@@ -25,7 +25,7 @@
             <li>✓ Entra-ID-/M365-Login für die Redaktion</li>
             <li>✓ Notfall-Zugang mit TOTP</li>
             <li>✓ Rollen &amp; Rechte je Stufe/Sektion</li>
-            <li>… Seiten, Blog, Veranstaltungen, Kalender, Georgsbote</li>
+            <li>… Seiten, Blog, Veranstaltungen, Kalender{{ \App\Support\Features::enabled('georgsbote') ? ', Georgsbote' : '' }}</li>
         </ul>
     </main>
 </body>

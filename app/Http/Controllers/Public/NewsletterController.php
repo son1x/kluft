@@ -11,16 +11,16 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 /**
- * Georgsbrief, der Newsletter des Diözesanverbands: Anmeldung per
- * Double-Opt-In bei Brevo (F-GB-10..16). Die E-Mail-Adresse wird nicht im
- * CMS gespeichert.
+ * Newsletter der Gliederung (beim DV „Georgsbrief“, config dpsg.newsletter):
+ * Anmeldung per Double-Opt-In bei Brevo (F-GB-10..16). Die E-Mail-Adresse
+ * wird nicht im CMS gespeichert.
  */
-class GeorgsbriefController extends Controller
+class NewsletterController extends Controller
 {
     public function index(BrevoNewsletter $newsletter): View
     {
-        return view('georgsbrief.index', [
-            'intro' => Page::query()->published()->where('slug', 'georgsbrief')->first(),
+        return view('newsletter.index', [
+            'intro' => Page::query()->published()->where('slug', config('dpsg.newsletter.slug'))->first(),
             'newsletterAktiv' => $newsletter->isConfigured(),
         ]);
     }
@@ -30,7 +30,7 @@ class GeorgsbriefController extends Controller
         // Honeypot: Bots füllen das versteckte Feld aus – stillschweigend
         // "Erfolg" melden, ohne etwas zu tun.
         if (filled($request->input('website'))) {
-            return redirect()->route('georgsbrief.index')->with('newsletter_status', 'angefragt');
+            return redirect()->route('newsletter.index')->with('newsletter_status', 'angefragt');
         }
 
         $data = $request->validate([
@@ -55,13 +55,13 @@ class GeorgsbriefController extends Controller
             request: $request,
         );
 
-        return redirect()->route('georgsbrief.index')
+        return redirect()->route('newsletter.index')
             ->with('newsletter_status', $ok ? 'angefragt' : 'fehler')
             ->withFragment('newsletter');
     }
 
     public function danke(): View
     {
-        return view('georgsbrief.danke');
+        return view('newsletter.danke');
     }
 }

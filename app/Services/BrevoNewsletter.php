@@ -37,7 +37,7 @@ class BrevoNewsletter
                 'attributes' => filled($firstName) ? ['VORNAME' => $firstName, 'FIRSTNAME' => $firstName] : null,
                 'includeListIds' => [(int) config('services.brevo.newsletter_list_id')],
                 'templateId' => (int) config('services.brevo.doi_template_id'),
-                'redirectionUrl' => config('services.brevo.doi_redirect_url') ?: route('georgsbrief.danke'),
+                'redirectionUrl' => config('services.brevo.doi_redirect_url') ?: route('newsletter.danke'),
             ]));
 
         if (! $response->successful()) {

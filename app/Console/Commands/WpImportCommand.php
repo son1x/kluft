@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Services\WordPress\WordPressImporter;
+use App\Support\Features;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 
@@ -23,6 +24,12 @@ class WpImportCommand extends Command
 
     public function handle(): int
     {
+        if (! Features::enabled(Features::WP_IMPORT)) {
+            $this->error('Der WordPress-Import ist in dieser Instanz abgeschaltet (config dpsg.features.wp_import).');
+
+            return self::FAILURE;
+        }
+
         $since = $this->option('since')
             ? Carbon::parse($this->option('since'))
             : now()->subYears((int) config('dpsg.wp_import.since_years', 3));

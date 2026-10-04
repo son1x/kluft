@@ -45,7 +45,9 @@
         <x-filament::section heading="Weitere Stellen">
             <ul style="font-size: .875rem; list-style: disc; padding-left: 1.25rem;">
                 <li>Mails in der Warteschlange an diese Adresse: {{ $found['queued'] }}</li>
-                <li>Georgsbrief (Newsletter): Adressen liegen nur bei Brevo – dort unter „Kontakte“ suchen, Auskunft/Löschung dort.</li>
+                @if (\App\Support\Features::newsletter())
+                    <li>{{ config('dpsg.newsletter.name') }} (Newsletter): Adressen liegen nur bei Brevo – dort unter „Kontakte“ suchen, Auskunft/Löschung dort.</li>
+                @endif
                 <li>Kontaktformular: Nachrichten werden nicht im CMS gespeichert, nur per Mail zugestellt (Postfächer prüfen).</li>
                 <li>Sicherungen: Gelöschte Daten verschwinden aus den Backups, wenn diese rotiert sind (14 Tage).</li>
             </ul>

@@ -7,9 +7,9 @@ use App\Http\Controllers\Public\ContactController;
 use App\Http\Controllers\Public\EventController;
 use App\Http\Controllers\Public\FeedController;
 use App\Http\Controllers\Public\GeorgsboteController;
-use App\Http\Controllers\Public\GeorgsbriefController;
 use App\Http\Controllers\Public\GruppierungController;
 use App\Http\Controllers\Public\HomeController;
+use App\Http\Controllers\Public\NewsletterController;
 use App\Http\Controllers\Public\PageController;
 use App\Http\Controllers\Public\ParticipantController;
 use App\Http\Controllers\Public\PostController;
@@ -19,6 +19,7 @@ use App\Http\Controllers\Public\SectionController;
 use App\Http\Controllers\Public\StatusController;
 use App\Http\Controllers\Public\WhatsAppController;
 use App\Http\Controllers\Webhooks\WhatsAppWebhookController;
+use App\Support\Features;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Support\Facades\Route;
 
@@ -115,38 +116,52 @@ Route::get('/status', [StatusController::class, 'show'])->name('status');
 Route::get('/api/status', [StatusController::class, 'json'])->middleware('throttle:60,1')->name('status.json');
 
 // Projektstand nach Pflichtenheft (außerhalb des CMS).
-Route::get('/roadmap', RoadmapController::class)->name('roadmap');
+if (Features::enabled(Features::ROADMAP)) {
+    Route::get('/roadmap', RoadmapController::class)->name('roadmap');
+}
 
 // Georgsbote: Archiv der PDF-Ausgaben (F-GB, Pflichtenheft 11.1).
-Route::get('/georgsbote', [GeorgsboteController::class, 'index'])->name('georgsbote.index');
-Route::get('/georgsbote/{jahr}/{ausgabe}.pdf', [GeorgsboteController::class, 'pdf'])
-    ->whereNumber(['jahr', 'ausgabe'])
-    ->name('georgsbote.pdf');
+if (Features::enabled(Features::GEORGSBOTE)) {
+    Route::get('/georgsbote', [GeorgsboteController::class, 'index'])->name('georgsbote.index');
+    Route::get('/georgsbote/{jahr}/{ausgabe}.pdf', [GeorgsboteController::class, 'pdf'])
+        ->whereNumber(['jahr', 'ausgabe'])
+        ->name('georgsbote.pdf');
+}
 
-// Georgsbrief: Newsletter-Anmeldung (Double-Opt-In über Brevo).
-Route::get('/georgsbrief', [GeorgsbriefController::class, 'index'])->name('georgsbrief.index');
-Route::get('/georgsbrief/danke', [GeorgsbriefController::class, 'danke'])->name('georgsbrief.danke');
-Route::post('/georgsbrief/anmelden', [GeorgsbriefController::class, 'subscribe'])
-    ->middleware('throttle:5,10')
-    ->name('georgsbrief.anmelden');
-// Frühere Adresse der Bestätigungsseite (evtl. schon in Brevo hinterlegt).
-Route::redirect('/georgsbote/danke', '/georgsbrief/danke', 301);
+// E-Mail-Newsletter (beim DV „Georgsbrief“): Anmeldung per Double-Opt-In über Brevo.
+if (Features::newsletter()) {
+    $newsletter = '/'.config('dpsg.newsletter.slug');
+    Route::get($newsletter, [NewsletterController::class, 'index'])->name('newsletter.index');
+    Route::get($newsletter.'/danke', [NewsletterController::class, 'danke'])->name('newsletter.danke');
+    Route::post($newsletter.'/anmelden', [NewsletterController::class, 'subscribe'])
+        ->middleware('throttle:5,10')
+        ->name('newsletter.anmelden');
+}
+
+// Feste Weiterleitungen alter Adressen je Instanz.
+foreach (config('dpsg.redirects') as $from => $to) {
+    Route::redirect($from, $to, 301);
+}
 
 // Kontaktformular (F-CMS-09); das Formular steht auf der CMS-Seite „kontakt“.
 Route::post('/kontakt', [ContactController::class, 'send'])
     ->middleware('throttle:5,10')
     ->name('contact.send');
 
-// Sektionen (F-BOL, Pflichtenheft 6.2), z. B. /bolivien.
-Route::get('/{section}', [SectionController::class, 'show'])
-    ->whereIn('section', array_keys(config('dpsg.sections')))
-    ->name('sections.show');
-Route::get('/{section}/aktuelles', [SectionController::class, 'posts'])
-    ->whereIn('section', array_keys(config('dpsg.sections')))
-    ->name('sections.posts');
-Route::get('/{section}/feed', [FeedController::class, 'section'])
-    ->whereIn('section', array_keys(config('dpsg.sections')))
-    ->name('sections.feed');
+// Sektionen (F-BOL, Pflichtenheft 6.2), z. B. /bolivien. Nur mit
+// konfigurierten Sektionen: whereIn mit leerer Liste fängt sonst jeden Pfad.
+if (Features::sections()) {
+    $sections = array_keys(config('dpsg.sections'));
+    Route::get('/{section}', [SectionController::class, 'show'])
+        ->whereIn('section', $sections)
+        ->name('sections.show');
+    Route::get('/{section}/aktuelles', [SectionController::class, 'posts'])
+        ->whereIn('section', $sections)
+        ->name('sections.posts');
+    Route::get('/{section}/feed', [FeedController::class, 'section'])
+        ->whereIn('section', $sections)
+        ->name('sections.feed');
+}
 
 // Redaktionelle Seiten (F-CMS-01). Bewusst als letzte Route registriert –
 // fängt jeden sonst nicht zugeordneten Ein-Segment-Pfad als Seiten-Slug ab.

@@ -22,6 +22,23 @@ return array_replace([
     'home_highlights' => [],
 
     /*
+    | Schaltbare Funktionen (App\Support\Features). Abgeschaltet gibt es
+    | weder Routen noch Menüpunkte noch Backend-Bereiche.
+    */
+    'features' => [
+        'georgsbote' => false,     // Archiv der Verbandszeitschrift (PDF)
+        'roadmap' => false,        // /roadmap: Projektstand nach Pflichtenheft
+        'rechtstraeger' => false,  // Schaubild auf der Seite „rechtstraeger“
+        'wp_import' => false,      // Übernahme aus einer WordPress-Website
+    ],
+
+    // E-Mail-Newsletter über Brevo; null = keiner. Format siehe instanzen/dv-trier.
+    'newsletter' => null,
+
+    // Feste 301-Weiterleitungen alter Adressen (Pfad => Ziel).
+    'redirects' => [],
+
+    /*
     | Stufen in pädagogischer Reihenfolge. Farbklassen stehen bewusst NICHT
     | hier, sondern als Literale in den Blade-Views, weil Tailwind nur
     | resources/ nach Klassennamen durchsucht.

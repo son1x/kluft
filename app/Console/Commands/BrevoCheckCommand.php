@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 use Throwable;
 
 /**
- * Prüft die Brevo-Anbindung für den Georgsbrief, ohne eine Mail zu
+ * Prüft die Brevo-Anbindung für den Newsletter, ohne eine Mail zu
  * verschicken: API-Schlüssel (inkl. IP-Freigabe), Liste und
  * Double-Opt-In-Vorlage. Gibt keine Schlüssel oder Adressen aus.
  */
@@ -34,7 +34,7 @@ class BrevoCheckCommand extends Command
         };
         $this->line('API-Schlüssel gesetzt: '.($key !== '' ? "ja, {$kind}" : 'NEIN'));
         $this->line('Listen-ID: '.($listId ?: 'NEIN').' · Vorlagen-ID: '.($templateId ?: 'NEIN'));
-        $this->line('Weiterleitung nach Bestätigung: '.(config('services.brevo.doi_redirect_url') ?: route('georgsbrief.danke')));
+        $this->line('Weiterleitung nach Bestätigung: '.(config('services.brevo.doi_redirect_url') ?: route('newsletter.danke')));
         if ($key === '') {
             return self::FAILURE;
         }

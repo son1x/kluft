@@ -24,7 +24,7 @@
         @if ($page->coverMedia)
             @include('partials.cover-figure', ['media' => $page->coverMedia, 'class' => 'mb-6'])
         @endif
-        @if ($page->slug === 'rechtstraeger')
+        @if ($page->slug === 'rechtstraeger' && \App\Support\Features::enabled('rechtstraeger'))
             @include('partials.rechtstraeger-struktur')
         @endif
         <div class="prose max-w-none">

@@ -27,6 +27,7 @@ return [
         ['Abnahme', 'Abnahme', 'open'],
         ['Bolivien', 'bolivienpartnerschaft.de', 'partial'],
         ['Beraten', 'beraten-online.de (Phase 2)', 'partial'],
+        ['WhatsApp', 'WhatsApp-Newsletter (Konzept)', 'open'],
     ],
 
     'sections' => [
@@ -136,6 +137,11 @@ return [
             ['status' => 'open', 'title' => 'DNS umstellen, altes WordPress abschalten', 'note' => 'Bei der Migration: DNS auf das Webhosting, in Plesk als Alias mit Zertifikat; danach die alte WordPress-Installation abschalten.'],
             ['status' => 'later', 'title' => 'Ausbildungstermine für Berater*innen', 'note' => 'Über das vorhandene Veranstaltungsmodul mit Online-Anmeldung möglich (Pflichtenheft F-BER-03), sobald Termine anstehen.'],
             ['status' => 'later', 'title' => 'Zuordnung von Ratsuchenden und Berater*innen', 'note' => 'Pflichtenheft F-BER-04. Erst nach einer Datenschutz-Folgenabschätzung; ggf. getrenntes System.'],
+        ],
+        'WhatsApp' => [
+            ['status' => 'done', 'title' => 'Pflichtenheft WhatsApp-Newsletter', 'note' => 'docs/whatsapp_newsletter.md: Cloud API mit der Büro-Festnetznummer (Sprachanruf-Verifizierung), Double-Opt-In mit START, Abmeldung mit STOP, nur Nummer (verschlüsselt) und Einwilligungsnachweis, Freigabe im Backend, Setup-Anleitung für Admins.'],
+            ['status' => 'open', 'title' => 'Freigabe durch die/den Datenschutzbeauftragte:n', 'note' => 'Vor der Umsetzung: Datenschutz-Folgenabschätzung, Einordnung des START-Links als Double-Opt-In, Drittland USA. Alternative WhatsApp-Kanal (kostenlos, ohne Nummern) mit besprechen.'],
+            ['status' => 'open', 'title' => 'Budget und Meta-Business-Konto', 'note' => 'Jede Newsletter-Nachricht kostet bei Meta grob 0,10–0,15 €. Unternehmensverifizierung mit Vereinsregisterauszug und Zahlungsmittel des Rechtsträgers nötig.'],
         ],
     ],
 

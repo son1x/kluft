@@ -27,7 +27,7 @@ return [
         ['Abnahme', 'Abnahme', 'open'],
         ['Bolivien', 'bolivienpartnerschaft.de', 'partial'],
         ['Beraten', 'beraten-online.de (Phase 2)', 'partial'],
-        ['WhatsApp', 'WhatsApp-Newsletter (Konzept)', 'open'],
+        ['WhatsApp', 'WhatsApp-Newsletter', 'partial'],
     ],
 
     'sections' => [
@@ -139,9 +139,11 @@ return [
             ['status' => 'later', 'title' => 'Zuordnung von Ratsuchenden und Berater*innen', 'note' => 'Pflichtenheft F-BER-04. Erst nach einer Datenschutz-Folgenabschätzung; ggf. getrenntes System.'],
         ],
         'WhatsApp' => [
-            ['status' => 'done', 'title' => 'Pflichtenheft WhatsApp-Newsletter', 'note' => 'docs/whatsapp_newsletter.md: Cloud API mit der Büro-Festnetznummer (Sprachanruf-Verifizierung), Double-Opt-In mit START, Abmeldung mit STOP, nur Nummer (verschlüsselt) und Einwilligungsnachweis, Freigabe im Backend, Setup-Anleitung für Admins.'],
-            ['status' => 'open', 'title' => 'Freigabe durch die/den Datenschutzbeauftragte:n', 'note' => 'Vor der Umsetzung: Datenschutz-Folgenabschätzung, Einordnung des START-Links als Double-Opt-In, Drittland USA. Alternative WhatsApp-Kanal (kostenlos, ohne Nummern) mit besprechen.'],
-            ['status' => 'open', 'title' => 'Budget und Meta-Business-Konto', 'note' => 'Jede Newsletter-Nachricht kostet bei Meta grob 0,10–0,15 €. Unternehmensverifizierung mit Vereinsregisterauszug und Zahlungsmittel des Rechtsträgers nötig.'],
+            ['status' => 'done', 'title' => 'Pflichtenheft WhatsApp-Newsletter', 'note' => 'docs/whatsapp_newsletter.md: Cloud API mit der Büro-Festnetznummer, Double-Opt-In mit START, Abmeldung mit STOP, Datenmodell, Webhook, Setup-Anleitung für Admins.'],
+            ['status' => 'done', 'title' => 'Modul gebaut, läuft komplett auf dem Webspace', 'note' => 'Nur PHP, Cronjob und Warteschlange, keine Zusatzdienste. Anmeldeseite /whatsapp mit QR-Code (START), optional Formular; STOP löscht sofort; nur verschlüsselte Nummer und Einwilligungsnachweis, Profilnamen werden verworfen. Webhook mit Signaturprüfung. Backend „WhatsApp-Newsletter“: Aussendungen mit Vier-Augen-Freigabe, Kostenanzeige, geplantem Versand, Anhalten/Fortsetzen und Testnachricht; Vorlagen bei Meta einreichen und abgleichen; Abonnent:innen nur maskiert, kein Export; Verbindung. Statusseite, whatsapp:check, Löschfristen, Datenschutz-Anfragen per Telefonnummer, Push/Mail an das Team. Testumgebung sendet nur an die Test-Allowlist.'],
+            ['status' => 'done', 'title' => 'Neue Rolle „WhatsApp-Newsletter-Admin“', 'note' => 'Darf das ganze Modul inklusive Verbindung zu Meta. Verwaltung darf Aussendungen, Vorlagen und Abonnent:innen, aber nicht die Verbindung. Vorstand darf Aussendungen entwerfen. Vergabe gilt als weitreichende Rolle (Hinweis an die Technik-Admins).'],
+            ['status' => 'open', 'title' => 'Freigabe durch die/den Datenschutzbeauftragte:n', 'note' => 'Vor dem Livegang: Datenschutz-Folgenabschätzung, Einordnung des START-Links als Double-Opt-In, Drittland USA; Abschnitt für die Datenschutzerklärung steht in docs/whatsapp_newsletter.md (2.1). Alternative WhatsApp-Kanal mit besprechen.'],
+            ['status' => 'open', 'title' => 'Budget und Meta-Business-Konto', 'note' => 'Jede Newsletter-Nachricht kostet bei Meta grob 0,10–0,15 €. Unternehmensverifizierung mit Vereinsregisterauszug und Zahlungsmittel des Rechtsträgers nötig; danach Einrichtung nach Setup-Anleitung.'],
         ],
     ],
 

@@ -18,6 +18,7 @@ on:
           - mail:check-allowlist
           - backup:status
           - backup:run
+          - whatsapp:check
         default: calendar:check
 
 jobs:

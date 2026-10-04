@@ -168,6 +168,8 @@ jobs:
           # Optional: eigener ntfy-Server statt ntfy.sh (Push-Nachrichten).
           NTFY_SERVER: ${{ secrets.NTFY_SERVER }}
           NTFY_TOKEN: ${{ secrets.NTFY_TOKEN }}
+          # WhatsApp-Newsletter: in der Testumgebung nur an diese Nummern senden.
+          WHATSAPP_TEST_ALLOWLIST: ${{ secrets.WHATSAPP_TEST_ALLOWLIST }}
         run: |
           trim() {
             local var="$1"
@@ -247,6 +249,7 @@ jobs:
           BACKUP_WEBDAV_PASSWORD="${BACKUP_WEBDAV_PASSWORD}"
           NTFY_SERVER=${NTFY_SERVER}
           NTFY_TOKEN="${NTFY_TOKEN}"
+          WHATSAPP_TEST_ALLOWLIST="$(printf '%s' "$WHATSAPP_TEST_ALLOWLIST" | tr '\r\n' ',,' | tr -d '"')"
           ENV
 
       # Selbstgehostete Kartendaten (F-MAP-04, ~140 MB) – zu groß fürs

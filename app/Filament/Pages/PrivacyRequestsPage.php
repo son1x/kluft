@@ -5,8 +5,11 @@ namespace App\Filament\Pages;
 use App\Filament\Resources\Events\EventResource;
 use App\Filament\Resources\People\PersonResource;
 use App\Filament\Resources\Users\UserResource;
+use App\Models\WhatsAppSubscriber;
+use App\Models\WhatsAppSuppression;
 use App\Services\PrivacyRequests;
 use App\Support\AuditLogger;
+use App\Support\PhoneNumber;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
@@ -39,6 +42,11 @@ class PrivacyRequestsPage extends Page
 
     public ?string $searched = null;
 
+    /** WhatsApp-Newsletter: Suche über die Telefonnummer (F-WA-11). */
+    public string $phone = '';
+
+    public ?string $phoneSearched = null;
+
     public static function canAccess(): bool
     {
         return (bool) Filament::auth()->user()?->isVerwaltung();
@@ -52,6 +60,32 @@ class PrivacyRequestsPage extends Page
         AuditLogger::log('privacy.search', Filament::auth()->user(), request: request());
     }
 
+    public function searchPhone(): void
+    {
+        abort_unless(static::canAccess(), 403);
+        $this->validate(['phone' => ['required', 'string', 'max:30']], [], ['phone' => 'Telefonnummer']);
+        $normalized = PhoneNumber::normalize($this->phone);
+        if ($normalized === null) {
+            $this->addError('phone', 'Bitte eine gültige Telefonnummer eingeben.');
+
+            return;
+        }
+        $this->phoneSearched = $normalized;
+        AuditLogger::log('privacy.search.whatsapp', Filament::auth()->user(), request: request());
+    }
+
+    public function deleteWhatsApp(): void
+    {
+        abort_unless(static::canAccess() && $this->phoneSearched, 403);
+        $hash = WhatsAppSubscriber::hash($this->phoneSearched);
+        $subscribers = WhatsAppSubscriber::query()->where('phone_hash', $hash)->delete();
+        $suppressions = WhatsAppSuppression::query()->whereKey($hash)->delete();
+        AuditLogger::log("privacy.delete.whatsapp:{$subscribers}+{$suppressions}", Filament::auth()->user(), request: request());
+
+        Notification::make()->success()->title('WhatsApp-Daten gelöscht')
+            ->body("{$subscribers} Abonnement, {$suppressions} Sperrlisten-Eintrag.")->send();
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -62,6 +96,11 @@ class PrivacyRequestsPage extends Page
             'eventUrl' => fn ($event) => EventResource::getUrl('edit', ['record' => $event]),
             'personUrl' => fn ($person) => PersonResource::getUrl('edit', ['record' => $person]),
             'userUrl' => fn ($user) => UserResource::getUrl('edit', ['record' => $user]),
+            'whatsapp' => $this->phoneSearched ? [
+                'phone' => PhoneNumber::mask($this->phoneSearched),
+                'subscriber' => WhatsAppSubscriber::findByPhone($this->phoneSearched),
+                'suppressed' => WhatsAppSuppression::isSuppressed($this->phoneSearched),
+            ] : null,
         ];
     }
 

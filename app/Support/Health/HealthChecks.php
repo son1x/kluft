@@ -4,8 +4,10 @@ namespace App\Support\Health;
 
 use App\Models\Calendar;
 use App\Models\IntegrationToken;
+use App\Models\WhatsAppCampaign;
 use App\Services\Backup\BackupService;
 use App\Services\Instagram\InstagramClient;
+use App\Services\WhatsApp\WhatsAppSettings;
 use App\Support\Roadmap;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -41,6 +43,7 @@ class HealthChecks
             'backups' => ['Backups', fn () => $this->backups()],
             'kalender' => ['Kalender-Abgleich (Nextcloud)', fn () => $this->calendars()],
             'instagram' => ['Instagram-Anbindung', fn () => $this->instagram()],
+            'whatsapp' => ['WhatsApp-Newsletter', fn () => $this->whatsapp()],
         ];
 
         $results = [];
@@ -155,5 +158,27 @@ class HealthChecks
         }
 
         return $token->last_error ? [self::WARN, 'Letzte Erneuerung mit Fehler.'] : [self::OK, 'Verbunden.'];
+    }
+
+    /** @return array{0: string, 1: string} */
+    private function whatsapp(): array
+    {
+        if (! app(WhatsAppSettings::class)->configured()) {
+            return [self::OFF, 'Noch nicht eingerichtet.'];
+        }
+
+        $health = Cache::get('whatsapp:health');
+        if (is_array($health) && ($health['ok'] ?? false) === false) {
+            return [self::FAIL, 'Verbindung zu Meta gestört.'];
+        }
+        if (WhatsAppCampaign::query()->where('status', 'paused')->whereNotNull('last_error')->exists()) {
+            return [self::WARN, 'Eine Aussendung wurde wegen eines Fehlers angehalten.'];
+        }
+        $quality = $health['status']['quality_rating'] ?? null;
+        if (in_array($quality, ['RED', 'YELLOW'], true)) {
+            return [self::WARN, 'Qualität der Nummer: '.$quality.'.'];
+        }
+
+        return [self::OK, is_array($health) ? 'Verbunden.' : 'Verbunden (noch nicht geprüft).'];
     }
 }

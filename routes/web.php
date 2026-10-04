@@ -17,6 +17,9 @@ use App\Http\Controllers\Public\RegistrationController;
 use App\Http\Controllers\Public\RoadmapController;
 use App\Http\Controllers\Public\SectionController;
 use App\Http\Controllers\Public\StatusController;
+use App\Http\Controllers\Public\WhatsAppController;
+use App\Http\Controllers\Webhooks\WhatsAppWebhookController;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
@@ -30,6 +33,17 @@ Route::get('/auth/entra/callback', [EntraAuthController::class, 'callback'])
     ->name('auth.entra.callback');
 Route::get('/auth/entra/verzeichnis', [EntraAuthController::class, 'connectDirectory'])
     ->name('auth.entra.verzeichnis');
+
+// WhatsApp-Newsletter: Anmeldeseite (nur wenn mit Meta verbunden).
+Route::get('/whatsapp', [WhatsAppController::class, 'show'])->name('whatsapp.index');
+Route::post('/whatsapp', [WhatsAppController::class, 'subscribe'])->middleware('throttle:whatsapp-anmelden')->name('whatsapp.subscribe');
+
+// WhatsApp-Newsletter: Webhook der Cloud API (docs/whatsapp_newsletter.md).
+// Ohne CSRF-Token (Meta signiert stattdessen jeden Aufruf).
+Route::middleware('throttle:whatsapp-webhook')->withoutMiddleware(ValidateCsrfToken::class)->group(function () {
+    Route::get('/webhooks/whatsapp', [WhatsAppWebhookController::class, 'verify'])->name('webhooks.whatsapp.verify');
+    Route::post('/webhooks/whatsapp', [WhatsAppWebhookController::class, 'receive'])->name('webhooks.whatsapp');
+});
 
 // Notfall-Super-Admin (Break-Glass), s. Pflichtenheft 5.2. Bewusst nicht
 // in der Navigation verlinkt und mit eigenem Rate-Limit im Controller

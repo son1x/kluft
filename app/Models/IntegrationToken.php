@@ -11,19 +11,21 @@ use Illuminate\Support\Carbon;
  *
  * @property Carbon|null $expires_at
  * @property Carbon|null $refreshed_at
+ * @property array<string, mixed>|null $settings
  */
 class IntegrationToken extends Model
 {
     protected $fillable = [
-        'provider', 'account_id', 'account_name', 'access_token', 'expires_at', 'refreshed_at', 'last_error',
+        'provider', 'account_id', 'account_name', 'access_token', 'settings', 'expires_at', 'refreshed_at', 'last_error',
     ];
 
-    protected $hidden = ['access_token'];
+    protected $hidden = ['access_token', 'settings'];
 
     protected function casts(): array
     {
         return [
             'access_token' => 'encrypted',
+            'settings' => 'encrypted:array',
             'expires_at' => 'datetime',
             'refreshed_at' => 'datetime',
         ];

@@ -51,4 +51,36 @@
             </ul>
         </x-filament::section>
     @endif
+
+    <x-filament::section heading="WhatsApp-Newsletter: Nummer suchen" description="Gespeichert sind nur Nummer (verschlüsselt), Status, Weg der Anmeldung und Einwilligungsnachweis.">
+        <form wire:submit="searchPhone" style="display: flex; flex-wrap: wrap; gap: .75rem; align-items: flex-start;">
+            <div style="flex: 1 1 18rem;">
+                <x-filament::input.wrapper :valid="! $errors->has('phone')">
+                    <x-filament::input type="tel" wire:model="phone" placeholder="0151 23456789" autocomplete="off" />
+                </x-filament::input.wrapper>
+                @error('phone')<p class="text-danger-600" style="margin-top: .25rem; font-size: .875rem;">{{ $message }}</p>@enderror
+            </div>
+            <x-filament::button type="submit" color="gray">Nummer suchen</x-filament::button>
+        </form>
+
+        @if ($whatsapp)
+            <div style="margin-top: 1rem; font-size: .875rem;">
+                @if ($whatsapp['subscriber'])
+                    @php($s = $whatsapp['subscriber'])
+                    <p><strong>{{ $whatsapp['phone'] }}</strong>: {{ $s->status === 'active' ? 'aktiv' : 'unbestätigt' }}, angemeldet über {{ $s->source === 'link' ? 'QR-Code/Link' : 'Formular' }},
+                        Einwilligung (Version {{ $s->consent_version }}) bestätigt am {{ $s->confirmed_at?->format('d.m.Y H:i') ?? '–' }}{{ $s->requested_at ? ', angefragt am '.$s->requested_at->format('d.m.Y H:i') : '' }}.</p>
+                @else
+                    <p><strong>{{ $whatsapp['phone'] }}</strong>: kein Abonnement.</p>
+                @endif
+                @if ($whatsapp['suppressed'])
+                    <p>Auf der Sperrliste (nach Abmeldung, nur als nicht umkehrbarer Prüfwert).</p>
+                @endif
+                @if ($whatsapp['subscriber'] || $whatsapp['suppressed'])
+                    <div style="margin-top: .75rem;">
+                        <x-filament::button color="danger" size="sm" wire:click="deleteWhatsApp" wire:confirm="WhatsApp-Daten zu dieser Nummer endgültig löschen?">WhatsApp-Daten löschen</x-filament::button>
+                    </div>
+                @endif
+            </div>
+        @endif
+    </x-filament::section>
 </x-filament-panels::page>

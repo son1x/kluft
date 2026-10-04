@@ -1,5 +1,6 @@
 <?php
 
+use App\Services\WhatsApp\WhatsAppSettings;
 use App\Support\Roadmap;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schedule;
@@ -40,3 +41,9 @@ Schedule::command('instagram:refresh-token')->weeklyOn(1, '04:00');
 // wöchentlich.
 Schedule::command('backup:run')->dailyAt('02:00')->withoutOverlapping();
 Schedule::command('backup:verify')->weeklyOn(0, '05:00');
+
+// WhatsApp-Newsletter (docs/whatsapp_newsletter.md): geplante Aussendungen
+// starten, Zustand prüfen, Löschfristen.
+Schedule::command('whatsapp:dispatch-scheduled')->everyMinute()->withoutOverlapping();
+Schedule::command('whatsapp:check')->hourly()->when(fn () => app(WhatsAppSettings::class)->configured());
+Schedule::command('whatsapp:prune')->dailyAt('03:50');

@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Services\Backup\BackupService;
 use App\Services\BrevoNewsletter;
 use App\Services\Instagram\InstagramClient;
+use App\Services\WhatsApp\WhatsAppSettings;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\Cache;
 
@@ -145,6 +146,13 @@ class Roadmap
                 'title' => 'Domain bolivienpartnerschaft.de aufschalten',
                 'detail' => 'Bei der Migration: DNS auf das Webhosting zeigen lassen, in Plesk als Alias der Website anlegen und Let’s-Encrypt-Zertifikat ausstellen.',
                 'done' => null,
+            ],
+            [
+                'key' => 'whatsapp-meta',
+                'phase' => 'WhatsApp',
+                'title' => 'WhatsApp-Newsletter mit Meta verbinden',
+                'detail' => 'Erst nach Freigabe durch die/den Datenschutzbeauftragte:n und Klärung des Budgets: Setup-Anleitung in docs/whatsapp_newsletter.md (Abschnitt 9) – Meta-Business-Konto verifizieren, Büro-Festnetznummer per Sprachanruf verifizieren, Systembenutzer-Token erzeugen, im Backend unter „WhatsApp-Newsletter → Verbindung“ eintragen, Webhook bei Meta hinterlegen, Startvorlagen einreichen. Für test.dpsg-trier.de die kostenlose Testnummer von Meta nutzen und das Secret WHATSAPP_TEST_ALLOWLIST setzen. Rolle „WhatsApp-Newsletter-Admin“ unter Benutzer vergeben.',
+                'done' => app(WhatsAppSettings::class)->configured(),
             ],
             [
                 'key' => 'spenden-bank',

@@ -39,6 +39,11 @@ class AppServiceProvider extends ServiceProvider
         // Warteschlange warten, bis wieder Kontingent frei ist.
         RateLimiter::for('brevo-tageslimit', fn () => Limit::perDay(max(1, (int) config('mail.daily_limit')))->by('brevo'));
 
+        // WhatsApp-Newsletter: Webhook, Anmeldeformular und Versandtempo.
+        RateLimiter::for('whatsapp-webhook', fn (Request $request) => Limit::perMinute(600)->by('wa-hook|'.$request->ip()));
+        RateLimiter::for('whatsapp-anmelden', fn (Request $request) => Limit::perMinutes(10, 5)->by('wa-form|'.$request->ip()));
+        RateLimiter::for('whatsapp', fn () => Limit::perMinute(max(1, (int) config('whatsapp.per_minute')))->by('whatsapp-versand'));
+
         RateLimiter::for('teilnehmende-code', fn (Request $request) => [
             Limit::perMinutes(10, 5)->by('code-ip|'.$request->ip()),
             Limit::perHour(5)->by('code-mail|'.mb_strtolower(trim((string) $request->input('email')))),

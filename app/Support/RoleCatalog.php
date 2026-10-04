@@ -47,6 +47,7 @@ class RoleCatalog
 
         $options['vorstand|global|'] = 'Vorstand';
         $options['verwaltung|global|'] = 'Verwaltung';
+        $options['whatsapp|global|'] = 'WhatsApp-Newsletter-Admin';
         $options['admin|global|'] = 'Admin (Technik)';
         $options['superadmin|global|'] = 'Super-Admin';
 
@@ -137,6 +138,7 @@ class RoleCatalog
             'sektionsadmin' => 'Seiten, Beiträge und Veranstaltungen des Bereichs pflegen, Autor:innen freischalten',
             'vorstand' => 'Vorstandsseiten pflegen, Beiträge freigeben',
             'verwaltung' => 'alle Inhalte und Veranstaltungen, Benutzer und Datenschutz-Anfragen',
+            'whatsapp' => 'WhatsApp-Newsletter: Aussendungen, Vorlagen, Abonnent:innen und Verbindung',
             'admin' => 'Technik: Integrationen und Einstellungen',
             'superadmin' => 'Notfallzugang',
         ][$role] ?? null;
@@ -149,7 +151,7 @@ class RoleCatalog
      */
     public static function isPrivileged(string $key): bool
     {
-        return in_array(self::decode($key)['role'], ['verwaltung', 'admin', 'superadmin'], true);
+        return in_array(self::decode($key)['role'], ['verwaltung', 'whatsapp', 'admin', 'superadmin'], true);
     }
 
     public static function label(RoleAssignment $assignment): string

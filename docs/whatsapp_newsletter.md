@@ -1,10 +1,19 @@
 # Pflichtenheft: WhatsApp-Newsletter (KDG-konform)
 
-**Stand:** 4. Oktober 2026 · **Status:** Entwurf zur Abstimmung (Datenschutz, Budget) · **Bezug:** Pflichtenheft (docs/pflichtenheft.md) Kap. 5 (Rechte), 6.6 (Georgsbrief), 6.10 (Mailversand), 9 (KDG), 10 (Betrieb)
+**Stand:** 4. Oktober 2026 · **Status:** umgesetzt (Version 1), Livegang nach Freigabe durch DSB und Budget · **Bezug:** Pflichtenheft (docs/pflichtenheft.md) Kap. 5 (Rechte), 6.6 (Georgsbrief), 6.10 (Mailversand), 9 (KDG), 10 (Betrieb)
 
 Ein zusätzlicher Newsletter-Kanal über WhatsApp, versendet über die Büro-Festnetznummer des Diözesanbüros und gesteuert aus dem bestehenden CMS (Laravel 12, Filament 4, MariaDB, Webspace mit Cronjob).
 
 ---
+
+## Umsetzungsstand (Version 1)
+
+Umgesetzt wie unten beschrieben, vollständig auf dem Webspace (PHP, Cronjob, Datenbank-Warteschlange). Abweichungen und Präzisierungen:
+- Kein eigener `FakeGateway`: Tests simulieren die Graph API mit `Http::fake` (wie bei Instagram). Der Client heißt `App\Services\WhatsApp\WhatsAppClient`.
+- Rufnummern werden ohne Zusatzpaket normalisiert (`App\Support\PhoneNumber`); der QR-Code ist ein statisches SVG (`public/images/whatsapp/anmelden-qr.svg`, neu erzeugen mit `scripts/whatsapp-qr.py`, ein Test prüft die Nummer). **Keine neuen Composer- oder NPM-Pakete.**
+- Rolle `whatsapp` („WhatsApp-Newsletter-Admin“): ganzes Modul inkl. Verbindung; Verwaltung ohne Verbindung; Vorstand nur Entwürfe.
+- Backend: Navigationsgruppe „WhatsApp-Newsletter“ mit Aussendungen, Vorlagen, Abonnent:innen und Verbindung (`/admin/whatsapp/…`).
+- Befehle: `whatsapp:check` (stündlich, auch über „Server-Prüfung“), `whatsapp:prune` (täglich), `whatsapp:dispatch-scheduled` (jede Minute).
 
 ## 0. Kurzfassung und offene Entscheidungen
 

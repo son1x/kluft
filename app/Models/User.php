@@ -138,6 +138,15 @@ class User extends Authenticatable implements FilamentUser
     }
 
     /**
+     * WhatsApp-Newsletter-Admin (docs/whatsapp_newsletter.md): darf das
+     * ganze Modul inkl. Verbindung zu Meta; Admins (Technik) ebenso.
+     */
+    public function isWhatsAppAdmin(): bool
+    {
+        return $this->hasRole('whatsapp') || $this->isAdmin();
+    }
+
+    /**
      * Ob die Person Push-Nachrichten (ntfy) für dieses Ereignis will und
      * es mit ihren Rechten bekommen darf, s. App\Support\PushEvents.
      */

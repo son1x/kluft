@@ -24,6 +24,8 @@ class PushEvents
 
     public const SYSTEM = 'system';
 
+    public const WHATSAPP = 'whatsapp';
+
     public const LABELS = [
         self::ANMELDUNGEN => 'Anmeldungen zu meinen Veranstaltungen (neu, Warteliste, Storno)',
         self::BEITRAEGE_FREIGABE => 'Beiträge, die auf meine Freigabe warten',
@@ -31,6 +33,7 @@ class PushEvents
         self::RECHTE => 'Neue Rechte für mich',
         self::BENUTZER => 'Konten zur Freischaltung und weitreichende Rechtevergaben',
         self::SYSTEM => 'Störungen der Website (Monitoring)',
+        self::WHATSAPP => 'WhatsApp-Newsletter: Aussendungen zur Freigabe und Störungen',
     ];
 
     /**
@@ -45,6 +48,7 @@ class PushEvents
             self::RECHTE => true,
             self::BENUTZER => $user->isVerwaltung(),
             self::SYSTEM => $user->isAdmin(),
+            self::WHATSAPP => WhatsAppAccess::manage($user),
         ];
 
         return array_filter(self::LABELS, fn (string $key) => $allowed[$key], ARRAY_FILTER_USE_KEY);

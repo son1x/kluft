@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex" />
-    <title>Kurz in Wartung – DPSG Diözesanverband Trier</title>
+    <title>Kurz in Wartung – {{ config('dpsg.site.name') }}</title>
     {{-- Bewusst ohne externe/gebaute Assets: wird beim Deploy vorab gerendert
          und ausgeliefert, während die übrigen Dateien ausgetauscht werden. --}}
     <style>
@@ -18,7 +18,7 @@
     <main>
         <h1>Kurz in Wartung</h1>
         <p>Wir spielen gerade eine neue Version der Website ein. In ein, zwei Minuten geht es weiter – bitte lade die Seite dann neu.</p>
-        <p style="margin-top: 1rem; font-size: .875rem; color: #5c6670;">DPSG Diözesanverband Trier</p>
+        <p style="margin-top: 1rem; font-size: .875rem; color: #5c6670;">{{ config('dpsg.site.name') }}</p>
     </main>
 </body>
 </html>

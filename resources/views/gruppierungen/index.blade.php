@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('seo_title', 'Bezirke & Stämme – DPSG Diözesanverband Trier')
-@section('seo_description', 'Wo finde ich meinen Stamm? Alle Bezirke und Stämme der DPSG im Bistum Trier mit Adresse, Kontakt und Karte.')
+@section('seo_title', 'Bezirke & Stämme – '.config('dpsg.site.name'))
+@section('seo_description', 'Wo finde ich meinen Stamm? Alle Bezirke und Stämme der DPSG im '.config('dpsg.site.region').' mit Adresse, Kontakt und Karte.')
 
 @push('head')
     @vite('resources/js/map.js')
@@ -15,7 +15,7 @@
             <div class="prose mt-3 max-w-3xl text-text-secondary">{!! str($intro->body)->sanitizeHtml() !!}</div>
         @else
             <p class="mt-3 max-w-3xl text-text-secondary">
-                Wo finde ich meinen Stamm? Hier findest du alle Bezirke und Stämme im Bistum Trier mit Kontakt und den Stufen, die sie anbieten.
+                Wo finde ich meinen Stamm? Hier findest du alle Bezirke und Stämme im {{ config('dpsg.site.region') }} mit Kontakt und den Stufen, die sie anbieten.
             </p>
         @endif
 

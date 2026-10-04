@@ -3,8 +3,8 @@
 {{-- Kontaktseite: Text aus dem CMS (Adresse, Telefon) und daneben das
      Kontaktformular (F-CMS-09). Erwartet: $page, $topics, $selected --}}
 
-@section('seo_title', $page->seo_title ?: $page->title.' – DPSG Diözesanverband Trier')
-@section('seo_description', $page->seo_description ?: 'Kontakt zum DPSG Diözesanverband Trier: Diözesanbüro, Stufen, Fachbereiche – per Formular, E-Mail oder Telefon.')
+@section('seo_title', $page->seo_title ?: $page->title.' – '.config('dpsg.site.name'))
+@section('seo_description', $page->seo_description ?: 'Kontakt zum '.config('dpsg.site.name').': '.\App\Support\Site::officeLabel().', Stufen, Fachbereiche – per Formular, E-Mail oder Telefon.')
 
 @section('content')
     <div class="mx-auto grid max-w-6xl gap-10 px-4 py-10 lg:grid-cols-5">

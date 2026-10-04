@@ -10,5 +10,5 @@ Zu meinen Anmeldungen
 </x-mail::button>
 
 Gut Pfad!<br>
-DPSG Diözesanverband Trier
+{{ config('dpsg.site.name') }}
 </x-mail::message>

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('seo_title', $page->seo_title ?: $page->title.' – DPSG Diözesanverband Trier')
+@section('seo_title', $page->seo_title ?: $page->title.' – '.config('dpsg.site.name'))
 @if ($page->seo_description)
     @section('seo_description', $page->seo_description)
 @endif

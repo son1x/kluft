@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('seo_title', 'Aktuelles – '.$config['label'].' – DPSG Diözesanverband Trier')
+@section('seo_title', 'Aktuelles – '.$config['label'].' – '.config('dpsg.site.name'))
 
 @push('head')
     <link rel="alternate" type="application/rss+xml" title="{{ $config['label'] }} – Aktuelles" href="{{ route('sections.feed', $section) }}" />

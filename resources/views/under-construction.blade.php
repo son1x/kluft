@@ -4,12 +4,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, nofollow" />
-    <title>DPSG Diözesanverband Trier – neues CMS im Aufbau</title>
+    <title>{{ config('dpsg.site.name') }} – neues CMS im Aufbau</title>
     @vite(['resources/css/app.css'])
 </head>
 <body class="min-h-screen flex items-center justify-center bg-dpsg-blau px-4 py-16 text-white">
     <main class="max-w-xl w-full">
-        <p class="font-sans text-sm uppercase tracking-wide text-dpsg-cyan mb-3">DPSG Diözesanverband Trier</p>
+        <p class="font-sans text-sm uppercase tracking-wide text-dpsg-cyan mb-3">{{ config('dpsg.site.name') }}</p>
         <h1 class="font-serif text-3xl sm:text-4xl font-bold mb-4 leading-tight">
             Das neue CMS entsteht gerade hier.
         </h1>

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('seo_title', $page->seo_title ?: 'DPSG Diözesanverband Trier')
+@section('seo_title', $page->seo_title ?: config('dpsg.site.name'))
 @if ($page->seo_description)
     @section('seo_description', $page->seo_description)
 @endif
@@ -61,7 +61,7 @@
                         <a href="mailto:{{ $contact['email'] }}" class="hover:underline">{{ $contact['email'] }}</a>
                     </p>
                 </div>
-                <a href="{{ url('/dioezesanbuero') }}" class="self-start border border-dpsg-rot px-4 py-2 text-dpsg-rot hover:bg-dpsg-rot hover:text-white">Zum Diözesanbüro</a>
+                <a href="{{ \App\Support\Site::officeUrl() }}" class="self-start border border-dpsg-rot px-4 py-2 text-dpsg-rot hover:bg-dpsg-rot hover:text-white">{{ \App\Support\Site::office('zu', capitalize: true) }}</a>
             </aside>
         </div>
     </section>
@@ -80,7 +80,7 @@
                                 <x-picture :media="$post->coverMedia" alt="" sizes="(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw" class="h-full w-full object-cover" />
                             @else
                                 <div class="flex h-full w-full items-center justify-center bg-dpsg-hellbeige">
-                                    <x-static-image src="images/logo-dv-trier.png" class="h-20 w-auto opacity-80" loading="lazy" />
+                                    <x-static-image :src="config('dpsg.site.logo')" class="h-20 w-auto opacity-80" loading="lazy" />
                                 </div>
                             @endif
                         </a>
@@ -142,7 +142,7 @@
         <div class="mx-auto max-w-6xl px-4 py-16">
             <h2 class="inline-block bg-dpsg-rot px-3 py-1 font-serif text-2xl font-bold">Mitmachen</h2>
             <p class="mt-5 max-w-3xl text-lg md:text-xl">
-                Du möchtest Pfadfinder*in werden oder als Leiter*in mitmachen? In über 60 Stämmen im ganzen Bistum Trier ist sicher auch einer in deiner Nähe. Das Diözesanbüro hilft dir weiter.
+                {{ config('dpsg.site.join_text') }}
             </p>
             <div class="mt-6 flex flex-wrap gap-3">
                 <a href="{{ url('/bezirke-staemme') }}" class="inline-block bg-white px-5 py-2 font-bold text-dpsg-blau hover:bg-dpsg-hellbeige">Stamm in der Nähe finden</a>
@@ -154,18 +154,18 @@
     @if ($highlightPages->isNotEmpty())
         <section class="bg-surface-muted">
             <div @class(['mx-auto grid max-w-6xl gap-6 px-4 py-16 md:grid-cols-2', 'lg:grid-cols-3' => $highlightPages->count() > 2])>
-                @foreach (['bolivien', 'georgsbote', 'georgsbrief'] as $slug)
+                @foreach (config('dpsg.home_highlights') as $slug => $tile)
                     @if ($highlight = $highlightPages->get($slug))
                         <article class="flex flex-col bg-white p-6 shadow-md">
-                            @if ($slug === 'georgsbrief')
+                            @if ($tile['image'] ?? null)
                                 <picture class="-mx-6 -mt-6 mb-4 block bg-[#eff2f7] px-6 py-4">
-                                    <source type="image/webp" srcset="{{ asset('images/georgsbrief-logo.webp') }}" />
-                                    <img src="{{ asset('images/georgsbrief-logo.png') }}" alt="" width="970" height="251" class="h-auto w-full" loading="lazy" />
+                                    <source type="image/webp" srcset="{{ asset($tile['image'].'.webp') }}" />
+                                    <img src="{{ asset($tile['image'].'.png') }}" alt="" width="{{ $tile['image_size'][0] }}" height="{{ $tile['image_size'][1] }}" class="h-auto w-full" loading="lazy" />
                                 </picture>
                             @endif
                             <h2 class="font-serif text-xl font-bold">{{ $highlight->title }}</h2>
                             <p class="mt-3 flex-1">{{ \Illuminate\Support\Str::limit(trim(\Illuminate\Support\Str::before(strip_tags($highlight->body), '[TODO')), 260) }}</p>
-                            <a href="{{ url('/'.$highlight->slug) }}" class="mt-5 self-start border border-dpsg-rot px-3 py-1 text-sm text-dpsg-rot hover:bg-dpsg-rot hover:text-white">{{ $slug === 'georgsbrief' ? 'Jetzt abonnieren' : 'Mehr erfahren' }}</a>
+                            <a href="{{ url('/'.$highlight->slug) }}" class="mt-5 self-start border border-dpsg-rot px-3 py-1 text-sm text-dpsg-rot hover:bg-dpsg-rot hover:text-white">{{ $tile['button'] ?? 'Mehr erfahren' }}</a>
                         </article>
                     @endif
                 @endforeach
@@ -176,15 +176,17 @@
     <section class="mx-auto mt-20 max-w-6xl px-4" aria-labelledby="service-heading">
         @include('partials.section-heading', ['id' => 'service-heading', 'title' => 'Service'])
 
-        @php($serviceLinks = array_filter([
-            ['url' => '/dioezesanbuero', 'label' => 'Diözesanbüro', 'icon' => 'heroicon-o-building-office-2'],
+        @php($serviceLinks = [
+            ['url' => '/'.config('dpsg.site.office.page'), 'label' => config('dpsg.site.office.label'), 'icon' => 'heroicon-o-building-office-2'],
             ['url' => '/stufen', 'label' => 'Die Stufen', 'icon' => 'heroicon-o-user-group'],
             ['url' => '/bezirke-staemme', 'label' => 'Bezirke & Stämme', 'icon' => 'heroicon-o-map-pin'],
             ['url' => '/aktuelles', 'label' => 'Aktuelles', 'icon' => 'heroicon-o-newspaper'],
-            $highlightPages->has('bolivien') ? ['url' => '/bolivien', 'label' => 'Bolivien', 'icon' => 'heroicon-o-globe-europe-africa'] : null,
-            $highlightPages->has('georgsbote') ? ['url' => '/georgsbote', 'label' => 'Georgsbote', 'icon' => 'heroicon-o-book-open'] : null,
-            $highlightPages->has('georgsbrief') ? ['url' => '/georgsbrief', 'label' => 'Georgsbrief', 'icon' => 'heroicon-o-envelope-open'] : null,
-        ]))
+        ])
+        @foreach (config('dpsg.home_highlights') as $slug => $tile)
+            @if (isset($tile['service']) && $highlightPages->has($slug))
+                @php($serviceLinks[] = ['url' => '/'.$slug] + $tile['service'])
+            @endif
+        @endforeach
         <div @class(['grid grid-cols-2 gap-5 sm:grid-cols-3', 'lg:grid-cols-6' => count($serviceLinks) <= 6, 'lg:grid-cols-7' => count($serviceLinks) > 6])>
             @foreach ($serviceLinks as $link)
                 <a href="{{ url($link['url']) }}" class="group flex aspect-square flex-col items-center justify-center gap-3 bg-white p-4 text-center shadow-md transition hover:-translate-y-0.5 hover:shadow-lg">

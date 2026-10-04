@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('seo_title', 'Roadmap – DPSG Diözesanverband Trier')
-@section('seo_description', 'Umsetzungsstand der neuen Website des DPSG Diözesanverbands Trier.')
+@section('seo_title', 'Roadmap – '.config('dpsg.site.name'))
+@section('seo_description', 'Umsetzungsstand der neuen Website des '.config('dpsg.site.name_genitive').'.')
 
 @push('head')
     <meta name="robots" content="noindex, nofollow" />

@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>@yield('seo_title', $title ?? 'DPSG Diözesanverband Trier')</title>
+    <title>@yield('seo_title', $title ?? config('dpsg.site.name'))</title>
     @hasSection('canonical')
         <link rel="canonical" href="@yield('canonical')" />
     @elseif (request()->getHost() !== parse_url((string) config('app.url'), PHP_URL_HOST))
@@ -11,9 +11,9 @@
         <link rel="canonical" href="{{ rtrim((string) config('app.url'), '/').'/'.ltrim(request()->path(), '/') }}" />
     @endif
     {{-- Ohne eigene Beschreibung eine allgemeine, damit Suchmaschinen nicht raten. --}}
-    <meta name="description" content="@yield('seo_description', 'Deutsche Pfadfinderschaft Sankt Georg im Bistum Trier: Neuigkeiten, Veranstaltungen, Stufen und Stämme zwischen Mosel, Eifel, Hunsrück und Saarland.')" />
+    <meta name="description" content="@yield('seo_description', config('dpsg.site.description'))" />
     <link rel="icon" href="{{ asset('favicon.ico') }}" />
-    <link rel="alternate" type="application/rss+xml" title="DPSG Diözesanverband Trier – Aktuelles" href="{{ route('feed') }}" />
+    <link rel="alternate" type="application/rss+xml" title="{{ config('dpsg.site.name') }} – Aktuelles" href="{{ route('feed') }}" />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
 </head>
@@ -31,13 +31,13 @@
     <header class="sticky top-0 z-40 bg-dpsg-blau text-white md:relative md:z-30">
         <div class="relative mx-auto flex h-12 max-w-6xl items-center justify-end gap-6 px-4">
             <a href="{{ url('/') }}" class="absolute left-4 top-0 rounded-b-lg bg-white px-3 shadow-lg transition-all duration-200 md:pb-3 md:pt-2" :class="(scrolled || navOpen) ? 'pb-1 pt-1' : 'pb-3 pt-2'">
-                <x-static-image src="images/logo-dv-trier.png" alt="DPSG Diözesanverband Trier – zur Startseite" class="h-16 w-auto transition-all duration-200 md:h-28" x-bind:class="(scrolled || navOpen) && 'max-md:h-10'" width="300" height="223" fetchpriority="high" />
+                <x-static-image :src="config('dpsg.site.logo')" :alt="config('dpsg.site.name').' – zur Startseite'" class="h-16 w-auto transition-all duration-200 md:h-28" x-bind:class="(scrolled || navOpen) && 'max-md:h-10'" :width="config('dpsg.site.logo_size')[0]" :height="config('dpsg.site.logo_size')[1]" fetchpriority="high" />
             </a>
 
             <nav aria-label="Service" class="hidden text-sm md:block">
                 <ul class="flex gap-6">
                     <li><a href="{{ url('/kontakt') }}" class="hover:underline">Kontakt</a></li>
-                    <li><a href="{{ url('/dioezesanbuero') }}" class="hover:underline">Diözesanbüro</a></li>
+                    <li><a href="{{ \App\Support\Site::officeUrl() }}" class="hover:underline">{{ \App\Support\Site::officeLabel() }}</a></li>
                     <li><a href="{{ url('/meine-anmeldungen') }}" class="hover:underline">Meine Anmeldungen</a></li>
                     <li><a href="https://www.dpsg.de" target="_blank" rel="noopener" class="hover:underline">dpsg.de</a></li>
                 </ul>
@@ -104,7 +104,7 @@
                      Leiste oben, übernimmt das kleine Logo diese Aufgabe. --}}
                 <li class="shrink-0" x-show="stuck" x-transition.opacity x-cloak>
                     <a href="{{ url('/') }}" class="block pr-4">
-                        <x-static-image src="images/logo-dv-trier.png" alt="DPSG Diözesanverband Trier – zur Startseite" class="h-9 w-auto" width="300" height="223" loading="lazy" />
+                        <x-static-image :src="config('dpsg.site.logo')" :alt="config('dpsg.site.name').' – zur Startseite'" class="h-9 w-auto" :width="config('dpsg.site.logo_size')[0]" :height="config('dpsg.site.logo_size')[1]" loading="lazy" />
                     </a>
                 </li>
                 @foreach ($navPages ?? [] as $navPage)
@@ -213,7 +213,7 @@
                 <h2 class="mb-4 font-serif text-base font-bold">Service</h2>
                 <ul class="space-y-2">
                     <li><a href="{{ url('/kontakt') }}" class="hover:underline">Kontakt</a></li>
-                    <li><a href="{{ url('/dioezesanbuero') }}" class="hover:underline">Diözesanbüro</a></li>
+                    <li><a href="{{ \App\Support\Site::officeUrl() }}" class="hover:underline">{{ \App\Support\Site::officeLabel() }}</a></li>
                     <li><a href="{{ url('/meine-anmeldungen') }}" class="hover:underline">Meine Anmeldungen</a></li>
                     <li>
                         <button type="button" onclick="window.dispatchEvent(new CustomEvent('open-consent-settings'))" class="hover:underline">Datenschutz-Einstellungen</button>
@@ -224,7 +224,9 @@
                 <h2 class="mb-3 mt-6 font-serif text-base font-bold">DPSG im Netz</h2>
                 <ul class="space-y-2">
                     <li><a href="https://www.dpsg.de" target="_blank" rel="noopener" class="hover:underline">dpsg.de – Bundesebene</a></li>
-                    <li><a href="https://www.bistum-trier.de" target="_blank" rel="noopener" class="hover:underline">Bistum Trier</a></li>
+                    @foreach (array_filter([config('dpsg.site.parent'), ...config('dpsg.site.links', [])]) as $link)
+                        <li><a href="{{ $link['url'] }}" target="_blank" rel="noopener" class="hover:underline">{{ $link['label'] }}</a></li>
+                    @endforeach
                 </ul>
             </div>
             <div>

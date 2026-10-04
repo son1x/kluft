@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('seo_title', 'Meine Anmeldungen – DPSG Diözesanverband Trier')
+@section('seo_title', 'Meine Anmeldungen – '.config('dpsg.site.name'))
 
 @push('head')
     <meta name="robots" content="noindex" />
@@ -9,7 +9,7 @@
 @section('content')
     <div class="mx-auto max-w-2xl px-4 py-12">
         <h1 class="font-serif text-3xl font-bold">Meine Anmeldungen</h1>
-        <p class="mt-4">Hier siehst du alle Anmeldungen zu Veranstaltungen des Diözesanverbands, die unter deiner E-Mail-Adresse laufen – auch für Kinder oder Gruppen, die du angemeldet hast. Du kannst stornieren und Rechnungen oder Teilnahmebescheinigungen herunterladen. Ein Konto brauchst du nicht: Wir schicken dir einen Code per E-Mail.</p>
+        <p class="mt-4">Hier siehst du alle Anmeldungen zu Veranstaltungen des {{ config('dpsg.site.level_genitive') }}, die unter deiner E-Mail-Adresse laufen – auch für Kinder oder Gruppen, die du angemeldet hast. Du kannst stornieren und Rechnungen oder Teilnahmebescheinigungen herunterladen. Ein Konto brauchst du nicht: Wir schicken dir einen Code per E-Mail.</p>
 
         @if (session('status'))
             <p class="mt-6 border-l-4 border-stufe-pfadi bg-surface-muted p-4" role="status">{{ session('status') }}</p>

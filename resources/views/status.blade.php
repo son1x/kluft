@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('seo_title', 'Status – DPSG Diözesanverband Trier')
+@section('seo_title', 'Status – '.config('dpsg.site.name'))
 
 @push('head')
     <meta name="robots" content="noindex" />

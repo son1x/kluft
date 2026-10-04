@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('seo_title', 'Kalender – DPSG Diözesanverband Trier')
-@section('seo_description', 'Termine des DPSG Diözesanverbands Trier, der Stufen und Arbeitskreise.')
+@section('seo_title', 'Kalender – '.config('dpsg.site.name'))
+@section('seo_description', 'Termine des '.config('dpsg.site.name_genitive').', der Stufen und Arbeitskreise.')
 
 @php
     $filter = array_filter(['kalender' => $kalender, 'stufe' => $stufe]);
@@ -25,7 +25,7 @@
 @section('content')
     <div class="mx-auto max-w-6xl px-4 py-10">
         <h1 class="font-serif text-3xl font-bold">Kalender</h1>
-        <p class="mt-2 max-w-3xl text-text-secondary">Termine des Diözesanverbands, der Stufen und Arbeitskreise. <span class="font-bold text-dpsg-rot">Rot</span> markiert sind Veranstaltungen, zu denen du dich online anmelden kannst.</p>
+        <p class="mt-2 max-w-3xl text-text-secondary">Termine des {{ config('dpsg.site.level_genitive') }}, der Stufen und Arbeitskreise. <span class="font-bold text-dpsg-rot">Rot</span> markiert sind Veranstaltungen, zu denen du dich online anmelden kannst.</p>
 
         <form method="get" action="{{ route('calendar.index') }}" class="mt-6 flex flex-wrap items-end gap-4 bg-surface-muted p-4">
             <input type="hidden" name="ansicht" value="{{ $ansicht }}" />
@@ -57,7 +57,7 @@
         </form>
 
         @if ($calendars->isEmpty() && ! $hasEvents)
-            <p class="mt-8 text-text-secondary">Der Kalender wird gerade eingerichtet. Bald findest du hier die Termine des Diözesanverbands und der Stufen.</p>
+            <p class="mt-8 text-text-secondary">Der Kalender wird gerade eingerichtet. Bald findest du hier die Termine des {{ config('dpsg.site.level_genitive') }} und der Stufen.</p>
         @elseif ($ansicht === 'liste')
             @forelse ($events->groupBy(fn ($e) => $e->starts_at->format('Y-m')) as $ym => $monthEvents)
                 <h2 class="mt-10 font-serif text-2xl font-bold">{{ \Carbon\CarbonImmutable::createFromFormat('!Y-m', $ym)->locale('de')->isoFormat('MMMM YYYY') }}</h2>

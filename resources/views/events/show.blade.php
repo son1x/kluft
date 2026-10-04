@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('seo_title', $event->title.' – Veranstaltungen – DPSG Diözesanverband Trier')
+@section('seo_title', $event->title.' – Veranstaltungen – '.config('dpsg.site.name'))
 @section('seo_description', (string) ($event->teaser ?: $event->title.' – '.$event->dateLabel()))
 
 @php

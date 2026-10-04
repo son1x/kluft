@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('seo_title', ($landing?->seo_title ?: $config['label']).' – DPSG Diözesanverband Trier')
+@section('seo_title', ($landing?->seo_title ?: $config['label']).' – '.config('dpsg.site.name'))
 @if ($landing?->seo_description)
     @section('seo_description', $landing->seo_description)
 @endif
@@ -23,7 +23,7 @@
             <div class="stufe-pattern absolute inset-0 [--stufe-ink:var(--fach-ink)]" aria-hidden="true"></div>
         @endif
         <div class="relative mx-auto w-full max-w-6xl px-4 pt-10 md:pl-32">
-            <p class="{{ $heroInk }} text-sm font-bold uppercase tracking-wider opacity-80">{{ $config['kind'] ?? 'Fachbereich' }} · DPSG Diözesanverband Trier</p>
+            <p class="{{ $heroInk }} text-sm font-bold uppercase tracking-wider opacity-80">{{ $config['kind'] ?? 'Fachbereich' }} · {{ config('dpsg.site.name') }}</p>
             <h1 @class([$heroInk, 'mt-1 max-w-2xl font-serif text-4xl font-bold md:text-5xl', 'drop-shadow' => $landing?->coverMedia])>{{ $landing?->title ?? $config['label'] }}</h1>
             @if ($landing?->seo_description)
                 <p @class([$heroInk, 'mt-3 max-w-xl text-lg', 'drop-shadow' => $landing?->coverMedia])>{{ $landing->seo_description }}</p>

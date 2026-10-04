@@ -45,5 +45,5 @@ Fragen beantwortet {{ $event->contact_name ?: 'das Team' }} unter {{ $event->con
 @endif
 
 Gut Pfad!<br>
-DPSG Diözesanverband Trier
+{{ config('dpsg.site.name') }}
 </x-mail::message>

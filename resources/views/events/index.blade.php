@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('seo_title', 'Veranstaltungen – DPSG Diözesanverband Trier')
-@section('seo_description', 'Lager, Kurse und Aktionen des DPSG Diözesanverbands Trier mit Online-Anmeldung.')
+@section('seo_title', 'Veranstaltungen – '.config('dpsg.site.name'))
+@section('seo_description', 'Lager, Kurse und Aktionen des '.config('dpsg.site.name_genitive').' mit Online-Anmeldung.')
 
 @php
     $stateBadge = [
@@ -17,7 +17,7 @@
 @section('content')
     <div class="mx-auto max-w-6xl px-4 py-10">
         <h1 class="font-serif text-3xl font-bold">Veranstaltungen</h1>
-        <p class="mt-2 max-w-3xl text-text-secondary">Lager, Kurse, Aktionen und Versammlungen im Diözesanverband – mit Online-Anmeldung. Weitere Termine stehen im <a href="{{ route('calendar.index') }}" class="text-dpsg-rot underline">Kalender</a>.</p>
+        <p class="mt-2 max-w-3xl text-text-secondary">Lager, Kurse, Aktionen und Versammlungen im {{ config('dpsg.site.level') }} – mit Online-Anmeldung. Weitere Termine stehen im <a href="{{ route('calendar.index') }}" class="text-dpsg-rot underline">Kalender</a>.</p>
 
         <form method="get" action="{{ route('events.index') }}" class="mt-6 flex flex-wrap items-end gap-4 bg-surface-muted p-4">
             <label class="flex flex-col text-sm font-bold">

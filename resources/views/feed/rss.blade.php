@@ -4,7 +4,7 @@
         <title>{{ $title }}</title>
         <link>{{ $link }}</link>
         <atom:link href="{{ $self }}" rel="self" type="application/rss+xml" />
-        <description>Neuigkeiten der Deutschen Pfadfinderschaft Sankt Georg im Bistum Trier</description>
+        <description>Neuigkeiten der Deutschen Pfadfinderschaft Sankt Georg im {{ config('dpsg.site.region') }}</description>
         <language>de-de</language>
         @if ($posts->isNotEmpty())
             <lastBuildDate>{{ $posts->first()->published_at->toRssString() }}</lastBuildDate>

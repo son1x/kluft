@@ -5,8 +5,8 @@
      Kachel mit Maskottchen, Leitsatz und Textanfang der Stufenseite.
      Erwartet: $page, $stagePages, $staemmeCounts --}}
 
-@section('seo_title', $page->seo_title ?: $page->title.' – DPSG Diözesanverband Trier')
-@section('seo_description', $page->seo_description ?: 'Biber, Wölflinge, Jungpfadfinder*innen, Pfadfinder*innen und Rover: die fünf Altersstufen der DPSG im Bistum Trier.')
+@section('seo_title', $page->seo_title ?: $page->title.' – '.config('dpsg.site.name'))
+@section('seo_description', $page->seo_description ?: 'Biber, Wölflinge, Jungpfadfinder*innen, Pfadfinder*innen und Rover: die fünf Altersstufen der DPSG im '.config('dpsg.site.region').'.')
 
 @php
     $stages = config('dpsg.stages');
@@ -110,7 +110,7 @@
         <section class="mt-14 flex flex-col items-start gap-4 rounded-lg bg-dpsg-hellbeige p-6 md:flex-row md:items-center md:justify-between md:p-8">
             <div>
                 <h2 class="font-serif text-xl font-bold">Lust mitzumachen?</h2>
-                <p class="mt-1 text-text-secondary">Im ganzen Bistum Trier gibt es Stämme mit Gruppen für jedes Alter.</p>
+                <p class="mt-1 text-text-secondary">Im ganzen {{ config('dpsg.site.region') }} gibt es Stämme mit Gruppen für jedes Alter.</p>
             </div>
             <a href="{{ route('gruppierungen.index') }}" class="inline-flex shrink-0 items-center gap-2 bg-dpsg-blau px-5 py-2 font-bold text-white hover:bg-dpsg-rot">
                 <x-heroicon-o-map-pin class="h-5 w-5" aria-hidden="true" /> Stamm in der Nähe finden

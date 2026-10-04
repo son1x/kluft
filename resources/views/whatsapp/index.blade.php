@@ -3,13 +3,13 @@
 {{-- WhatsApp-Newsletter: Anmeldung per QR-Code/Link mit START (Double-Opt-In
      über die eigene Nachricht), optional per Formular. --}}
 
-@section('seo_title', 'WhatsApp-Newsletter – DPSG Diözesanverband Trier')
-@section('seo_description', 'Neuigkeiten, Termine und Anmeldestarts des DPSG Diözesanverbands Trier per WhatsApp. Anmelden mit START, abmelden mit STOP.')
+@section('seo_title', 'WhatsApp-Newsletter – '.config('dpsg.site.name'))
+@section('seo_description', 'Neuigkeiten, Termine und Anmeldestarts des '.config('dpsg.site.name_genitive').' per WhatsApp. Anmelden mit START, abmelden mit STOP.')
 
 @section('content')
     <div class="mx-auto max-w-6xl px-4 py-10">
         <h1 class="font-serif text-3xl font-bold">WhatsApp-Newsletter</h1>
-        <p class="mt-3 max-w-3xl text-lg">Neuigkeiten, Termine und Anmeldestarts aus dem Diözesanverband direkt auf dein Handy – nicht öfter als etwa zweimal im Monat.</p>
+        <p class="mt-3 max-w-3xl text-lg">Neuigkeiten, Termine und Anmeldestarts aus dem {{ config('dpsg.site.level') }} direkt auf dein Handy – nicht öfter als etwa zweimal im Monat.</p>
 
         <div class="mt-8 grid gap-10 lg:grid-cols-3">
             <section aria-labelledby="anmelden" class="lg:col-span-2">

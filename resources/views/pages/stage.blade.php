@@ -5,8 +5,8 @@
      unten der Weg durch die Stufen. Erwartet: $page, $stage, $stagePages,
      $previous, $next, $dak, $staemmeCount, $events --}}
 
-@section('seo_title', $page->seo_title ?: $page->title.' ('.$stage['age'].') – DPSG Diözesanverband Trier')
-@section('seo_description', $page->seo_description ?: $stage['label'].' ('.$stage['age'].'): '.$stage['tagline'].'. Die Stufe in der DPSG im Bistum Trier.')
+@section('seo_title', $page->seo_title ?: $page->title.' ('.$stage['age'].') – '.config('dpsg.site.name'))
+@section('seo_description', $page->seo_description ?: $stage['label'].' ('.$stage['age'].'): '.$stage['tagline'].'. Die Stufe in der DPSG im '.config('dpsg.site.region').'.')
 
 @php($overview = \App\Models\Page::query()->published()->where('slug', config('dpsg.stages_page'))->first())
 
@@ -56,7 +56,7 @@
                 <h2 class="font-serif text-lg font-bold">Mitmachen</h2>
                 <p class="mt-2 text-sm text-text-secondary">
                     @if ($staemmeCount > 0)
-                        In <strong class="text-text">{{ $staemmeCount }} {{ $staemmeCount === 1 ? 'Stamm' : 'Stämmen' }}</strong> im Bistum Trier gibt es eine Gruppe dieser Stufe.
+                        In <strong class="text-text">{{ $staemmeCount }} {{ $staemmeCount === 1 ? 'Stamm' : 'Stämmen' }}</strong> im {{ config('dpsg.site.region') }} gibt es eine Gruppe dieser Stufe.
                     @else
                         Frag im Stamm in deiner Nähe nach, ob es dort eine Gruppe dieser Stufe gibt.
                     @endif
@@ -78,8 +78,8 @@
                     <x-heroicon-o-user-group class="h-10 w-10 shrink-0 text-(--stufe)" aria-hidden="true" />
                 @endif
                 <span>
-                    <span class="block font-serif text-lg font-bold leading-tight">Diözesanarbeitskreis</span>
-                    <span class="text-sm text-text-secondary">{{ $dak->isNotEmpty() ? 'Wer die Stufe im Diözesanverband gestaltet' : 'Mitmachen im DAK' }}</span>
+                    <span class="block font-serif text-lg font-bold leading-tight">{{ config('dpsg.site.ak') }}</span>
+                    <span class="text-sm text-text-secondary">{{ $dak->isNotEmpty() ? 'Wer die Stufe im '.config('dpsg.site.level').' gestaltet' : 'Mitmachen im '.\App\Support\Site::akShort() }}</span>
                 </span>
             </a>
 
@@ -107,13 +107,13 @@
         </aside>
     </div>
 
-    {{-- Diözesanarbeitskreis (DAK) der Stufe --}}
+    {{-- Arbeitskreis der Stufe (im DV: Diözesanarbeitskreis, DAK) --}}
     <section id="dak" class="stufe-{{ $page->stage }} mt-6 scroll-mt-24 border-y-4 border-(--stufe) bg-white py-12" aria-labelledby="dak-heading">
         <div class="mx-auto max-w-6xl px-4">
-            <p class="text-sm font-bold uppercase tracking-wider text-text-secondary">DAK {{ $stage['label'] }}</p>
-            <h2 id="dak-heading" class="mt-1 font-serif text-3xl font-bold">Der Diözesanarbeitskreis</h2>
+            <p class="text-sm font-bold uppercase tracking-wider text-text-secondary">{{ \App\Support\Site::akShort() }} {{ $stage['label'] }}</p>
+            <h2 id="dak-heading" class="mt-1 font-serif text-3xl font-bold">Der {{ config('dpsg.site.ak') }}</h2>
             <p class="mt-3 max-w-3xl text-text-secondary">
-                Im Diözesanarbeitskreis (DAK) gestalten Ehrenamtliche gemeinsam mit den Stufenreferent*innen die Arbeit der Stufe im Diözesanverband:
+                Im {{ config('dpsg.site.ak') }}@if (config('dpsg.site.ak_short')) ({{ config('dpsg.site.ak_short') }})@endif gestalten Ehrenamtliche gemeinsam mit den Stufenreferent*innen die Arbeit der Stufe im {{ config('dpsg.site.level') }}:
                 Sie planen Aktionen und Fortbildungen, unterstützen die Leiter*innen in den Stämmen und bringen die Stufe in die Gremien ein.
             </p>
         </div>
@@ -126,7 +126,7 @@
             <p class="mt-2 flex flex-wrap items-center gap-3 rounded-lg bg-surface-muted p-4 text-sm">
                 <x-heroicon-o-hand-raised class="h-5 w-5 shrink-0 text-(--stufe)" aria-hidden="true" />
                 @php($referents = $dak->filter(fn ($p) => $p->publicEmail()))
-                <span>Lust, im DAK {{ $stage['label'] }} mitzuarbeiten? Melde dich gern
+                <span>Lust, im {{ \App\Support\Site::akShort() }} {{ $stage['label'] }} mitzuarbeiten? Melde dich gern
                     @if ($referents->isNotEmpty())
                         bei
                         @foreach ($referents as $referent)
@@ -134,7 +134,7 @@
                         @endforeach
                         oder
                     @endif
-                    im <a href="{{ url('/dioezesanbuero') }}" class="text-dpsg-rot underline">Diözesanbüro</a>@if ($contactUrl = \App\Models\ContactTopic::urlFor('stage', $page->stage)) – oder schreib uns direkt über das <a href="{{ $contactUrl }}" class="font-bold text-dpsg-rot underline">Kontaktformular</a>@endif.</span>
+                    {{ \App\Support\Site::officePrefix('in') }} <a href="{{ \App\Support\Site::officeUrl() }}" class="text-dpsg-rot underline">{{ \App\Support\Site::officeLabel() }}</a>@if ($contactUrl = \App\Models\ContactTopic::urlFor('stage', $page->stage)) – oder schreib uns direkt über das <a href="{{ $contactUrl }}" class="font-bold text-dpsg-rot underline">Kontaktformular</a>@endif.</span>
             </p>
         </div>
     </section>

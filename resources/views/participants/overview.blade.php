@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('seo_title', 'Meine Anmeldungen – DPSG Diözesanverband Trier')
+@section('seo_title', 'Meine Anmeldungen – '.config('dpsg.site.name'))
 
 @push('head')
     <meta name="robots" content="noindex" />

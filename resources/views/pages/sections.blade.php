@@ -4,8 +4,8 @@
      Kachel in seiner CD-Farbe mit Kurzbeschreibung und Ansprechpersonen.
      Erwartet: $page, $items (key, config, page, contacts) --}}
 
-@section('seo_title', $page->seo_title ?: $page->title.' – DPSG Diözesanverband Trier')
-@section('seo_description', $page->seo_description ?: 'Die Fachbereiche des DPSG Diözesanverbands Trier: '.$items->pluck('config.label')->implode(', ').'.')
+@section('seo_title', $page->seo_title ?: $page->title.' – '.config('dpsg.site.name'))
+@section('seo_description', $page->seo_description ?: 'Die Fachbereiche des '.config('dpsg.site.name_genitive').': '.$items->pluck('config.label')->implode(', ').'.')
 
 @section('hero')
     <section class="relative overflow-hidden bg-dpsg-blau text-white">

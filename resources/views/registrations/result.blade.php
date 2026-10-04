@@ -12,7 +12,7 @@
     [$title, $text] = $texts[$result] ?? $texts['invalid'];
 @endphp
 
-@section('seo_title', $title.' – DPSG Diözesanverband Trier')
+@section('seo_title', $title.' – '.config('dpsg.site.name'))
 
 @push('head')
     <meta name="robots" content="noindex" />

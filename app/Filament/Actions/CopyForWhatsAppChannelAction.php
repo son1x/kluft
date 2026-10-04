@@ -30,7 +30,11 @@ class CopyForWhatsAppChannelAction
             ->modalHeading('Text für den WhatsApp-Kanal')
             ->modalDescription('Kopieren, in WhatsApp den Kanal öffnen, einfügen und senden. Bei Bedarf ein Bild dazu anhängen.')
             ->modalContent(fn (Model $record) => view('filament.actions.whatsapp-channel-copy', [
-                'text' => $record instanceof Post ? WhatsAppChannelText::forPost($record) : WhatsAppChannelText::forEvent($record),
+                'text' => match (true) {
+                    $record instanceof Post => WhatsAppChannelText::forPost($record),
+                    $record instanceof Event => WhatsAppChannelText::forEvent($record),
+                    default => '',
+                },
                 'channelUrl' => config('whatsapp.channel_url'),
             ]))
             ->modalSubmitAction(false)

@@ -21,7 +21,7 @@ class WhatsAppClient
     public function __construct(private WhatsAppSettings $settings) {}
 
     /**
-     * @param  list<string>  $bodyParams  Werte für {{1}}, {{2}} …
+     * @param  array<int|string, string>  $bodyParams  Werte für {{1}}, {{2}} … (Reihenfolge zählt)
      * @return string|null Nachrichten-ID (wamid) oder null, wenn im Testmodus übersprungen
      */
     public function sendTemplate(string $to, WhatsAppTemplate $template, array $bodyParams = [], ?string $urlParam = null): ?string

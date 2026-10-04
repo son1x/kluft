@@ -170,6 +170,9 @@ jobs:
           NTFY_TOKEN: ${{ secrets.NTFY_TOKEN }}
           # WhatsApp-Newsletter: in der Testumgebung nur an diese Nummern senden.
           WHATSAPP_TEST_ALLOWLIST: ${{ secrets.WHATSAPP_TEST_ALLOWLIST }}
+          # Variante einschalten: off (Standard) | channel | api.
+          WHATSAPP_MODE: ${{ secrets.WHATSAPP_MODE }}
+          WHATSAPP_CHANNEL_URL: ${{ secrets.WHATSAPP_CHANNEL_URL }}
         run: |
           trim() {
             local var="$1"
@@ -250,6 +253,8 @@ jobs:
           NTFY_SERVER=${NTFY_SERVER}
           NTFY_TOKEN="${NTFY_TOKEN}"
           WHATSAPP_TEST_ALLOWLIST="$(printf '%s' "$WHATSAPP_TEST_ALLOWLIST" | tr '\r\n' ',,' | tr -d '"')"
+          WHATSAPP_MODE=$(trim "${WHATSAPP_MODE:-off}")
+          WHATSAPP_CHANNEL_URL=$(trim "$WHATSAPP_CHANNEL_URL")
           ENV
 
       # Selbstgehostete Kartendaten (F-MAP-04, ~140 MB) – zu groß fürs

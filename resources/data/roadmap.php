@@ -27,7 +27,7 @@ return [
         ['Abnahme', 'Abnahme', 'open'],
         ['Bolivien', 'bolivienpartnerschaft.de', 'partial'],
         ['Beraten', 'beraten-online.de (Phase 2)', 'partial'],
-        ['WhatsApp', 'WhatsApp-Newsletter', 'partial'],
+        ['WhatsApp', 'WhatsApp-Newsletter (vorbereitet, aus)', 'partial'],
     ],
 
     'sections' => [
@@ -143,6 +143,7 @@ return [
             ['status' => 'done', 'title' => 'Modul gebaut, läuft komplett auf dem Webspace', 'note' => 'Nur PHP, Cronjob und Warteschlange, keine Zusatzdienste. Anmeldeseite /whatsapp mit QR-Code (START), optional Formular; STOP löscht sofort; nur verschlüsselte Nummer und Einwilligungsnachweis, Profilnamen werden verworfen. Webhook mit Signaturprüfung. Backend „WhatsApp-Newsletter“: Aussendungen mit Vier-Augen-Freigabe, Kostenanzeige, geplantem Versand, Anhalten/Fortsetzen und Testnachricht; Vorlagen bei Meta einreichen und abgleichen; Abonnent:innen nur maskiert, kein Export; Verbindung. Statusseite, whatsapp:check, Löschfristen, Datenschutz-Anfragen per Telefonnummer, Push/Mail an das Team. Testumgebung sendet nur an die Test-Allowlist.'],
             ['status' => 'done', 'title' => 'Neue Rolle „WhatsApp-Newsletter-Admin“', 'note' => 'Darf das ganze Modul inklusive Verbindung zu Meta. Verwaltung darf Aussendungen, Vorlagen und Abonnent:innen, aber nicht die Verbindung. Vorstand darf Aussendungen entwerfen. Vergabe gilt als weitreichende Rolle (Hinweis an die Technik-Admins).'],
             ['status' => 'open', 'title' => 'Freigabe durch die/den Datenschutzbeauftragte:n', 'note' => 'Vor dem Livegang: Datenschutz-Folgenabschätzung, Einordnung des START-Links als Double-Opt-In, Drittland USA; Abschnitt für die Datenschutzerklärung steht in docs/whatsapp_newsletter.md (2.1). Alternative WhatsApp-Kanal mit besprechen.'],
+            ['status' => 'done', 'title' => 'Beide Varianten vorbereitet, keine online', 'note' => 'Schalter WHATSAPP_MODE (GitHub-Secret): off (aktuell), channel oder api. Kanal-Variante: /whatsapp lädt zum Kanal ein (WHATSAPP_CHANNEL_URL), an veröffentlichten Beiträgen und Veranstaltungen „Für WhatsApp-Kanal“ mit fertigem Text zum Kopieren. Business-Variante: Cloud-API-Modul wie oben. Ausgeschaltet sind Seite, Webhook, Backend-Menü, Rolle, Statusprüfung und Zeitpläne unsichtbar bzw. inaktiv.'],
             ['status' => 'open', 'title' => 'Entscheidung: kostenloser Kanal oder bezahlte Cloud API', 'note' => 'docs/entscheidungen/whatsapp-kostenlos-oder-bezahlt.md: Cloud API bei 50 Empfänger:innen ca. 13–26 € im Monat, bei 100 ca. 26–52 € (2–4 Aussendungen); WhatsApp-Kanal kostenlos und ohne Nummern beim Verband, aber Versand von Hand und standardmäßig stummgeschaltet. Empfehlung: mit dem Kanal starten. WhatsApp Web automatisiert oder CLI-Werkzeuge scheiden aus (Sperre der Nummer, kein Webspace, Datenschutz).'],
             ['status' => 'open', 'title' => 'Budget und Meta-Business-Konto', 'note' => 'Jede Newsletter-Nachricht kostet bei Meta grob 0,10–0,15 €. Unternehmensverifizierung mit Vereinsregisterauszug und Zahlungsmittel des Rechtsträgers nötig; danach Einrichtung nach Setup-Anleitung.'],
         ],

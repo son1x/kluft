@@ -2,6 +2,7 @@
 
 use App\Services\WhatsApp\WhatsAppSettings;
 use App\Support\Roadmap;
+use App\Support\WhatsAppMode;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schedule;
 
@@ -44,6 +45,6 @@ Schedule::command('backup:verify')->weeklyOn(0, '05:00');
 
 // WhatsApp-Newsletter (docs/whatsapp_newsletter.md): geplante Aussendungen
 // starten, Zustand prüfen, Löschfristen.
-Schedule::command('whatsapp:dispatch-scheduled')->everyMinute()->withoutOverlapping();
+Schedule::command('whatsapp:dispatch-scheduled')->everyMinute()->withoutOverlapping()->when(fn () => WhatsAppMode::api());
 Schedule::command('whatsapp:check')->hourly()->when(fn () => app(WhatsAppSettings::class)->configured());
 Schedule::command('whatsapp:prune')->dailyAt('03:50');

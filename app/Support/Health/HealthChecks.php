@@ -9,6 +9,7 @@ use App\Services\Backup\BackupService;
 use App\Services\Instagram\InstagramClient;
 use App\Services\WhatsApp\WhatsAppSettings;
 use App\Support\Roadmap;
+use App\Support\WhatsAppMode;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -43,8 +44,10 @@ class HealthChecks
             'backups' => ['Backups', fn () => $this->backups()],
             'kalender' => ['Kalender-Abgleich (Nextcloud)', fn () => $this->calendars()],
             'instagram' => ['Instagram-Anbindung', fn () => $this->instagram()],
-            'whatsapp' => ['WhatsApp-Newsletter', fn () => $this->whatsapp()],
         ];
+        if (WhatsAppMode::api()) {
+            $checks['whatsapp'] = ['WhatsApp-Newsletter', fn () => $this->whatsapp()];
+        }
 
         $results = [];
         foreach ($checks as $key => [$label, $check]) {

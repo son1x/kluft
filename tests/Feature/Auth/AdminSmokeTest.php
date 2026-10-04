@@ -30,6 +30,8 @@ class AdminSmokeTest extends TestCase
         $admin->roleAssignments()->create(['role' => 'superadmin', 'scope_type' => 'global']);
         $this->actingAs($admin);
 
+        // WhatsApp-Seiten sind standardmäßig ausgeschaltet; hier mitprüfen.
+        config(['whatsapp.mode' => 'api']);
         $this->get('/admin')->assertOk();
         $checked = 0;
 

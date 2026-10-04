@@ -52,6 +52,7 @@
         </x-filament::section>
     @endif
 
+    @if (\App\Support\WhatsAppMode::api())
     <x-filament::section heading="WhatsApp-Newsletter: Nummer suchen" description="Gespeichert sind nur Nummer (verschlüsselt), Status, Weg der Anmeldung und Einwilligungsnachweis.">
         <form wire:submit="searchPhone" style="display: flex; flex-wrap: wrap; gap: .75rem; align-items: flex-start;">
             <div style="flex: 1 1 18rem;">
@@ -83,4 +84,5 @@
             </div>
         @endif
     </x-filament::section>
+    @endif
 </x-filament-panels::page>

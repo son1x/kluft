@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Events\Pages;
 
+use App\Filament\Actions\CopyForWhatsAppChannelAction;
 use App\Filament\Resources\Events\EventResource;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
@@ -19,6 +20,7 @@ class EditEvent extends EditRecord
                 ->icon('heroicon-o-arrow-top-right-on-square')
                 ->url(fn () => route('events.show', $this->record->slug), shouldOpenInNewTab: true)
                 ->visible(fn () => $this->record->status !== 'draft'),
+            CopyForWhatsAppChannelAction::make(),
             DeleteAction::make()
                 ->modalDescription('Löscht die Veranstaltung samt aller Anmeldungen endgültig.'),
         ];

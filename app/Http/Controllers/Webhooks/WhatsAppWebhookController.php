@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Webhooks;
 use App\Http\Controllers\Controller;
 use App\Services\WhatsApp\WhatsAppInbound;
 use App\Services\WhatsApp\WhatsAppSettings;
+use App\Support\WhatsAppMode;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
@@ -19,6 +20,8 @@ class WhatsAppWebhookController extends Controller
 {
     public function verify(Request $request, WhatsAppSettings $settings): Response
     {
+        abort_unless(WhatsAppMode::api(), 404);
+
         // PHP macht aus „hub.mode“ im Query-String „hub_mode“.
         $expected = $settings->get('verify_token');
         $given = (string) $request->query('hub_verify_token', '');
@@ -32,6 +35,8 @@ class WhatsAppWebhookController extends Controller
 
     public function receive(Request $request, WhatsAppSettings $settings, WhatsAppInbound $inbound): Response
     {
+        abort_unless(WhatsAppMode::api(), 404);
+
         $secret = $settings->get('app_secret');
         $body = $request->getContent();
         $signature = (string) $request->header('X-Hub-Signature-256', '');

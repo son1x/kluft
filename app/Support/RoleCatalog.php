@@ -47,7 +47,9 @@ class RoleCatalog
 
         $options['vorstand|global|'] = 'Vorstand';
         $options['verwaltung|global|'] = 'Verwaltung';
-        $options['whatsapp|global|'] = 'WhatsApp-Newsletter-Admin';
+        if (WhatsAppMode::enabled()) {
+            $options['whatsapp|global|'] = 'WhatsApp-Newsletter-Admin';
+        }
         $options['admin|global|'] = 'Admin (Technik)';
         $options['superadmin|global|'] = 'Super-Admin';
 

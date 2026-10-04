@@ -48,7 +48,7 @@ class PushEvents
             self::RECHTE => true,
             self::BENUTZER => $user->isVerwaltung(),
             self::SYSTEM => $user->isAdmin(),
-            self::WHATSAPP => WhatsAppAccess::manage($user),
+            self::WHATSAPP => WhatsAppMode::api() && WhatsAppAccess::manage($user),
         ];
 
         return array_filter(self::LABELS, fn (string $key) => $allowed[$key], ARRAY_FILTER_USE_KEY);

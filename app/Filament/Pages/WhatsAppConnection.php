@@ -7,6 +7,7 @@ use App\Services\WhatsApp\WhatsAppException;
 use App\Services\WhatsApp\WhatsAppSettings;
 use App\Support\AuditLogger;
 use App\Support\WhatsAppAccess;
+use App\Support\WhatsAppMode;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
@@ -46,7 +47,7 @@ class WhatsAppConnection extends Page
 
     public static function canAccess(): bool
     {
-        return WhatsAppAccess::connect(Filament::auth()->user());
+        return WhatsAppMode::api() && WhatsAppAccess::connect(Filament::auth()->user());
     }
 
     public function mount(): void

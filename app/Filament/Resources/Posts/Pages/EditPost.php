@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Posts\Pages;
 
+use App\Filament\Actions\CopyForWhatsAppChannelAction;
 use App\Filament\Resources\Posts\Actions\ShareToInstagramAction;
 use App\Filament\Resources\Posts\PostResource;
 use Filament\Actions\DeleteAction;
@@ -16,6 +17,7 @@ class EditPost extends EditRecord
     {
         return [
             ShareToInstagramAction::make(),
+            CopyForWhatsAppChannelAction::make(),
             DeleteAction::make(),
         ];
     }

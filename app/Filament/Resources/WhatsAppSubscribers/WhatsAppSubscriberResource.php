@@ -6,6 +6,7 @@ use App\Filament\Resources\WhatsAppSubscribers\Pages\ListWhatsAppSubscribers;
 use App\Models\WhatsAppSubscriber;
 use App\Support\AuditLogger;
 use App\Support\WhatsAppAccess;
+use App\Support\WhatsAppMode;
 use BackedEnum;
 use Filament\Actions\DeleteAction;
 use Filament\Facades\Filament;
@@ -39,7 +40,7 @@ class WhatsAppSubscriberResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return WhatsAppAccess::manage(Filament::auth()->user());
+        return WhatsAppMode::api() && WhatsAppAccess::manage(Filament::auth()->user());
     }
 
     public static function canCreate(): bool

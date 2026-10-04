@@ -5,6 +5,7 @@ namespace App\Filament\Resources\WhatsAppTemplates;
 use App\Filament\Resources\WhatsAppTemplates\Pages\ListWhatsAppTemplates;
 use App\Models\WhatsAppTemplate;
 use App\Support\WhatsAppAccess;
+use App\Support\WhatsAppMode;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
@@ -43,7 +44,7 @@ class WhatsAppTemplateResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return WhatsAppAccess::manage(Filament::auth()->user());
+        return WhatsAppMode::api() && WhatsAppAccess::manage(Filament::auth()->user());
     }
 
     public static function canCreate(): bool

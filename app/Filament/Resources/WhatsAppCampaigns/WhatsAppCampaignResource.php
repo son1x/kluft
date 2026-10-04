@@ -10,6 +10,7 @@ use App\Models\WhatsAppCampaign;
 use App\Models\WhatsAppTemplate;
 use App\Services\WhatsApp\WhatsAppCampaigns;
 use App\Support\WhatsAppAccess;
+use App\Support\WhatsAppMode;
 use BackedEnum;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -51,7 +52,7 @@ class WhatsAppCampaignResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return WhatsAppAccess::draft(Filament::auth()->user());
+        return WhatsAppMode::api() && WhatsAppAccess::draft(Filament::auth()->user());
     }
 
     public static function canCreate(): bool

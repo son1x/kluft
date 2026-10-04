@@ -55,7 +55,7 @@ class WhatsAppNewsletterTest extends TestCase
     {
         parent::setUp();
         Filament::setCurrentPanel('admin');
-        config(['whatsapp.test_mode' => false, 'whatsapp.form_doi' => false, 'app.url' => 'https://dpsg-trier.de']);
+        config(['whatsapp.mode' => 'api', 'whatsapp.test_mode' => false, 'whatsapp.form_doi' => false, 'app.url' => 'https://dpsg-trier.de']);
         Http::fake(['graph.facebook.com/*' => function (Request $request) {
             return match (true) {
                 str_ends_with($request->url(), '/messages') => $this->messagesError

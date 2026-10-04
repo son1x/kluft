@@ -1,6 +1,6 @@
 # WhatsApp-Newsletter: kostenlos oder bezahlt?
 
-**Stand:** 4. Oktober 2026 · **Status:** Entscheidung offen · **Bezug:** docs/whatsapp_newsletter.md (Cloud-API-Modul, gebaut, noch nicht verbunden)
+**Stand:** 4. Oktober 2026 · **Status:** Entscheidung offen – beide Varianten im Code vorbereitet, keine eingeschaltet · **Bezug:** docs/whatsapp_newsletter.md (Cloud-API-Modul, gebaut, noch nicht verbunden)
 
 ## Kurzfassung
 
@@ -102,6 +102,11 @@ Werkzeuge wie whatsapp-web.js, Baileys oder whatsmeow steuern ein normales Whats
 - **Zuverlässigkeit:** Jedes WhatsApp-Update kann sie lahmlegen; Nachrichten fallen dann unbemerkt aus.
 
 ## 6. Empfehlung und nächste Schritte
+
+**Umsetzungsstand:** Beide Varianten sind gebaut und getestet, aber ausgeschaltet. Einschalten über das GitHub-Secret `WHATSAPP_MODE`:
+- `channel` + `WHATSAPP_CHANNEL_URL` (Einladungslink des Kanals): `/whatsapp` lädt zum Kanal ein; an veröffentlichten Beiträgen und Veranstaltungen gibt es „Für WhatsApp-Kanal“ mit fertigem Text zum Kopieren. QR-Code: `python3 scripts/whatsapp-qr.py "<Kanal-Link>" kanal-qr.svg` und einchecken.
+- `api`: WhatsApp Business (Cloud API) wie in docs/whatsapp_newsletter.md.
+- `off` oder nicht gesetzt: nichts sichtbar (aktueller Zustand).
 
 1. **Jetzt:** WhatsApp-Kanal anlegen (Diensthandy oder WhatsApp Business im Büro), mindestens zwei Admins eintragen.
 2. **Im CMS:** Die Seite `/whatsapp` zeigt dann den Kanal (Link und QR-Code) statt der START-Anmeldung, und an Beiträgen und Veranstaltungen gibt es „Für WhatsApp-Kanal kopieren“. Das ist eine kleine Erweiterung; das Cloud-API-Modul bleibt ausgeschaltet im System.

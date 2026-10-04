@@ -7,20 +7,34 @@ use App\Services\WhatsApp\WhatsAppSettings;
 use App\Services\WhatsApp\WhatsAppSubscriptions;
 use App\Support\PhoneNumber;
 use App\Support\SpamGuard;
+use App\Support\WhatsAppMode;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 /**
- * Anmeldeseite des WhatsApp-Newsletters (docs/whatsapp_newsletter.md, 4):
- * Standard ist QR-Code/Link mit START, optional das Formular (Weg B).
- * Solange WhatsApp nicht mit Meta verbunden ist, gibt es die Seite nicht.
+ * Seite /whatsapp – je nach Variante (config whatsapp.mode):
+ * „channel“: Einladung zum kostenlosen WhatsApp-Kanal;
+ * „api“: Anmeldung mit START (docs/whatsapp_newsletter.md, 4), optional Formular.
+ * Ausgeschaltet oder nicht eingerichtet: die Seite gibt es nicht.
  */
 class WhatsAppController extends Controller
 {
     public function show(WhatsAppSettings $settings): View
     {
-        abort_unless($settings->configured(), 404);
+        if (WhatsAppMode::channel()) {
+            $url = (string) config('whatsapp.channel_url');
+            abort_if(blank($url), 404);
+            $qr = public_path('images/whatsapp/kanal-qr.svg');
+
+            return view('whatsapp.channel', [
+                'url' => $url,
+                // QR-Code nur, wenn er zur eingestellten Kanal-Adresse passt.
+                'qr' => is_file($qr) && str_contains((string) file_get_contents($qr), '<!-- data: '.$url.' -->'),
+            ]);
+        }
+
+        abort_unless(WhatsAppMode::api() && $settings->configured(), 404);
 
         $number = (string) config('whatsapp.public_number');
 
@@ -33,7 +47,7 @@ class WhatsAppController extends Controller
 
     public function subscribe(Request $request, WhatsAppSettings $settings, WhatsAppSubscriptions $subscriptions): RedirectResponse
     {
-        abort_unless($settings->configured() && config('whatsapp.form_doi'), 404);
+        abort_unless(WhatsAppMode::api() && $settings->configured() && config('whatsapp.form_doi'), 404);
         $back = fn () => redirect()->route('whatsapp.index')->with('whatsapp_status', 'angefragt')->withFragment('formular');
 
         if (($spam = SpamGuard::check($request)) !== null) {

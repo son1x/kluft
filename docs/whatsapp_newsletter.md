@@ -8,6 +8,8 @@ Ein zusätzlicher Newsletter-Kanal über WhatsApp, versendet über die Büro-Fes
 
 ## Umsetzungsstand (Version 1)
 
+**Schalter `WHATSAPP_MODE`** (GitHub-Secret bzw. `.env`): `off` (Standard – nichts sichtbar), `channel` (kostenloser WhatsApp-Kanal) oder `api` (diese Business-Variante). Beide Varianten liegen fertig im Code; online ist nur die eingeschaltete. Entscheidungsgrundlage: docs/entscheidungen/whatsapp-kostenlos-oder-bezahlt.md.
+
 Umgesetzt wie unten beschrieben, vollständig auf dem Webspace (PHP, Cronjob, Datenbank-Warteschlange). Abweichungen und Präzisierungen:
 - Kein eigener `FakeGateway`: Tests simulieren die Graph API mit `Http::fake` (wie bei Instagram). Der Client heißt `App\Services\WhatsApp\WhatsAppClient`.
 - Rufnummern werden ohne Zusatzpaket normalisiert (`App\Support\PhoneNumber`); der QR-Code ist ein statisches SVG (`public/images/whatsapp/anmelden-qr.svg`, neu erzeugen mit `scripts/whatsapp-qr.py`, ein Test prüft die Nummer). **Keine neuen Composer- oder NPM-Pakete.**

@@ -12,6 +12,18 @@
 */
 
 return [
+    /*
+    | Welche Variante ist eingeschaltet (docs/entscheidungen/whatsapp-kostenlos-oder-bezahlt.md)?
+    | off     – nichts sichtbar (Standard, beide Varianten nur vorbereitet)
+    | channel – kostenloser WhatsApp-Kanal: /whatsapp zeigt den Kanal, im
+    |           Backend „Für WhatsApp-Kanal kopieren“ an Beiträgen/Veranstaltungen
+    | api     – WhatsApp Business (Cloud API): START/STOP, Aussendungen aus dem CMS
+    */
+    'mode' => in_array(env('WHATSAPP_MODE'), ['channel', 'api'], true) ? env('WHATSAPP_MODE') : 'off',
+
+    // Variante „channel“: Einladungslink des Kanals (WhatsApp → Kanal → Teilen).
+    'channel_url' => env('WHATSAPP_CHANNEL_URL'),
+
     'graph_version' => env('WHATSAPP_GRAPH_VERSION', 'v21.0'),
 
     // Büro-Festnetznummer, über die der Newsletter läuft (E.164 und Anzeige).

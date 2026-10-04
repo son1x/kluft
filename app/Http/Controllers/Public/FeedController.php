@@ -16,7 +16,7 @@ class FeedController extends Controller
 
     public function index(): Response
     {
-        return $this->feed('DPSG Diözesanverband Trier – Aktuelles', route('posts.index'), null);
+        return $this->feed(config('dpsg.site.name').' – Aktuelles', route('posts.index'), null);
     }
 
     public function section(string $section): Response

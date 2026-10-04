@@ -51,7 +51,7 @@ class EventForm
                         ->visible(fn () => self::stageOptions() !== [])
                         ->required(fn (Get $get) => ! self::isGlobal() && blank($get('section')))
                         ->live()
-                        ->helperText('Bestimmt, wer die Teilnehmerdaten sehen darf. Leer = Diözesanverband (nur Verwaltung).'),
+                        ->helperText('Bestimmt, wer die Teilnehmerdaten sehen darf. Leer = '.config('dpsg.site.level').' (nur Verwaltung).'),
                     Select::make('section')
                         ->label('Sektion')
                         ->options(fn () => self::sectionOptions())
@@ -64,7 +64,7 @@ class EventForm
                     TextInput::make('cost_info')->label('Kostenbeitrag (Info)')->placeholder('z. B. 45 € inkl. Verpflegung')->maxLength(255),
                     TextInput::make('contact_name')->label('Kontaktperson')->maxLength(255),
                     TextInput::make('contact_email')->label('Kontakt-E-Mail')->email()->maxLength(255)
-                        ->helperText('Bitte eine Funktionsadresse (z. B. woelflinge@dpsg-trier.de).'),
+                        ->helperText('Bitte eine Funktionsadresse (z. B. woelflinge@'.config('dpsg.site.domain').').'),
                     Select::make('cover_media_id')
                         ->label('Titelbild')
                         ->relationship('coverMedia', 'alt_text')

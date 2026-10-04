@@ -85,7 +85,7 @@ class GruppierungForm
                 ]),
 
             Section::make('Kontakt')
-                ->description('Bitte Funktionsadressen verwenden (z. B. stamm-xy@dpsg-trier.de), keine privaten Kontaktdaten.')
+                ->description('Bitte Funktionsadressen verwenden (z. B. stamm-xy@'.config('dpsg.site.domain').'), keine privaten Kontaktdaten.')
                 ->columns(2)
                 ->components([
                     TextInput::make('kontakt_email')->label('E-Mail (Funktionsadresse)')->email()->maxLength(255),

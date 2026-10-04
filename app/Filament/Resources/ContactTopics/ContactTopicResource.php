@@ -6,6 +6,7 @@ use App\Filament\Resources\ContactTopics\Pages\CreateContactTopic;
 use App\Filament\Resources\ContactTopics\Pages\EditContactTopic;
 use App\Filament\Resources\ContactTopics\Pages\ListContactTopics;
 use App\Models\ContactTopic;
+use App\Support\Site;
 use BackedEnum;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -60,8 +61,8 @@ class ContactTopicResource extends Resource
                         ->helperText(fn (?string $state) => 'Link mit vorausgewähltem Thema: '.url('/'.config('dpsg.contact_page')).'?thema='.($state ?: '…')),
                     TextInput::make('email')->label('Empfänger (feste Adresse)')
                         ->email()->maxLength(254)
-                        ->placeholder('z. B. bolivien@dpsg-trier.de')
-                        ->helperText('Leer lassen: Nachrichten gehen an die Stufenreferent*innen bzw. Ansprechpersonen des Fachbereichs (aus „Personen“), sonst ans Diözesanbüro.')
+                        ->placeholder('z. B. bolivien@'.config('dpsg.site.domain'))
+                        ->helperText('Leer lassen: Nachrichten gehen an die Stufenreferent*innen bzw. Ansprechpersonen des Fachbereichs (aus „Personen“), sonst '.Site::office('an').'.')
                         ->columnSpanFull(),
                     Select::make('stage')->label('Stufe')
                         ->options(collect(config('dpsg.stages'))->map(fn (array $s) => $s['label']))

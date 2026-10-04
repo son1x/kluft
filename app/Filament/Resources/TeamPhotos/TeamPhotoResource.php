@@ -51,7 +51,7 @@ class TeamPhotoResource extends Resource
                     Select::make('gremium')->label('Seite')->options($gremien)->in(array_keys($gremien))->required()->native(false),
                     Select::make('media_id')->label('Foto aus der Mediathek')
                         ->relationship('media', 'alt_text')->searchable()->preload()->required()->live(),
-                    TextInput::make('title')->label('Überschrift')->placeholder('z. B. Unsere Diözesanleitung')->maxLength(150),
+                    TextInput::make('title')->label('Überschrift')->placeholder('z. B. Unsere '.config('dpsg.site.leitung_label'))->maxLength(150),
                     TextInput::make('note')->label('Zusatz zur Bildunterschrift')->placeholder('z. B. wer auf dem Foto fehlt')->maxLength(255),
                     Toggle::make('active')->label('Auf der Seite anzeigen')->default(true),
                 ]),

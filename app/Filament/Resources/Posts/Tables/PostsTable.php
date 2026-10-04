@@ -23,7 +23,7 @@ class PostsTable
                     ->label('Website')
                     ->state(fn ($record) => Websites::domainFor($record->section))
                     ->badge()
-                    ->color(fn (string $state) => $state === Websites::MAIN_DOMAIN ? 'gray' : 'info'),
+                    ->color(fn (string $state) => $state === Websites::mainDomain() ? 'gray' : 'info'),
                 TextColumn::make('title')
                     ->label('Titel')
                     ->searchable(),

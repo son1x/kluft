@@ -56,7 +56,7 @@ class UserForm
                         ->dehydrateStateUsing(fn (?string $state) => $state === null ? null : mb_strtolower(trim($state)))
                         ->helperText(fn (?User $record) => filled($record?->entra_oid)
                             ? 'Bereits mit dem M365-Konto verknüpft – wird bei jeder Anmeldung aus Entra übernommen.'
-                            : 'z. B. vorname.nachname@dpsg-trier.de'),
+                            : 'z. B. vorname.nachname@'.config('dpsg.site.domain')),
                     Select::make('status')
                         ->label('Status')
                         ->options(self::STATUS_OPTIONS)

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Site;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -106,7 +107,7 @@ class Person extends Model
     public function gremiumLabel(): string
     {
         if ($this->gremium === 'dak' && $this->stage) {
-            return 'DAK '.config("dpsg.stages.{$this->stage}.label", $this->stage);
+            return Site::akShort().' '.config("dpsg.stages.{$this->stage}.label", $this->stage);
         }
 
         return config("dpsg.gremien.{$this->gremium}.label", $this->gremium);

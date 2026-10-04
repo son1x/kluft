@@ -8,6 +8,7 @@ use App\Notifications\Concerns\PushesViaNtfy;
 use App\Notifications\Messages\NtfyMessage;
 use App\Support\PushEvents;
 use App\Support\RoleCatalog;
+use App\Support\Site;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeEncrypted;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -41,18 +42,20 @@ class RolesGrantedNotification extends Notification implements ShouldBeEncrypted
 
     public function toMail(object $notifiable): MailMessage
     {
-        $who = $this->grantedBy ?? 'Das Diözesanbüro';
+        $who = $this->grantedBy ?? Site::office('nom', capitalize: true);
+        $site = 'der '.config('dpsg.site.short_name');
+        $domain = config('dpsg.site.domain');
         $name = $notifiable instanceof User ? $notifiable->name : '';
         $email = $notifiable instanceof User ? $notifiable->email : '';
 
         $mail = (new MailMessage)
             ->subject($this->newAccount
-                ? 'Dein Zugang zur Website der DPSG Trier ist eingerichtet'
-                : 'Neue Rechte auf der Website der DPSG Trier')
+                ? 'Dein Zugang zur Website '.$site.' ist eingerichtet'
+                : 'Neue Rechte auf der Website '.$site)
             ->greeting(trim('Hallo '.$name).',')
             ->line($this->newAccount
-                ? $who.' hat dir einen Zugang zum Redaktionsbereich der Website dpsg-trier.de eingerichtet, mit diesen Rechten:'
-                : $who.' hat dir im Redaktionsbereich der Website dpsg-trier.de neue Rechte gegeben:');
+                ? $who.' hat dir einen Zugang zum Redaktionsbereich der Website '.$domain.' eingerichtet, mit diesen Rechten:'
+                : $who.' hat dir im Redaktionsbereich der Website '.$domain.' neue Rechte gegeben:');
 
         foreach ($this->assignments as $key) {
             $mail->line('• '.RoleCatalog::describe($key));
@@ -61,7 +64,7 @@ class RolesGrantedNotification extends Notification implements ShouldBeEncrypted
         return $mail
             ->action('Zum Redaktionsbereich', url('/admin'))
             ->line('Du meldest dich mit deinem Microsoft-365-Konto ('.$email.') an; ein eigenes Passwort gibt es nicht.')
-            ->line('Hast du damit nicht gerechnet? Dann melde dich bitte beim Diözesanbüro.');
+            ->line('Hast du damit nicht gerechnet? Dann melde dich bitte '.Site::office('bei').'.');
     }
 
     public function toNtfy(object $notifiable): NtfyMessage

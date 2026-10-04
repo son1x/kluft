@@ -23,12 +23,12 @@ class WhatsAppTemplates
         return [
             [
                 'name' => 'dpsg_doi_v1', 'category' => 'UTILITY', 'purpose' => 'doi',
-                'body' => 'Hallo! Bitte bestätige deine Anmeldung zum WhatsApp-Newsletter der DPSG Trier: Antworte mit START. Warst du das nicht? Dann ignoriere diese Nachricht einfach.',
+                'body' => 'Hallo! Bitte bestätige deine Anmeldung zum WhatsApp-Newsletter der '.config('dpsg.site.short_name').': Antworte mit START. Warst du das nicht? Dann ignoriere diese Nachricht einfach.',
                 'examples' => [], 'footer' => null, 'url' => null, 'quick_replies' => ['START'],
             ],
             [
                 'name' => 'dpsg_news_v1', 'category' => 'MARKETING', 'purpose' => 'newsletter',
-                'body' => 'Neues aus dem DPSG Diözesanverband Trier: {{1}}',
+                'body' => 'Neues aus dem '.config('dpsg.site.name').': {{1}}',
                 'examples' => ['Die Anmeldung zum Diözesanlager ist offen.'], 'footer' => 'Abmelden: STOP antworten',
                 'url' => ['text' => 'Mehr lesen', 'base' => $base.'/', 'example' => $base.'/aktuelles/beispiel'], 'quick_replies' => [],
             ],

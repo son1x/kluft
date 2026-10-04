@@ -13,8 +13,6 @@ class Websites
 {
     public const MAIN = 'hauptseite';
 
-    public const MAIN_DOMAIN = 'dpsg-trier.de';
-
     /**
      * Schlüssel => Domain, z. B. ['hauptseite' => 'dpsg-trier.de', 'bolivien' => 'bolivienpartnerschaft.de'].
      *
@@ -22,7 +20,7 @@ class Websites
      */
     public static function all(): array
     {
-        $sites = [self::MAIN => self::MAIN_DOMAIN];
+        $sites = [self::MAIN => self::mainDomain()];
         foreach (config('dpsg.sections') as $key => $section) {
             if (! empty($section['domains'])) {
                 $sites[$key] = $section['domains'][0];
@@ -37,7 +35,15 @@ class Websites
      */
     public static function domainFor(?string $section): string
     {
-        return self::all()[$section] ?? self::MAIN_DOMAIN;
+        return self::all()[$section] ?? self::mainDomain();
+    }
+
+    /**
+     * Domain der Hauptseite dieser Instanz (config dpsg.site.domain).
+     */
+    public static function mainDomain(): string
+    {
+        return (string) config('dpsg.site.domain');
     }
 
     /**

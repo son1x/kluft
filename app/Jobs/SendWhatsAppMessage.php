@@ -39,7 +39,7 @@ class SendWhatsAppMessage implements ShouldBeEncrypted, ShouldQueue
         $phone = (string) config('whatsapp.public_number_display');
 
         return match ($kind) {
-            'welcome' => "Willkommen beim WhatsApp-Newsletter des DPSG Diözesanverbands Trier! Du bekommst hier ab und zu Neuigkeiten, Termine und Anmeldestarts.\n\nDer Newsletter ist für Menschen ab 16 Jahren. Wir speichern nur deine Nummer und den Zeitpunkt deiner Anmeldung. Datenschutz: {$privacy}\n\nAbmelden: jederzeit STOP schreiben.",
+            'welcome' => 'Willkommen beim WhatsApp-Newsletter des '.config('dpsg.site.name_genitive')."! Du bekommst hier ab und zu Neuigkeiten, Termine und Anmeldestarts.\n\nDer Newsletter ist für Menschen ab 16 Jahren. Wir speichern nur deine Nummer und den Zeitpunkt deiner Anmeldung. Datenschutz: {$privacy}\n\nAbmelden: jederzeit STOP schreiben.",
             'already' => 'Du bist schon angemeldet. Abmelden: STOP schreiben.',
             'stopped' => 'Du bist abgemeldet und bekommst keine Nachrichten mehr. Mit START kannst du dich jederzeit wieder anmelden.',
             default => "Über diese Nummer verschicken wir nur unseren Newsletter und lesen keine Nachrichten. Fragen bitte an {$email} oder telefonisch unter {$phone}.\n\nAnmelden: START · Abmelden: STOP",

@@ -86,7 +86,7 @@ class ShareToInstagramAction
     public static function defaultCaption(Post $post): string
     {
         $caption = trim($post->title."\n\n".($post->teaser ?? ''))
-            ."\n\nMehr dazu auf dpsg-trier.de (Link in der Bio)\n\n#dpsg #pfadfinden #dpsgtrier";
+            ."\n\nMehr dazu auf ".config('dpsg.site.domain')." (Link in der Bio)\n\n".config('dpsg.site.hashtags');
 
         return Str::limit($caption, self::MAX_CAPTION, '');
     }

@@ -181,7 +181,7 @@ class Event extends Model
             return config("dpsg.sections.{$this->section}.label", $this->section);
         }
 
-        return 'Diözesanverband';
+        return (string) config('dpsg.site.level');
     }
 
     /**

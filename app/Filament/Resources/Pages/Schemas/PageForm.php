@@ -132,7 +132,7 @@ class PageForm
     private static function sectionOptions(): array
     {
         // Mit Domain, wenn die Sektion eine eigene Website hat.
-        $all = collect(RoleCatalog::sections())->map(fn (string $label, string $key) => Websites::domainFor($key) === Websites::MAIN_DOMAIN ? $label : $label.' ('.Websites::domainFor($key).')');
+        $all = collect(RoleCatalog::sections())->map(fn (string $label, string $key) => Websites::domainFor($key) === Websites::mainDomain() ? $label : $label.' ('.Websites::domainFor($key).')');
 
         return self::isGlobal()
             ? $all->all()

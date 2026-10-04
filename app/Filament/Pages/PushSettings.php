@@ -96,7 +96,7 @@ class PushSettings extends Page
         }
 
         $sent = NtfyChannel::publish((string) $user->ntfy_topic, new NtfyMessage(
-            title: 'Test von dpsg-trier.de',
+            title: 'Test von '.config('dpsg.site.domain'),
             message: 'Wenn du das liest, kommen deine Push-Nachrichten an.',
             click: static::getUrl(),
             tags: ['white_check_mark'],

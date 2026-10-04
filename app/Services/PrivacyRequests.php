@@ -49,7 +49,7 @@ class PrivacyRequests
 
         $data = [
             'erstellt_am' => now()->toIso8601String(),
-            'verantwortlich' => 'DPSG Diözesanverband Trier, '.config('dpsg.contact.email'),
+            'verantwortlich' => config('dpsg.site.name').', '.config('dpsg.contact.email'),
             'e_mail' => $email,
             'veranstaltungsanmeldungen' => $found['registrations']->map(fn (EventRegistration $r) => [
                 'veranstaltung' => $r->event->title,

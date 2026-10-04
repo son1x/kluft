@@ -52,7 +52,7 @@ class ContactTopic extends Model
 
         return filled($this->email) || $recipients !== self::fallbackEmail()
             ? $recipients
-            : $recipients.' (Diözesanbüro)';
+            : $recipients.' ('.config('dpsg.site.office.label').')';
     }
 
     /** Link aufs Kontaktformular mit vorausgewähltem Thema der Stufe bzw. des Fachbereichs. */

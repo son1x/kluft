@@ -108,6 +108,8 @@ flowchart LR
 | Zugangsdaten | `IntegrationToken` (verschlüsselt) + Seite „Integrationen“ | Token nie wieder angezeigt, nur Admin |
 
 ### 3.3 Betriebsrahmen (Webspace)
+- **Verbindliche Vorgabe:** Das Modul läuft vollständig auf dem bestehenden Webspace (Plesk, PHP, MariaDB, Cronjob). Kein Node.js, keine NPM-Pakete zur Laufzeit, keine Docker-Container, kein zusätzlicher Server oder Dienst. Was sich so nicht umsetzen lässt, gehört nicht in dieses Modul.
+- Neue Abhängigkeiten nur als reine PHP-Pakete über Composer. Sie werden wie bisher im GitHub-Workflow gebaut und als `vendor/` hochgeladen; auf dem Server läuft kein Installer.
 - Es gibt keine dauerhaft laufenden Prozesse. Der Versand läuft über die vorhandene **Datenbank-Warteschlange** und den Cronjob `queue:work --stop-when-empty --max-time=50` jede Minute. Bei etwa 1–3 Nachrichten pro Sekunde (HTTP-Laufzeit) sind das grob 60–150 Empfänger je Minute; 1.000 Abonnent:innen sind also in etwa 10 Minuten durch.
 - Der Webhook antwortet sofort und verarbeitet synchron nur kleine Datenbank-Operationen. Ausgehende Antworten (Willkommen, Bestätigung) laufen über die Warteschlange.
 - **Testumgebung:** Eine Nummer kann nur **eine** Webhook-URL haben. test.dpsg-trier.de nutzt deshalb die kostenlose **Testnummer** von Meta (sendet nur an bis zu 5 hinterlegte Empfänger), die Büro-Festnetznummer nur die Produktion. Zusätzlich gibt es `WHATSAPP_TEST_ALLOWLIST` analog zur Mail-Testumleitung: Nachrichten an andere Nummern werden im Test verworfen und protokolliert.
@@ -467,14 +469,16 @@ Backend → **Integrationen** → WhatsApp (nur Admin):
 Klassisch rund **10–12 Personentage**: Datenmodell und Webhook 2, DOI und Schlüsselwörter 2, Versand-Engine und Limits 2, Backend 3, Health-Check, Datenschutz-Anfragen und Tests 2, Einrichtung und Abnahme 1. Mit KI-Unterstützung im bisherigen Projekttempo voraussichtlich 2–4 Sitzungsstunden. Dazu kommt die Wartezeit bei Meta.
 
 ## 14. Technische Abhängigkeiten
-Das CMS ist eine **Laravel/PHP-Anwendung**. Für das Modul werden deshalb keine NPM-Pakete gebraucht:
+Alles läuft in PHP auf dem Webspace (siehe 3.3). **Keine NPM-Pakete**, kein Node-Prozess.
 
 | Zweck | Lösung | Status |
 |---|---|---|
 | API-Aufrufe | Laravel-HTTP-Client (Guzzle) | vorhanden |
 | Webhook-Signatur | `hash_hmac('sha256', …)` + `hash_equals()` (PHP-Kern) | vorhanden |
 | Verschlüsselung, Hash der Nummer | Laravel `encrypted`-Cast, `hash_hmac` mit `APP_KEY` | vorhanden |
-| Warteschlange, Rate-Limit | Laravel Queue (Datenbank) + `RateLimiter` | vorhanden |
-| Rufnummern prüfen und normalisieren | Composer `giggsey/libphonenumber-for-php-lite` | neu |
-| QR-Code als SVG | Composer `chillerlan/php-qrcode` | neu |
-| Frontend | Blade + Alpine (vorhanden), keine neuen NPM-Pakete | vorhanden |
+| Warteschlange, Rate-Limit | Laravel Queue (Datenbank) + `RateLimiter`, Cronjob jede Minute | vorhanden |
+| Rufnummern prüfen und normalisieren | Composer `giggsey/libphonenumber-for-php-lite` (reines PHP); Rückfalloption: eigene Normalisierung für +49 ohne Paket | neu |
+| QR-Code als SVG | Composer `chillerlan/php-qrcode` (reines PHP, SVG ohne GD) | neu |
+| Frontend | Blade + Alpine (bereits gebündelt) | vorhanden |
+
+Beide neuen Pakete brauchen keine zusätzlichen PHP-Erweiterungen außer `mbstring`, die auf dem Webspace schon aktiv ist.

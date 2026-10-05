@@ -76,7 +76,7 @@ Secrets nie ins Repository oder in einen Chat. Was dort einmal stand, gilt als k
 Bis zur Umstellung deployt weiter das alte Repo son1x/dpsg-dv-trier, das unverändert als Archiv bleibt.
 
 1. In son1x/kluft das Environment `dv-trier` mit denselben Secrets wie im alten Repo anlegen. Variablen setzen: `APP_URL` = `https://test.dpsg-trier.de`, `MAIL_FROM_ADDRESS` = `events@dpsg-trier.de`, `PHP_BIN` wie bisher (`/usr/bin/php`), `MONITOR_URL`.
-2. Deploy `dv-trier` mit **„Nur prüfen“**. Die Ausgabe zeigt die installierte Version und, dass `KLUFT_INSTANZ` noch fehlt.
+2. Deploy `dv-trier` mit **„Nur prüfen“**. Die Ausgabe zeigt die installierte Version, dass `KLUFT_INSTANZ` noch fehlt, und „Datenbank: jetzt mariadb, nach dem Deploy mariadb“. Fehlen die `DB_*`-Secrets, bricht die Prüfung (und jeder echte Deploy) ab, statt die Seite auf SQLite umzustellen.
 3. Deploy `dv-trier` ohne „Nur prüfen“. Ab jetzt läuft der DV mit dem Kluft-Code.
    - Die Migrationen melden nur die neue Migration des Mitgliederabgleichs (zusätzliche Spalten, Funktion bleibt aus).
    - Inhalte und Seiten bleiben, wie sie sind.

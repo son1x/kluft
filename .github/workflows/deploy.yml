@@ -393,6 +393,20 @@ jobs:
             test -w "${{ env.SSH_TARGET_DIR }}" || { echo "::error::Zielordner nicht beschreibbar"; exit 1; }
             cd "${{ env.SSH_TARGET_DIR }}"
             echo "Freier Speicher: $(df -h . | awk 'NR==2 {print $4}')"
+            # Schutz: Läuft der Server mit MariaDB, im Environment fehlen aber
+            # DB_HOST/DB_DATABASE, würde die neue .env auf SQLite umstellen.
+            DB_NEU="${{ (secrets.DB_HOST != '' && secrets.DB_DATABASE != '') && 'mariadb' || 'sqlite' }}"
+            if [ -f .env ]; then
+              DB_JETZT=$(grep -m1 '^DB_CONNECTION=' .env | cut -d= -f2- | tr -d "'\" ")
+              DB_JETZT=${DB_JETZT:-sqlite}
+              echo "Datenbank: jetzt $DB_JETZT, nach dem Deploy $DB_NEU"
+              if [ "$DB_JETZT" != "sqlite" ] && [ "$DB_NEU" = "sqlite" ]; then
+                echo "::error::Auf dem Server läuft $DB_JETZT, im Environment fehlen die Secrets DB_HOST/DB_DATABASE. Ein Deploy würde auf SQLite umstellen – abgebrochen."
+                exit 1
+              fi
+            else
+              echo "Datenbank nach dem Deploy: $DB_NEU"
+            fi
             if [ -f artisan ] && [ -f vendor/autoload.php ]; then
               echo "Installiert: $("${{ env.PHP_BIN }}" artisan --version 2>/dev/null)"
               grep -m1 '^KLUFT_INSTANZ=' .env 2>/dev/null || echo "KLUFT_INSTANZ in .env: (noch nicht gesetzt – bisheriger Stand vor Kluft)"

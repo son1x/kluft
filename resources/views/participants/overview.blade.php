@@ -59,6 +59,15 @@
                             <p class="mt-3 text-sm">Noch nicht bestätigt – bitte klicke auf den Link in der E-Mail, die wir dir nach der Anmeldung geschickt haben.</p>
                         @endif
 
+                        @if ($registration->certificateApproved() && ! $registration->uploadedCertificate())
+                            <p class="mt-4">
+                                <a href="{{ route('participants.certificate', $registration) }}" class="inline-flex items-center gap-2 font-bold text-dpsg-blau underline hover:text-dpsg-rot">
+                                    <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10 3a1 1 0 0 1 1 1v7.59l2.3-2.3a1 1 0 1 1 1.4 1.42l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 1 1 1.4-1.42L9 11.6V4a1 1 0 0 1 1-1ZM4 15a1 1 0 0 1 1 1h10a1 1 0 1 1 0 2H5a2 2 0 0 1-2-2 1 1 0 0 1 1-1Z" /></svg>
+                                    Teilnahmebescheinigung (PDF)
+                                </a>
+                            </p>
+                        @endif
+
                         @if ($registration->documents->isNotEmpty())
                             <ul class="mt-4 space-y-1">
                                 @foreach ($registration->documents as $document)

@@ -95,6 +95,24 @@ class EventForm
                         ->visible(fn () => MitgliederAbgleich::eingerichtet()),
                 ]),
 
+            Section::make('Teilnahmebescheinigung')
+                ->description('Die Bescheinigung entsteht als PDF mit Prüfcode. Teilnehmende bekommen sie erst, wenn die Veranstaltungsleitung ihre Teilnahme unter „Teilnehmende“ freigibt (einzeln oder für mehrere auf einmal).')
+                ->columns(2)
+                ->columnSpanFull()
+                ->collapsible()
+                ->components([
+                    Toggle::make('certificate_enabled')->label('Teilnahmebescheinigung anbieten')->live()->columnSpanFull(),
+                    Textarea::make('certificate_text')->label('Inhalte und Umfang (optional)')
+                        ->rows(3)->maxLength(500)
+                        ->placeholder('z. B. Modul 1b der Woodbadge-Ausbildung, 20 Unterrichtseinheiten')
+                        ->visible(fn (Get $get) => (bool) $get('certificate_enabled')),
+                    TextInput::make('certificate_signer')->label('Unterzeichnet von (optional)')
+                        ->maxLength(150)
+                        ->placeholder('Name, Funktion – z. B. Anna Beispiel, Diözesanvorsitzende')
+                        ->helperText('Ohne Angabe steht dort der Name der Gliederung.')
+                        ->visible(fn (Get $get) => (bool) $get('certificate_enabled')),
+                ]),
+
             Section::make('Formular-Baukasten')
                 ->description('Name und E-Mail werden immer abgefragt. Frag nur ab, was du für diese Veranstaltung wirklich brauchst (Datensparsamkeit).')
                 ->columns(3)

@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Events\RelationManagers;
 
 use App\Jobs\CheckEventMembers;
 use App\Mail\RegistrationDocumentMail;
+use App\Mail\TeilnahmebescheinigungMail;
 use App\Models\Event;
 use App\Models\EventRegistration;
 use App\Models\RegistrationDocument;
@@ -11,9 +12,12 @@ use App\Services\EventRegistrations;
 use App\Services\Mitglieder\MitgliederAbgleich;
 use App\Services\Mitglieder\Mitgliederverzeichnis;
 use App\Services\ParticipantExport;
+use App\Services\Teilnahmebescheinigung;
 use App\Support\AuditLogger;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
+use Filament\Actions\BulkAction;
+use Filament\Actions\BulkActionGroup;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
@@ -24,7 +28,9 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -100,6 +106,13 @@ class RegistrationsRelationManager extends RelationManager
                     })
                     ->placeholder('noch nicht geprüft')
                     ->description(fn (EventRegistration $record) => collect([$record->member_number ? 'Nr. '.$record->member_number : null, $record->member_group, $record->member_manual ? 'von Hand' : null])->filter()->implode(' · ') ?: null),
+                TextColumn::make('certificate_approved_at')->label('Bescheinigung')->badge()
+                    ->visible((bool) $event->certificate_enabled)
+                    ->state(fn (EventRegistration $record) => $record->uploadedCertificate() ? 'hochgeladen'
+                        : ($record->certificateApproved() ? 'freigegeben' : ($record->status === 'confirmed' ? 'offen' : null)))
+                    ->color(fn (?string $state) => $state === 'offen' ? 'gray' : 'success')
+                    ->description(fn (EventRegistration $record) => $record->certificateApproved() ? $record->certificate_approved_at?->format('d.m.Y') : null)
+                    ->placeholder('–'),
                 TextColumn::make('guardian_name')->label('Angemeldet durch')->placeholder('–')->toggleable(),
                 TextColumn::make('confirmed_at')->label('Bestätigt am')->dateTime('d.m.Y H:i')->sortable(),
             ])
@@ -108,6 +121,9 @@ class RegistrationsRelationManager extends RelationManager
                 SelectFilter::make('status')->label('Status')->options(EventRegistration::STATUSES),
                 SelectFilter::make('member_status')->label('Mitglied')->options(MitgliederAbgleich::STATUSES)
                     ->visible($event->checksMembers()),
+                TernaryFilter::make('certificate_approved_at')->label('Bescheinigung')->nullable()
+                    ->trueLabel('freigegeben')->falseLabel('noch nicht freigegeben')
+                    ->visible((bool) $event->certificate_enabled),
             ])
             ->headerActions([
                 Action::make('checkMembers')
@@ -152,6 +168,32 @@ class RegistrationsRelationManager extends RelationManager
                         'fields' => $fields,
                     ])->render())),
                 ActionGroup::make([
+                    Action::make('approveCertificate')
+                        ->label('Bescheinigung freigeben')
+                        ->icon('heroicon-o-check-badge')
+                        ->visible(fn (EventRegistration $record) => $event->certificate_enabled && $record->status === 'confirmed' && ! $record->certificate_approved_at)
+                        ->modalHeading(fn (EventRegistration $record) => 'Teilnahme von '.$record->fullName().' bestätigen')
+                        ->modalDescription('Die Person findet ihre Teilnahmebescheinigung danach unter „Meine Anmeldungen“.')
+                        ->schema([Toggle::make('notify')->label('Person per E-Mail informieren')->default(true)])
+                        ->action(fn (EventRegistration $record, array $data) => $this->approveCertificates(new Collection([$record]), (bool) ($data['notify'] ?? false))),
+                    Action::make('revokeCertificate')
+                        ->label('Freigabe zurücknehmen')
+                        ->icon('heroicon-o-x-mark')
+                        ->color('danger')
+                        ->visible(fn (EventRegistration $record) => $event->certificate_enabled && $record->certificate_approved_at !== null)
+                        ->requiresConfirmation()
+                        ->modalDescription('Die Bescheinigung verschwindet aus „Meine Anmeldungen“. Bereits heruntergeladene PDFs lassen sich weiter prüfen, solange Name und Prüfcode stimmen.')
+                        ->action(fn (EventRegistration $record) => $this->revokeCertificates(new Collection([$record]))),
+                    Action::make('previewCertificate')
+                        ->label('Bescheinigung ansehen')
+                        ->icon('heroicon-o-document-check')
+                        ->visible(fn (EventRegistration $record) => $event->certificate_enabled && $record->status === 'confirmed')
+                        ->action(function (EventRegistration $record, Teilnahmebescheinigung $bescheinigung): StreamedResponse {
+                            abort_unless(Filament::auth()->user()?->can('manageParticipants', $this->getOwnerRecord()), 403);
+                            $pdf = $bescheinigung->pdf($record);
+
+                            return response()->streamDownload(fn () => print ($pdf), $bescheinigung->filename($record), ['Content-Type' => 'application/pdf']);
+                        }),
                     Action::make('uploadDocument')
                         ->label('Dokument hochladen')
                         ->icon('heroicon-o-arrow-up-tray')
@@ -254,7 +296,74 @@ class RegistrationsRelationManager extends RelationManager
                     ->requiresConfirmation()
                     ->modalDescription('Die Person bekommt eine Stornierungsmail; ein frei werdender Platz geht an die Warteliste.')
                     ->action(fn (EventRegistration $record) => $this->changeStatus($record, 'cancel')),
+            ])
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    BulkAction::make('approveCertificates')
+                        ->label('Bescheinigungen freigeben')
+                        ->icon('heroicon-o-check-badge')
+                        ->color('success')
+                        ->modalHeading('Teilnahme bestätigen und Bescheinigungen freigeben')
+                        ->modalDescription('Gilt für die markierten bestätigten Anmeldungen. Warteliste, Stornierte und bereits Freigegebene werden übersprungen.')
+                        ->schema([Toggle::make('notify')->label('Personen per E-Mail informieren')->default(true)])
+                        ->deselectRecordsAfterCompletion()
+                        ->action(fn (Collection $records, array $data) => $this->approveCertificates($records, (bool) ($data['notify'] ?? false))),
+                    BulkAction::make('revokeCertificates')
+                        ->label('Freigabe zurücknehmen')
+                        ->icon('heroicon-o-x-mark')
+                        ->color('danger')
+                        ->requiresConfirmation()
+                        ->deselectRecordsAfterCompletion()
+                        ->action(fn (Collection $records) => $this->revokeCertificates($records)),
+                ])->label('Bescheinigungen')->visible((bool) $event->certificate_enabled),
             ]);
+    }
+
+    /**
+     * Teilnahme bestätigen: nur bestätigte, noch nicht freigegebene Anmeldungen.
+     *
+     * @param  Collection<int, EventRegistration>  $records
+     */
+    private function approveCertificates(Collection $records, bool $notify): void
+    {
+        abort_unless(Filament::auth()->user()?->can('manageParticipants', $this->getOwnerRecord()), 403);
+
+        $offen = $records->filter(fn (EventRegistration $r) => $r->event_id === $this->getOwnerRecord()->getKey()
+            && $r->status === 'confirmed' && $r->certificate_approved_at === null);
+
+        foreach ($offen as $registration) {
+            $registration->forceFill(['certificate_approved_at' => now(), 'certificate_approved_by' => Filament::auth()->id()])->save();
+            AuditLogger::log('registration.certificate.approve', Filament::auth()->user(), EventRegistration::class, $registration->getKey(), request());
+            if ($notify) {
+                try {
+                    Mail::to($registration->email)->send(new TeilnahmebescheinigungMail($registration));
+                } catch (Throwable $e) {
+                    report($e);
+                }
+            }
+        }
+
+        $uebersprungen = $records->count() - $offen->count();
+        Notification::make()
+            ->title($offen->count().' '.($offen->count() === 1 ? 'Bescheinigung' : 'Bescheinigungen').' freigegeben'.($notify && $offen->isNotEmpty() ? ', Personen werden per E-Mail informiert' : '').'.')
+            ->body($uebersprungen > 0 ? $uebersprungen.' übersprungen (nicht bestätigt oder schon freigegeben).' : null)
+            ->success()->send();
+    }
+
+    /**
+     * @param  Collection<int, EventRegistration>  $records
+     */
+    private function revokeCertificates(Collection $records): void
+    {
+        abort_unless(Filament::auth()->user()?->can('manageParticipants', $this->getOwnerRecord()), 403);
+
+        $freigegeben = $records->filter(fn (EventRegistration $r) => $r->event_id === $this->getOwnerRecord()->getKey() && $r->certificate_approved_at !== null);
+        foreach ($freigegeben as $registration) {
+            $registration->forceFill(['certificate_approved_at' => null, 'certificate_approved_by' => null])->save();
+            AuditLogger::log('registration.certificate.revoke', Filament::auth()->user(), EventRegistration::class, $registration->getKey(), request());
+        }
+
+        Notification::make()->title('Freigabe bei '.$freigegeben->count().' '.($freigegeben->count() === 1 ? 'Anmeldung' : 'Anmeldungen').' zurückgenommen.')->success()->send();
     }
 
     /**

@@ -32,6 +32,7 @@ class Event extends Model
         'stage', 'section', 'target_group', 'cover_media_id', 'contact_name', 'contact_email',
         'cost_info', 'reg_opens_at', 'reg_closes_at', 'capacity', 'waitlist_enabled', 'member_check',
         'status', 'form_fields', 'retention_days', 'created_by', 'calendar_uid',
+        'certificate_enabled', 'certificate_text', 'certificate_signer',
     ];
 
     protected function casts(): array
@@ -43,6 +44,7 @@ class Event extends Model
             'reg_closes_at' => 'datetime',
             'waitlist_enabled' => 'boolean',
             'member_check' => 'boolean',
+            'certificate_enabled' => 'boolean',
             'form_fields' => 'array',
             'capacity' => 'integer',
             'retention_days' => 'integer',

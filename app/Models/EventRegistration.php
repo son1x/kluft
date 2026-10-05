@@ -49,6 +49,7 @@ class EventRegistration extends Model
             'purge_at' => 'datetime',
             'member_manual' => 'boolean',
             'member_checked_at' => 'datetime',
+            'certificate_approved_at' => 'datetime',
         ];
     }
 
@@ -71,6 +72,18 @@ class EventRegistration extends Model
     public function documents(): HasMany
     {
         return $this->hasMany(RegistrationDocument::class)->orderBy('type')->orderByDesc('id');
+    }
+
+    /** Bescheinigung freigegeben: Veranstaltung bietet sie an, Anmeldung bestätigt und von der Leitung freigegeben. */
+    public function certificateApproved(): bool
+    {
+        return $this->certificate_approved_at !== null && $this->status === 'confirmed' && (bool) $this->event?->certificate_enabled;
+    }
+
+    /** Hochgeladene Bescheinigung (ersetzt die erzeugte). */
+    public function uploadedCertificate(): ?RegistrationDocument
+    {
+        return $this->documents->firstWhere('type', 'bescheinigung');
     }
 
     public function fullName(): string

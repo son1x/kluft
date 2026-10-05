@@ -6,11 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\EventRegistration;
 use App\Models\RegistrationDocument;
 use App\Services\EventRegistrations;
+use App\Services\Teilnahmebescheinigung;
 use App\Support\ParticipantLogin;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
@@ -107,6 +110,23 @@ class ParticipantController extends Controller
 
         return Storage::disk(RegistrationDocument::DISK)->download($document->path, $document->downloadName(), [
             'Content-Type' => 'application/pdf',
+            'Cache-Control' => 'private, no-store',
+        ]);
+    }
+
+    /** Erzeugte Teilnahmebescheinigung; eine hochgeladene hat Vorrang. */
+    public function certificate(Request $request, EventRegistration $registration, Teilnahmebescheinigung $bescheinigung): Response|RedirectResponse
+    {
+        $this->authorizeRegistration($request, $registration);
+        abort_unless($registration->certificateApproved(), 404);
+
+        if ($hochgeladen = $registration->uploadedCertificate()) {
+            return to_route('participants.document', $hochgeladen);
+        }
+
+        return response($bescheinigung->pdf($registration), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => HeaderUtils::makeDisposition('attachment', $bescheinigung->filename($registration), 'Teilnahmebescheinigung.pdf'),
             'Cache-Control' => 'private, no-store',
         ]);
     }

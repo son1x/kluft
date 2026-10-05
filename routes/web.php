@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\BreakGlassAuthController;
 use App\Http\Controllers\Auth\EntraAuthController;
 use App\Http\Controllers\Public\CalendarController;
+use App\Http\Controllers\Public\CertificateController;
 use App\Http\Controllers\Public\ContactController;
 use App\Http\Controllers\Public\DownloadController;
 use App\Http\Controllers\Public\EventController;
@@ -111,6 +112,16 @@ Route::get('/meine-anmeldungen/dokument/{document}', [ParticipantController::cla
     ->whereNumber('document')
     ->middleware('throttle:teilnehmende')
     ->name('participants.document');
+
+// Teilnahmebescheinigung: Download für Teilnehmende, Echtheitsprüfung für alle.
+Route::get('/meine-anmeldungen/{registration}/bescheinigung', [ParticipantController::class, 'certificate'])
+    ->whereNumber('registration')
+    ->middleware('throttle:teilnehmende')
+    ->name('participants.certificate');
+Route::get('/bescheinigung-pruefen', [CertificateController::class, 'show'])->name('certificates.verify');
+Route::post('/bescheinigung-pruefen', [CertificateController::class, 'check'])
+    ->middleware('throttle:10,1')
+    ->name('certificates.check');
 
 // Systemstatus für Menschen und Überwachungsdienste (Pflichtenheft 10.2).
 Route::get('/status', [StatusController::class, 'show'])->name('status');

@@ -8,7 +8,7 @@ Stand: Gerüst aus der bisherigen Bezirkswebsite (son1x/dpsg-bezirk-saar-hochwal
 |---|---|
 | `config.php` | Name und Wortformen, Kontakt, Karte (bbox), Gremien, Newsletter, Startseiten-Kacheln, Einwilligungstext, ausgeschaltete DV-Funktionen |
 | `seeders/BasisSeeder.php` | Grundbestand: Bezirk und Stämme, Glossar (läuft auch in den Tests) |
-| `seeders/SaarHochwaldSeeder.php` | Startinhalt beim ersten Deploy: Grundbestand, Pflichtseiten, Startseiten, Weiterleitungen der alten `.html`-Adressen, Kontaktthemen |
+| `seeders/BezirkSeeder.php` | Startinhalt beim ersten Deploy: Grundbestand, Pflichtseiten, Startseiten, Weiterleitungen der alten `.html`-Adressen, Kontaktthemen |
 | `seeders/*Seeder.php` | Inhalte aus der Vorlage (Seiten, Stämme, Impressum/Datenschutz) |
 | `public/` | Logo und Favicon; `php artisan kluft:assets` kopiert sie nach `public/instanz/` |
 

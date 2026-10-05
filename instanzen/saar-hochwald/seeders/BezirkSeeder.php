@@ -12,7 +12,7 @@ use Illuminate\Database\Seeder;
  * samt Weiterleitungen der alten .html-Adressen; zuletzt die Themen des
  * Kontaktformulars (ersetzen den Platzhalter auf der Kontaktseite).
  */
-class SaarHochwaldSeeder extends Seeder
+class BezirkSeeder extends Seeder
 {
     public function run(): void
     {

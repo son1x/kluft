@@ -1,7 +1,7 @@
 <?php
 
 use Instanzen\SaarHochwald\Seeders\BasisSeeder;
-use Instanzen\SaarHochwald\Seeders\BezirkSeeder;
+use Instanzen\SaarHochwald\Seeders\SaarHochwaldSeeder;
 
 /*
 | Kluft-Instanz „saar-hochwald“: DPSG Bezirk Saar-Hochwald.
@@ -40,7 +40,7 @@ return [
     ],
 
     'seeders' => [
-        'start' => BezirkSeeder::class,
+        'start' => SaarHochwaldSeeder::class,
         'basis' => BasisSeeder::class,
     ],
 

@@ -27,6 +27,7 @@ class Roadmap
         'partial' => 'In Arbeit / teilweise',
         'open' => 'Offen',
         'later' => 'Später (Phase 2 / Kann)',
+        'decide' => 'Zu entscheiden',
         'info' => 'Beschreibung, keine Umsetzung',
     ];
 

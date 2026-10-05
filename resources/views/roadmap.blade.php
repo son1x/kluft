@@ -12,7 +12,7 @@
     $openTodos = collect($todos)->reject(fn ($t) => $t['done'] === true);
     $doneTodos = collect($todos)->filter(fn ($t) => $t['done'] === true);
     $total = array_sum($counts);
-    $barColors = ['done' => 'bg-[#1e8e3e]', 'partial' => 'bg-[#f2b600]', 'open' => 'bg-[#d93025]', 'later' => 'bg-dpsg-mittelbeige', 'info' => 'bg-surface-muted'];
+    $barColors = ['done' => 'bg-[#1e8e3e]', 'partial' => 'bg-[#f2b600]', 'open' => 'bg-[#d93025]', 'later' => 'bg-dpsg-mittelbeige', 'decide' => 'bg-dpsg-mittelbeige', 'info' => 'bg-surface-muted'];
     $phaseLabel = collect($phases)->firstWhere(0, $currentPhase);
 @endphp
 
@@ -84,14 +84,15 @@
             <section aria-labelledby="feedback-{{ \Illuminate\Support\Str::slug($milestone) }}" class="mt-10 bg-white shadow-md">
                 <header class="flex flex-wrap items-baseline justify-between gap-2 border-b border-surface-muted p-5">
                     <h2 id="feedback-{{ \Illuminate\Support\Str::slug($milestone) }}" class="font-serif text-xl font-bold">Meilenstein {{ $milestone }}@if ($phase && $phase[1] !== 'Feedback '.$milestone) – {{ $phase[1] }}@else: Rückmeldungen @endif</h2>
-                    <p class="text-sm font-bold">{{ collect($items)->where('status', 'done')->count() }} von {{ count($items) }} umgesetzt</p>
+                    @php($undecided = collect($items)->where('status', 'decide')->count())
+                    <p class="text-sm font-bold">{{ collect($items)->where('status', 'done')->count() }} von {{ count($items) - $undecided }} umgesetzt{{ $undecided ? ' · '.$undecided.' zu entscheiden' : '' }}</p>
                 </header>
                 <ul class="divide-y divide-surface-muted">
                     @foreach ($items as $item)
                         <li class="flex gap-4 px-5 py-3">
                             @include('partials.ampel', ['status' => $item['status']])
                             <div class="min-w-0">
-                                <h3 class="font-bold">{{ $item['title'] }}</h3>
+                                <h3 class="font-bold">{{ $item['title'] }}@if ($item['status'] === 'decide') <span class="ml-1 inline-block rounded bg-surface-muted px-1.5 py-0.5 align-middle text-xs font-normal">Zu entscheiden</span>@endif</h3>
                                 @if ($item['note'])<p class="mt-0.5 text-sm text-text-secondary">{{ $item['note'] }}</p>@endif
                             </div>
                         </li>
@@ -110,6 +111,7 @@
             </div>
             <ul class="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-sm">
                 @foreach ($counts as $status => $n)
+                    @continue($status === 'decide' && $n === 0)
                     <li class="flex items-center gap-2">
                         @include('partials.ampel', ['status' => $status])
                         <span><strong>{{ $n }}</strong> {{ $statusLabels[$status] }}</span>

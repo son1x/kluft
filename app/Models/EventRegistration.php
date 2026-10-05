@@ -17,6 +17,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $cancelled_at
  * @property Carbon|null $purge_at
  * @property Carbon|null $member_checked_at
+ * @property Carbon|null $certificate_approved_at
  */
 class EventRegistration extends Model
 {

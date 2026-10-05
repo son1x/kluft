@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use ZipArchive;
@@ -12,6 +13,8 @@ use ZipArchive;
  * Datei auf der Download-Seite (Methoden, Formulare, Arbeitshilfen). Typ,
  * Größe, Seiten bzw. Dateien und Stand ermittelt das Modell beim Speichern
  * selbst; die Redaktion gibt nur Titel, Beschreibung und Einordnung an.
+ *
+ * @property Carbon|null $file_updated_at
  */
 class Download extends Model
 {

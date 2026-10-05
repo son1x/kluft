@@ -23,7 +23,7 @@ on:
 jobs:
   sicherheit:
     name: Sicherheitslücken in Abhängigkeiten
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04  # bewusst festgeschrieben; Wechsel auf 26.04 erst nach einem Probelauf
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
@@ -41,7 +41,7 @@ jobs:
 
   code:
     name: Code-Stil und statische Analyse
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04  # bewusst festgeschrieben; Wechsel auf 26.04 erst nach einem Probelauf
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
@@ -70,7 +70,7 @@ jobs:
     # Jede Kluft-Instanz einzeln: Tests einer anderen Instanz (#[Group('…')])
     # überspringt tests/TestCase.php selbst.
     name: Tests (${{ matrix.instanz }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04  # bewusst festgeschrieben; Wechsel auf 26.04 erst nach einem Probelauf
     strategy:
       fail-fast: false
       matrix:

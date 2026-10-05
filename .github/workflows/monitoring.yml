@@ -15,7 +15,7 @@ on:
 jobs:
   check:
     name: Monitoring (${{ matrix.instanz }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04  # bewusst festgeschrieben; Wechsel auf 26.04 erst nach einem Probelauf
     timeout-minutes: 5
     strategy:
       fail-fast: false

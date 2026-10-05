@@ -31,7 +31,7 @@ on:
 
 jobs:
   check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04  # bewusst festgeschrieben; Wechsel auf 26.04 erst nach einem Probelauf
     timeout-minutes: 10
     environment: ${{ inputs.instanz }}
     env:

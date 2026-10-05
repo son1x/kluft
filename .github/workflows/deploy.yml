@@ -74,7 +74,7 @@ concurrency:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04  # bewusst festgeschrieben; Wechsel auf 26.04 erst nach einem Probelauf
     environment: ${{ inputs.instanz || 'dv-trier' }}
     env:
       KLUFT_INSTANZ: ${{ inputs.instanz || 'dv-trier' }}

@@ -1,12 +1,19 @@
-name: Server-Prüfung (Testumgebung)
+name: Server-Prüfung
 
 # Führt eine Prüfung bzw. einen Abruf auf dem Server aus, ohne Geheimnisse
-# auszugeben.
+# auszugeben. Instanz wählen; Zugang aus deren GitHub-Environment.
 # GitHub → Actions → „Server-Prüfung“ → „Run workflow“.
 
 on:
   workflow_dispatch:
     inputs:
+      instanz:
+        description: 'Instanz (GitHub-Environment)'
+        type: choice
+        options:
+          - dv-trier
+          - saar-hochwald
+        required: true
       check:
         description: 'Was prüfen?'
         type: choice
@@ -26,6 +33,9 @@ jobs:
   check:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    environment: ${{ inputs.instanz }}
+    env:
+      PHP_BIN: ${{ vars.PHP_BIN || '/usr/bin/php' }}
     steps:
       - name: Secrets bereinigen
         env:
@@ -55,35 +65,35 @@ jobs:
           script: |
             cd "${{ env.SSH_TARGET_DIR }}"
             case "$CHECK" in
-              calendar:check) /usr/bin/php artisan calendar:check ;;
+              calendar:check) "${{ env.PHP_BIN }}" artisan calendar:check ;;
               # Mitgliederverwaltung (NaMi 2 / NaMi 3): Anmeldung und Testsuche, ohne Mitgliederdaten.
-              mitglieder:check) /usr/bin/php artisan mitglieder:check ;;
+              mitglieder:check) "${{ env.PHP_BIN }}" artisan mitglieder:check ;;
               # Kalender sofort abrufen (sonst alle 15 Minuten per Cronjob), danach Stand zeigen.
-              calendar:sync) /usr/bin/php artisan calendar:sync; /usr/bin/php artisan calendar:check ;;
-              # Angaben für den Cronjob in Plesk: Pfad und PHP-Version.
+              calendar:sync) "${{ env.PHP_BIN }}" artisan calendar:sync; "${{ env.PHP_BIN }}" artisan calendar:check ;;
+              # Angaben für den Cronjob (Plesk oder vServer): Pfad und PHP-Version.
               cron:info)
                 echo "Projektverzeichnis: $(pwd -P)"
                 echo "artisan vorhanden: $([ -f artisan ] && echo ja || echo nein)"
                 echo "Home: $HOME"
                 echo "php im Pfad: $(command -v php) – $(php -v 2>/dev/null | head -n1)"
-                echo "/usr/bin/php: $(/usr/bin/php -v 2>/dev/null | head -n1)"
+                echo "PHP_BIN: $("${{ env.PHP_BIN }}" -v 2>/dev/null | head -n1)"
                 for v in /opt/plesk/php/*/bin/php; do [ -x "$v" ] && echo "$v: $($v -v 2>/dev/null | head -n1)"; done
                 echo "vendor/autoload.php vorhanden: $([ -f vendor/autoload.php ] && echo ja || echo nein)"
-                /usr/bin/php artisan --version
+                "${{ env.PHP_BIN }}" artisan --version
                 ;;
               # Brevo: API-Schlüssel/IP-Freigabe, Liste, Double-Opt-In-Vorlage
               # (verschickt nichts); dazu die letzten Brevo-Fehler aus dem Log.
               brevo:check)
-                /usr/bin/php artisan brevo:check || true
+                "${{ env.PHP_BIN }}" artisan brevo:check || true
                 echo "---- Letzte Brevo-Fehler im Log ----"
                 grep -h 'Brevo' storage/logs/laravel*.log 2>/dev/null | tail -n 5 | cut -c1-400 \
                   | sed -E 's/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/<email>/g' || echo "(keine)"
                 ;;
               # Wirksame Ausnahmen der Test-Mail-Umleitung (Adressen gekürzt).
-              mail:check-allowlist) /usr/bin/php artisan mail:check-allowlist ;;
+              mail:check-allowlist) "${{ env.PHP_BIN }}" artisan mail:check-allowlist ;;
               # Backups: Voraussetzungen und letzter Stand (keine Geheimnisse).
-              backup:status) /usr/bin/php artisan backup:status ;;
+              backup:status) "${{ env.PHP_BIN }}" artisan backup:status ;;
               # Backup sofort erstellen und Wiederherstellung prüfen (sonst täglich 2 Uhr).
-              backup:run) /usr/bin/php artisan backup:run && /usr/bin/php artisan backup:verify; /usr/bin/php artisan backup:status ;;
+              backup:run) "${{ env.PHP_BIN }}" artisan backup:run && "${{ env.PHP_BIN }}" artisan backup:verify; "${{ env.PHP_BIN }}" artisan backup:status ;;
               *) echo "Unbekannte Prüfung"; exit 1 ;;
             esac

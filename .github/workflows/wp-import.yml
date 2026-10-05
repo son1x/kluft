@@ -1,14 +1,22 @@
-name: WordPress-Import (Testumgebung)
+name: WordPress-Import
 
 # Übernimmt Beiträge von www.dpsg-trier.de auf den Server (Pflichtenheft
 # 6.9). Manuell starten: GitHub → Actions → „WordPress-Import“ → „Run
 # workflow“. Erst mit „Testlauf“ prüfen, dann ohne. Wiederholbar: neue
 # Beiträge kommen dazu, im CMS bearbeitete bleiben unverändert. Ergebnis im
-# Backend unter „WordPress-Import“.
+# Backend unter „WordPress-Import“. Nur für Instanzen mit eingeschaltetem
+# WordPress-Import (config dpsg.features.wp_import, z. B. dv-trier).
 
 on:
   workflow_dispatch:
     inputs:
+      instanz:
+        description: 'Instanz (GitHub-Environment)'
+        type: choice
+        options:
+          - dv-trier
+          - saar-hochwald
+        required: true
       dry_run:
         description: 'Testlauf (nichts speichern oder herunterladen)'
         type: boolean
@@ -20,13 +28,16 @@ on:
 
 concurrency:
   # Nicht parallel zu einem Deploy auf dieselbe Umgebung.
-  group: deploy-netcup-${{ github.ref }}
+  group: deploy-${{ inputs.instanz }}
   cancel-in-progress: false
 
 jobs:
   import:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    environment: ${{ inputs.instanz }}
+    env:
+      PHP_BIN: ${{ vars.PHP_BIN || '/usr/bin/php' }}
     steps:
       - name: Eingaben prüfen
         env:
@@ -69,4 +80,4 @@ jobs:
             ARGS=""
             if [ "$DRY_RUN" = "true" ]; then ARGS="$ARGS --dry-run"; fi
             if [ -n "$SINCE" ]; then ARGS="$ARGS --since=$SINCE"; fi
-            /usr/bin/php -d memory_limit=512M artisan wp:import $ARGS
+            "${{ env.PHP_BIN }}" -d memory_limit=512M artisan wp:import $ARGS

@@ -7,9 +7,15 @@ import lighthouse from 'lighthouse';
 import { launch } from 'chrome-launcher';
 import { appendFileSync } from 'node:fs';
 
-const SITE = (process.env.SITE || 'https://test.dpsg-trier.de').replace(/\/$/, '');
-const PAGES = ['/', '/aktuelles', '/veranstaltungen', '/kalender', '/bezirke-staemme', '/stufe-woelflinge', '/dioezesanleitung', '/kontakt', '/meine-anmeldungen', '/georgsbote', '/bolivien', '/status'];
-const LIGHTHOUSE_PAGES = ['/', '/aktuelles', '/veranstaltungen', '/bezirke-staemme', '/stufe-woelflinge'];
+if (! process.env.SITE) {
+    console.error('SITE fehlt (Adresse der Instanz, z. B. https://test.dpsg-trier.de).');
+    process.exit(1);
+}
+const SITE = process.env.SITE.replace(/\/$/, '');
+// Seitenlisten aus der Instanz-Konfiguration (scripts/web-check-pages.php).
+const list = (value, fallback) => (value ? value.split(',').filter(Boolean) : fallback);
+const PAGES = list(process.env.WEB_CHECK_PAGES, ['/', '/aktuelles', '/veranstaltungen', '/kalender', '/kontakt', '/status']);
+const LIGHTHOUSE_PAGES = list(process.env.WEB_CHECK_LIGHTHOUSE, ['/', '/aktuelles', '/veranstaltungen']);
 const summary = (line) => process.env.GITHUB_STEP_SUMMARY && appendFileSync(process.env.GITHUB_STEP_SUMMARY, line + '\n');
 
 // 1. axe auf Desktop und Handy

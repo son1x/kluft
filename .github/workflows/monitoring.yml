@@ -1,38 +1,50 @@
 name: Monitoring
 
 # Überwachung von außen (Pflichtenheft 10.2): alle 30 Minuten Startseite und
-# /api/status abrufen. Schlägt das fehl (Seite down, Cronjob steht, Mails
-# hängen, Backup fehlt), wird der Lauf rot und GitHub schickt eine Mail.
-# Ergänzt den Alarm vom Server selbst (monitor:check), der nur läuft,
-# solange der Cronjob läuft.
+# /api/status jeder Kluft-Instanz abrufen. Schlägt das fehl (Seite down,
+# Cronjob steht, Mails hängen, Backup fehlt), wird der Lauf rot und GitHub
+# schickt eine Mail. Geprüft wird nur, wenn im GitHub-Environment der
+# Instanz die Variable MONITOR_URL gesetzt ist. Ergänzt den Alarm vom
+# Server selbst (monitor:check), der nur läuft, solange der Cronjob läuft.
 
 on:
   schedule:
     - cron: '7,37 * * * *'
   workflow_dispatch:
 
-env:
-  SITE: ${{ vars.MONITOR_URL || 'https://test.dpsg-trier.de' }}
-
 jobs:
   check:
+    name: Monitoring (${{ matrix.instanz }})
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        instanz: [dv-trier, saar-hochwald]
+    environment: ${{ matrix.instanz }}
+    env:
+      SITE: ${{ vars.MONITOR_URL }}
     steps:
       - name: Startseite erreichbar
+        if: env.SITE != ''
         run: |
           code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 "$SITE/")
           echo "Startseite: HTTP $code"
           [ "$code" = "200" ]
 
       - name: Systemstatus
+        if: env.SITE != ''
         run: |
           body=$(curl -s --max-time 30 "$SITE/api/status") || { echo "Status nicht abrufbar"; exit 1; }
           echo "$body" | jq -r '.checks | to_entries[] | "\(.value.status)\t\(.key): \(.value.message)"'
           status=$(echo "$body" | jq -r '.status')
           {
-            echo "### Systemstatus: $status"
+            echo "### Systemstatus ${{ matrix.instanz }}: $status"
             echo
             echo "$body" | jq -r '.checks | to_entries[] | "- **\(.key)** – \(.value.status): \(.value.message)"'
           } >> "$GITHUB_STEP_SUMMARY"
           [ "$status" != "fehler" ]
+
+      - name: Nicht eingerichtet
+        if: env.SITE == ''
+        run: echo "Keine MONITOR_URL im Environment ${{ matrix.instanz }} – übersprungen."

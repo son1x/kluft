@@ -17,6 +17,8 @@ class Features
 
     public const WP_IMPORT = 'wp_import';
 
+    public const DOWNLOADS = 'downloads';
+
     public static function enabled(string $feature): bool
     {
         return (bool) config('dpsg.features.'.$feature, false);

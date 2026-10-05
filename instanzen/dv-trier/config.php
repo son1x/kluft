@@ -76,6 +76,21 @@ return [
         'roadmap' => true,
         'rechtstraeger' => true,
         'wp_import' => true,
+        'downloads' => true,
+    ],
+
+    // Download-Seite unter „Diözesanverband“ (s. config/dpsg.php).
+    'downloads' => [
+        'slug' => 'downloads',
+        'title' => 'Downloads',
+        'categories' => [
+            'abrechnung' => 'Abrechnungen (Diözesanebene)',
+            'zuschuesse' => 'Zuschüsse & Förderung',
+            'formulare' => 'Formulare',
+            'methoden' => 'Methoden',
+            'arbeitshilfen' => 'Arbeitshilfen',
+            'praevention' => 'Prävention',
+        ],
     ],
 
     /*
@@ -95,6 +110,8 @@ return [
     ],
 
     'redirects' => [
+        // Alte Formular-Seite der WordPress-Website.
+        '/downloads/formulare' => '/downloads',
         // Frühere Adresse der Bestätigungsseite (evtl. schon in Brevo hinterlegt).
         '/georgsbote/danke' => '/georgsbrief/danke',
     ],

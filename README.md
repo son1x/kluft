@@ -11,6 +11,7 @@ Der Name: Die Kluft tragen alle gleich, das Halstuch zeigt, wo man herkommt. Gen
 - **Redaktion:** Seiten und Beiträge, Mediathek mit Bildvarianten, Menüs, Glossar (Begriffe wie DAK oder FAK mit Erklärung), Weiterleitungen
 - **Gliederung zeigen:** Verzeichnis der Bezirke und Stämme mit selbst gehosteter Karte, Personen und Gremien mit Porträts, Stufen und Fachbereiche mit eigenen Seiten
 - **Veranstaltungen:** Anmeldung mit Double-Opt-In, „Meine Anmeldungen“ per E-Mail-Code, Teilnehmendenliste und Export, Dokumente, Löschfristen, optional Mitgliederabgleich mit der NaMi
+- **Downloads:** Methoden, Formulare und Arbeitshilfen mit Suche und Filter; Typ, Größe, Seiten und Stand ermittelt das CMS
 - **Kontakt und Newsletter:** Kontaktformular mit Themen, Newsletter über Brevo, optional WhatsApp-Kanal und Push-Nachrichten
 - **Betrieb:** Anmeldung mit Microsoft 365, Notfall-Zugang, Rollen und Audit-Log, verschlüsselte Backups, Monitoring, Datenschutzauskunft (KDG)
 

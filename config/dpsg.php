@@ -47,6 +47,19 @@ return array_replace([
         'roadmap' => false,        // /roadmap: Projektstand nach Pflichtenheft
         'rechtstraeger' => false,  // Schaubild auf der Seite „rechtstraeger“
         'wp_import' => false,      // Übernahme aus einer WordPress-Website
+        'downloads' => false,      // Download-Seite (Methoden, Formulare, Arbeitshilfen)
+    ],
+
+    // Download-Seite: Adresse (zugleich Slug der Seite für Menü und Einleitung),
+    // Titel und Kategorien (Schlüssel => Bezeichnung, in dieser Reihenfolge).
+    'downloads' => [
+        'slug' => 'downloads',
+        'title' => 'Downloads',
+        'categories' => [
+            'methoden' => 'Methoden',
+            'formulare' => 'Formulare',
+            'arbeitshilfen' => 'Arbeitshilfen',
+        ],
     ],
 
     // E-Mail-Newsletter über Brevo; null = keiner. Format siehe instanzen/dv-trier.

@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\BreakGlassAuthController;
 use App\Http\Controllers\Auth\EntraAuthController;
 use App\Http\Controllers\Public\CalendarController;
 use App\Http\Controllers\Public\ContactController;
+use App\Http\Controllers\Public\DownloadController;
 use App\Http\Controllers\Public\EventController;
 use App\Http\Controllers\Public\FeedController;
 use App\Http\Controllers\Public\GeorgsboteController;
@@ -126,6 +127,16 @@ if (Features::enabled(Features::GEORGSBOTE)) {
     Route::get('/georgsbote/{jahr}/{ausgabe}.pdf', [GeorgsboteController::class, 'pdf'])
         ->whereNumber(['jahr', 'ausgabe'])
         ->name('georgsbote.pdf');
+}
+
+// Download-Seite (Methoden, Formulare, Arbeitshilfen).
+if (Features::enabled(Features::DOWNLOADS)) {
+    $downloads = '/'.config('dpsg.downloads.slug');
+    Route::get($downloads, [DownloadController::class, 'index'])->name('downloads.index');
+    Route::get($downloads.'/{download}/{name}', [DownloadController::class, 'file'])
+        ->whereNumber('download')
+        ->where('name', '[A-Za-z0-9._-]+')
+        ->name('downloads.file');
 }
 
 // E-Mail-Newsletter (beim DV „Georgsbrief“): Anmeldung per Double-Opt-In über Brevo.

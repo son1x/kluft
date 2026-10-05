@@ -50,6 +50,9 @@
     --color-fach-globale-gerechtigkeit: #b6106f;
     --color-fach-inklusion: #fdc400;
     --color-fach-internationales: #662483;
+    /* vorläufig aus der DPSG-Palette abgeleitet, mit dem Fachbereich abstimmen */
+    --color-fach-spiritualitaet: #00739f;
+    --color-fach-ausbildung: #003056;
 
     /* Neutralfarben der Website (eigene Festlegung, s. 7.2) */
     --color-text: #1c1f26;
@@ -139,6 +142,8 @@ html {
 .fach-globale-gerechtigkeit { --fach: var(--color-fach-globale-gerechtigkeit); --fach-ink: #fff; }
 .fach-oekologie { --fach: var(--color-fach-oekologie); --fach-ink: #fff; }
 .fach-inklusion { --fach: var(--color-fach-inklusion); --fach-ink: var(--color-text); }
+.fach-spiritualitaet { --fach: var(--color-fach-spiritualitaet); --fach-ink: #fff; }
+.fach-ausbildung { --fach: var(--color-fach-ausbildung); --fach-ink: #fff; }
 
 /*
  * Begriffs-Hover (Glossar): gepunktete Unterstreichung, Erklärung als

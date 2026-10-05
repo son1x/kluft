@@ -85,6 +85,43 @@
                 </ul>
             </section>
         @endif
+        @if ($fak !== null)
+            {{-- Facharbeitskreis (FAK) des Fachbereichs --}}
+            <section id="fak" class="mt-16 scroll-mt-24" aria-labelledby="fak-heading">
+                @include('partials.section-heading', ['id' => 'fak-heading', 'title' => 'Der Facharbeitskreis'])
+                <p class="max-w-3xl text-text-secondary">
+                    Im Facharbeitskreis (FAK) {{ $config['label'] }} gestalten Ehrenamtliche gemeinsam mit den Referent*innen die Arbeit des Fachbereichs im {{ config('dpsg.site.level') }}:
+                    Sie planen Aktionen und Fortbildungen, entwickeln Material und unterstützen Stämme und Bezirke.
+                </p>
+                @if ($fak->isNotEmpty())
+                    <ul class="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                        @foreach ($fak as $person)
+                            <li id="{{ $person->anchor() }}" class="flex items-center gap-4 bg-white p-5 shadow-md">
+                                @include('partials.person-avatar', ['person' => $person])
+                                <div>
+                                    <p class="font-serif text-lg font-bold leading-tight">{{ $person->name }}</p>
+                                    @if ($person->role)<p class="text-sm text-text-secondary">{{ $person->role }}</p>@endif
+                                </div>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+                <p class="mt-6 flex flex-wrap items-center gap-3 rounded-lg bg-surface-muted p-4 text-sm">
+                    <x-heroicon-o-hand-raised class="h-5 w-5 shrink-0 text-dpsg-rot" aria-hidden="true" />
+                    @php($fakContacts = $contacts->filter(fn ($p) => $p->publicEmail()))
+                    <span>Lust, im FAK {{ $config['label'] }} mitzuarbeiten? Melde dich gern
+                        @if ($fakContacts->isNotEmpty())
+                            bei
+                            @foreach ($fakContacts as $person)
+                                <a href="mailto:{{ $person->publicEmail() }}" class="text-dpsg-rot underline">{{ $person->name }}</a>{{ $loop->last ? '' : ',' }}
+                            @endforeach
+                            oder
+                        @endif
+                        {{ \App\Support\Site::officePrefix('in') }} <a href="{{ \App\Support\Site::officeUrl() }}" class="text-dpsg-rot underline">{{ \App\Support\Site::officeLabel() }}</a>.</span>
+                </p>
+            </section>
+        @endif
+
         @if ($contactUrl = \App\Models\ContactTopic::urlFor('section', $section))
             <p class="mt-6 flex items-center gap-2 text-sm">
                 <x-heroicon-o-envelope class="h-5 w-5 shrink-0 text-dpsg-rot" aria-hidden="true" />

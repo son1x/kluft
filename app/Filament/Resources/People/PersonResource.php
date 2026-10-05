@@ -90,7 +90,7 @@ class PersonResource extends Resource
                 ->components([
                     TextInput::make('name')->label('Name')->required()->maxLength(150)
                         ->live(onBlur: true)
-                        ->afterStateUpdated(fn ($state, $set, Get $get) => blank($get('email')) && $get('gremium') !== 'dak'
+                        ->afterStateUpdated(fn ($state, $set, Get $get) => blank($get('email')) && ! in_array($get('gremium'), ['dak', 'fak'], true)
                             ? $set('email', Person::suggestedEmail($state)) : null),
                     TextInput::make('role')->label('Funktion')->placeholder('z. B. Referentin der Wölflingsstufe')->maxLength(150),
                     Select::make('gremium')->label('Gremium')->options($gremien)->in(array_keys($gremien))->required()->native(false)
@@ -112,13 +112,16 @@ class PersonResource extends Resource
                         ->in(array_keys(config('dpsg.person_badges')))
                         ->placeholder('DPSG-Blau')
                         ->native(false),
-                    Select::make('section')->label('Ansprechperson für Fachbereich')
+                    Select::make('section')->label(fn (Get $get) => $get('gremium') === 'fak' ? 'Fachbereich' : 'Ansprechperson für Fachbereich')
+                        ->required(fn (Get $get) => $get('gremium') === 'fak')
                         ->options(collect(config('dpsg.sections'))->map(fn (array $s) => $s['label'])->all())
                         ->placeholder('–')
                         ->native(false)
-                        ->helperText('Erscheint dann auf der Startseite des Fachbereichs als Ansprechperson.'),
+                        ->helperText(fn (Get $get) => $get('gremium') === 'fak'
+                            ? 'Mitglieder im Facharbeitskreis erscheinen auf der Seite ihres Fachbereichs (ohne eigene Adresse).'
+                            : 'Erscheint dann auf der Startseite des Fachbereichs als Ansprechperson.'),
                     TextInput::make('email')->label('E-Mail')->email()->maxLength(255)
-                        ->visible(fn (Get $get) => $get('gremium') !== 'dak')
+                        ->visible(fn (Get $get) => ! in_array($get('gremium'), ['dak', 'fak'], true))
                         ->placeholder(fn (Get $get) => Person::suggestedEmail($get('name')) ?? 'initial.nachname@'.config('dpsg.person_email_domain'))
                         ->helperText('Standard: Initial.Nachname@'.config('dpsg.person_email_domain').' – leer lassen, dann wird diese Adresse angezeigt. Mitglieder im '.Site::akShort().' haben keine eigene Adresse.'),
                     Textarea::make('bio')->label('Vorstellungstext')->rows(6)->maxLength(3000)->columnSpanFull()

@@ -5,6 +5,7 @@ namespace Instanzen\DvTrier\Seeders;
 use App\Models\Page;
 use App\Models\Post;
 use Illuminate\Database\Seeder;
+use Instanzen\DvTrier\Seeders\Inhalt\FachbereicheSpiritualitaetAusbildungOekologie;
 
 /**
  * Beispielhafter Startcontent, damit das CMS nicht leer wirkt, bevor echte
@@ -212,6 +213,13 @@ class DemoContentSeeder extends Seeder
                 'nav_sort' => 30,
                 'body' => self::INKLUSION_BODY,
             ],
+            ...array_map(fn (array $seite) => [
+                ...$seite,
+                'section' => $seite['slug'],
+                'parent' => 'fachbereiche',
+                'show_in_nav' => true,
+                'body' => FachbereicheSpiritualitaetAusbildungOekologie::body($seite['slug']),
+            ], FachbereicheSpiritualitaetAusbildungOekologie::SEITEN),
             [
                 'slug' => 'dioezesanverband',
                 'title' => 'Diözesanverband',

@@ -157,6 +157,29 @@ return [
             'logo_size' => [600, 591],
             'landing' => 'inklusion',
         ],
+        // Fachbereiche mit Facharbeitskreis (`fak` => true: Ehrenamtliche
+        // im Gremium „fak“ erscheinen auf der Fachbereichsseite).
+        'spiritualitaet' => [
+            'label' => 'Spiritualität',
+            'color' => 'spiritualitaet',
+            'icon' => 'sparkles',
+            'landing' => 'spiritualitaet',
+            'fak' => true,
+        ],
+        'ausbildung' => [
+            'label' => 'Ausbildung',
+            'color' => 'ausbildung',
+            'icon' => 'academic-cap',
+            'landing' => 'ausbildung',
+            'fak' => true,
+        ],
+        'oekologie' => [
+            'label' => 'Ökologie',
+            'color' => 'oekologie',
+            'icon' => 'sun',
+            'landing' => 'oekologie',
+            'fak' => true,
+        ],
     ],
 
     'contact' => [
@@ -206,6 +229,9 @@ return [
         // Je Stufe ein Diözesanarbeitskreis; die Person erscheint auf der
         // Seite ihrer Stufe (Feld „Stufe“), daher keine feste Seite.
         'dak' => ['label' => 'Diözesanarbeitskreis (DAK) einer Stufe', 'page' => null],
+        // Facharbeitskreis eines Fachbereichs; die Person erscheint auf der
+        // Seite ihres Fachbereichs (Feld „Fachbereich“).
+        'fak' => ['label' => 'Facharbeitskreis (FAK) eines Fachbereichs', 'page' => null],
     ],
 
     /*

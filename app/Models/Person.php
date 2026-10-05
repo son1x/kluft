@@ -56,10 +56,10 @@ class Person extends Model
 
     protected static function booted(): void
     {
-        // DAK-Mitglieder haben keine eigene Adresse; Kontakt läuft über die
-        // Stufenreferent*innen.
+        // Mitglieder von DAK und FAK haben keine eigene Adresse; Kontakt läuft
+        // über die Referent*innen bzw. Ansprechpersonen.
         static::saving(function (Person $person) {
-            if ($person->gremium === 'dak') {
+            if ($person->inArbeitskreis()) {
                 $person->email = null;
             }
         });
@@ -90,9 +90,15 @@ class Person extends Model
      * Öffentlich angezeigte Adresse: eingetragene Adresse, sonst nach
      * Schema; für DAK-Mitglieder keine.
      */
+    /** Ehrenamtlich im Arbeitskreis einer Stufe (DAK) oder eines Fachbereichs (FAK). */
+    public function inArbeitskreis(): bool
+    {
+        return in_array($this->gremium, ['dak', 'fak'], true);
+    }
+
     public function publicEmail(): ?string
     {
-        if ($this->gremium === 'dak') {
+        if ($this->inArbeitskreis()) {
             return null;
         }
 
@@ -109,6 +115,9 @@ class Person extends Model
         if ($this->gremium === 'dak' && $this->stage) {
             return Site::akShort().' '.config("dpsg.stages.{$this->stage}.label", $this->stage);
         }
+        if ($this->gremium === 'fak' && $this->section) {
+            return 'FAK '.config("dpsg.sections.{$this->section}.label", $this->section);
+        }
 
         return config("dpsg.gremien.{$this->gremium}.label", $this->gremium);
     }
@@ -117,8 +126,11 @@ class Person extends Model
     {
         $slug = config("dpsg.gremien.{$this->gremium}.page");
 
-        // DAK-Mitglieder stehen auf der Seite ihrer Stufe.
-        if ($slug === null && $this->stage) {
+        // DAK-Mitglieder stehen auf der Seite ihrer Stufe, FAK-Mitglieder auf
+        // der ihres Fachbereichs.
+        if ($slug === null && $this->gremium === 'fak' && $this->section) {
+            $slug = config("dpsg.sections.{$this->section}.landing");
+        } elseif ($slug === null && $this->stage) {
             $slug = Page::query()->published()->where('stage', $this->stage)->value('slug');
         }
 

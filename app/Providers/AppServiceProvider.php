@@ -41,6 +41,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Inhalts-Migrationen der aktiven Instanz (instanzen/<schlüssel>/migrations):
+        // bringen neue Inhalte auf laufende Installationen; andere Instanzen sehen sie nicht.
+        $instanzMigrationen = base_path('instanzen/'.config('dpsg.instanz').'/migrations');
+        if (is_dir($instanzMigrationen)) {
+            $this->loadMigrationsFrom($instanzMigrationen);
+        }
+
         // „Meine Anmeldungen“: eigene Zähler, damit Codeeingaben nicht das
         // Anfordern oder andere Formulare blockieren (throttle:x,y teilt
         // sich sonst einen Zähler pro IP).

@@ -42,6 +42,7 @@ class InhaltSeeder extends Seeder
         Inhalt\DiversCoverWithJugendhaus::class,
         Inhalt\ContentBeratenOnline::class,
         Inhalt\BeratenOnlineServiceUndCartoons::class,
+        Inhalt\FachbereicheSpiritualitaetAusbildungOekologie::class, // instanzen/dv-trier/migrations/2026_10_05_120000
     ];
 
     public function run(): void

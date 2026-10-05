@@ -417,3 +417,7 @@ parameters:
 		-
 			identifier: nullCoalesce.offset
 			path: instanzen/dv-trier/seeders/DemoContentSeeder.php
+
+		-
+			identifier: nullCoalesce.offset
+			path: instanzen/saar-hochwald/seeders/DemoContentSeeder.php

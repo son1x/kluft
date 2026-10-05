@@ -61,7 +61,7 @@
                         <img src="{{ asset($config['logo'].'.png') }}" alt="{{ $config['logo_alt'] ?? '' }}" width="{{ $config['logo_size'][0] ?? 744 }}" height="{{ $config['logo_size'][1] ?? 335 }}" class="mx-auto h-auto w-full max-w-sm" />
                     </picture>
                 @endif
-                <div @class(['prose max-w-none prose-headings:font-serif prose-a:text-dpsg-rot', 'md:col-span-3' => $cardLogo, 'md:col-span-5' => ! $cardLogo])>{!! str($landing->body)->sanitizeHtml()->glossar()->embeds() !!}</div>
+                <div @class(['prose max-w-none prose-headings:font-serif prose-a:text-dpsg-rot', 'md:col-span-3' => $cardLogo, 'md:col-span-5' => ! $cardLogo])>{!! str($landing->body)->sanitizeHtml()->glossar()->embeds()->galerie() !!}</div>
             </section>
         @endif
 
@@ -108,16 +108,7 @@
                 @endif
                 <p class="mt-6 flex flex-wrap items-center gap-3 rounded-lg bg-surface-muted p-4 text-sm">
                     <x-heroicon-o-hand-raised class="h-5 w-5 shrink-0 text-dpsg-rot" aria-hidden="true" />
-                    @php($fakContacts = $contacts->filter(fn ($p) => $p->publicEmail()))
-                    <span>Lust, im FAK {{ $config['label'] }} mitzuarbeiten? Melde dich gern
-                        @if ($fakContacts->isNotEmpty())
-                            bei
-                            @foreach ($fakContacts as $person)
-                                <a href="mailto:{{ $person->publicEmail() }}" class="text-dpsg-rot underline">{{ $person->name }}</a>{{ $loop->last ? '' : ',' }}
-                            @endforeach
-                            oder
-                        @endif
-                        {{ \App\Support\Site::officePrefix('in') }} <a href="{{ \App\Support\Site::officeUrl() }}" class="text-dpsg-rot underline">{{ \App\Support\Site::officeLabel() }}</a>.</span>
+                    <span>Lust, im FAK {{ $config['label'] }} mitzuarbeiten? @include('partials.mitmachen-ansprechpersonen', ['mail' => $contacts->filter(fn ($p) => $p->publicEmail()), 'members' => $fak]).</span>
                 </p>
             </section>
         @endif

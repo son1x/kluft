@@ -93,6 +93,10 @@ return array_replace([
     */
     'event_fields' => [
         'birth_year' => ['label' => 'Geburtsjahr', 'type' => 'year'],
+        // PLZ und Wohnort, z. B. für Teilnehmendenlisten bei Zuschussanträgen
+        // (Landesjugendring); auch 4-stellige PLZ aus Luxemburg und Belgien.
+        'plz' => ['label' => 'Postleitzahl', 'type' => 'plz', 'hint' => 'z. B. für Zuschussanträge (Landesjugendring)'],
+        'wohnort' => ['label' => 'Wohnort', 'type' => 'wohnort', 'hint' => 'z. B. für Zuschussanträge (Landesjugendring)'],
         // Bezeichnung je Instanz (event_stamm_label), z. B. „Stamm oder Bezirk“ im DV.
         'stamm' => ['label' => $instanzConfig['event_stamm_label'] ?? 'Stamm', 'type' => 'stamm'],
         'gremium' => ['label' => 'Funktion / Gremium (z. B. Bezirksvorstand, Delegierte*r, Gast)', 'type' => 'text'],

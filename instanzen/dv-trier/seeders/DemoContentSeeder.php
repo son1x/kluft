@@ -6,6 +6,7 @@ use App\Models\Page;
 use App\Models\Post;
 use Illuminate\Database\Seeder;
 use Instanzen\DvTrier\Seeders\Inhalt\FachbereicheSpiritualitaetAusbildungOekologie;
+use Instanzen\DvTrier\Seeders\Inhalt\FachbereichPolitischeBildung;
 
 /**
  * Beispielhafter Startcontent, damit das CMS nicht leer wirkt, bevor echte
@@ -218,8 +219,10 @@ class DemoContentSeeder extends Seeder
                 'section' => $seite['slug'],
                 'parent' => 'fachbereiche',
                 'show_in_nav' => true,
-                'body' => FachbereicheSpiritualitaetAusbildungOekologie::body($seite['slug']),
-            ], FachbereicheSpiritualitaetAusbildungOekologie::SEITEN),
+                'body' => in_array($seite, FachbereichPolitischeBildung::SEITEN, true)
+                    ? FachbereichPolitischeBildung::body($seite['slug'])
+                    : FachbereicheSpiritualitaetAusbildungOekologie::body($seite['slug']),
+            ], [...FachbereicheSpiritualitaetAusbildungOekologie::SEITEN, ...FachbereichPolitischeBildung::SEITEN]),
             [
                 'slug' => 'dioezesanverband',
                 'title' => 'Diözesanverband',

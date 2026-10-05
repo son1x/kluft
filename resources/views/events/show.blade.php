@@ -139,6 +139,12 @@
                                         <textarea id="{{ $key }}" name="{{ $key }}" rows="3" maxlength="1000" @required($field['required']) class="{{ $input }}" aria-describedby="{{ $key }}-hint">{{ old($key) }}</textarea>
                                         <p id="{{ $key }}-hint" class="mt-1 text-xs text-text-secondary">Bitte keine Gesundheitsangaben hier eintragen – die klären wir bei Bedarf persönlich.</p>
                                         @break
+                                    @case('plz')
+                                        <input id="{{ $key }}" name="{{ $key }}" type="text" inputmode="numeric" autocomplete="postal-code" maxlength="10" @required($field['required']) value="{{ old($key) }}" class="{{ $input }} sm:max-w-40" />
+                                        @break
+                                    @case('wohnort')
+                                        <input id="{{ $key }}" name="{{ $key }}" type="text" autocomplete="address-level2" maxlength="150" @required($field['required']) value="{{ old($key) }}" class="{{ $input }}" />
+                                        @break
                                     @case('tel')
                                         <input id="{{ $key }}" name="{{ $key }}" type="tel" autocomplete="tel" @required($field['required']) value="{{ old($key) }}" class="{{ $input }}" />
                                         @break

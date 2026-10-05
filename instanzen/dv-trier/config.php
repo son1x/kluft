@@ -186,6 +186,13 @@ return [
             'landing' => 'oekologie',
             'fak' => true,
         ],
+        'politische-bildung' => [
+            'label' => 'Politische Bildung',
+            'color' => 'politische-bildung',
+            'icon' => 'megaphone',
+            'landing' => 'politische-bildung',
+            'fak' => true,
+        ],
     ],
 
     'contact' => [

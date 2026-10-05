@@ -125,16 +125,7 @@
         <div class="mx-auto max-w-6xl px-4">
             <p class="mt-2 flex flex-wrap items-center gap-3 rounded-lg bg-surface-muted p-4 text-sm">
                 <x-heroicon-o-hand-raised class="h-5 w-5 shrink-0 text-(--stufe)" aria-hidden="true" />
-                @php($referents = $dak->filter(fn ($p) => $p->publicEmail()))
-                <span>Lust, im {{ \App\Support\Site::akShort() }} {{ $stage['label'] }} mitzuarbeiten? Melde dich gern
-                    @if ($referents->isNotEmpty())
-                        bei
-                        @foreach ($referents as $referent)
-                            <a href="mailto:{{ $referent->publicEmail() }}" class="text-dpsg-rot underline">{{ $referent->name }}</a>{{ $loop->last ? '' : ',' }}
-                        @endforeach
-                        oder
-                    @endif
-                    {{ \App\Support\Site::officePrefix('in') }} <a href="{{ \App\Support\Site::officeUrl() }}" class="text-dpsg-rot underline">{{ \App\Support\Site::officeLabel() }}</a>@if ($contactUrl = \App\Models\ContactTopic::urlFor('stage', $page->stage)) – oder schreib uns direkt über das <a href="{{ $contactUrl }}" class="font-bold text-dpsg-rot underline">Kontaktformular</a>@endif.</span>
+                <span>Lust, im {{ \App\Support\Site::akShort() }} {{ $stage['label'] }} mitzuarbeiten? @include('partials.mitmachen-ansprechpersonen', ['mail' => $dak->filter(fn ($p) => $p->publicEmail()), 'members' => $dak->filter(fn ($p) => $p->gremium === 'dak')])@if ($contactUrl = \App\Models\ContactTopic::urlFor('stage', $page->stage)) – oder schreib uns direkt über das <a href="{{ $contactUrl }}" class="font-bold text-dpsg-rot underline">Kontaktformular</a>@endif.</span>
             </p>
         </div>
     </section>

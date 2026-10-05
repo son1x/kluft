@@ -9,6 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Instanzen\DvTrier\Seeders\DemoContentSeeder;
 use Instanzen\DvTrier\Seeders\Inhalt\FachbereicheSpiritualitaetAusbildungOekologie;
+use Instanzen\DvTrier\Seeders\Inhalt\FachbereichPolitischeBildung;
 use Instanzen\DvTrier\Seeders\RequiredPagesSeeder;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\TestDox;
@@ -23,7 +24,7 @@ class FachbereicheDvTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const NEU = ['spiritualitaet' => 'Spiritualität', 'ausbildung' => 'Ausbildung', 'oekologie' => 'Ökologie'];
+    private const NEU = ['spiritualitaet' => 'Spiritualität', 'ausbildung' => 'Ausbildung', 'oekologie' => 'Ökologie', 'politische-bildung' => 'Politische Bildung'];
 
     #[TestDox('Neue Installation: Seiten unter „Fachbereiche“, Übersicht und Menü')]
     public function test_fresh_install(): void
@@ -36,7 +37,7 @@ class FachbereicheDvTest extends TestCase
             $this->assertSame([$fach->id, $slug, true], [$page->parent_id, $page->section, $page->show_in_nav]);
             $this->get('/'.$slug)->assertOk()->assertSee($label)->assertSee('Der Facharbeitskreis')->assertSee('fach-'.config("dpsg.sections.{$slug}.color"), false);
         }
-        $this->get('/fachbereiche')->assertOk()->assertSeeInOrder(['Inklusion', 'Spiritualität', 'Ausbildung', 'Ökologie']);
+        $this->get('/fachbereiche')->assertOk()->assertSeeInOrder(['Inklusion', 'Spiritualität', 'Ausbildung', 'Ökologie', 'Politische Bildung']);
         $this->get('/inklusion')->assertOk()->assertDontSee('Der Facharbeitskreis');
     }
 
@@ -58,6 +59,12 @@ class FachbereicheDvTest extends TestCase
         $this->assertSame('<p>Eigener Text</p>', Page::query()->where('slug', 'oekologie')->value('body'));
         $this->assertSame(['allgemein', 'spiritualitaet', 'ausbildung', 'oekologie'], ContactTopic::query()->orderBy('sort')->pluck('slug')->all());
         $this->assertSame('ausbildung', ContactTopic::query()->where('slug', 'ausbildung')->value('section'));
+
+        // Politische Bildung kam später mit eigener Inhalts-Migration dazu.
+        $this->assertTrue(DB::table('migrations')->where('migration', '2026_10_06_090100_fachbereich_politische_bildung')->exists());
+        (new FachbereichPolitischeBildung)->run();
+        $this->assertSame($fach->id, Page::query()->where('slug', 'politische-bildung')->value('parent_id'));
+        $this->assertSame('politische-bildung', ContactTopic::query()->orderByDesc('sort')->value('slug'));
     }
 
     #[TestDox('FAK-Mitglieder erscheinen auf ihrer Fachbereichsseite, ohne Adresse und nicht als Ansprechperson')]
@@ -73,7 +80,7 @@ class FachbereicheDvTest extends TestCase
         $this->assertStringEndsWith('/spiritualitaet#person-fabian-fak', $fak->pageUrl());
 
         $this->get('/spiritualitaet')->assertOk()
-            ->assertSeeInOrder(['Ansprechperson', 'Rita Referentin', 'Der Facharbeitskreis', 'Fabian Fak', 'Lust, im FAK Spiritualität mitzuarbeiten?', $referentin->publicEmail()])
+            ->assertSeeInOrder(['Ansprechperson', 'Rita Referentin', 'Der Facharbeitskreis', 'Fabian Fak', 'Lust, im FAK Spiritualität mitzuarbeiten?', $referentin->publicEmail(), 'href="#person-fabian-fak"'], false)
             ->assertDontSee('f.fak@example.org');
         $this->get('/ausbildung')->assertOk()->assertDontSee('Fabian Fak');
     }

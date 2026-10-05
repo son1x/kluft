@@ -55,11 +55,11 @@ class FachbereicheSpiritualitaetAusbildungOekologie extends Seeder
             return;
         }
 
-        foreach (self::SEITEN as $seite) {
+        foreach (static::SEITEN as $seite) {
             if (! DB::table('pages')->where('slug', $seite['slug'])->exists()) {
                 DB::table('pages')->insert([
                     ...$seite,
-                    'body' => self::body($seite['slug']),
+                    'body' => static::body($seite['slug']),
                     'section' => $seite['slug'],
                     'parent_id' => $fachbereiche,
                     'show_in_nav' => true,
@@ -74,7 +74,7 @@ class FachbereicheSpiritualitaetAusbildungOekologie extends Seeder
         // Kontaktthemen nur ergänzen, wenn das Formular schon Themen hat.
         if (DB::table('contact_topics')->exists()) {
             $sort = (int) DB::table('contact_topics')->max('sort');
-            foreach (self::SEITEN as $seite) {
+            foreach (static::SEITEN as $seite) {
                 if (! DB::table('contact_topics')->where('slug', $seite['slug'])->exists()) {
                     DB::table('contact_topics')->insert([
                         'label' => 'Fachbereich: '.$seite['title'], 'slug' => $seite['slug'], 'section' => $seite['slug'],

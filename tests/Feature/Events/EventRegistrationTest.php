@@ -102,6 +102,25 @@ class EventRegistrationTest extends TestCase
         $this->assertSame(['gremium' => 'Delegierte Bezirk Saar-Hochwald', 'uebernachtung' => 'komplett'], EventRegistration::query()->sole()->data);
     }
 
+    #[TestDox('PLZ und Wohnort für Zuschussanträge (Landesjugendring), auch mit Luxemburger PLZ, im Export')]
+    public function test_plz_and_wohnort_fields(): void
+    {
+        $event = $this->event(['form_fields' => ['plz' => 'required', 'wohnort' => 'required']]);
+
+        $this->get('/veranstaltungen/woelflingstag')->assertOk()
+            ->assertSeeInOrder(['Postleitzahl *', 'autocomplete="postal-code"', 'Wohnort *', 'autocomplete="address-level2"'], false);
+
+        $this->register($event, ['plz' => '5429', 'wohnort' => ''])->assertSessionDoesntHaveErrors(['plz'])->assertSessionHasErrors(['wohnort']);
+        $this->register($event, ['plz' => 'Trier', 'wohnort' => 'Trier'])->assertSessionHasErrors(['plz' => 'Bitte gib eine gültige Postleitzahl an (4 oder 5 Ziffern).']);
+        $this->register($event, ['plz' => 'L-6630', 'wohnort' => 'Wasserbillig'])->assertSessionHasNoErrors();
+        $this->register($event, ['email' => 'zweite@example.org', 'plz' => '54290', 'wohnort' => 'Trier'])->assertSessionHasNoErrors();
+
+        $this->assertSame(['plz' => '54290', 'wohnort' => 'Trier'], EventRegistration::query()->where('email', 'zweite@example.org')->sole()->data);
+        $export = app(ParticipantExport::class);
+        $this->assertContains('Postleitzahl', $export->headings($event));
+        $this->assertContains('Wohnort', $export->headings($event));
+    }
+
     #[TestDox('Anwesenheit nach Tagen: ganze Zeit oder einzelne Tage, Zählung je Tag und Spalten im Export')]
     public function test_attendance_days(): void
     {

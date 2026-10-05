@@ -10,6 +10,7 @@ use App\Services\Mitglieder\KeinVerzeichnis;
 use App\Services\Mitglieder\Mitgliederverzeichnis;
 use App\Services\Mitglieder\NamiVerzeichnis;
 use App\Support\Embeds;
+use App\Support\Galerie;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Mail\Events\MessageSending;
@@ -71,6 +72,12 @@ class AppServiceProvider extends ServiceProvider
         Stringable::macro('embeds', function () {
             /** @var Stringable $this */
             return new Stringable(Embeds::render((string) $this));
+        });
+
+        // Bilderreihen als Galerie: str($html)->sanitizeHtml()->galerie()
+        Stringable::macro('galerie', function () {
+            /** @var Stringable $this */
+            return new Stringable(Galerie::render((string) $this));
         });
 
         // Begriffs-Hover im redaktionellen HTML: str($html)->sanitizeHtml()->glossar()

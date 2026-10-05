@@ -85,6 +85,7 @@ class EventController extends Controller
                 'year' => ['integer', 'between:'.(now()->year - 100).','.now()->year],
                 'select' => [Rule::in(array_keys($field['options'] ?? []))],
                 'tel' => ['string', 'max:40', 'regex:/^[0-9 +()\/-]+$/'],
+                'plz' => ['string', 'max:10', 'regex:/^([A-Za-z]{1,2}[- ]?)?[0-9]{4,5}$/'],
                 'textarea' => ['string', 'max:1000'],
                 default => ['string', 'max:150'],
             }];
@@ -98,6 +99,7 @@ class EventController extends Controller
             'email' => 'Bitte gib eine gültige E-Mail-Adresse an.',
             'between' => 'Bitte gib ein gültiges Geburtsjahr an.',
             'regex' => 'Bitte nur Ziffern, Leerzeichen und + ( ) / - verwenden.',
+            'plz.regex' => 'Bitte gib eine gültige Postleitzahl an (4 oder 5 Ziffern).',
             'required_if' => 'Bitte wähle mindestens einen Tag aus.',
             'in' => 'Bitte wähle eine der angebotenen Möglichkeiten.',
         ]);

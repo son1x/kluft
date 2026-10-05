@@ -86,7 +86,9 @@ class NavigationAndFachbereicheTest extends TestCase
             ->assertSee('mailto:s.weiss@dpsg-trier.de', false)
             ->assertDontSee('dak-jupfi@example.org')
             ->assertDontSee('Ohne Freigabe')
-            ->assertDontSee('Andere Stufe');
+            ->assertDontSee('Andere Stufe')
+            // „Melde dich gern bei …“: Referent per Mail, AK-Mitglied mit Link auf seine Karte.
+            ->assertSeeInOrder(['mitzuarbeiten?', 'mailto:s.weiss@dpsg-trier.de', 'Silas Weiß', 'href="#person-mara-muster"', 'Mara Muster', 'Diözesanbüro'], false);
 
         $this->assertNull($member->fresh()->email);
         $this->assertSame('DAK Jungpfadfinder*innen', $member->gremiumLabel());

@@ -53,6 +53,7 @@
     /* vorläufig aus der DPSG-Palette abgeleitet, mit dem Fachbereich abstimmen */
     --color-fach-spiritualitaet: #00739f;
     --color-fach-ausbildung: #003056;
+    --color-fach-politische-bildung: #7b2d84;
 
     /* Neutralfarben der Website (eigene Festlegung, s. 7.2) */
     --color-text: #1c1f26;
@@ -144,6 +145,7 @@ html {
 .fach-inklusion { --fach: var(--color-fach-inklusion); --fach-ink: var(--color-text); }
 .fach-spiritualitaet { --fach: var(--color-fach-spiritualitaet); --fach-ink: #fff; }
 .fach-ausbildung { --fach: var(--color-fach-ausbildung); --fach-ink: #fff; }
+.fach-politische-bildung { --fach: var(--color-fach-politische-bildung); --fach-ink: #fff; }
 
 /*
  * Begriffs-Hover (Glossar): gepunktete Unterstreichung, Erklärung als
@@ -185,3 +187,9 @@ abbr.glossar:focus::after,
 abbr.glossar:focus-visible::after {
     opacity: 1;
 }
+
+/* Bilderreihen im redaktionellen Text (App\Support\Galerie) */
+.galerie { display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); gap: 1rem; margin: 1.5rem 0; padding: 0; list-style: none; }
+.galerie a { display: block; border-radius: 0.5rem; overflow: hidden; background: #fff; box-shadow: 0 1px 3px rgb(0 0 0 / 0.15); transition: box-shadow 0.15s; }
+.galerie a:hover, .galerie a:focus-visible { box-shadow: 0 4px 12px rgb(0 0 0 / 0.2); }
+.galerie img { display: block; width: 100%; height: 14rem; object-fit: contain; margin: 0; }

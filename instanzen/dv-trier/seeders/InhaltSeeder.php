@@ -43,6 +43,7 @@ class InhaltSeeder extends Seeder
         Inhalt\ContentBeratenOnline::class,
         Inhalt\BeratenOnlineServiceUndCartoons::class,
         Inhalt\FachbereicheSpiritualitaetAusbildungOekologie::class, // instanzen/dv-trier/migrations/2026_10_05_120000
+        Inhalt\FachbereichPolitischeBildung::class, // instanzen/dv-trier/migrations/2026_10_06_090100
     ];
 
     public function run(): void

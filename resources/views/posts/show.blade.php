@@ -20,7 +20,7 @@
             @include('partials.event-cta', ['event' => $post->event])
         @endif
         <div class="prose max-w-none">
-            {!! str($post->body)->sanitizeHtml()->glossar()->embeds() !!}
+            {!! str($post->body)->sanitizeHtml()->glossar()->embeds()->galerie() !!}
         </div>
         @if ($post->event && $post->event->status !== 'draft')
             @include('partials.event-cta', ['event' => $post->event, 'compact' => true])

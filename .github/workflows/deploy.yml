@@ -1,58 +1,55 @@
-name: Deploy auf Netcup-Webspace
+name: Deploy
 
-# Baut und testet das Laravel-Custom-CMS (Pflichtenheft docs/pflichtenheft.md),
-# lädt den Quellcode + gebaute Frontend-Assets per SFTP hoch und lässt
-# anschließend per SSH die Cache-Kommandos laufen. Kann zusätzlich manuell
-# über den "Actions"-Tab in GitHub gestartet werden (Run workflow).
+# Kluft: ein Deploy für alle Instanzen. Beim Start (Actions → „Deploy“ →
+# „Run workflow“) die Instanz wählen; der Job läuft dann im gleichnamigen
+# GitHub-Environment (Settings → Environments) und nimmt dessen Secrets und
+# Variablen. Baut und testet das CMS, lädt Quellcode + gebaute Assets per
+# SFTP hoch und führt per SSH Migrationen und Aufräumarbeiten aus. Läuft auf
+# Webspace (Netcup/Plesk) wie auf einem vServer; es braucht nur SFTP/SSH,
+# PHP-CLI und einen Cronjob, kein composer/npm auf dem Server.
 #
-# Warum vendor/ als EIN Archiv statt einzeln hochgeladen wird: vendor/ hat
-# >36.000 Einzeldateien – per SFTP einzeln hochgeladen dauert das
-# 30-40+ Minuten. Composer selbst ist auf diesem Hosting per SSH NICHT
-# aufrufbar (nur als GUI-Feature im Webhosting-Control-Panel, "PHP
-# Composer") – daher wird vendor/ in der CI gebaut, zu einem einzelnen
-# .tar.gz gepackt (ein einziger, schneller Upload) und auf dem Server per
-# SSH mit `tar` entpackt (Standard-Unix-Tool, kein composer nötig).
+# „Nur prüfen“: baut und testet, meldet sich per SSH an und prüft PHP,
+# Zielordner und Speicher – lädt nichts hoch und ändert nichts.
 #
-# Wichtig: lftp "mirror --reverse --delete" spiegelt den Webspace also exakt
-# auf den Stand dieses Branches (außer den unten explizit ausgeschlossenen
-# Pfaden). Das ersetzt den früheren statischen Entwurf vollständig (der
-# bleibt als Referenz in legacy-static-site/ sowie im Branch
-# v1-erstentwurf erhalten).
+# Warum vendor/ als EIN Archiv: >36.000 Einzeldateien per SFTP dauern
+# 30–40+ Minuten; auf Webspaces ist composer per SSH oft nicht aufrufbar.
+# vendor/ wird in der CI gebaut, gepackt und auf dem Server entpackt.
 #
-# Datenbank: MariaDB, sobald die Secrets DB_HOST und DB_DATABASE gesetzt
-# sind (dazu DB_PORT, DB_USERNAME, DB_PASSWORD), sonst SQLite in
-# database/database.sqlite. Beim ersten Deploy mit MariaDB werden die
-# Inhalte einmalig aus der SQLite-Datei übernommen (db:copy-from-sqlite);
-# die Datei bleibt als Sicherung liegen. Ist MariaDB nicht erreichbar,
-# läuft die Seite mit SQLite weiter und der Lauf wird rot.
+# lftp „mirror --reverse --delete“ spiegelt den Zielordner auf den Stand
+# dieses Branches (außer den unten ausgeschlossenen Pfaden).
 #
-# Voraussetzung: In den Repository-Einstellungen unter
-# "Settings" → "Secrets and variables" → "Actions" müssen folgende Secrets
-# angelegt sein:
-#   FTP_SERVER      – SFTP-Host für den Datei-Upload, z. B. eine IP-Adresse
-#   FTP_USERNAME    – SFTP-Benutzername
-#   FTP_PASSWORD    – SFTP-Passwort
-#   FTP_SERVER_DIR  – Zielverzeichnis auf dem Webspace, z. B. "/" oder "/httpdocs/"
-#   SSH_HOST        – SSH-Host (oft identisch mit FTP_SERVER)
-#   SSH_PORT        – SSH-Port (häufig 22, beim Hoster prüfen)
-#   SSH_USERNAME    – SSH-Benutzername
-#   SSH_PRIVATE_KEY – privater SSH-Key (öffentlichen Key vorher im
-#                     Hosting-Panel hinterlegen)
-#   SSH_TARGET_DIR  – (optional) absoluter Server-Pfad für den SSH-Schritt,
-#                     falls er vom FTP-Chroot-Pfad (FTP_SERVER_DIR)
-#                     abweicht; sonst wird FTP_SERVER_DIR verwendet
-#   DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME, DB_PASSWORD
-#                   – MariaDB aus dem Hosting-Panel (utf8mb4)
+# Datenbank: MariaDB, sobald DB_HOST und DB_DATABASE gesetzt sind (dazu
+# DB_PORT, DB_USERNAME, DB_PASSWORD), sonst SQLite. Beim ersten Deploy mit
+# MariaDB werden vorhandene SQLite-Inhalte einmalig übernommen.
 #
-# Hinweis: Trotz der Secret-Namen "FTP_*" wird hier SFTP (Port 22) verwendet
-# – FTP und SFTP nutzen bei den meisten Hostern dieselben Zugangsdaten.
+# Je Environment (dv-trier, saar-hochwald, …):
+#   Variablen: APP_URL (Pflicht), MAIL_FROM_ADDRESS (Pflicht),
+#              MAIL_FROM_NAME, APP_NAME (Standard: Name der Instanz),
+#              APP_ENV (Standard local), PHP_BIN (Standard /usr/bin/php),
+#              MONITOR_URL (für Monitoring und Web-Checks)
+#   Secrets:   SSH_HOST, SSH_PORT, SSH_USERNAME, SSH_PRIVATE_KEY,
+#              SSH_TARGET_DIR (absoluter Pfad des Projekts),
+#              FTP_SERVER, FTP_USERNAME, FTP_PASSWORD, FTP_SERVER_DIR
+#              (ohne FTP_PASSWORD: SFTP mit dem SSH-Schlüssel, Werte aus
+#              SSH_*), DB_*, ENTRA_*, BREVO_*, MAIL_TEST_*, BACKUP_*,
+#              NTFY_*, WHATSAPP_*, NEXTCLOUD_ALLOWED_HOSTS,
+#              MITGLIEDER_DRIVER, NAMI_*, HITOBITO_*
+#   Liste mit Erklärung: docs/deploy.md
 
 on:
-  push:
-    branches:
-      - claude/dpsg-trier-homepage-design-jwdgs4
   workflow_dispatch:
     inputs:
+      instanz:
+        description: 'Instanz (GitHub-Environment)'
+        type: choice
+        options:
+          - dv-trier
+          - saar-hochwald
+        required: true
+      nur_pruefen:
+        description: 'Nur prüfen: bauen, testen, Server-Zugang prüfen – nichts hochladen'
+        type: boolean
+        default: false
       force_seed:
         description: 'db:seed auch bei bereits bestehender DB erzwingen (z. B. nach einem neuen Seeder wie RequiredPagesSeeder)'
         type: boolean
@@ -64,12 +61,17 @@ on:
 # Lauf bricht einen noch laufenden älteren Lauf desselben Branches ab,
 # statt parallel dagegen zu laufen.
 concurrency:
-  group: deploy-netcup-${{ github.ref }}
+  group: deploy-${{ inputs.instanz }}
   cancel-in-progress: true
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: ${{ inputs.instanz }}
+    env:
+      KLUFT_INSTANZ: ${{ inputs.instanz }}
+      PHP_BIN: ${{ vars.PHP_BIN || '/usr/bin/php' }}
+      NUR_PRUEFEN: ${{ inputs.nur_pruefen && 'true' || 'false' }}
     # Produktiv läuft MariaDB – die Tests laufen daher zusätzlich dagegen
     # (SQLite prüft z. B. keine Spaltenlängen).
     services:
@@ -115,6 +117,13 @@ jobs:
           npm ci
           npm run build
 
+      # Logo, Favicon und Bilder der Instanz nach public/instanz.
+      - name: Bilder der Instanz bereitstellen
+        run: |
+          cp -n .env.example .env
+          php artisan key:generate --no-interaction --force
+          php artisan kluft:assets
+
       - name: Tests ausführen
         run: |
           cp .env.example .env
@@ -141,8 +150,19 @@ jobs:
           composer install --no-dev --optimize-autoloader --no-interaction --no-progress
           tar czf vendor-bundle.tar.gz vendor
 
-      - name: .env für die Testumgebung generieren
+      - name: .env der Instanz erzeugen
         env:
+          APP_URL: ${{ vars.APP_URL }}
+          APP_ENV_VALUE: ${{ vars.APP_ENV || 'local' }}
+          APP_NAME_VAR: ${{ vars.APP_NAME }}
+          MAIL_FROM_ADDRESS: ${{ vars.MAIL_FROM_ADDRESS }}
+          MAIL_FROM_NAME_VAR: ${{ vars.MAIL_FROM_NAME }}
+          MITGLIEDER_DRIVER: ${{ secrets.MITGLIEDER_DRIVER }}
+          NAMI_USER: ${{ secrets.NAMI_USER }}
+          NAMI_PASSWORD: ${{ secrets.NAMI_PASSWORD }}
+          HITOBITO_URL: ${{ secrets.HITOBITO_URL }}
+          HITOBITO_TOKEN: ${{ secrets.HITOBITO_TOKEN }}
+          HITOBITO_MEMBER_NUMBER_ATTRIBUTE: ${{ secrets.HITOBITO_MEMBER_NUMBER_ATTRIBUTE }}
           DB_HOST: ${{ secrets.DB_HOST }}
           DB_PORT: ${{ secrets.DB_PORT }}
           DB_DATABASE: ${{ secrets.DB_DATABASE }}
@@ -180,6 +200,19 @@ jobs:
             var="${var%"${var##*[![:space:]]}"}"
             printf '%s' "$var"
           }
+          APP_URL="$(trim "$APP_URL")"; APP_URL="${APP_URL%/}"
+          MAIL_FROM_ADDRESS="$(trim "$MAIL_FROM_ADDRESS")"
+          if [ -z "$APP_URL" ] || [ -z "$MAIL_FROM_ADDRESS" ]; then
+            echo "::error::Im Environment ${KLUFT_INSTANZ} fehlen die Variablen APP_URL und/oder MAIL_FROM_ADDRESS (Settings → Environments)."
+            exit 1
+          fi
+          # Name und Newsletter-Adresse aus der Instanz-Konfiguration.
+          CFG='if (! function_exists("env")) { function env($k, $d = null) { $v = getenv($k); return $v === false ? $d : $v; } } $c = require "config/dpsg.php";'
+          SITE_NAME="$(php -r "$CFG"' echo $c["site"]["name"];')"
+          NEWSLETTER_SLUG="$(php -r "$CFG"' echo $c["newsletter"]["slug"] ?? "";')"
+          APP_NAME="${APP_NAME_VAR:-$SITE_NAME}"
+          MAIL_FROM_NAME="${MAIL_FROM_NAME_VAR:-$SITE_NAME}"
+          if [ -n "$NEWSLETTER_SLUG" ]; then DOI_URL="${APP_URL}/${NEWSLETTER_SLUG}/danke"; else DOI_URL=""; fi
           # MariaDB, sobald die Zugangsdaten als Secrets vorliegen. Werte in
           # einfachen Anführungszeichen: dort ersetzt dotenv nichts (z. B. $).
           if [ -n "$(trim "$DB_HOST")" ] && [ -n "$(trim "$DB_DATABASE")" ]; then
@@ -196,7 +229,7 @@ jobs:
             DB_BLOCK="DB_CONNECTION=sqlite"
           fi
           # Echte Mails nur mit Brevo-SMTP-Zugang UND Test-Umleitung
-          # (F-MAIL-06): auf test.dpsg-trier.de bekommt niemand außer der
+          # (F-MAIL-06): in der Testphase bekommt niemand außer der
           # Testadresse Post. Sonst landen Mails nur im Log.
           if [ -n "$BREVO_SMTP_LOGIN" ] && [ -n "$BREVO_SMTP_KEY" ] && [ -n "$MAIL_TEST_REDIRECT_TO" ]; then
             MAIL_MAILER=smtp
@@ -212,11 +245,12 @@ jobs:
           # Sonst liefe die Seite minutenlang mit einem fremden Schlüssel –
           # alle Sitzungen ungültig, neu Verschlüsseltes später unlesbar.
           cat > .env.deploy <<ENV
-          APP_NAME="DPSG Diözesanverband Trier"
-          APP_ENV=local
+          KLUFT_INSTANZ=${KLUFT_INSTANZ}
+          APP_NAME="${APP_NAME}"
+          APP_ENV=${APP_ENV_VALUE}
           APP_KEY=${APP_KEY}
           APP_DEBUG=false
-          APP_URL=https://test.dpsg-trier.de
+          APP_URL=${APP_URL}
           APP_LOCALE=de
           APP_FALLBACK_LOCALE=de
           LOG_CHANNEL=stack
@@ -230,11 +264,11 @@ jobs:
           ENTRA_CLIENT_ID=${ENTRA_CLIENT_ID}
           ENTRA_CLIENT_SECRET=${ENTRA_CLIENT_SECRET}
           ENTRA_TENANT_ID=${ENTRA_TENANT_ID}
-          ENTRA_REDIRECT_URI=https://test.dpsg-trier.de/auth/entra/callback
+          ENTRA_REDIRECT_URI=${APP_URL}/auth/entra/callback
           BREVO_API_KEY=${BREVO_API_KEY}
           BREVO_NEWSLETTER_LIST_ID=${BREVO_NEWSLETTER_LIST_ID}
           BREVO_DOI_TEMPLATE_ID=${BREVO_DOI_TEMPLATE_ID}
-          BREVO_DOI_REDIRECT_URL=https://test.dpsg-trier.de/georgsbrief/danke
+          BREVO_DOI_REDIRECT_URL=${DOI_URL}
           NEXTCLOUD_ALLOWED_HOSTS=${NEXTCLOUD_ALLOWED_HOSTS}
           MAIL_MAILER=${MAIL_MAILER}
           MAIL_SCHEME=smtp
@@ -242,8 +276,8 @@ jobs:
           MAIL_PORT=587
           MAIL_USERNAME="${BREVO_SMTP_LOGIN}"
           MAIL_PASSWORD="${BREVO_SMTP_KEY}"
-          MAIL_FROM_ADDRESS=events@dpsg-trier.de
-          MAIL_FROM_NAME="DPSG Diözesanverband Trier"
+          MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS}
+          MAIL_FROM_NAME="${MAIL_FROM_NAME}"
           MAIL_TEST_REDIRECT_TO=${MAIL_TEST_REDIRECT_TO}
           MAIL_TEST_ALLOWLIST="$(printf '%s' "$MAIL_TEST_ALLOWLIST" | tr '\r\n' ',,' | tr -d '" ')"
           BACKUP_PASSWORD="${BACKUP_PASSWORD}"
@@ -255,6 +289,12 @@ jobs:
           WHATSAPP_TEST_ALLOWLIST="$(printf '%s' "$WHATSAPP_TEST_ALLOWLIST" | tr '\r\n' ',,' | tr -d '"')"
           WHATSAPP_MODE=$(trim "${WHATSAPP_MODE:-off}")
           WHATSAPP_CHANNEL_URL=$(trim "$WHATSAPP_CHANNEL_URL")
+          MITGLIEDER_DRIVER=$(trim "${MITGLIEDER_DRIVER:-off}")
+          NAMI_USER="${NAMI_USER}"
+          NAMI_PASSWORD="${NAMI_PASSWORD}"
+          HITOBITO_URL=$(trim "$HITOBITO_URL")
+          HITOBITO_TOKEN="${HITOBITO_TOKEN}"
+          HITOBITO_MEMBER_NUMBER_ATTRIBUTE=$(trim "$HITOBITO_MEMBER_NUMBER_ATTRIBUTE")
           ENV
 
       # Selbstgehostete Kartendaten (F-MAP-04, ~140 MB) – zu groß fürs
@@ -265,8 +305,8 @@ jobs:
       - name: Kartendaten-Schlüssel bestimmen
         id: mapkey
         run: |
-          MAP_PHP='if (! function_exists("env")) { function env($k, $d = null) { return $d; } } $m = (require "config/dpsg.php")["map"];'
-          echo "key=map-data-$(php -r "$MAP_PHP"' echo $m["build"], "-", substr(md5(json_encode($m)), 0, 12);')" >> "$GITHUB_OUTPUT"
+          MAP_PHP='if (! function_exists("env")) { function env($k, $d = null) { $v = getenv($k); return $v === false ? $d : $v; } } $m = (require "config/dpsg.php")["map"];'
+          echo "key=map-data-${KLUFT_INSTANZ}-$(php -r "$MAP_PHP"' echo $m["build"], "-", substr(md5(json_encode($m)), 0, 12);')" >> "$GITHUB_OUTPUT"
           echo "file=public/$(php -r "$MAP_PHP"' echo $m["pmtiles"];')" >> "$GITHUB_OUTPUT"
 
       - name: Kartendaten aus dem Cache holen
@@ -277,11 +317,13 @@ jobs:
           key: ${{ steps.mapkey.outputs.key }}
           # Fallback auf den letzten Stand: liegt die passende Datei schon
           # darin, entfällt der Neuaufbau.
-          restore-keys: map-data-
+          restore-keys: map-data-${{ inputs.instanz }}-
 
       - name: Kartendatei vorhanden?
         id: mapfile
         run: |
+          # Nur die Karte dieser Instanz hochladen (ältere Builds aussortieren).
+          find public/maps/data -type f ! -path "${{ steps.mapkey.outputs.file }}" -delete 2>/dev/null || true
           if [ -f "${{ steps.mapkey.outputs.file }}" ]; then echo "exists=true" >> "$GITHUB_OUTPUT"; else echo "exists=false" >> "$GITHUB_OUTPUT"; fi
 
       - name: Go einrichten (für go-pmtiles)
@@ -308,10 +350,10 @@ jobs:
       # (nicht ins Log) – für alle folgenden Schritte des Jobs.
       - name: Secrets bereinigen (führende/folgende Leerzeichen, CRLF)
         env:
-          FTP_SERVER: ${{ secrets.FTP_SERVER }}
-          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_SERVER: ${{ secrets.FTP_SERVER || secrets.SSH_HOST }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME || secrets.SSH_USERNAME }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-          FTP_SERVER_DIR: ${{ secrets.FTP_SERVER_DIR }}
+          FTP_SERVER_DIR: ${{ secrets.FTP_SERVER_DIR || secrets.SSH_TARGET_DIR }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
           SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
@@ -334,12 +376,38 @@ jobs:
             echo "SSH_TARGET_DIR=$(trim "$SSH_TARGET_DIR")"
           } >> "$GITHUB_ENV"
 
+      # „Nur prüfen“ (und vor jedem echten Deploy): Zugang, PHP und Ziel.
+      - name: Server prüfen (per SSH, ändert nichts)
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ env.SSH_HOST }}
+          port: ${{ env.SSH_PORT }}
+          username: ${{ env.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+            echo "Instanz: ${{ env.KLUFT_INSTANZ }}"
+            "${{ env.PHP_BIN }}" -r 'echo "PHP ", PHP_VERSION, PHP_EOL; foreach (["intl","mbstring","gd","zip","xml","curl","pdo_mysql","pdo_sqlite","openssl","sodium"] as $e) { echo str_pad($e, 11), extension_loaded($e) ? "ja" : "FEHLT", PHP_EOL; }'
+            "${{ env.PHP_BIN }}" -r 'exit(version_compare(PHP_VERSION, "8.3.0", ">=") ? 0 : 1);' || { echo "::error::PHP 8.3 oder neuer nötig"; exit 1; }
+            test -d "${{ env.SSH_TARGET_DIR }}" || { echo "::error::Zielordner fehlt: ${{ env.SSH_TARGET_DIR }}"; exit 1; }
+            test -w "${{ env.SSH_TARGET_DIR }}" || { echo "::error::Zielordner nicht beschreibbar"; exit 1; }
+            cd "${{ env.SSH_TARGET_DIR }}"
+            echo "Freier Speicher: $(df -h . | awk 'NR==2 {print $4}')"
+            if [ -f artisan ] && [ -f vendor/autoload.php ]; then
+              echo "Installiert: $("${{ env.PHP_BIN }}" artisan --version 2>/dev/null)"
+              grep -m1 '^KLUFT_INSTANZ=' .env 2>/dev/null || echo "KLUFT_INSTANZ in .env: (noch nicht gesetzt – bisheriger Stand vor Kluft)"
+              "${{ env.PHP_BIN }}" artisan migrate:status --pending 2>/dev/null | tail -n 5 || true
+            else
+              echo "Noch keine Installation – der erste Deploy legt alles an."
+            fi
+
       # APP_KEY muss über Deploys hinweg gleich bleiben: Er verschlüsselt
       # Sitzungen und das TOTP-Geheimnis des Notfall-Logins. Vor dem Upload
       # (der die .env ersetzt) wird der bisherige Schlüssel einmalig nach
       # storage/app/private/app.key gesichert (vom Mirror ausgenommen,
       # per .htaccess nicht abrufbar); danach wird nur noch dieser verwendet.
       - name: APP_KEY auf dem Server sichern (per SSH)
+        if: env.NUR_PRUEFEN != 'true'
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ env.SSH_HOST }}
@@ -356,11 +424,25 @@ jobs:
             if [ -f storage/app/private/app.key ]; then chmod 600 storage/app/private/app.key; fi
             # Wartungsmodus für die Dauer des Uploads: Besucher sehen eine
             # 503-Seite statt 500er durch halb hochgeladene Dateien.
-            if [ -f vendor/autoload.php ] && [ -f .env ]; then /usr/bin/php artisan down --retry=60 --render="errors::503" || true; fi
+            if [ -f vendor/autoload.php ] && [ -f .env ]; then "${{ env.PHP_BIN }}" artisan down --retry=60 --render="errors::503" || true; fi
 
       - name: Per lftp über SFTP synchronisieren (inkl. Löschen entfernter Dateien)
+        if: env.NUR_PRUEFEN != 'true'
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
-          lftp -u "$FTP_USERNAME","$FTP_PASSWORD" -p 22 "sftp://$FTP_SERVER" <<EOF
+          # Ohne FTP_PASSWORD (z. B. vServer): SFTP mit dem SSH-Schlüssel.
+          SFTP_PORT=22
+          CONNECT=""
+          if [ -z "$FTP_PASSWORD" ]; then
+            install -m 700 -d ~/.ssh
+            printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+            chmod 600 ~/.ssh/deploy_key
+            SFTP_PORT="$SSH_PORT"
+            CONNECT="set sftp:connect-program \"ssh -a -x -i $HOME/.ssh/deploy_key -o StrictHostKeyChecking=accept-new\""
+          fi
+          lftp -u "$FTP_USERNAME","$FTP_PASSWORD" -p "$SFTP_PORT" "sftp://$FTP_SERVER" <<EOF
+          $CONNECT
           set sftp:auto-confirm yes
           set net:max-retries 2
           set mirror:parallel-transfer-count 3
@@ -414,6 +496,7 @@ jobs:
       # Pfade in storage/logs bzw. den Apache-Fehlerprotokollen) und die drei
       # artisan-*:cache-Zeilen wieder ergänzen.
       - name: vendor/ auf dem Server entpacken (per SSH)
+        if: env.NUR_PRUEFEN != 'true'
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ env.SSH_HOST }}
@@ -430,7 +513,7 @@ jobs:
             rm -f storage/framework/views/*.php
             # Gesicherten APP_KEY einsetzen (beim allerersten Mal erzeugen).
             if [ ! -s storage/app/private/app.key ]; then
-              /usr/bin/php -r 'echo "base64:".base64_encode(random_bytes(32));' > storage/app/private/app.key
+              "${{ env.PHP_BIN }}" -r 'echo "base64:".base64_encode(random_bytes(32));' > storage/app/private/app.key
               chmod 600 storage/app/private/app.key
             fi
             APP_KEY_VALUE="$(cat storage/app/private/app.key)"
@@ -464,7 +547,7 @@ jobs:
             DB_FAILED=0
             MARKER=storage/app/private/mariadb-initialized
             if grep -q '^DB_CONNECTION=mariadb' .env; then
-              if ! /usr/bin/php artisan db:check; then
+              if ! "${{ env.PHP_BIN }}" artisan db:check; then
                 echo "::error::MariaDB nicht erreichbar – die Seite läuft weiter mit SQLite."
                 use_sqlite
                 DB_FAILED=1
@@ -479,11 +562,11 @@ jobs:
                 echo "---- Umzug SQLite → MariaDB ----"
                 # Mit && verkettet: bricht ein Schritt ab, greift der
                 # Rückfall auf SQLite (set -e gilt in if-Bedingungen nicht).
-                if DB_CONNECTION=sqlite DB_DATABASE="$PWD/database/database.sqlite" /usr/bin/php artisan migrate --force \
-                  && /usr/bin/php artisan migrate --force \
-                  && /usr/bin/php artisan db:copy-from-sqlite --force; then
+                if DB_CONNECTION=sqlite DB_DATABASE="$PWD/database/database.sqlite" "${{ env.PHP_BIN }}" artisan migrate --force \
+                  && "${{ env.PHP_BIN }}" artisan migrate --force \
+                  && "${{ env.PHP_BIN }}" artisan db:copy-from-sqlite --force; then
                   date -u +%FT%TZ > "$MARKER"
-                  /usr/bin/php artisan cache:clear || true
+                  "${{ env.PHP_BIN }}" artisan cache:clear || true
                   echo "Umzug abgeschlossen; database/database.sqlite bleibt als Sicherung liegen."
                 else
                   echo "::error::Übernahme der Inhalte nach MariaDB fehlgeschlagen – die Seite läuft weiter mit SQLite."
@@ -491,7 +574,7 @@ jobs:
                   DB_FAILED=1
                 fi
               else
-                /usr/bin/php artisan migrate --force
+                "${{ env.PHP_BIN }}" artisan migrate --force
                 if [ ! -f "$MARKER" ]; then
                   NEEDS_SEED=1
                   date -u +%FT%TZ > "$MARKER"
@@ -503,20 +586,20 @@ jobs:
                 touch database/database.sqlite
                 NEEDS_SEED=1
               fi
-              /usr/bin/php artisan migrate --force
+              "${{ env.PHP_BIN }}" artisan migrate --force
             fi
             if [ "$NEEDS_SEED" = "1" ] || [ "${{ github.event.inputs.force_seed }}" = "true" ]; then
-              /usr/bin/php artisan db:seed --force
+              "${{ env.PHP_BIN }}" artisan db:seed --force
             fi
             echo "Datenbank: $(grep -m1 '^DB_CONNECTION=' .env | cut -d= -f2)"
             # Diagnose ohne SSH-Zugang: die letzten Fehlermeldungen aus dem
             # Laravel-Log (nur die Meldungszeile, gekürzt, E-Mail-Adressen und
             # IPs geschwärzt) im Actions-Protokoll anzeigen.
             # WebP-Varianten für Bilder ohne Varianten nachziehen (F-CMS-04).
-            /usr/bin/php artisan media:variants || true
-            /usr/bin/php artisan up
+            "${{ env.PHP_BIN }}" artisan media:variants || true
+            "${{ env.PHP_BIN }}" artisan up
             echo "---- PHP-Fähigkeiten auf dem Server ----"
-            /usr/bin/php -r 'echo "PHP ", PHP_VERSION, " | GD: ", function_exists("imagecreatefromstring") ? "ja" : "NEIN", " | WebP: ", function_exists("imagewebp") ? "ja" : "NEIN", " | Zip: ", class_exists("ZipArchive") ? "ja" : "NEIN", " | Sodium: ", function_exists("sodium_crypto_secretstream_xchacha20poly1305_init_push") ? "ja" : "NEIN", " | proc_open: ", function_exists("proc_open") ? "ja" : "NEIN", "\n";'
+            "${{ env.PHP_BIN }}" -r 'echo "PHP ", PHP_VERSION, " | GD: ", function_exists("imagecreatefromstring") ? "ja" : "NEIN", " | WebP: ", function_exists("imagewebp") ? "ja" : "NEIN", " | Zip: ", class_exists("ZipArchive") ? "ja" : "NEIN", " | Sodium: ", function_exists("sodium_crypto_secretstream_xchacha20poly1305_init_push") ? "ja" : "NEIN", " | proc_open: ", function_exists("proc_open") ? "ja" : "NEIN", "\n";'
             command -v mysqldump >/dev/null && echo "mysqldump: vorhanden" || echo "mysqldump: fehlt"
             echo "---- Letzte Fehler im Laravel-Log ----"
             grep -h '\.\(ERROR\|CRITICAL\|ALERT\|EMERGENCY\):' storage/logs/laravel*.log 2>/dev/null \
@@ -529,7 +612,7 @@ jobs:
       # Wartungsmodus hängen bleiben.
       - name: Wartungsmodus sicher beenden
         # Nur wenn die Server-Zugangsdaten schon geladen wurden.
-        if: always() && env.SSH_HOST != ''
+        if: always() && env.SSH_HOST != '' && env.NUR_PRUEFEN != 'true'
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ env.SSH_HOST }}
@@ -539,5 +622,5 @@ jobs:
           script: |
             cd "${{ env.SSH_TARGET_DIR }}"
             if [ -f storage/framework/down ]; then
-              /usr/bin/php artisan up || rm -f storage/framework/down storage/framework/maintenance.php
+              "${{ env.PHP_BIN }}" artisan up || rm -f storage/framework/down storage/framework/maintenance.php
             fi

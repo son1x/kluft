@@ -9,6 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Instanzen\DvTrier\Seeders\DemoContentSeeder;
 use Instanzen\DvTrier\Seeders\Inhalt\RechtstraegerPagesAndImpressum;
 use Instanzen\DvTrier\Seeders\RequiredPagesSeeder;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
@@ -16,6 +17,7 @@ use Tests\TestCase;
  * Rechtsträgerstruktur (Landesamt St. Georg e. V., dpsg trevirensis gGmbH,
  * Stiftung, Freunde & Förderer) unter „Diözesanverband“ und Impressum.
  */
+#[Group('dv-trier')]
 class RechtstraegerTest extends TestCase
 {
     use RefreshDatabase;

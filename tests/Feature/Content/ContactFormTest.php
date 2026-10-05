@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Testing\TestResponse;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
@@ -69,6 +70,8 @@ class ContactFormTest extends TestCase
             ->assertSee('<option value="woelflinge" selected>', false);
     }
 
+    #[Group('dv-trier')]
+
     #[TestDox('Allgemeine Fragen gehen ans Diözesanbüro; „Antworten“ geht an die Absenderin')]
     public function test_general_question_goes_to_office_with_reply_to(): void
     {
@@ -83,6 +86,8 @@ class ContactFormTest extends TestCase
         });
         $this->get('/kontakt')->assertSee('Danke für deine Nachricht!');
     }
+
+    #[Group('dv-trier')]
 
     #[TestDox('Stufenthema geht an die Stufenreferent*innen (ohne DAK und ohne Freigabe); feste Adresse hat Vorrang')]
     public function test_stage_topic_goes_to_referents_and_fixed_address_wins(): void
@@ -100,6 +105,8 @@ class ContactFormTest extends TestCase
         $this->send(['thema' => 'bolivien']);
         Mail::assertQueued(ContactMessageMail::class, fn (ContactMessageMail $mail) => $mail->hasTo('bolivien@dpsg-trier.de') && count($mail->to) === 1);
     }
+
+    #[Group('dv-trier')]
 
     #[TestDox('Ohne Ansprechpersonen geht ein Stufenthema ans Diözesanbüro')]
     public function test_topic_without_people_falls_back_to_office(): void
@@ -195,6 +202,8 @@ class ContactFormTest extends TestCase
             ->assertSessionHasErrorsIn('frage', ['email']);
         $this->get('/veranstaltungen/woelflingstag')->assertDontSee('Bitte prüfe deine Angaben.')->assertSee('<details class="mt-4 bg-white p-5 shadow-md"  open', false);
     }
+
+    #[Group('dv-trier')]
 
     #[TestDox('Stufen- und Fachbereichsseiten verlinken das Formular mit vorausgewähltem Thema')]
     public function test_stage_and_section_pages_link_to_form(): void

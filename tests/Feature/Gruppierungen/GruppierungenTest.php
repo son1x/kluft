@@ -11,6 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Instanzen\DvTrier\Seeders\GruppierungenSeeder;
 use Instanzen\DvTrier\Seeders\StaemmeSeeder;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
@@ -61,6 +62,8 @@ class GruppierungenTest extends TestCase
         $this->assertSame('Umbenannt', $stamm->fresh()->name);
     }
 
+    #[Group('dv-trier')]
+
     #[TestDox('Bezirke und Stämme sind nach DPSG-Nummer sortiert')]
     public function test_bezirke_and_staemme_are_ordered_by_dpsg_number(): void
     {
@@ -78,6 +81,8 @@ class GruppierungenTest extends TestCase
             '21-02-00', 'Bezirk Zweiter',
         ]);
     }
+
+    #[Group('dv-trier')]
 
     #[TestDox('Importierte Positionen gelten als ungefähr, bis sie im Backend gesetzt werden')]
     public function test_imported_position_is_marked_approximate_until_set_in_backend(): void
@@ -156,6 +161,8 @@ class GruppierungenTest extends TestCase
         $this->getJson('/api/gruppierungen.geojson?bezirk=gibtsnicht&stufe=<x>')->assertOk()->assertJsonCount(2, 'features');
     }
 
+    #[Group('dv-trier')]
+
     #[TestDox('Ansprechperson nur mit Einwilligung; unsichere Links werden verworfen')]
     public function test_contact_person_only_published_with_consent_and_unsafe_links_are_dropped(): void
     {
@@ -185,6 +192,8 @@ class GruppierungenTest extends TestCase
         $this->assertSame(['pfadi'], $this->getJson('/api/gruppierungen.geojson')->json('features.0.properties.stufen'));
     }
 
+    #[Group('dv-trier')]
+
     #[TestDox('Stämme-Verzeichnis funktioniert ohne JavaScript')]
     public function test_directory_page_works_without_javascript_and_shows_placeholders(): void
     {
@@ -204,6 +213,8 @@ class GruppierungenTest extends TestCase
         $this->get('/bezirke-staemme?bezirk=eifel')->assertOk()->assertSee('Bezirk Eifel')->assertDontSee('Stamm st-georg');
         $this->get('/bezirke-staemme?stufe=biber')->assertOk()->assertDontSee('Stamm st-georg')->assertSee('Für diese Auswahl ist noch keine Gruppierung erfasst.');
     }
+
+    #[Group('dv-trier')]
 
     #[TestDox('Karte lädt nichts von fremden Servern')]
     public function test_page_does_not_reference_external_map_hosts(): void

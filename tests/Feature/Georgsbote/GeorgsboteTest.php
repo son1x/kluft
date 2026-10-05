@@ -16,12 +16,14 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 /**
  * Georgsbote, Pflichtenheft 6.6 und Abnahmekriterium 4.
  */
+#[Group('dv-trier')]
 class GeorgsboteTest extends TestCase
 {
     use RefreshDatabase;

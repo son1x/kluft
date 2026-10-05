@@ -9,12 +9,14 @@ use App\Models\User;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 /**
  * Bolivien-Sektion, Pflichtenheft 6.2 und Abnahmekriterium 3.
  */
+#[Group('dv-trier')]
 class BolivienSectionTest extends TestCase
 {
     use RefreshDatabase;

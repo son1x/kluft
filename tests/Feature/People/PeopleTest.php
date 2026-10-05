@@ -14,6 +14,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
@@ -45,6 +46,8 @@ class PeopleTest extends TestCase
         $this->photo->spots()->create(['person_id' => $axel->id, 'x' => 10, 'y' => 40]);
     }
 
+    #[Group('dv-trier')]
+
     #[TestDox('Diözesanleitung zeigt Personen, Gruppenfoto und Bildunterschrift')]
     public function test_leitung_page_shows_people_photo_and_caption(): void
     {
@@ -66,6 +69,8 @@ class PeopleTest extends TestCase
             ->assertSee('id="person-axel-hemgesberg"', false)
             ->assertDontSee('Till Mang');
     }
+
+    #[Group('dv-trier')]
 
     #[TestDox('Initialen-Kreise mit Mustern; Ansprechperson auf der Bolivienseite')]
     public function test_badge_patterns_and_section_contact_on_bolivien_page(): void
@@ -96,6 +101,8 @@ class PeopleTest extends TestCase
         $this->assertStringNotContainsString('bolivien-spenden', $nav);
         $this->assertSame(1, substr_count($html, '/bolivien-spenden'));
     }
+
+    #[Group('dv-trier')]
 
     #[TestDox('Personen ohne Einwilligung werden auf dem Gruppenfoto nicht markiert')]
     public function test_spots_of_people_without_consent_are_hidden(): void

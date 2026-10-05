@@ -7,6 +7,7 @@ use App\Models\Page;
 use App\Models\Person;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Instanzen\DvTrier\Seeders\Inhalt\TidyStagePageBodies;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
@@ -24,6 +25,8 @@ class StagePagesTest extends TestCase
             'status' => 'published', 'published_at' => now()->subDay(),
         ]);
     }
+
+    #[Group('dv-trier')]
 
     #[TestDox('Stufenseite zeigt Kopfband, Referent*innen, Stämme und Nachbarstufen')]
     public function test_stage_page_shows_hero_referents_staemme_and_neighbours(): void

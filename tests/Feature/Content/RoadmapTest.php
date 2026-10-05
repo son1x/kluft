@@ -9,12 +9,14 @@ use Illuminate\Encryption\Encrypter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 /**
  * /roadmap: Stand je Pflichtenheft-Abschnitt und offene Punkte.
  */
+#[Group('dv-trier')]
 class RoadmapTest extends TestCase
 {
     use RefreshDatabase;

@@ -65,3 +65,41 @@ jobs:
           else
             vendor/bin/phpstan analyse --no-progress --memory-limit=1G --error-format=table
           fi
+
+  tests:
+    # Jede Kluft-Instanz einzeln: Tests einer anderen Instanz (#[Group('…')])
+    # überspringt tests/TestCase.php selbst.
+    name: Tests (${{ matrix.instanz }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        instanz: [dv-trier, saar-hochwald]
+    env:
+      KLUFT_INSTANZ: ${{ matrix.instanz }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: intl, mbstring, gd, zip, xml, curl, openssl, pdo_sqlite
+          coverage: none
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - name: PHP-Abhängigkeiten installieren
+        run: composer install --no-interaction --no-progress
+      # Views nutzen @vite(); ohne public/build/manifest.json schlagen
+      # gerenderte Seiten fehl.
+      - name: Frontend-Assets bauen
+        run: |
+          npm ci
+          npm run build
+      - name: Bilder der Instanz bereitstellen
+        run: |
+          cp .env.example .env
+          php artisan key:generate --no-interaction
+          php artisan kluft:assets
+      - name: Tests
+        run: php artisan test

@@ -4,6 +4,7 @@ namespace Tests\Feature\Content;
 
 use App\Models\Post;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
@@ -46,6 +47,8 @@ class RssFeedTest extends TestCase
         $this->assertSame('Kurz & knapp', (string) $aelter->description);
         $this->assertSame('Text zu Neuer & mehr', (string) $xml->xpath('//item[title="Neuer"]')[0]->description);
     }
+
+    #[Group('dv-trier')]
 
     #[TestDox('Sektionsfeed (/bolivien/feed) nur mit Beiträgen der Sektion; Autodiscovery im Kopf und Link auf „Aktuelles“')]
     public function test_section_feed_and_discovery(): void

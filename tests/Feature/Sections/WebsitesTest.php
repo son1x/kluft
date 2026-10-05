@@ -11,6 +11,7 @@ use App\Support\Websites;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
@@ -18,6 +19,7 @@ use Tests\TestCase;
  * Mehrere Websites in einem CMS: Hauptseite, bolivienpartnerschaft.de und
  * beraten-online.de (Pflichtenheft 4.2, 6.2, 6.3).
  */
+#[Group('dv-trier')]
 class WebsitesTest extends TestCase
 {
     use RefreshDatabase;

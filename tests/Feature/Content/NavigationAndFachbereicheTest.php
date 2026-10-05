@@ -7,6 +7,7 @@ use App\Models\Person;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Instanzen\DvTrier\Seeders\Inhalt\MenuDioezesanverbandGeorgsbrief;
 use Instanzen\DvTrier\Seeders\Inhalt\MenuStufenAndFachbereiche;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
@@ -46,6 +47,8 @@ class NavigationAndFachbereicheTest extends TestCase
         $this->assertSame(1, preg_match_all('/\bRover\b/', strstr($desktop, '</nav>', true)));
     }
 
+    #[Group('dv-trier')]
+
     #[TestDox('Fachbereichsübersicht zeigt alle Fachbereiche mit Ansprechpersonen')]
     public function test_fachbereiche_overview_lists_sections_with_contacts(): void
     {
@@ -64,6 +67,8 @@ class NavigationAndFachbereicheTest extends TestCase
             ->assertSee('Bianca Boltze')
             ->assertSee('Noch keine Meldungen aus dem Fachbereich Inklusion.');
     }
+
+    #[Group('dv-trier')]
 
     #[TestDox('Stufenseite zeigt den DAK: Referent*innen und Mitglieder, nur mit Einwilligung')]
     public function test_stage_page_shows_dak(): void
@@ -109,6 +114,8 @@ class NavigationAndFachbereicheTest extends TestCase
         $this->assertSame('inklusion', $bianca->fresh()->section);
     }
 
+    #[Group('dv-trier')]
+
     #[TestDox('E-Mail-Adresse nach Schema Initial.Nachname@dpsg-trier.de, eingetragene Adresse hat Vorrang')]
     public function test_email_follows_initial_lastname_scheme(): void
     {
@@ -120,6 +127,8 @@ class NavigationAndFachbereicheTest extends TestCase
         $this->assertSame('vorstand@dpsg-trier.de', (new Person(['gremium' => 'leitung', 'name' => 'Till Mang', 'email' => 'vorstand@dpsg-trier.de']))->publicEmail());
         $this->assertNull((new Person(['gremium' => 'dak', 'name' => 'Mara Muster']))->publicEmail());
     }
+
+    #[Group('dv-trier')]
 
     #[TestDox('Diözesanverband im Menü mit Diözesanleitung, Bezirke & Stämme, Georgsbote und Georgsbrief')]
     public function test_dioezesanverband_menu_and_migration(): void

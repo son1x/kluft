@@ -5,6 +5,7 @@ namespace Tests\Feature\Content;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Instanzen\DvTrier\Seeders\DemoContentSeeder;
 use Instanzen\DvTrier\Seeders\RequiredPagesSeeder;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
@@ -12,6 +13,7 @@ use Tests\TestCase;
  * Performance (Pflichtenheft 10.3): Logo und Stufen-Maskottchen als WebP mit
  * PNG als Rückfall; Seiten haben immer eine Beschreibung.
  */
+#[Group('dv-trier')]
 class StaticImagesTest extends TestCase
 {
     use RefreshDatabase;

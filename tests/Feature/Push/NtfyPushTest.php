@@ -15,6 +15,7 @@ use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
@@ -152,6 +153,8 @@ class NtfyPushTest extends TestCase
         $post->update(['title' => 'Rückblick (korrigiert)']);
         Http::assertNothingSent();
     }
+
+    #[Group('dv-trier')]
 
     #[TestDox('Einstellungsseite: einschalten, nur erlaubte Ereignisse speichern, Test senden, ausschalten')]
     public function test_settings_page(): void

@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Testing\TestResponse;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
@@ -151,6 +152,8 @@ class EventRegistrationTest extends TestCase
         $this->get('/veranstaltungen/woelflingstag')->assertOk()->assertDontSee('Anwesenheit (Tage)');
         $this->register($event)->assertSessionHasNoErrors();
     }
+
+    #[Group('dv-trier')]
 
     #[TestDox('Feld „Stamm oder Bezirk“ schlägt aktive Stämme und Bezirke von der Karte vor')]
     public function test_stamm_field_suggests_staemme_and_bezirke(): void
@@ -321,6 +324,8 @@ class EventRegistrationTest extends TestCase
         $this->artisan('registrations:purge')->assertSuccessful();
         $this->assertNull($confirmed->fresh());
     }
+
+    #[Group('dv-trier')]
 
     #[TestDox('Teilnehmendenlisten nur für Berechtigte; Export wird protokolliert')]
     public function test_participant_access_follows_scope_and_export_is_audited_and_masked(): void

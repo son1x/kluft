@@ -15,6 +15,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
@@ -22,6 +23,7 @@ use Tests\TestCase;
  * WordPress-Migration, Pflichtenheft 6.9 und Abnahmekriterium 15 (gegen
  * eine simulierte WordPress-API).
  */
+#[Group('dv-trier')]
 class WordPressImportTest extends TestCase
 {
     use RefreshDatabase;

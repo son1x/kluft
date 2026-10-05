@@ -10,8 +10,8 @@ use Illuminate\Support\Facades\Storage;
 /**
  * Download-Seite unter „Diözesanverband“ mit den Abrechnungsformularen für
  * die Diözesanebene (bisher dpsg-trier.de → Service → Formulare). Die
- * Fahrtkostenabrechnung 2026 rechnet selbst (s. dateien/formulare/
- * fahrtkosten-formular.py). Legt nur an, was fehlt.
+ * Formulare 2026 rechnen selbst (s. dateien/formulare/
+ * abrechnungsformulare.py). Legt nur an, was fehlt.
  */
 class DownloadsAbrechnungsformulare extends Seeder
 {
@@ -30,12 +30,12 @@ class DownloadsAbrechnungsformulare extends Seeder
         ['datei' => 'fahrtkostenabrechnung-2026.pdf', 'name' => 'Fahrtkostenabrechnung-2026.pdf', 'sort' => 10,
             'title' => 'Fahrtkostenabrechnung (Kilometergeld)',
             'description' => 'Am PC ausfüllbar: rechnet Kilometer und Betrag (0,30 € pro km) selbst und prüft die IBAN.'],
-        ['datei' => 'reisekostenabrechnung.pdf', 'name' => 'Reisekostenabrechnung.pdf', 'sort' => 20,
-            'title' => 'Reisekostenabrechnung', 'stand' => '2020-01-01',
-            'description' => 'Für Bahn, Bahncard und öffentliche Verkehrsmittel. Originalbelege lose beilegen.'],
-        ['datei' => 'sachkostenabrechnung.pdf', 'name' => 'Sachkostenabrechnung.pdf', 'sort' => 30,
-            'title' => 'Sachkostenabrechnung', 'stand' => '2020-01-01',
-            'description' => 'Für Telefon, Porto, Büromaterial, Geschenke und Bewirtung. Originalbelege lose beilegen.'],
+        ['datei' => 'reisekostenabrechnung-2026.pdf', 'name' => 'Reisekostenabrechnung-2026.pdf', 'sort' => 20,
+            'title' => 'Reisekostenabrechnung',
+            'description' => 'Für Bahn, Bus und Bahncard. Am PC ausfüllbar: zählt die Belege, rechnet den Betrag und prüft die IBAN.'],
+        ['datei' => 'sachkostenabrechnung-2026.pdf', 'name' => 'Sachkostenabrechnung-2026.pdf', 'sort' => 30,
+            'title' => 'Sachkostenabrechnung',
+            'description' => 'Für Telefon, Porto, Büromaterial, Geschenke und Bewirtung. Am PC ausfüllbar: zählt die Belege, rechnet den Betrag und prüft die IBAN.'],
     ];
 
     /** In Tests nur, wenn ausdrücklich gewünscht (schreibt Dateien). */
@@ -68,7 +68,7 @@ class DownloadsAbrechnungsformulare extends Seeder
                 continue;
             }
             Storage::disk(Download::DISK)->put($pfad, (string) file_get_contents($quelle));
-            $download = Download::query()->create([
+            Download::query()->create([
                 'title' => $datei['title'],
                 'description' => $datei['description'],
                 'category' => 'abrechnung',
@@ -78,10 +78,6 @@ class DownloadsAbrechnungsformulare extends Seeder
                 'rights_confirmed' => true,
                 'published' => true,
             ]);
-            // Ältere Vordrucke nicht als „neu“ zeigen.
-            if (isset($datei['stand'])) {
-                DB::table('downloads')->where('id', $download->id)->update(['file_updated_at' => $datei['stand']]);
-            }
         }
     }
 }

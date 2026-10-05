@@ -392,7 +392,7 @@ jobs:
             test -d "${{ env.SSH_TARGET_DIR }}" || { echo "::error::Zielordner fehlt: ${{ env.SSH_TARGET_DIR }}"; exit 1; }
             test -w "${{ env.SSH_TARGET_DIR }}" || { echo "::error::Zielordner nicht beschreibbar"; exit 1; }
             cd "${{ env.SSH_TARGET_DIR }}"
-            echo "Freier Speicher: $(df -h . | awk 'NR==2 {print $4}')"
+            echo "Freier Speicher: $("${{ env.PHP_BIN }}" -r 'echo round(disk_free_space(".") / 1024 / 1024 / 1024, 1), " GB";')"
             # Schutz: Läuft der Server mit MariaDB, im Environment fehlen aber
             # DB_HOST/DB_DATABASE, würde die neue .env auf SQLite umstellen.
             DB_NEU="${{ (secrets.DB_HOST != '' && secrets.DB_DATABASE != '') && 'mariadb' || 'sqlite' }}"

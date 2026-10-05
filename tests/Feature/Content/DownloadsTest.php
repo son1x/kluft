@@ -163,7 +163,7 @@ class DownloadsTest extends TestCase
         $fahrt = Download::query()->where('sort', 10)->sole();
         $this->assertSame(1, $fahrt->parts);
         $this->assertTrue($fahrt->isNew());
-        $this->assertFalse(Download::query()->where('sort', 20)->sole()->isNew(), 'Alte Vordrucke sind nicht „neu“.');
+        $this->assertSame([1, 1], Download::query()->whereIn('sort', [20, 30])->pluck('parts')->all());
 
         $this->get('/downloads')->assertOk()
             ->assertSeeInOrder(['Abrechnungen (Diözesanebene)', 'Fahrtkostenabrechnung', 'prüft die IBAN', 'Reisekostenabrechnung', 'Sachkostenabrechnung']);

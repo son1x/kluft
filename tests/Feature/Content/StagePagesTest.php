@@ -6,7 +6,7 @@ use App\Models\Gruppierung;
 use App\Models\Page;
 use App\Models\Person;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
+use Instanzen\DvTrier\Seeders\Inhalt\TidyStagePageBodies;
 use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
@@ -81,8 +81,7 @@ class StagePagesTest extends TestCase
             .collect(['biber', 'woelflinge', 'jupfi', 'pfadi', 'rover'])->map(fn ($s) => "<li><strong><a href=\"/stufe-{$s}\">X</a></strong> (1 bis 2 Jahre) – y</li>")->implode("\n")
             ."\n</ul>");
 
-        DB::table('migrations')->where('migration', '2026_10_02_090000_tidy_stage_page_bodies')->delete();
-        (require database_path('migrations/2026_10_02_090000_tidy_stage_page_bodies.php'))->up();
+        (new TidyStagePageBodies)->run();
 
         $this->assertSame('<p>Ab dem Alter von vier Jahren …</p>', $biber->fresh()->body);
         $this->assertSame($edited->body, $edited->fresh()->body);

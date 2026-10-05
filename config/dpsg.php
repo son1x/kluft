@@ -18,6 +18,9 @@ return array_replace([
     // Schlüssel der aktiven Instanz (Ordnername unter instanzen/).
     'instanz' => $instanz,
 
+    // Seeder der Instanz: Startinhalt (db:seed) und Grundbestand für Tests.
+    'seeders' => ['start' => null, 'basis' => null],
+
     // Startseiten-Kacheln; Format siehe instanzen/dv-trier/config.php.
     'home_highlights' => [],
 

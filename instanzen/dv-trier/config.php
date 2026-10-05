@@ -1,5 +1,8 @@
 <?php
 
+use Instanzen\DvTrier\Seeders\DvTrierSeeder;
+use Instanzen\DvTrier\Seeders\InhaltSeeder;
+
 /*
 | Kluft-Instanz „dv-trier“: DPSG Diözesanverband Trier.
 | Alles, was je Gliederung verschieden ist. config/dpsg.php lädt diese
@@ -45,6 +48,16 @@ return [
             ['label' => 'Bistum Trier', 'url' => 'https://www.bistum-trier.de'],
         ],
         'hashtags' => '#dpsg #pfadfinden #dpsgtrier',
+    ],
+
+    /*
+    | Startinhalt (php artisan db:seed beim ersten Deploy) und der Teil davon,
+    | den jede DV-Installation schon über die früheren Daten-Migrationen hat
+    | (läuft auch in den Tests).
+    */
+    'seeders' => [
+        'start' => DvTrierSeeder::class,
+        'basis' => InhaltSeeder::class,
     ],
 
     'features' => [

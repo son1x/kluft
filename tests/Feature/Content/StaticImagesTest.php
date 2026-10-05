@@ -2,9 +2,9 @@
 
 namespace Tests\Feature\Content;
 
-use Database\Seeders\DemoContentSeeder;
-use Database\Seeders\RequiredPagesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Instanzen\DvTrier\Seeders\DemoContentSeeder;
+use Instanzen\DvTrier\Seeders\RequiredPagesSeeder;
 use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 

@@ -1,22 +1,15 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Support\Facades\DB;
 
 /**
- * Till Mang ist Diözesanvorsitzender (nicht „Diözesanvorstand“ – das ist
- * das Gremium). Nur ändern, wenn noch der alte Wert eingetragen ist.
+ * Inhalt des DV Trier, jetzt in instanzen/dv-trier/seeders/inhalt/FixTillMangRole.php
+ * (Kluft: Migrationen legen nur das Schema an). Die leere Migration bleibt,
+ * weil bestehende Installationen sie schon ausgeführt haben.
  */
 return new class extends Migration
 {
-    public function up(): void
-    {
-        DB::table('people')->where('name', 'Till Mang')->where('role', 'Diözesanvorstand')
-            ->update(['role' => 'Diözesanvorsitzender', 'updated_at' => now()]);
-    }
+    public function up(): void {}
 
-    public function down(): void
-    {
-        // Rein inhaltlich; nichts zurückzuholen.
-    }
+    public function down(): void {}
 };

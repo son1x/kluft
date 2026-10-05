@@ -4,10 +4,10 @@ namespace Tests\Feature\Content;
 
 use App\Models\Page;
 use App\Models\Post;
-use Database\Seeders\DemoContentSeeder;
-use Database\Seeders\RequiredPagesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
+use Instanzen\DvTrier\Seeders\DemoContentSeeder;
+use Instanzen\DvTrier\Seeders\RequiredPagesSeeder;
 use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 

@@ -416,4 +416,4 @@ parameters:
 
 		-
 			identifier: nullCoalesce.offset
-			path: database/seeders/DemoContentSeeder.php
+			path: instanzen/dv-trier/seeders/DemoContentSeeder.php

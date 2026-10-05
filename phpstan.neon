@@ -13,6 +13,7 @@ parameters:
         - config
         - routes
         - database
+        - instanzen
     tmpDir: storage/framework/cache/phpstan
     # Die Baseline darf schrumpfen, wenn Bestand behoben wird.
     reportUnmatchedIgnoredErrors: false

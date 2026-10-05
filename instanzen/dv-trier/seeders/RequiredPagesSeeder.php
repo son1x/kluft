@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Seeders;
+namespace Instanzen\DvTrier\Seeders;
 
 use App\Models\Page;
 use Illuminate\Database\Seeder;

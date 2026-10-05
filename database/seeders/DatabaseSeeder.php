@@ -2,19 +2,18 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
+/**
+ * Startinhalt der aktiven Kluft-Instanz (config dpsg.seeders.start, z. B.
+ * instanzen/dv-trier/seeders/DvTrierSeeder.php). Ohne Eintrag nichts.
+ */
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        $this->call(RequiredPagesSeeder::class);
-        $this->call(DemoContentSeeder::class);
+        if ($start = config('dpsg.seeders.start')) {
+            $this->call($start);
+        }
     }
 }

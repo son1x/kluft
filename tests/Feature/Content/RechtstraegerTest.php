@@ -5,9 +5,10 @@ namespace Tests\Feature\Content;
 use App\Models\Page;
 use App\Models\Person;
 use App\Models\Redirect;
-use Database\Seeders\DemoContentSeeder;
-use Database\Seeders\RequiredPagesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Instanzen\DvTrier\Seeders\DemoContentSeeder;
+use Instanzen\DvTrier\Seeders\Inhalt\RechtstraegerPagesAndImpressum;
+use Instanzen\DvTrier\Seeders\RequiredPagesSeeder;
 use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
@@ -57,9 +58,9 @@ class RechtstraegerTest extends TestCase
         $marc = Person::query()->create(['gremium' => 'buero', 'name' => 'Marc Basenach', 'role' => 'Geschäftsführender Bildungsreferent', 'consent' => true]);
         $andere = Person::query()->create(['gremium' => 'buero', 'name' => 'Andere Person', 'role' => 'Geschäftsführender Bildungsreferent', 'consent' => true]);
 
-        $migration = require database_path('migrations/2026_10_03_090000_rechtstraeger_pages_and_impressum.php');
-        $migration->up();
-        $migration->up(); // wiederholbar
+        $migration = new RechtstraegerPagesAndImpressum;
+        $migration->run();
+        $migration->run(); // wiederholbar
 
         $rt = Page::query()->where('slug', 'rechtstraeger')->sole();
         $this->assertSame($dv->id, $rt->parent_id);
@@ -75,7 +76,7 @@ class RechtstraegerTest extends TestCase
         // Redaktionell geänderte Inhalte werden nicht überschrieben.
         $impressum->update(['body' => '<p>Eigener Text</p>']);
         $rt->update(['body' => '<p>Eigene Fassung</p>']);
-        $migration->up();
+        $migration->run();
         $this->assertSame('<p>Eigener Text</p>', $impressum->fresh()->body);
         $this->assertSame('<p>Eigene Fassung</p>', $rt->fresh()->body);
     }

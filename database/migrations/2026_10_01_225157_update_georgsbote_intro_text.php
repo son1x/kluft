@@ -1,27 +1,15 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Support\Facades\DB;
 
 /**
- * Einleitung der Georgsbote-Seite an das jetzt vorhandene Archiv anpassen –
- * nur, wenn der ursprüngliche Beispieltext noch unverändert ist.
+ * Inhalt des DV Trier, jetzt in instanzen/dv-trier/seeders/inhalt/UpdateGeorgsboteIntroText.php
+ * (Kluft: Migrationen legen nur das Schema an). Die leere Migration bleibt,
+ * weil bestehende Installationen sie schon ausgeführt haben.
  */
 return new class extends Migration
 {
-    public function up(): void
-    {
-        $page = DB::table('pages')->where('slug', 'georgsbote')->first();
+    public function up(): void {}
 
-        if ($page && str_contains($page->body, 'Künftig findest du hier alle Ausgaben im PDF-Archiv und kannst dich für den Newsletter anmelden, um neue Ausgaben direkt ins Postfach zu bekommen.')) {
-            $body = str_replace('Künftig findest du hier alle Ausgaben im PDF-Archiv und kannst dich für den Newsletter anmelden, um neue Ausgaben direkt ins Postfach zu bekommen.', 'Hier findest du alle Ausgaben als PDF; über den Newsletter kommen neue Ausgaben direkt in dein Postfach.', $page->body);
-            $body = preg_replace('#\s*<p>\[TODO: Archiv und Newsletter-Anmeldung folgen \(Pflichtenheft 6\.6\)\.\]</p>#', '', $body);
-            DB::table('pages')->where('id', $page->id)->update(['body' => $body, 'updated_at' => now()]);
-        }
-    }
-
-    public function down(): void
-    {
-        //
-    }
+    public function down(): void {}
 };

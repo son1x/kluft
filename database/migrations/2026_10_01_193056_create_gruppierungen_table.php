@@ -1,6 +1,5 @@
 <?php
 
-use Database\Seeders\GruppierungenSeeder;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -44,9 +43,8 @@ return new class extends Migration
             $table->primary(['gruppierung_id', 'stufe']);
         });
 
-        // Ausgangsbestand (die zehn Bezirke) direkt mit anlegen, damit
-        // kein manuelles Seeden auf dem Server nötig ist.
-        (new GruppierungenSeeder)->run();
+        // Den Ausgangsbestand (beim DV die zehn Bezirke) legt der Seeder der
+        // Instanz an (instanzen/<schlüssel>/seeders).
     }
 
     public function down(): void

@@ -1,34 +1,15 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Support\Facades\DB;
 
 /**
- * Diözesanversammlung 2026: Anwesenheit nach Tagen abfragen (neues
- * Baukasten-Feld „tage“), damit die Teilnehmerliste zeigt, wer wann da ist.
+ * Inhalt des DV Trier, jetzt in instanzen/dv-trier/seeders/inhalt/Divers2026DaysField.php
+ * (Kluft: Migrationen legen nur das Schema an). Die leere Migration bleibt,
+ * weil bestehende Installationen sie schon ausgeführt haben.
  */
 return new class extends Migration
 {
-    public function up(): void
-    {
-        $event = DB::table('events')->where('slug', 'dioezesanversammlung-2026')->first(['id', 'form_fields']);
-        if (! $event) {
-            return;
-        }
+    public function up(): void {}
 
-        $fields = json_decode((string) $event->form_fields, true) ?: [];
-        if (isset($fields['tage'])) {
-            return;
-        }
-
-        DB::table('events')->where('id', $event->id)->update([
-            'form_fields' => json_encode([...$fields, 'tage' => 'required']),
-            'updated_at' => now(),
-        ]);
-    }
-
-    public function down(): void
-    {
-        //
-    }
+    public function down(): void {}
 };

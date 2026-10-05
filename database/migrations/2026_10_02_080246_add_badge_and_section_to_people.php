@@ -2,7 +2,6 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
@@ -17,10 +16,6 @@ return new class extends Migration
             $table->string('badge', 20)->nullable()->after('stage');
             $table->string('section', 30)->nullable()->after('gremium')->index();
         });
-
-        DB::table('people')->whereNull('badge')->whereNotNull('stage')->update(['badge' => DB::raw('stage')]);
-        DB::table('people')->where('name', 'Bianca Boltze')->whereNull('badge')->update(['badge' => 'inklusion']);
-        DB::table('people')->where('name', 'Jannis Odrosek')->update(['badge' => 'bolivien', 'section' => 'bolivien']);
     }
 
     public function down(): void

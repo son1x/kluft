@@ -5,7 +5,8 @@ namespace Tests\Feature\Content;
 use App\Models\Page;
 use App\Models\Person;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
+use Instanzen\DvTrier\Seeders\Inhalt\MenuDioezesanverbandGeorgsbrief;
+use Instanzen\DvTrier\Seeders\Inhalt\MenuStufenAndFachbereiche;
 use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
@@ -96,8 +97,7 @@ class NavigationAndFachbereicheTest extends TestCase
         $inklusion = $this->page('inklusion', 'Inklusion', ['section' => 'inklusion', 'body' => '<p>Eigener Text</p>']);
         $bianca = Person::query()->create(['gremium' => 'leitung', 'name' => 'Bianca Boltze', 'badge' => 'inklusion', 'consent' => true]);
 
-        DB::table('migrations')->where('migration', '2026_10_02_110000_menu_stufen_and_fachbereiche')->delete();
-        (require database_path('migrations/2026_10_02_110000_menu_stufen_and_fachbereiche.php'))->up();
+        (new MenuStufenAndFachbereiche)->run();
 
         $fach = Page::query()->where('slug', 'fachbereiche')->firstOrFail();
         $this->assertTrue($fach->show_in_nav);
@@ -132,8 +132,7 @@ class NavigationAndFachbereicheTest extends TestCase
         ]);
         $bote = $this->page('georgsbote', 'Georgsbote', ['body' => '<p>Der Georgsbote ist die Zeitschrift des DPSG Diözesanverbands Trier mit Berichten aus Stufen, Bezirken und Stämmen. Hier findest du alle Ausgaben als PDF; über den Newsletter kommen neue Ausgaben direkt in dein Postfach.</p>']);
 
-        DB::table('migrations')->where('migration', '2026_10_02_140000_menu_dioezesanverband_georgsbrief')->delete();
-        (require database_path('migrations/2026_10_02_140000_menu_dioezesanverband_georgsbrief.php'))->up();
+        (new MenuDioezesanverbandGeorgsbrief)->run();
 
         $dv = Page::query()->where('slug', 'dioezesanverband')->firstOrFail();
         $this->assertSame($dv->id, $leitung->fresh()->parent_id);

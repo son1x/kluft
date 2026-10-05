@@ -17,3 +17,9 @@ parameters:
     tmpDir: storage/framework/cache/phpstan
     # Die Baseline darf schrumpfen, wenn Bestand behoben wird.
     reportUnmatchedIgnoredErrors: false
+    ignoreErrors:
+        # Instanz-Konfiguration wird von config/dpsg.php geladen und ist
+        # damit Teil der Konfiguration (auch bei config:cache).
+        -
+            identifier: larastan.noEnvCallsOutsideOfConfig
+            path: instanzen/*/config.php

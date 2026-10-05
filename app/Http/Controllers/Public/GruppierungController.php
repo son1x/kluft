@@ -39,8 +39,8 @@ class GruppierungController extends Controller
         $ohneBezirk = $bezirk ? collect() : $staemme->get('', collect());
 
         return view('gruppierungen.index', [
-            // Redaktioneller Einleitungstext (Seite „bezirke-staemme“, zugleich Menüpunkt).
-            'intro' => Page::query()->published()->where('slug', 'bezirke-staemme')->first(),
+            // Redaktioneller Einleitungstext (Seite mit dem Pfad des Verzeichnisses, zugleich Menüpunkt).
+            'intro' => Page::query()->published()->where('slug', config('dpsg.directory.path'))->first(),
             'bezirke' => $bezirke,
             'sections' => $sections,
             'ohneBezirk' => $ohneBezirk,

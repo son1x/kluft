@@ -64,8 +64,8 @@ Route::get('/aktuelles/{slug}', [PostController::class, 'show'])->name('posts.sh
 // RSS-Feed der Beiträge (Pflichtenheft 11.1).
 Route::get('/feed', [FeedController::class, 'index'])->name('feed');
 
-// Bezirke- und Stämme-Verzeichnis mit Karte (F-MAP, Pflichtenheft 11.1).
-Route::get('/bezirke-staemme', [GruppierungController::class, 'index'])->name('gruppierungen.index');
+// Verzeichnis der Stämme (beim DV mit Bezirken) mit Karte (F-MAP, Pflichtenheft 11.1).
+Route::get('/'.config('dpsg.directory.path'), [GruppierungController::class, 'index'])->name('gruppierungen.index');
 Route::get('/api/gruppierungen.geojson', [GruppierungController::class, 'geojson'])
     ->middleware('throttle:60,1')
     ->name('gruppierungen.geojson');

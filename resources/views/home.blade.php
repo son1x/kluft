@@ -145,7 +145,7 @@
                 {{ config('dpsg.site.join_text') }}
             </p>
             <div class="mt-6 flex flex-wrap gap-3">
-                <a href="{{ url('/bezirke-staemme') }}" class="inline-block bg-white px-5 py-2 font-bold text-dpsg-blau hover:bg-dpsg-hellbeige">Stamm in der Nähe finden</a>
+                <a href="{{ route('gruppierungen.index') }}" class="inline-block bg-white px-5 py-2 font-bold text-dpsg-blau hover:bg-dpsg-hellbeige">Stamm in der Nähe finden</a>
                 <a href="{{ url('/kontakt') }}" class="inline-block border border-white px-5 py-2 font-bold text-white hover:bg-white hover:text-dpsg-blau">Kontakt aufnehmen</a>
             </div>
         </div>
@@ -179,7 +179,7 @@
         @php($serviceLinks = [
             ['url' => '/'.config('dpsg.site.office.page'), 'label' => config('dpsg.site.office.label'), 'icon' => 'heroicon-o-building-office-2'],
             ['url' => '/stufen', 'label' => 'Die Stufen', 'icon' => 'heroicon-o-user-group'],
-            ['url' => '/bezirke-staemme', 'label' => 'Bezirke & Stämme', 'icon' => 'heroicon-o-map-pin'],
+            ['url' => '/'.config('dpsg.directory.path'), 'label' => config('dpsg.directory.title'), 'icon' => 'heroicon-o-map-pin'],
             ['url' => '/aktuelles', 'label' => 'Aktuelles', 'icon' => 'heroicon-o-newspaper'],
         ])
         @foreach (config('dpsg.home_highlights') as $slug => $tile)

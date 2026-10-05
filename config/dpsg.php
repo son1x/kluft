@@ -13,10 +13,18 @@ if (! preg_match('/^[a-z0-9-]+$/', $instanz) || ! is_file($instanzDatei)) {
     throw new RuntimeException('KLUFT_INSTANZ „'.$instanz.'“ unbekannt: instanzen/'.$instanz.'/config.php fehlt.');
 }
 
+$instanzConfig = require $instanzDatei;
+
 return array_replace([
 
     // Schlüssel der aktiven Instanz (Ordnername unter instanzen/).
     'instanz' => $instanz,
+
+    /*
+    | Verzeichnis der Stämme (beim DV mit Bezirken). `path` ist zugleich der
+    | Slug der CMS-Seite mit dem Einleitungstext und dem Menüpunkt.
+    */
+    'directory' => ['path' => 'staemme', 'title' => 'Unsere Stämme'],
 
     // Seeder der Instanz: Startinhalt (db:seed) und Grundbestand für Tests.
     'seeders' => ['start' => null, 'basis' => null],
@@ -79,7 +87,8 @@ return array_replace([
     */
     'event_fields' => [
         'birth_year' => ['label' => 'Geburtsjahr', 'type' => 'year'],
-        'stamm' => ['label' => 'Stamm oder Bezirk', 'type' => 'stamm'],
+        // Bezeichnung je Instanz (event_stamm_label), z. B. „Stamm oder Bezirk“ im DV.
+        'stamm' => ['label' => $instanzConfig['event_stamm_label'] ?? 'Stamm', 'type' => 'stamm'],
         'gremium' => ['label' => 'Funktion / Gremium (z. B. Bezirksvorstand, Delegierte*r, Gast)', 'type' => 'text'],
         'phone' => ['label' => 'Telefonnummer für Rückfragen', 'type' => 'tel'],
         'diet' => ['label' => 'Verpflegung', 'type' => 'select', 'options' => [
@@ -115,4 +124,4 @@ return array_replace([
     // nötig (F-EV-14, § 8 Abs. 8 KDG).
     'guardian_consent_age' => 16,
 
-], require $instanzDatei);
+], $instanzConfig);

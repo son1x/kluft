@@ -22,7 +22,10 @@ class GruppierungResource extends Resource
 
     protected static ?string $modelLabel = 'Bezirk/Stamm';
 
-    protected static ?string $pluralModelLabel = 'Bezirke & Stämme';
+    public static function getPluralModelLabel(): string
+    {
+        return (string) config('dpsg.directory.title');
+    }
 
     protected static ?string $slug = 'gruppierungen';
 

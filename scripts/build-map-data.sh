@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Erzeugt den selbstgehosteten Kartenausschnitt für das Bistum Trier
+# Erzeugt den selbstgehosteten Kartenausschnitt der Instanz (bbox aus der config)
 # (Pflichtenheft F-MAP-04): Vektorkacheln aus dem Protomaps-Tagesbuild
 # (OpenStreetMap-Daten, ODbL), per HTTP-Range-Requests ausgeschnitten.
 # Die Datei ist zu groß fürs Repository und wird in der CI erzeugt.
@@ -9,8 +9,8 @@
 set -euo pipefail
 
 PMTILES_BIN="${1:-go-pmtiles}"
-# config/dpsg.php ohne Laravel lesen: env() liefert hier nur den Standardwert.
-MAP_PHP='if (! function_exists("env")) { function env($k, $d = null) { return $d; } } $m = (require "config/dpsg.php")["map"];'
+# config/dpsg.php ohne Laravel lesen (KLUFT_INSTANZ aus der Umgebung wählt die Instanz).
+MAP_PHP='if (! function_exists("env")) { function env($k, $d = null) { $v = getenv($k); return $v === false ? $d : $v; } } $m = (require "config/dpsg.php")["map"];'
 BUILD_DATE="$(php -r "$MAP_PHP"' echo $m["build"];')"
 TARGET="public/$(php -r "$MAP_PHP"' echo $m["pmtiles"];')"
 BBOX="$(php -r "$MAP_PHP"' echo implode(",", $m["bbox"]);')"

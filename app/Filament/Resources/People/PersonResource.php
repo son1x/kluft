@@ -7,6 +7,7 @@ use App\Filament\Resources\People\Pages\EditPerson;
 use App\Filament\Resources\People\Pages\ListPeople;
 use App\Models\Media;
 use App\Models\Person;
+use App\Support\Site;
 use BackedEnum;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\FileUpload;
@@ -94,16 +95,16 @@ class PersonResource extends Resource
                     TextInput::make('role')->label('Funktion')->placeholder('z. B. Referentin der Wölflingsstufe')->maxLength(150),
                     Select::make('gremium')->label('Gremium')->options($gremien)->in(array_keys($gremien))->required()->native(false)
                         ->live()
-                        ->helperText('Bestimmt, auf welcher Seite die Person erscheint. DAK-Mitglieder erscheinen auf der Seite ihrer Stufe.'),
+                        ->helperText('Bestimmt, auf welcher Seite die Person erscheint. Mitglieder im '.Site::akShort().' erscheinen auf der Seite ihrer Stufe.'),
                     Select::make('stage')->label('Stufe')
                         ->options(collect(config('dpsg.stages'))->map(fn (array $s) => $s['label'])->all())
                         ->in(array_keys(config('dpsg.stages')))
                         ->placeholder('–')
                         ->native(false)
                         ->required(fn (Get $get) => $get('gremium') === 'dak')
-                        ->helperText('Für Stufenreferent*innen und DAK-Mitglieder: Sie erscheinen dann auf der Stufenseite.'),
+                        ->helperText('Für Stufenreferent*innen und Mitglieder im '.Site::akShort().': Sie erscheinen dann auf der Stufenseite.'),
                     TextInput::make('subgroup')->label('Zwischenüberschrift')
-                        ->placeholder('z. B. Diözesanvorstand')
+                        ->placeholder('z. B. '.config('dpsg.site.leitung_label'))
                         ->datalist(fn () => Person::query()->whereNotNull('subgroup')->distinct()->orderBy('subgroup')->pluck('subgroup')->all())
                         ->maxLength(100),
                     Select::make('badge')->label('Gestaltung des Initialen-Kreises')
@@ -119,7 +120,7 @@ class PersonResource extends Resource
                     TextInput::make('email')->label('E-Mail')->email()->maxLength(255)
                         ->visible(fn (Get $get) => $get('gremium') !== 'dak')
                         ->placeholder(fn (Get $get) => Person::suggestedEmail($get('name')) ?? 'initial.nachname@'.config('dpsg.person_email_domain'))
-                        ->helperText('Standard: Initial.Nachname@'.config('dpsg.person_email_domain').' – leer lassen, dann wird diese Adresse angezeigt. DAK-Mitglieder haben keine eigene Adresse.'),
+                        ->helperText('Standard: Initial.Nachname@'.config('dpsg.person_email_domain').' – leer lassen, dann wird diese Adresse angezeigt. Mitglieder im '.Site::akShort().' haben keine eigene Adresse.'),
                     Textarea::make('bio')->label('Vorstellungstext')->rows(6)->maxLength(3000)->columnSpanFull()
                         ->helperText('Absätze mit einer Leerzeile trennen. Lange Texte werden mit „Mehr lesen“ eingeklappt.'),
                     TextInput::make('sort')->label('Reihenfolge')->numeric()->default(0),

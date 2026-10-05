@@ -1,7 +1,9 @@
 @extends('layouts.app')
 
-@section('seo_title', 'Bezirke & Stämme – '.config('dpsg.site.name'))
-@section('seo_description', 'Wo finde ich meinen Stamm? Alle Bezirke und Stämme der DPSG im '.config('dpsg.site.region').' mit Adresse, Kontakt und Karte.')
+{{-- Bezirksfilter und „Bezirke und …“ nur, wenn es mehr als einen Bezirk gibt (beim Bezirk selbst nicht). --}}
+@php($mehrereBezirke = $bezirke->count() > 1)
+@section('seo_title', config('dpsg.directory.title').' – '.config('dpsg.site.name'))
+@section('seo_description', 'Wo finde ich meinen Stamm? Alle '.($mehrereBezirke ? 'Bezirke und ' : '').'Stämme der DPSG im '.config('dpsg.site.region').' mit Adresse, Kontakt und Karte.')
 
 @push('head')
     @vite('resources/js/map.js')
@@ -10,25 +12,27 @@
 @section('content')
     @php($stages = config('dpsg.stages'))
     <div class="mx-auto max-w-6xl px-4 py-10">
-        <h1 class="font-serif text-3xl font-bold">Bezirke &amp; Stämme</h1>
+        <h1 class="font-serif text-3xl font-bold">{{ config('dpsg.directory.title') }}</h1>
         @if ($intro && trim(strip_tags($intro->body)) !== '')
             <div class="prose mt-3 max-w-3xl text-text-secondary">{!! str($intro->body)->sanitizeHtml() !!}</div>
         @else
             <p class="mt-3 max-w-3xl text-text-secondary">
-                Wo finde ich meinen Stamm? Hier findest du alle Bezirke und Stämme im {{ config('dpsg.site.region') }} mit Kontakt und den Stufen, die sie anbieten.
+                Wo finde ich meinen Stamm? Hier findest du alle {{ $mehrereBezirke ? 'Bezirke und ' : '' }}Stämme im {{ config('dpsg.site.region') }} mit Kontakt und den Stufen, die sie anbieten.
             </p>
         @endif
 
         <form method="get" action="{{ route('gruppierungen.index') }}" class="mt-6 flex flex-wrap items-end gap-4 bg-surface-muted p-4">
-            <label class="flex flex-col text-sm font-bold">
-                Bezirk
-                <select name="bezirk" class="mt-1 min-w-48 border border-dpsg-mittelbeige bg-white px-3 py-2 font-normal">
-                    <option value="">Alle Bezirke</option>
-                    @foreach ($bezirke as $b)
-                        <option value="{{ $b->slug }}" @selected($filterBezirk === $b->slug)>{{ $b->name }}</option>
-                    @endforeach
-                </select>
-            </label>
+            @if ($mehrereBezirke)
+                <label class="flex flex-col text-sm font-bold">
+                    Bezirk
+                    <select name="bezirk" class="mt-1 min-w-48 border border-dpsg-mittelbeige bg-white px-3 py-2 font-normal">
+                        <option value="">Alle Bezirke</option>
+                        @foreach ($bezirke as $b)
+                            <option value="{{ $b->slug }}" @selected($filterBezirk === $b->slug)>{{ $b->name }}</option>
+                        @endforeach
+                    </select>
+                </label>
+            @endif
             <label class="flex flex-col text-sm font-bold">
                 Stufe
                 <select name="stufe" class="mt-1 min-w-48 border border-dpsg-mittelbeige bg-white px-3 py-2 font-normal">

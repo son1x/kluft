@@ -60,6 +60,11 @@ return [
         'basis' => InhaltSeeder::class,
     ],
 
+    'directory' => ['path' => 'bezirke-staemme', 'title' => 'Bezirke & Stämme'],
+
+    // Feld „Stamm“ der Veranstaltungsanmeldung.
+    'event_stamm_label' => 'Stamm oder Bezirk',
+
     'features' => [
         'georgsbote' => true,
         'roadmap' => true,

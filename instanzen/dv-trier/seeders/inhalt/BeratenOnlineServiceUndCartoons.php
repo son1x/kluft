@@ -23,7 +23,7 @@ class BeratenOnlineServiceUndCartoons extends Seeder
     private const SOURCE = 'instanzen/dv-trier/dateien/beraten-online/';
 
     private const CARTOONS = [
-        1 => 'Cartoon: Gezeichneter Pfadfinder mit Hut und verschränkten Armen, Spruchband „Versucht, die Welt ein wenig besser zu verlassen, als ihr sie vorgefunden habt.“ – PB BeratungsPower & Coaching',
+        1 => 'Cartoon: Gezeichneter Pfadfinder mit Hut und verschränkten Armen, Spruchband „Versucht, die Welt ein wenig besser zu verlassen, als ihr sie vorgefunden habt.“ – BP BeratungsPower & Coaching',
         2 => 'Cartoon in drei Bildern am Strand: Ein Jugendlicher bekommt Sand ins Gesicht („Probleme sind wie Sand im Getriebe …“), ein Pfadfinder schaut aufs Meer („Lösungen gibt es wie Sand am Meer!“), gemeinsam bauen sie eine Sandburg („Eine Einladung zum Luftschlösser und Sandburgen bauen – mit BP Beratungspower & Coaching!“)',
         3 => 'Cartoon in drei Bildern im Dschungel: Eine Gruppe sitzt ratlos neben dem Schild „Stamm X“ („Verharren im gleichen und altbewährten Zustand!?“), ein Pfadfinder bricht durchs Gebüsch („Zum Finden braucht’s Bewegung im Unbekannten!“), die Gruppe wandert los („BP Beratungspower & Coaching – Pfade finden beginnt im Kopf!“)',
         4 => 'Cartoon in drei Bildern: Ein älterer Pfadfinder mit Hut sagt „Learning by doing heißt auch: Ich sorge für mich und andere“, drei junge Pfadfinder*innen zeigen den Daumen hoch: „Ihr wollt Struktur, Arbeitsaufteilung und Ergebnisse? Dann holt euch BP Beratungspower & Coaching!“',

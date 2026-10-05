@@ -7,6 +7,7 @@ use App\Models\EventRegistration;
 use App\Models\Person;
 use App\Models\RegistrationDocument;
 use App\Models\User;
+use App\Services\Mitglieder\MitgliederAbgleich;
 use App\Support\Features;
 use App\Support\MailQueueEntry;
 use Illuminate\Support\Collection;
@@ -65,6 +66,12 @@ class PrivacyRequests
                 'angemeldet_durch' => $r->guardian_name,
                 'einwilligung' => $r->consent_at?->toIso8601String(),
                 'einwilligungstext_version' => $r->consent_text_version,
+                'mitgliederabgleich' => $r->member_status ? [
+                    'ergebnis' => MitgliederAbgleich::STATUSES[$r->member_status] ?? $r->member_status,
+                    'mitgliedsnummer' => $r->member_number,
+                    'stamm' => $r->member_group,
+                    'geprueft_am' => $r->member_checked_at?->toIso8601String(),
+                ] : null,
                 'bestaetigt_am' => $r->confirmed_at?->toIso8601String(),
                 'storniert_am' => $r->cancelled_at?->toIso8601String(),
                 'loeschung_geplant_am' => $r->purge_at?->toIso8601String(),

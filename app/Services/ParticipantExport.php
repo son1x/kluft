@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Event;
 use App\Models\EventRegistration;
+use App\Services\Mitglieder\MitgliederAbgleich;
 use OpenSpout\Common\Entity\Row;
 use OpenSpout\Common\Entity\Style\Style;
 use OpenSpout\Writer\XLSX\Writer;
@@ -25,7 +26,9 @@ class ParticipantExport
             ->flatMap(fn (array $field) => $field['type'] === 'days' ? [$field['label'], ...array_values($event->days())] : [$field['label']])
             ->all();
 
-        return ['Nr.', 'Status', 'Vorname', 'Nachname', 'E-Mail', ...$fields, 'Angemeldet durch (sorgeberechtigt)', 'Bestätigt am'];
+        $member = $event->checksMembers() ? ['Mitglied', 'Mitgliedsnummer', 'Stamm (Mitgliederverwaltung)'] : [];
+
+        return ['Nr.', 'Status', 'Vorname', 'Nachname', 'E-Mail', ...$fields, ...$member, 'Angemeldet durch (sorgeberechtigt)', 'Bestätigt am'];
     }
 
     /**
@@ -34,6 +37,7 @@ class ParticipantExport
     public function rows(Event $event): array
     {
         $fields = $event->formFields();
+        $checksMembers = $event->checksMembers();
 
         return $event->registrations()
             ->whereIn('status', ['confirmed', 'waitlist', 'cancelled'])
@@ -41,7 +45,7 @@ class ParticipantExport
             ->orderBy('confirmed_at')
             ->get()
             ->values()
-            ->map(function (EventRegistration $r, int $i) use ($fields, $event) {
+            ->map(function (EventRegistration $r, int $i) use ($fields, $event, $checksMembers) {
                 $extra = [];
                 foreach ($fields as $key => $field) {
                     $value = $key === 'birth_year' ? $r->birth_year : ($r->data[$key] ?? null);
@@ -60,6 +64,7 @@ class ParticipantExport
                     $r->last_name,
                     $r->email,
                     ...$extra,
+                    ...($checksMembers ? [MitgliederAbgleich::STATUSES[$r->member_status] ?? 'nicht geprüft', $r->member_number, $r->member_group] : []),
                     $r->guardian_name,
                     $r->confirmed_at?->format('d.m.Y H:i'),
                 ]);

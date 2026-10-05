@@ -16,6 +16,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $confirmed_at
  * @property Carbon|null $cancelled_at
  * @property Carbon|null $purge_at
+ * @property Carbon|null $member_checked_at
  */
 class EventRegistration extends Model
 {
@@ -32,6 +33,8 @@ class EventRegistration extends Model
         'confirm_token_hash', 'confirmed_at', 'cancel_token_hash', 'cancelled_at', 'purge_at',
     ];
 
+    // member_* setzt nur der Mitgliederabgleich (forceFill), nie ein Formular.
+
     protected $hidden = ['confirm_token_hash', 'cancel_token_hash'];
 
     protected function casts(): array
@@ -44,6 +47,8 @@ class EventRegistration extends Model
             'confirmed_at' => 'datetime',
             'cancelled_at' => 'datetime',
             'purge_at' => 'datetime',
+            'member_manual' => 'boolean',
+            'member_checked_at' => 'datetime',
         ];
     }
 

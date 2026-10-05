@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Jobs\CheckEventMembers;
 use App\Mail\EventRegistrationMail;
 use App\Models\Event;
 use App\Models\EventRegistration;
@@ -50,7 +51,7 @@ class EventRegistrations
             'data' => array_filter($input['data'] ?? [], fn ($v) => filled($v)),
             'guardian_name' => $input['guardian_name'] ?? null,
             'guardian_consent' => (bool) ($input['guardian_consent'] ?? false),
-            'consent_text_version' => config('dpsg.event_consent.version'),
+            'consent_text_version' => $event->consentVersion(),
             'consent_at' => now(),
             'confirm_token_hash' => EventRegistration::hashToken($token),
             'purge_at' => now()->addHours(self::CONFIRM_HOURS),
@@ -115,6 +116,10 @@ class EventRegistrations
 
         $this->send($registration, $result, $cancelToken);
         app(PushNotifier::class)->registration($registration, $result);
+
+        if ($registration->event->checksMembers()) {
+            CheckEventMembers::dispatch($registration->event_id, false, [$registration->id]);
+        }
 
         return [$result, $registration];
     }

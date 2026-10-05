@@ -5,6 +5,10 @@ namespace App\Providers;
 use App\Mail\TestRecipientFilter;
 use App\Models\Page;
 use App\Services\Glossary;
+use App\Services\Mitglieder\HitobitoVerzeichnis;
+use App\Services\Mitglieder\KeinVerzeichnis;
+use App\Services\Mitglieder\Mitgliederverzeichnis;
+use App\Services\Mitglieder\NamiVerzeichnis;
 use App\Support\Embeds;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -24,7 +28,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Mitgliederverwaltung je nach Treiber (docs/mitgliederabgleich.md).
+        $this->app->singleton(Mitgliederverzeichnis::class, fn () => match (config('mitglieder.driver')) {
+            'nami' => new NamiVerzeichnis,
+            'hitobito' => new HitobitoVerzeichnis,
+            default => new KeinVerzeichnis,
+        });
     }
 
     /**

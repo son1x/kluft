@@ -233,7 +233,7 @@
 
                     <label class="flex gap-3 text-sm">
                         <input type="checkbox" name="consent" value="1" required class="mt-1 h-5 w-5 shrink-0" @checked(old('consent')) />
-                        <span>{{ __(config('dpsg.event_consent.text'), ['tage' => $event->retention_days]) }} Mehr in der <a href="{{ url('/datenschutz') }}" class="text-dpsg-rot underline">Datenschutzerklärung</a>. *</span>
+                        <span>{{ $event->consentText() }} Mehr in der <a href="{{ url('/datenschutz') }}" class="text-dpsg-rot underline">Datenschutzerklärung</a>. *</span>
                     </label>
                     @error('consent')<p class="text-sm text-dpsg-rot">{{ $message }}</p>@enderror
 

@@ -1,0 +1,319 @@
+<?php
+
+namespace Tests\Feature\Mitglieder;
+
+use App\Filament\Resources\Events\Pages\EditEvent;
+use App\Filament\Resources\Events\RelationManagers\RegistrationsRelationManager;
+use App\Mail\EventRegistrationMail;
+use App\Models\AuditLog;
+use App\Models\Event;
+use App\Models\EventRegistration;
+use App\Models\User;
+use App\Services\Mitglieder\HitobitoVerzeichnis;
+use App\Services\Mitglieder\Mitglied;
+use App\Services\Mitglieder\MitgliederAbgleich;
+use App\Services\Mitglieder\Mitgliederverzeichnis;
+use App\Services\Mitglieder\MitgliederverzeichnisException;
+use App\Services\Mitglieder\NamiVerzeichnis;
+use App\Services\ParticipantExport;
+use Filament\Facades\Filament;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
+use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\TestDox;
+use Tests\TestCase;
+
+/**
+ * Abgleich der Teilnehmenden mit NaMi 2 bzw. NaMi 3 (hitobito),
+ * docs/mitgliederabgleich.md.
+ */
+class MitgliederAbgleichTest extends TestCase
+{
+    use RefreshDatabase;
+
+    /** @var list<Mitglied> */
+    private array $bestand = [];
+
+    /** @var list<array{0: string, 1: string}> */
+    private array $suchen = [];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Mail::fake();
+        config(['mitglieder.driver' => 'nami']);
+
+        // Verzeichnis im Speicher: liefert alle Personen mit passendem Nachnamen.
+        $this->app->instance(Mitgliederverzeichnis::class, new class($this) implements Mitgliederverzeichnis
+        {
+            public function __construct(private MitgliederAbgleichTest $test) {}
+
+            public function name(): string
+            {
+                return 'Test-NaMi';
+            }
+
+            public function suche(string $vorname, string $nachname): array
+            {
+                return $this->test->sucheIm($vorname, $nachname);
+            }
+
+            public function pruefe(): void {}
+        });
+    }
+
+    /** @return list<Mitglied> */
+    public function sucheIm(string $vorname, string $nachname): array
+    {
+        $this->suchen[] = [$vorname, $nachname];
+
+        return array_values(array_filter($this->bestand, fn (Mitglied $m) => mb_strtolower($m->nachname) === mb_strtolower($nachname)));
+    }
+
+    private function mitglied(string $nummer, string $vorname, string $nachname, ?string $geburt = '2010-05-01', bool $aktiv = true, ?string $email = null): Mitglied
+    {
+        return new Mitglied($nummer, $vorname, $nachname, $geburt ? Carbon::parse($geburt) : null, $email, 'Stamm Sankt Georg', $aktiv);
+    }
+
+    private function event(array $attrs = []): Event
+    {
+        return Event::query()->create([
+            'title' => 'Wölflingslager', 'slug' => 'woelflingslager', 'status' => 'open',
+            'starts_at' => now()->addMonths(2), 'ends_at' => now()->addMonths(2)->addDays(2),
+            'form_fields' => ['birth_year' => 'required'], 'member_check' => true,
+            ...$attrs,
+        ]);
+    }
+
+    private function anmeldung(Event $event, string $vorname, string $nachname, ?int $jahr = 2010, string $email = 'eltern@example.org', string $status = 'confirmed'): EventRegistration
+    {
+        return $event->registrations()->create([
+            'status' => $status, 'first_name' => $vorname, 'last_name' => $nachname, 'email' => $email, 'birth_year' => $jahr,
+            'consent_text_version' => 'x', 'consent_at' => now(), 'confirmed_at' => now(),
+        ]);
+    }
+
+    #[TestDox('Abgleich: Mitglied, ehemalig, nicht gefunden, unklar; Umlaute, Doppelnamen, Geburtsjahr und E-Mail')]
+    public function test_matching_rules(): void
+    {
+        $this->bestand = [
+            $this->mitglied('111', 'Jonas', 'Müller'),
+            $this->mitglied('112', 'Anna Lena', 'Schäfer'),
+            $this->mitglied('113', 'Paul', 'Weber', aktiv: false),
+            $this->mitglied('114', 'Lea', 'Klein', '2010-02-02', email: 'a@example.org'),
+            $this->mitglied('115', 'Lea', 'Klein', '2010-09-09', email: 'b@example.org'),
+            $this->mitglied('116', 'Tom', 'Fischer', '2001-01-01'),
+        ];
+        $event = $this->event();
+        $abgleich = app(MitgliederAbgleich::class);
+
+        $jonas = $this->anmeldung($event, 'jonas', 'MÜLLER');
+        $this->assertSame('mitglied', $abgleich->pruefe($jonas));
+        $this->assertSame(['111', 'Stamm Sankt Georg'], [$jonas->member_number, $jonas->member_group]);
+
+        $this->assertSame('mitglied', $abgleich->pruefe($this->anmeldung($event, 'Anna-Lena', 'Schäfer')));
+        $this->assertSame(['Anna', 'Schäfer'], end($this->suchen), 'Gesucht wird nur mit erstem Vornamen und Nachnamen.');
+        $this->assertSame('ehemalig', $abgleich->pruefe($this->anmeldung($event, 'Paul', 'Weber')));
+        $this->assertSame('nicht_gefunden', $abgleich->pruefe($this->anmeldung($event, 'Tom', 'Fischer')), 'Geburtsjahr passt nicht.');
+        $this->assertSame('nicht_gefunden', $abgleich->pruefe($this->anmeldung($event, 'Greta', 'Neu')));
+
+        $unklar = $this->anmeldung($event, 'Lea', 'Klein', 2010, 'c@example.org');
+        $this->assertSame('unklar', $abgleich->pruefe($unklar));
+        $this->assertNull($unklar->member_number);
+        $perMail = $this->anmeldung($event, 'Lea', 'Klein', 2010, 'B@example.org');
+        $this->assertSame('mitglied', $abgleich->pruefe($perMail));
+        $this->assertSame('115', $perMail->member_number);
+    }
+
+    #[TestDox('Nach der Bestätigung wird automatisch abgeglichen; Einwilligung mit eigenem Hinweis und eigener Version')]
+    public function test_flow_after_confirmation(): void
+    {
+        $this->bestand = [$this->mitglied('4711', 'Mia', 'Muster', '2010-03-03')];
+        $event = $this->event();
+
+        $this->get('/veranstaltungen/woelflingslager')->assertOk()->assertSee('ob du Mitglied bist');
+        $this->post('/veranstaltungen/woelflingslager/anmeldung', [
+            'first_name' => 'Mia', 'last_name' => 'Muster', 'email' => 'eltern@example.org',
+            'birth_year' => 2010, 'by_guardian' => '1', 'guardian_name' => 'Eva Muster', 'guardian_consent' => '1', 'consent' => '1',
+        ])->assertSessionHasNoErrors();
+
+        $registration = EventRegistration::query()->sole();
+        $this->assertSame(config('dpsg.event_consent.version').'+mitglieder-'.config('mitglieder.consent.version'), $registration->consent_text_version);
+        $this->assertNull($registration->member_status, 'Unbestätigte Anmeldungen werden nicht abgefragt.');
+        $this->assertSame([], $this->suchen);
+
+        $token = null;
+        Mail::assertQueued(EventRegistrationMail::class, function ($mail) use (&$token) {
+            $token = $mail->token;
+
+            return $mail->kind === 'doi';
+        });
+        $this->post("/anmeldung/bestaetigen/{$token}")->assertOk();
+
+        $registration->refresh();
+        $this->assertSame(['mitglied', '4711'], [$registration->member_status, $registration->member_number]);
+
+        // Export und Datenschutzauskunft enthalten das Ergebnis.
+        $export = app(ParticipantExport::class);
+        $this->assertContains('Mitgliedsnummer', $export->headings($event));
+        $this->assertContains('4711', $export->rows($event)[0]);
+    }
+
+    #[TestDox('Ohne eingerichteten Treiber: kein Abgleich, kein Hinweis im Einwilligungstext')]
+    public function test_off_driver(): void
+    {
+        config(['mitglieder.driver' => 'off']);
+        $event = $this->event();
+
+        $this->assertFalse($event->checksMembers());
+        $this->assertSame(config('dpsg.event_consent.version'), $event->consentVersion());
+        $this->get('/veranstaltungen/woelflingslager')->assertOk()->assertDontSee('ob du Mitglied bist');
+        $this->assertNotContains('Mitgliedsnummer', app(ParticipantExport::class)->headings($event));
+    }
+
+    #[TestDox('Backend: Abgleich starten, Spalte „Mitglied“, Entscheidung von Hand bleibt bei neuem Abgleich')]
+    public function test_backend_actions(): void
+    {
+        $this->bestand = [
+            $this->mitglied('1', 'Lea', 'Klein', '2010-02-02'),
+            $this->mitglied('2', 'Lea', 'Klein', '2010-09-09'),
+            $this->mitglied('3', 'Ben', 'Berg'),
+        ];
+        $event = $this->event();
+        $lea = $this->anmeldung($event, 'Lea', 'Klein');
+        $ben = $this->anmeldung($event, 'Ben', 'Berg');
+        $offen = $this->anmeldung($event, 'Ben', 'Berg', email: 'x@example.org', status: 'pending');
+
+        $user = User::query()->create(['name' => 'Büro', 'email' => 'buero@example.org', 'status' => 'active']);
+        $user->roleAssignments()->create(['role' => 'verwaltung', 'scope_type' => 'global', 'scope_key' => null]);
+        Filament::setCurrentPanel('admin');
+        $this->actingAs($user->fresh());
+
+        $table = Livewire::test(RegistrationsRelationManager::class, ['ownerRecord' => $event, 'pageClass' => EditEvent::class])
+            ->assertSee('noch nicht geprüft')
+            ->callTableAction('checkMembers', data: ['alle' => false])
+            ->assertHasNoTableActionErrors();
+
+        $this->assertSame('unklar', $lea->fresh()->member_status);
+        $this->assertSame('mitglied', $ben->fresh()->member_status);
+        $this->assertNull($offen->fresh()->member_status);
+        $this->assertSame(1, AuditLog::query()->where('action', 'event.member_check')->count());
+
+        $table->callTableAction('memberDecision', $lea, data: ['status' => 'mitglied', 'number' => '2', 'group' => 'Stamm Test'])
+            ->assertHasNoTableActionErrors();
+        $this->assertTrue($lea->fresh()->member_manual);
+
+        $table->callTableAction('checkMembers', data: ['alle' => true]);
+        $this->assertSame(['mitglied', '2', true], [$lea->fresh()->member_status, $lea->fresh()->member_number, $lea->fresh()->member_manual]);
+        $table->assertSee('Nr. 2')->assertSee('von Hand');
+    }
+
+    #[TestDox('NaMi 2: Anmeldung, Suche per search-multi, Nicht-Mitglieder und beendete Mitgliedschaften, Neuanmeldung bei abgelaufener Session')]
+    public function test_nami_driver(): void
+    {
+        config(['mitglieder.nami.user' => '123456', 'mitglieder.nami.password' => 'geheim']);
+        $logins = 0;
+        $searches = 0;
+        Http::fake(function (Request $request) use (&$logins, &$searches) {
+            if (str_ends_with($request->url(), '/ica/rest/api/1/1/service/nami/auth/manual/sessionStartup')) {
+                $logins++;
+                $this->assertSame(['username' => '123456', 'password' => 'geheim', 'Login' => 'API'], $request->data());
+
+                return Http::response(['statusCode' => 0, 'statusMessage' => ''], 200, ['Set-Cookie' => 'JSESSIONID=abc; Path=/ica']);
+            }
+            if (str_contains($request->url(), '/search-multi/result-list')) {
+                $searches++;
+                if ($searches === 1) {
+                    return Http::response(['success' => false, 'message' => 'Session expired'], 200);
+                }
+                parse_str((string) parse_url($request->url(), PHP_URL_QUERY), $query);
+                $values = json_decode($query['searchedValues'], true);
+                $this->assertSame(['Mia', 'Muster'], [$values['vorname'], $values['nachname']]);
+
+                return Http::response(['success' => true, 'data' => [
+                    ['id' => 1, 'entries_mitgliedsNummer' => 4711, 'entries_vorname' => 'Mia', 'entries_nachname' => 'Muster', 'entries_geburtsDatum' => '2010-03-03 00:00:00', 'entries_email' => 'eltern@example.org', 'entries_gruppierung' => 'Stamm Sankt Georg', 'entries_status' => 'Aktiv', 'entries_mglType' => 'Mitglied'],
+                    ['id' => 2, 'entries_mitgliedsNummer' => 4712, 'entries_vorname' => 'Mia', 'entries_nachname' => 'Muster', 'entries_geburtsDatum' => '1980-01-01 00:00:00', 'entries_status' => 'Aktiv', 'entries_mglType' => 'Nicht-Mitglied'],
+                    ['id' => 3, 'entries_mitgliedsNummer' => 4713, 'entries_vorname' => 'Mia', 'entries_nachname' => 'Muster', 'entries_status' => 'Inaktiv', 'entries_mglType' => 'Mitglied'],
+                ]]);
+            }
+
+            return Http::response('', 404);
+        });
+
+        $treffer = (new NamiVerzeichnis)->suche('Mia', 'Muster');
+
+        $this->assertSame(2, $logins, 'Nach abgelaufener Session einmal neu anmelden.');
+        $this->assertSame(['4711', '4712', '4713'], array_map(fn (Mitglied $m) => $m->nummer, $treffer));
+        $this->assertSame([true, false, false], array_map(fn (Mitglied $m) => $m->aktiv, $treffer));
+        $this->assertSame('2010-03-03', $treffer[0]->geburtsdatum?->toDateString());
+        $this->assertSame('Stamm Sankt Georg', $treffer[0]->gruppierung);
+    }
+
+    #[TestDox('NaMi 2: falsche Zugangsdaten führen zu einer Fehlermeldung ohne Antworttext')]
+    public function test_nami_login_failure(): void
+    {
+        config(['mitglieder.nami.user' => '123456', 'mitglieder.nami.password' => 'falsch']);
+        Http::fake(['*' => Http::response(['statusCode' => 3000, 'statusMessage' => 'Benutzer 123456 unbekannt'], 200)]);
+
+        try {
+            (new NamiVerzeichnis)->pruefe();
+            $this->fail('Exception erwartet');
+        } catch (MitgliederverzeichnisException $e) {
+            $this->assertStringContainsString('Anmeldung fehlgeschlagen', $e->getMessage());
+            $this->assertStringNotContainsString('123456', $e->getMessage());
+        }
+
+        config(['mitglieder.driver' => 'nami']);
+        $this->app->forgetInstance(Mitgliederverzeichnis::class);
+        $this->app->singleton(Mitgliederverzeichnis::class, fn () => new NamiVerzeichnis);
+        $this->artisan('mitglieder:check')->expectsOutputToContain('NaMi 2: NaMi-Anmeldung fehlgeschlagen')->assertFailed();
+    }
+
+    #[TestDox('NaMi 3 (hitobito): Service-Token, Filter auf Name, Stamm aus layer_group, Austritt, Mitgliedsnummer-Attribut')]
+    public function test_hitobito_driver(): void
+    {
+        config([
+            'mitglieder.hitobito.url' => 'https://nami3.example.org/',
+            'mitglieder.hitobito.token' => 'tok-123',
+            'mitglieder.hitobito.member_number_attribute' => 'membership_number',
+        ]);
+        Http::fake(function (Request $request) {
+            $this->assertSame('tok-123', $request->header('X-TOKEN')[0]);
+            $this->assertStringStartsWith('https://nami3.example.org/api/people?', $request->url());
+            parse_str((string) parse_url($request->url(), PHP_URL_QUERY), $query);
+            $this->assertSame('Muster', $query['filter']['last_name']['eq']);
+            $this->assertSame('Mia', $query['filter']['first_name']['prefix']);
+            $this->assertSame('first_name,last_name,birthday,email,exit_date,membership_number', $query['fields']['people']);
+
+            return Http::response([
+                'data' => [
+                    ['id' => '501', 'type' => 'people', 'attributes' => ['first_name' => 'Mia', 'last_name' => 'Muster', 'birthday' => '2010-03-03', 'email' => null, 'exit_date' => null, 'membership_number' => '4711'],
+                        'relationships' => ['layer_group' => ['data' => ['type' => 'groups', 'id' => '77']]]],
+                    ['id' => '502', 'type' => 'people', 'attributes' => ['first_name' => 'Mia', 'last_name' => 'Muster', 'exit_date' => '2020-12-31']],
+                ],
+                'included' => [['id' => '77', 'type' => 'groups', 'attributes' => ['name' => 'Stamm Sankt Georg']]],
+            ]);
+        });
+
+        $treffer = (new HitobitoVerzeichnis)->suche('Mia', 'Muster');
+
+        $this->assertSame(['4711', '502'], array_map(fn (Mitglied $m) => $m->nummer, $treffer));
+        $this->assertSame([true, false], array_map(fn (Mitglied $m) => $m->aktiv, $treffer));
+        $this->assertSame('Stamm Sankt Georg', $treffer[0]->gruppierung);
+        $this->assertNull($treffer[1]->geburtsdatum);
+    }
+
+    #[TestDox('NaMi 3 (hitobito): abgelehnter Token wird verständlich gemeldet')]
+    public function test_hitobito_forbidden(): void
+    {
+        config(['mitglieder.hitobito.url' => 'https://nami3.example.org', 'mitglieder.hitobito.token' => 'tok']);
+        Http::fake(['*' => Http::response(['errors' => [['status' => '403']]], 403)]);
+
+        $this->expectException(MitgliederverzeichnisException::class);
+        $this->expectExceptionMessage('lehnt den Service-Token ab');
+        (new HitobitoVerzeichnis)->pruefe();
+    }
+}

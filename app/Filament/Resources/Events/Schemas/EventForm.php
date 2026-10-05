@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\Events\Schemas;
 
 use App\Models\Event;
+use App\Services\Mitglieder\MitgliederAbgleich;
+use App\Services\Mitglieder\Mitgliederverzeichnis;
 use App\Support\RoleCatalog;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\DateTimePicker;
@@ -88,6 +90,9 @@ class EventForm
                     DateTimePicker::make('reg_opens_at')->label('Anmeldung ab')->seconds(false)->helperText('Leer = sofort'),
                     DateTimePicker::make('reg_closes_at')->label('Anmeldeschluss')->seconds(false)->helperText('Leer = bis zum Beginn'),
                     Toggle::make('waitlist_enabled')->label('Warteliste, wenn ausgebucht'),
+                    Toggle::make('member_check')->label('Mitgliedschaft mit der Mitgliederverwaltung abgleichen')
+                        ->helperText('Nach der Bestätigung wird jede Anmeldung anhand von Name und Geburtsjahr mit '.app(Mitgliederverzeichnis::class)->name().' abgeglichen (z. B. für Versicherung oder Mitgliedsbeitrag). Der Einwilligungstext bekommt dafür einen Hinweis; am besten zusammen mit dem Feld „Geburtsjahr“.')
+                        ->visible(fn () => MitgliederAbgleich::eingerichtet()),
                 ]),
 
             Section::make('Formular-Baukasten')

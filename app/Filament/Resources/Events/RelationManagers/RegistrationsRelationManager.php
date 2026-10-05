@@ -2,11 +2,14 @@
 
 namespace App\Filament\Resources\Events\RelationManagers;
 
+use App\Jobs\CheckEventMembers;
 use App\Mail\RegistrationDocumentMail;
 use App\Models\Event;
 use App\Models\EventRegistration;
 use App\Models\RegistrationDocument;
 use App\Services\EventRegistrations;
+use App\Services\Mitglieder\MitgliederAbgleich;
+use App\Services\Mitglieder\Mitgliederverzeichnis;
 use App\Services\ParticipantExport;
 use App\Support\AuditLogger;
 use Filament\Actions\Action;
@@ -18,6 +21,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -85,14 +89,43 @@ class RegistrationsRelationManager extends RelationManager
                     ->formatStateUsing(fn (int $state) => $state ?: '–')
                     ->tooltip(fn (EventRegistration $record) => $record->documents->map->label()->implode(', ') ?: null)
                     ->toggleable(),
+                TextColumn::make('member_status')->label('Mitglied')->badge()
+                    ->visible($event->checksMembers())
+                    ->formatStateUsing(fn (?string $state) => MitgliederAbgleich::STATUSES[$state] ?? $state)
+                    ->color(fn (?string $state) => match ($state) {
+                        'mitglied' => 'success',
+                        'unklar' => 'warning',
+                        'nicht_gefunden', 'ehemalig', 'kein_mitglied' => 'danger',
+                        default => 'gray',
+                    })
+                    ->placeholder('noch nicht geprüft')
+                    ->description(fn (EventRegistration $record) => collect([$record->member_number ? 'Nr. '.$record->member_number : null, $record->member_group, $record->member_manual ? 'von Hand' : null])->filter()->implode(' · ') ?: null),
                 TextColumn::make('guardian_name')->label('Angemeldet durch')->placeholder('–')->toggleable(),
                 TextColumn::make('confirmed_at')->label('Bestätigt am')->dateTime('d.m.Y H:i')->sortable(),
             ])
             ->defaultSort('confirmed_at')
             ->filters([
                 SelectFilter::make('status')->label('Status')->options(EventRegistration::STATUSES),
+                SelectFilter::make('member_status')->label('Mitglied')->options(MitgliederAbgleich::STATUSES)
+                    ->visible($event->checksMembers()),
             ])
             ->headerActions([
+                Action::make('checkMembers')
+                    ->label('Mitgliedschaft prüfen')
+                    ->icon('heroicon-o-identification')
+                    ->visible($event->checksMembers())
+                    ->modalHeading('Mit der Mitgliederverwaltung abgleichen')
+                    ->modalDescription('Bestätigte Anmeldungen und Warteliste werden mit '.app(Mitgliederverzeichnis::class)->name().' abgeglichen – im Hintergrund, etwa 30 je Minute. Von Hand entschiedene Anmeldungen bleiben, wie sie sind.')
+                    ->schema([
+                        Toggle::make('alle')->label('Auch bereits geprüfte Anmeldungen neu prüfen'),
+                    ])
+                    ->action(function (array $data) {
+                        $event = $this->getOwnerRecord();
+                        abort_unless(Filament::auth()->user()?->can('manageParticipants', $event), 403);
+                        CheckEventMembers::dispatch($event->getKey(), (bool) ($data['alle'] ?? false));
+                        AuditLogger::log('event.member_check', Filament::auth()->user(), Event::class, $event->getKey(), request());
+                        Notification::make()->title('Abgleich gestartet – die Spalte „Mitglied“ füllt sich in den nächsten Minuten.')->success()->send();
+                    }),
                 Action::make('export')
                     ->label('Teilnehmerliste (.xlsx)')
                     ->icon('heroicon-o-arrow-down-tray')
@@ -172,6 +205,32 @@ class RegistrationsRelationManager extends RelationManager
                             Notification::make()->title('Dokument gelöscht.')->success()->send();
                         }),
                 ])->label('Dokumente')->icon('heroicon-o-document-text')->button()->outlined()->size('sm'),
+                Action::make('memberDecision')
+                    ->label('Mitgliedschaft')
+                    ->icon('heroicon-o-identification')
+                    ->color('gray')
+                    ->visible(fn (EventRegistration $record) => $event->checksMembers() && $record->status !== 'cancelled')
+                    ->modalHeading(fn (EventRegistration $record) => 'Mitgliedschaft von '.$record->fullName())
+                    ->modalDescription('Z. B. bei „unklar“ nach Rücksprache. Die Entscheidung überschreibt kein späterer automatischer Abgleich.')
+                    ->fillForm(fn (EventRegistration $record) => [
+                        'status' => in_array($record->member_status, ['mitglied', 'kein_mitglied'], true) ? $record->member_status : null,
+                        'number' => $record->member_number,
+                        'group' => $record->member_group,
+                    ])
+                    ->schema([
+                        Select::make('status')->label('Ergebnis')->required()->live()
+                            ->options(['mitglied' => 'Mitglied', 'kein_mitglied' => 'Kein Mitglied']),
+                        TextInput::make('number')->label('Mitgliedsnummer')->maxLength(40)
+                            ->visible(fn (Get $get) => $get('status') === 'mitglied'),
+                        TextInput::make('group')->label('Stamm / Gruppierung')->maxLength(150)
+                            ->visible(fn (Get $get) => $get('status') === 'mitglied'),
+                    ])
+                    ->action(function (EventRegistration $record, array $data) {
+                        abort_unless(Filament::auth()->user()?->can('manageParticipants', $this->getOwnerRecord()), 403);
+                        MitgliederAbgleich::manuell($record, $data['status'], $data['number'] ?? null, $data['group'] ?? null);
+                        AuditLogger::log('registration.member_decision', Filament::auth()->user(), EventRegistration::class, $record->getKey(), request());
+                        Notification::make()->title('Gespeichert.')->success()->send();
+                    }),
                 Action::make('promote')
                     ->label('Platz geben')
                     ->icon('heroicon-o-check-circle')

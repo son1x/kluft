@@ -19,6 +19,7 @@ on:
           - backup:status
           - backup:run
           - whatsapp:check
+          - mitglieder:check
         default: calendar:check
 
 jobs:
@@ -55,6 +56,8 @@ jobs:
             cd "${{ env.SSH_TARGET_DIR }}"
             case "$CHECK" in
               calendar:check) /usr/bin/php artisan calendar:check ;;
+              # Mitgliederverwaltung (NaMi 2 / NaMi 3): Anmeldung und Testsuche, ohne Mitgliederdaten.
+              mitglieder:check) /usr/bin/php artisan mitglieder:check ;;
               # Kalender sofort abrufen (sonst alle 15 Minuten per Cronjob), danach Stand zeigen.
               calendar:sync) /usr/bin/php artisan calendar:sync; /usr/bin/php artisan calendar:check ;;
               # Angaben für den Cronjob in Plesk: Pfad und PHP-Version.

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\Mitglieder\MitgliederAbgleich;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -29,7 +30,7 @@ class Event extends Model
     protected $fillable = [
         'title', 'slug', 'teaser', 'description', 'starts_at', 'ends_at', 'location',
         'stage', 'section', 'target_group', 'cover_media_id', 'contact_name', 'contact_email',
-        'cost_info', 'reg_opens_at', 'reg_closes_at', 'capacity', 'waitlist_enabled',
+        'cost_info', 'reg_opens_at', 'reg_closes_at', 'capacity', 'waitlist_enabled', 'member_check',
         'status', 'form_fields', 'retention_days', 'created_by', 'calendar_uid',
     ];
 
@@ -41,6 +42,7 @@ class Event extends Model
             'reg_opens_at' => 'datetime',
             'reg_closes_at' => 'datetime',
             'waitlist_enabled' => 'boolean',
+            'member_check' => 'boolean',
             'form_fields' => 'array',
             'capacity' => 'integer',
             'retention_days' => 'integer',
@@ -167,6 +169,30 @@ class Event extends Model
     /**
      * Löschdatum der Anmeldedaten (9.3: Standard 90 Tage nach Ende).
      */
+    /** Mit Mitgliederabgleich (Treiber eingerichtet und hier eingeschaltet)? */
+    public function checksMembers(): bool
+    {
+        return $this->member_check && MitgliederAbgleich::eingerichtet();
+    }
+
+    /**
+     * Einwilligungstext der Anmeldung; mit Mitgliederabgleich um dessen
+     * Hinweis ergänzt (eigene Version, damit nachweisbar bleibt, was galt).
+     */
+    public function consentText(): string
+    {
+        $text = __((string) config('dpsg.event_consent.text'), ['tage' => $this->retention_days]);
+
+        return $this->checksMembers() ? $text.' '.config('mitglieder.consent.text') : $text;
+    }
+
+    public function consentVersion(): string
+    {
+        $version = (string) config('dpsg.event_consent.version');
+
+        return $this->checksMembers() ? $version.'+mitglieder-'.config('mitglieder.consent.version') : $version;
+    }
+
     public function purgeAt(): CarbonInterface
     {
         return ($this->ends_at ?? $this->starts_at)->copy()->endOfDay()->addDays($this->retention_days ?: 90);

@@ -12,7 +12,7 @@
     @endif
     {{-- Ohne eigene Beschreibung eine allgemeine, damit Suchmaschinen nicht raten. --}}
     <meta name="description" content="@yield('seo_description', config('dpsg.site.description'))" />
-    <link rel="icon" href="{{ asset('favicon.ico') }}" />
+    <link rel="icon" href="{{ asset(config('dpsg.site.favicon', 'favicon.ico')) }}" />
     <link rel="alternate" type="application/rss+xml" title="{{ config('dpsg.site.name') }} – Aktuelles" href="{{ route('feed') }}" />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')

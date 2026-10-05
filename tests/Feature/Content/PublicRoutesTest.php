@@ -8,6 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Instanzen\DvTrier\Seeders\DemoContentSeeder;
 use Instanzen\DvTrier\Seeders\RequiredPagesSeeder;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
@@ -96,7 +97,8 @@ class PublicRoutesTest extends TestCase
             ->assertSee('4 bis 7 Jahre');
     }
 
-    #[TestDox('Diözesanleitung ist Hauptseite, Diözesanbüro Unterseite von Kontakt')]
+    #[Group('dv-trier')]
+    #[TestDox('Diözesanleitung ist Hauptseite, Diözesanbüro Unterseite von Kontakt und Kachel unter Diözesanverband')]
     public function test_dioezesanleitung_is_main_page_and_buero_is_subpage_of_kontakt(): void
     {
         $this->seed(RequiredPagesSeeder::class);
@@ -109,6 +111,13 @@ class PublicRoutesTest extends TestCase
         $this->assertStringNotContainsString('Diözesanbüro', $nav($start));
 
         $this->get('/dioezesanleitung')->assertOk()->assertSee('Diözesanvorstand')->assertDontSee('Geschäftsführender Bildungsreferent');
+        // Zusätzlich als Kachel unten auf „Diözesanverband“ (nicht im Hauptmenü).
+        $dv = $this->get('/dioezesanverband')->assertOk()->getContent();
+        $kacheln = Str::after($dv, '<article');
+        $this->assertStringContainsString('href="'.url('/dioezesanbuero').'"', Str::after($kacheln, '</article>'));
+        $this->assertSame(1, substr_count($dv, '<h2 class="font-serif text-xl font-bold group-hover:text-dpsg-rot">Diözesanbüro</h2>'));
+        $this->assertStringNotContainsString('Diözesanbüro', $nav($dv));
+
         $this->get('/dioezesanbuero')->assertOk()
             ->assertSee('Brotkrumen')
             ->assertSee('Geschäftsführender Bildungsreferent')

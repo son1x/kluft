@@ -7,7 +7,7 @@
 */
 
 return [
-    'stand' => '2026-10-03',
+    'stand' => '2026-10-05',
 
     'current_phase' => '1e',
 
@@ -23,6 +23,7 @@ return [
         ['1d', 'Instagram', 'partial'],
         ['1e', 'WordPress-Migration', 'partial'],
         ['Talia', 'Feedback Talia', 'open'],
+        ['Lisa', 'Feedback Lisa', 'partial'],
         ['Testing', 'Testphase', 'partial'],
         ['Abnahme', 'Abnahme', 'open'],
         ['Bolivien', 'bolivienpartnerschaft.de', 'partial'],
@@ -115,6 +116,14 @@ return [
             ['status' => 'done', 'title' => 'Anmeldung bestätigen: doppelter Klick', 'note' => 'Behoben: Nach dem Klick auf „Anmeldung bestätigen“ in der Mail wird die Anmeldung sofort bestätigt, ohne zweiten Klick auf der Website. Linkscanner in Mailprogrammen (z. B. Outlook) lösen weiterhin keine Bestätigung aus, weil die Seite nur im Browser mit JavaScript automatisch absendet. Stornieren fragt bewusst noch einmal nach.'],
             ['status' => 'done', 'title' => 'Mobiles Menü: nicht alle Punkte erreichbar', 'note' => 'Behoben: Das Menü auf dem Handy ist länger als der Bildschirm und ließ sich nicht scrollen – Veranstaltungen, Kalender und Aktuelles waren nicht erreichbar. Jetzt scrollt das Menü selbst, die Seite dahinter bleibt stehen.'],
             ['status' => 'done', 'title' => 'Inklusions-Lilie für den Fachbereich Inklusion', 'note' => 'Umgesetzt: Inklusions-Lilie von dpsg.de (für die Arbeit in der DPSG frei verfügbar) im Kopf der Inklusionsseite und auf der Fachbereichsübersicht.'],
+        ],
+        'Lisa' => [
+            ['status' => 'done', 'title' => 'Fachbereiche Spiritualität, Ausbildung und Ökologie', 'note' => 'Je eine Seite unter „Fachbereiche“ mit Menüpunkt, eigener Farbe, Starttext und Thema im Kontaktformular (/spiritualitaet, /ausbildung, /oekologie). Auf bestehenden Installationen legt eine Inhalts-Migration der Instanz die Seiten an, ohne Vorhandenes zu überschreiben.'],
+            ['status' => 'done', 'title' => 'Facharbeitskreis (FAK) je Fachbereich', 'note' => 'Neues Gremium „Facharbeitskreis (FAK)“ in der Personenverwaltung: Mitglieder erscheinen auf der Seite ihres Fachbereichs im Abschnitt „Der Facharbeitskreis“, ohne eigene Adresse und getrennt von den Ansprechpersonen, mit Hinweis zum Mitmachen – wie der DAK bei den Stufen.'],
+            ['status' => 'open', 'title' => 'Starttexte der drei Fachbereiche prüfen', 'note' => 'Die Seiten haben allgemeine Starttexte. Bitte von den Fachbereichen Spiritualität, Ausbildung und Ökologie prüfen und ergänzen lassen (Backend → Seiten).'],
+            ['status' => 'open', 'title' => 'Referent*innen und FAK-Mitglieder eintragen', 'note' => 'Backend → Personen: Referent*innen mit „Ansprechperson für Fachbereich“, Ehrenamtliche mit Gremium „Facharbeitskreis (FAK)“ und Fachbereich. Nur mit Einwilligung der Personen.'],
+            ['status' => 'open', 'title' => 'Farben für Spiritualität und Ausbildung abstimmen', 'note' => 'Im DPSG-CD sind dafür keine Fachbereichsfarben festgelegt. Vorläufig: dunkles Cyan (Spiritualität) und DPSG-Blau (Ausbildung); Ökologie im vorhandenen Grün, das auch BeratungsPower nutzt.'],
+            ['status' => 'done', 'title' => 'Diözesanbüro unten bei „Diözesanverband“', 'note' => 'Das Diözesanbüro erscheint zusätzlich als Kachel unten auf der Seite „Diözesanverband“; es bleibt Unterseite von „Kontakt“ und ist weiter oben in der Servicezeile verlinkt.'],
         ],
         'Bolivien' => [
             ['status' => 'done', 'title' => 'Eigene Startseite, Navigation, Farbe und Logo', 'note' => 'Bereich „Bolivienpartnerschaft“ mit Startseite (Partner, Leitgedanke „Amistad – Freundschaft“), Unterseiten-Navigation, Logo und Ansprechperson aus der Personenverwaltung; im Hauptmenü unter „Fachbereiche“.'],

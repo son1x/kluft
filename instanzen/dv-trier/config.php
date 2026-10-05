@@ -62,6 +62,12 @@ return [
 
     'directory' => ['path' => 'bezirke-staemme', 'title' => 'Bezirke & Stämme'],
 
+    // Diözesanbüro hängt unter „Kontakt“, erscheint aber auch als Kachel
+    // unten auf „Diözesanverband“.
+    'overview_extra' => [
+        'dioezesanverband' => ['dioezesanbuero'],
+    ],
+
     // Feld „Stamm“ der Veranstaltungsanmeldung.
     'event_stamm_label' => 'Stamm oder Bezirk',
 

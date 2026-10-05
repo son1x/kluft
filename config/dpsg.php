@@ -26,6 +26,12 @@ return array_replace([
     */
     'directory' => ['path' => 'staemme', 'title' => 'Unsere Stämme'],
 
+    /*
+    | Zusätzliche Kacheln auf Übersichtsseiten (Slug der Übersicht => Slugs
+    | weiterer Seiten), z. B. eine Seite, die woanders im Menü hängt.
+    */
+    'overview_extra' => [],
+
     // Seeder der Instanz: Startinhalt (db:seed) und Grundbestand für Tests.
     'seeders' => ['start' => null, 'basis' => null],
 

@@ -32,8 +32,13 @@
         </div>
     </article>
 
-    {{-- Übersichtsseiten (z. B. Diözesanverband): Unterpunkte als Kacheln --}}
-    @php($childPages = $page->navChildren)
+    {{-- Übersichtsseiten (z. B. Diözesanverband): Unterpunkte als Kacheln,
+         dazu weitere Seiten aus config dpsg.overview_extra --}}
+    @php($extraSlugs = config('dpsg.overview_extra.'.$page->slug, []))
+    @php($childPages = $page->navChildren->concat(
+        \App\Models\Page::query()->published()->whereIn('slug', $extraSlugs)->whereNotIn('id', $page->navChildren->pluck('id'))->get()
+            ->sortBy(fn ($p) => array_search($p->slug, $extraSlugs, true))
+    ))
     @if ($childPages->isNotEmpty())
         <div class="mx-auto mb-12 grid max-w-6xl gap-6 px-4 sm:grid-cols-2 lg:grid-cols-4">
             @foreach ($childPages as $child)

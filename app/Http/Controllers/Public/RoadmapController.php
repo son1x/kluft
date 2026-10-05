@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Services\Backup\BackupService;
 use App\Support\Roadmap;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Facades\Cache;
 
 /**
  * Projektstand nach Pflichtenheft (außerhalb des CMS gepflegt in
@@ -33,7 +32,7 @@ class RoadmapController extends Controller
                 'healthy' => $roadmap->backupsHealthy(),
                 'password' => mb_strlen((string) config('dpsg.backup.password')) >= 16,
                 'webdav' => filled(config('dpsg.backup.webdav_url')),
-                'lastRun' => Cache::get(BackupService::LAST_RUN_KEY)['at'] ?? null,
+                'lastRun' => BackupService::lastRun()['at'] ?? null,
             ],
         ]);
     }

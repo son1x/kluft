@@ -284,8 +284,8 @@ class Roadmap
      */
     public function backupsHealthy(): bool
     {
-        $run = Cache::get(BackupService::LAST_RUN_KEY);
-        $verify = Cache::get(BackupService::LAST_VERIFY_KEY);
+        $run = BackupService::lastRun();
+        $verify = BackupService::lastVerify();
 
         return $run !== null && $verify !== null && ($verify['ok'] ?? false)
             && now()->diffInHours($run['at'], true) < 36;

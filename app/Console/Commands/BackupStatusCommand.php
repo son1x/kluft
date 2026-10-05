@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use App\Services\Backup\BackupService;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Process;
 
 /**
@@ -40,8 +39,8 @@ class BackupStatusCommand extends Command
         $files = glob($backups->directory().'/backup-*.dpsgbak') ?: [];
         $this->line('Backups auf dem Server: '.count($files).($files ? ', neuestes '.basename((string) end($files)).' ('.round(filesize((string) end($files)) / 1024 / 1024, 1).' MB)' : ''));
 
-        $run = Cache::get(BackupService::LAST_RUN_KEY);
-        $verify = Cache::get(BackupService::LAST_VERIFY_KEY);
+        $run = BackupService::lastRun();
+        $verify = BackupService::lastVerify();
         $this->line('Letzter Lauf: '.($run['at'] ?? 'noch nie'));
         $this->line('Letzte Wiederherstellungsprobe: '.($verify ? ($verify['at'] ?? '?').' – '.(($verify['ok'] ?? false) ? 'in Ordnung' : 'FEHLER') : 'noch nie'));
 

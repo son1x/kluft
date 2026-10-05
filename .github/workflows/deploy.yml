@@ -37,6 +37,14 @@ name: Deploy
 #   Liste mit Erklärung: docs/deploy.md
 
 on:
+  # Automatisch nur der DV Trier (seit der Umstellung am 5.10.2026); andere
+  # Instanzen werden von Hand gestartet.
+  push:
+    branches: [claude/kluft-instanzen]
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+      - 'instanzen/saar-hochwald/**'
   workflow_dispatch:
     inputs:
       instanz:
@@ -61,15 +69,15 @@ on:
 # Lauf bricht einen noch laufenden älteren Lauf desselben Branches ab,
 # statt parallel dagegen zu laufen.
 concurrency:
-  group: deploy-${{ inputs.instanz }}
+  group: deploy-${{ inputs.instanz || 'dv-trier' }}
   cancel-in-progress: true
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: ${{ inputs.instanz }}
+    environment: ${{ inputs.instanz || 'dv-trier' }}
     env:
-      KLUFT_INSTANZ: ${{ inputs.instanz }}
+      KLUFT_INSTANZ: ${{ inputs.instanz || 'dv-trier' }}
       PHP_BIN: ${{ vars.PHP_BIN || '/usr/bin/php' }}
       NUR_PRUEFEN: ${{ inputs.nur_pruefen && 'true' || 'false' }}
     # Produktiv läuft MariaDB – die Tests laufen daher zusätzlich dagegen
@@ -317,7 +325,7 @@ jobs:
           key: ${{ steps.mapkey.outputs.key }}
           # Fallback auf den letzten Stand: liegt die passende Datei schon
           # darin, entfällt der Neuaufbau.
-          restore-keys: map-data-${{ inputs.instanz }}-
+          restore-keys: map-data-${{ inputs.instanz || 'dv-trier' }}-
 
       - name: Kartendatei vorhanden?
         id: mapfile

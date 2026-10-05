@@ -119,7 +119,7 @@ class HealthChecks
         if (mb_strlen((string) config('dpsg.backup.password')) < 16) {
             return [self::WARN, 'Noch nicht eingeschaltet (Backup-Passwort fehlt).'];
         }
-        $run = Cache::get(BackupService::LAST_RUN_KEY);
+        $run = BackupService::lastRun();
         if ($run === null) {
             return [self::WARN, 'Eingeschaltet, aber noch kein Backup gelaufen.'];
         }
@@ -127,7 +127,7 @@ class HealthChecks
         if ($at->lt(now()->subHours(36))) {
             return [self::FAIL, 'Letztes Backup '.$at->diffForHumans().' – das tägliche Backup fehlt.'];
         }
-        $verify = Cache::get(BackupService::LAST_VERIFY_KEY);
+        $verify = BackupService::lastVerify();
         if ($verify !== null && ! ($verify['ok'] ?? false)) {
             return [self::FAIL, 'Letzte Wiederherstellungsprobe fehlgeschlagen.'];
         }

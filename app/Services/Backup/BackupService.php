@@ -63,7 +63,7 @@ class BackupService
         $this->rotateLocal();
         $uploaded = $this->uploadOffsite($target);
 
-        Cache::forever(self::LAST_RUN_KEY, [
+        self::remember(self::LAST_RUN_KEY, [
             'at' => now()->toIso8601String(),
             'file' => basename($target),
             'size' => filesize($target),
@@ -123,7 +123,7 @@ class BackupService
             File::deleteDirectory($work);
         }
 
-        Cache::forever(self::LAST_VERIFY_KEY, [...$result, 'at' => now()->toIso8601String()]);
+        self::remember(self::LAST_VERIFY_KEY, [...$result, 'at' => now()->toIso8601String()]);
 
         return $result;
     }
@@ -144,6 +144,45 @@ class BackupService
         }
         $zip->close();
         File::delete($zipPath);
+    }
+
+    /**
+     * Letztes Backup bzw. letzte Wiederherstellungsprobe. Steht im Cache und
+     * zusätzlich in einer Datei, weil jeder Deploy den Cache leert.
+     *
+     * @return array<string, mixed>|null
+     */
+    public static function lastRun(): ?array
+    {
+        return Cache::get(self::LAST_RUN_KEY) ?? (self::stateFile()[self::LAST_RUN_KEY] ?? null);
+    }
+
+    /** @return array<string, mixed>|null */
+    public static function lastVerify(): ?array
+    {
+        return Cache::get(self::LAST_VERIFY_KEY) ?? (self::stateFile()[self::LAST_VERIFY_KEY] ?? null);
+    }
+
+    /** @param  array<string, mixed>  $value */
+    private static function remember(string $key, array $value): void
+    {
+        Cache::forever($key, $value);
+        $state = [...self::stateFile(), $key => $value];
+        File::ensureDirectoryExists(dirname(self::statePath()), 0700);
+        File::put(self::statePath(), (string) json_encode($state, JSON_PRETTY_PRINT));
+    }
+
+    /** @return array<string, mixed> */
+    private static function stateFile(): array
+    {
+        $path = self::statePath();
+
+        return is_file($path) ? (array) json_decode((string) file_get_contents($path), true) : [];
+    }
+
+    private static function statePath(): string
+    {
+        return (config('dpsg.backup.path') ?: storage_path('app/private/backups')).'/status.json';
     }
 
     public function latest(): ?string

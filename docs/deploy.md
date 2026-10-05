@@ -80,5 +80,5 @@ Bis zur Umstellung deployt weiter das alte Repo son1x/dpsg-dv-trier, das unverä
 3. Deploy `dv-trier` ohne „Nur prüfen“. Ab jetzt läuft der DV mit dem Kluft-Code.
    - Die Migrationen melden nur die neue Migration des Mitgliederabgleichs (zusätzliche Spalten, Funktion bleibt aus).
    - Inhalte und Seiten bleiben, wie sie sind.
-4. Danach den automatischen Deploy bei Push für `dv-trier` einschalten (eigener Commit).
+4. Danach den automatischen Deploy bei Push für `dv-trier` einschalten (eigener Commit). **Erledigt am 5. Oktober 2026:** Jeder Push auf `claude/kluft-instanzen` deployt den DV; reine Doku-Änderungen und Dateien von Saar-Hochwald lösen keinen Deploy aus.
 5. **Rückweg:** Im alten Repo den Workflow „Deploy auf Netcup-Webspace“ von Hand starten. Er spielt den bisherigen Code wieder auf, die Datenbank bleibt kompatibel. Die zusätzlichen Spalten stören den alten Code nicht.

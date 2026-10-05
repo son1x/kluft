@@ -132,4 +132,16 @@ class BackupTest extends TestCase
         Http::assertSent(fn (Request $r) => $r->method() === 'DELETE' && str_ends_with($r->url(), $old));
         $this->assertTrue(Cache::get(BackupService::LAST_RUN_KEY)['offsite']);
     }
+
+    #[TestDox('Stand des letzten Backups überlebt das Leeren des Caches (z. B. beim Deploy)')]
+    public function test_status_survives_cache_clear(): void
+    {
+        $this->artisan('backup:run')->assertSuccessful();
+        $this->artisan('backup:verify')->assertSuccessful();
+        Cache::flush();
+
+        $this->assertNotNull(BackupService::lastRun());
+        $this->assertTrue(BackupService::lastVerify()['ok']);
+        $this->getJson('/api/status')->assertJsonPath('checks.backups.status', 'ok');
+    }
 }

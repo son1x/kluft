@@ -15,6 +15,7 @@ use Filament\Pages\Page;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Artisan;
+use UnitEnum;
 
 /**
  * Integrationen und Tokens – nur Admin/Super-Admin (Pflichtenheft 5.4
@@ -27,11 +28,13 @@ class Integrations extends Page
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedLink;
 
+    protected static string|UnitEnum|null $navigationGroup = 'Verwaltung';
+
     protected static ?string $navigationLabel = 'Integrationen';
 
     protected static ?string $title = 'Integrationen';
 
-    protected static ?int $navigationSort = 90;
+    protected static ?int $navigationSort = 50;
 
     /** @var array<string, mixed> */
     public ?array $data = [];

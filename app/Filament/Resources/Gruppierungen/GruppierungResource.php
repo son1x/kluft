@@ -13,12 +13,17 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class GruppierungResource extends Resource
 {
     protected static ?string $model = Gruppierung::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMapPin;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Verband & Kontakt';
+
+    protected static ?int $navigationSort = 20;
 
     protected static ?string $modelLabel = 'Bezirk/Stamm';
 

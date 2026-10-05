@@ -15,6 +15,7 @@ use Filament\Pages\Page;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Str;
+use UnitEnum;
 
 /**
  * Push-Benachrichtigungen über ntfy – jede Person schaltet sie für sich
@@ -28,13 +29,15 @@ class PushSettings extends Page
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBellAlert;
 
+    protected static string|UnitEnum|null $navigationGroup = 'Mein Konto';
+
     protected static ?string $navigationLabel = 'Meine Push-Nachrichten';
 
     protected static ?string $title = 'Push-Nachrichten aufs Handy';
 
     protected static ?string $slug = 'push';
 
-    protected static ?int $navigationSort = 95;
+    protected static ?int $navigationSort = 10;
 
     /** @var array<string, mixed> */
     public ?array $data = [];

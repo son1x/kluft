@@ -14,6 +14,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class GeorgsboteIssueResource extends Resource
 {
@@ -26,6 +27,10 @@ class GeorgsboteIssueResource extends Resource
     }
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBookOpen;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Inhalte';
+
+    protected static ?int $navigationSort = 60;
 
     protected static ?string $modelLabel = 'Georgsbote-Ausgabe';
 

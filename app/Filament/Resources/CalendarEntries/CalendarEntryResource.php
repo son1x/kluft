@@ -16,6 +16,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use UnitEnum;
 
 /**
  * Nextcloud-Termine im Backend: zeigt, zu welchen Terminen es schon eine
@@ -30,11 +31,13 @@ class CalendarEntryResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendar;
 
+    protected static string|UnitEnum|null $navigationGroup = 'Termine & Veranstaltungen';
+
     protected static ?string $modelLabel = 'Kalendertermin';
 
     protected static ?string $pluralModelLabel = 'Kalendertermine';
 
-    protected static ?int $navigationSort = 31;
+    protected static ?int $navigationSort = 20;
 
     public static function getEloquentQuery(): Builder
     {

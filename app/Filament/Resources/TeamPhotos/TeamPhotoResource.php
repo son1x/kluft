@@ -22,6 +22,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use UnitEnum;
 
 /**
  * Gruppenfotos mit anklickbaren Personen.
@@ -31,6 +32,10 @@ class TeamPhotoResource extends Resource
     protected static ?string $model = TeamPhoto::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCamera;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Inhalte';
+
+    protected static ?int $navigationSort = 50;
 
     protected static ?string $modelLabel = 'Gruppenfoto';
 

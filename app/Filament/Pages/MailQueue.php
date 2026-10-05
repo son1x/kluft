@@ -11,6 +11,7 @@ use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use UnitEnum;
 
 /**
  * E-Mail-Versand (F-MAIL-05): wartende und fehlgeschlagene Mails der
@@ -22,13 +23,15 @@ class MailQueue extends Page
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedEnvelope;
 
+    protected static string|UnitEnum|null $navigationGroup = 'Verwaltung';
+
     protected static ?string $navigationLabel = 'E-Mail-Versand';
 
     protected static ?string $title = 'E-Mail-Versand';
 
     protected static ?string $slug = 'e-mail-versand';
 
-    protected static ?int $navigationSort = 92;
+    protected static ?int $navigationSort = 30;
 
     public static function canAccess(): bool
     {

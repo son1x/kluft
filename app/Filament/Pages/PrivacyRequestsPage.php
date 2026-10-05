@@ -17,6 +17,7 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use UnitEnum;
 
 /**
  * Datenschutz-Anfragen (Pflichtenheft 9.2 „Betroffenenrechte“, Rollenmatrix
@@ -30,13 +31,15 @@ class PrivacyRequestsPage extends Page
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShieldCheck;
 
+    protected static string|UnitEnum|null $navigationGroup = 'Verwaltung';
+
     protected static ?string $navigationLabel = 'Datenschutz-Anfragen';
 
     protected static ?string $title = 'Datenschutz-Anfragen';
 
     protected static ?string $slug = 'datenschutz-anfragen';
 
-    protected static ?int $navigationSort = 93;
+    protected static ?int $navigationSort = 20;
 
     public string $email = '';
 

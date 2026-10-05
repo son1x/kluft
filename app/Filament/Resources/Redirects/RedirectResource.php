@@ -19,6 +19,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Validation\Rule;
+use UnitEnum;
 
 /**
  * Weiterleitungen alter Adressen (Pflichtenheft F-MIG-05). Die
@@ -31,11 +32,13 @@ class RedirectResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArrowUturnRight;
 
+    protected static string|UnitEnum|null $navigationGroup = 'Verwaltung';
+
     protected static ?string $modelLabel = 'Weiterleitung';
 
     protected static ?string $pluralModelLabel = 'Weiterleitungen';
 
-    protected static ?int $navigationSort = 90;
+    protected static ?int $navigationSort = 40;
 
     public static function form(Schema $schema): Schema
     {

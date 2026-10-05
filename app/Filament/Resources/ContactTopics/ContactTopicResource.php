@@ -23,6 +23,7 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Str;
+use UnitEnum;
 
 /**
  * Themen des Kontaktformulars und wohin die Nachrichten gehen (F-CMS-09).
@@ -33,11 +34,13 @@ class ContactTopicResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedEnvelope;
 
+    protected static string|UnitEnum|null $navigationGroup = 'Verband & Kontakt';
+
     protected static ?string $modelLabel = 'Kontaktthema';
 
     protected static ?string $pluralModelLabel = 'Kontaktformular';
 
-    protected static ?int $navigationSort = 88;
+    protected static ?int $navigationSort = 30;
 
     public static function form(Schema $schema): Schema
     {

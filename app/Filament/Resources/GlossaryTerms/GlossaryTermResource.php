@@ -17,6 +17,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use UnitEnum;
 
 /**
  * Begriffe für den Hover im Text (z. B. DAK, FAK, Juleica). Das erste
@@ -28,11 +29,13 @@ class GlossaryTermResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBookOpen;
 
+    protected static string|UnitEnum|null $navigationGroup = 'Inhalte';
+
     protected static ?string $modelLabel = 'Begriff';
 
     protected static ?string $pluralModelLabel = 'Begriffe (Glossar)';
 
-    protected static ?int $navigationSort = 89;
+    protected static ?int $navigationSort = 70;
 
     public static function form(Schema $schema): Schema
     {

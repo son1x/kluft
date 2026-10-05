@@ -23,12 +23,17 @@ use Filament\Tables\Columns\ColorColumn;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class CalendarResource extends Resource
 {
     protected static ?string $model = Calendar::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendarDays;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Termine & Veranstaltungen';
+
+    protected static ?int $navigationSort = 30;
 
     protected static ?string $modelLabel = 'Kalender';
 

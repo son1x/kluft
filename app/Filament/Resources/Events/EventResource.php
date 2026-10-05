@@ -16,12 +16,17 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use UnitEnum;
 
 class EventResource extends Resource
 {
     protected static ?string $model = Event::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTicket;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Termine & Veranstaltungen';
+
+    protected static ?int $navigationSort = 10;
 
     protected static ?string $modelLabel = 'Veranstaltung';
 

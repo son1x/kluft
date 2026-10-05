@@ -27,6 +27,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\HtmlString;
+use UnitEnum;
 
 /**
  * Personenvorstellung auf den Seiten der Gremien (Diözesanleitung,
@@ -37,6 +38,10 @@ class PersonResource extends Resource
     protected static ?string $model = Person::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserGroup;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Verband & Kontakt';
+
+    protected static ?int $navigationSort = 10;
 
     protected static ?string $modelLabel = 'Person';
 

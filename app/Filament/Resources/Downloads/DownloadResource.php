@@ -26,6 +26,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
+use UnitEnum;
 
 /**
  * Download-Seite: Methoden, Formulare, Arbeitshilfen. Typ, Größe, Seiten
@@ -43,11 +44,13 @@ class DownloadResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArrowDownTray;
 
+    protected static string|UnitEnum|null $navigationGroup = 'Inhalte';
+
     protected static ?string $modelLabel = 'Download';
 
     protected static ?string $pluralModelLabel = 'Downloads';
 
-    protected static ?int $navigationSort = 45;
+    protected static ?int $navigationSort = 40;
 
     /** MIME-Typen zu Download::EXTENSIONS (Browser-Auswahl und Prüfung). */
     private const MIMES = [

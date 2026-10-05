@@ -9,6 +9,7 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationGroup;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -46,6 +47,15 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::hex('#003056'), // dpsg-blau, s. Pflichtenheft 7.2
                 'danger' => Color::hex('#810a1a'), // dpsg-rot
+            ])
+            // Menü thematisch: Gruppen in dieser Reihenfolge, darin nach navigationSort.
+            ->navigationGroups([
+                NavigationGroup::make('Inhalte'),
+                NavigationGroup::make('Termine & Veranstaltungen'),
+                NavigationGroup::make('Verband & Kontakt'),
+                NavigationGroup::make('WhatsApp-Newsletter'),
+                NavigationGroup::make('Verwaltung')->collapsed(),
+                NavigationGroup::make('Mein Konto'),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')

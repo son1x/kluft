@@ -10,6 +10,7 @@ use BackedEnum;
 use Filament\Facades\Filament;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
+use UnitEnum;
 
 /**
  * Migrationsbericht der WordPress-Übernahme (Pflichtenheft F-MIG-08):
@@ -21,13 +22,15 @@ class WordPressImport extends Page
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArrowDownTray;
 
+    protected static string|UnitEnum|null $navigationGroup = 'Verwaltung';
+
     protected static ?string $navigationLabel = 'WordPress-Import';
 
     protected static ?string $title = 'WordPress-Import';
 
     protected static ?string $slug = 'wordpress-import';
 
-    protected static ?int $navigationSort = 91;
+    protected static ?int $navigationSort = 60;
 
     // Nur in Instanzen mit WordPress-Übernahme (config dpsg.features).
     public static function isDiscovered(): bool

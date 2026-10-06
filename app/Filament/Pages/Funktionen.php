@@ -81,7 +81,8 @@ class Funktionen extends Page
             }
             // Gleich dem Standard: Schalter entfernen, sonst setzen.
             Features::setzen($key, $an === Features::standard($key) ? null : $an, $user?->getKey());
-            AuditLogger::log($an ? 'feature.an' : 'feature.aus', $user instanceof User ? $user : null, 'feature', $key, request());
+            // subject_id ist numerisch: Funktion im Aktionsnamen, z. B. „feature.aus:downloads“.
+            AuditLogger::log(($an ? 'feature.an:' : 'feature.aus:').$key, $user instanceof User ? $user : null, request: request());
             $geaendert[] = Features::KATALOG[$key]['label'].($an ? ' an' : ' aus');
         }
 

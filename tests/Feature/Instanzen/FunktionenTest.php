@@ -52,7 +52,7 @@ class FunktionenTest extends TestCase
             ->assertNotified();
         $this->assertFalse(Features::enabled(Features::TEILNEHMENDE_EINTRAGEN));
         $this->assertSame($admin->id, FeatureSwitch::query()->find(Features::TEILNEHMENDE_EINTRAGEN)?->updated_by);
-        $this->assertTrue(AuditLog::query()->where(['action' => 'feature.aus', 'subject_id' => Features::TEILNEHMENDE_EINTRAGEN])->exists());
+        $this->assertTrue(AuditLog::query()->where('action', 'feature.aus:'.Features::TEILNEHMENDE_EINTRAGEN)->exists());
 
         Livewire::test(Funktionen::class)
             ->assertSet('data.schalter.'.Features::TEILNEHMENDE_EINTRAGEN, false)

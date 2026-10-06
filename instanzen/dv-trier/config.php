@@ -70,6 +70,10 @@ return [
 
     // Feld „Stamm“ der Veranstaltungsanmeldung.
     'event_stamm_label' => 'Stamm oder Bezirk',
+    'event_herkunft' => [
+        'hier' => 'aus dem DV Trier',
+        'gast' => 'Gast aus einem anderen Diözesanverband oder Verband',
+    ],
 
     'features' => [
         'georgsbote' => true,

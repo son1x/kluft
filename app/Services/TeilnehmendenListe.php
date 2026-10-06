@@ -53,7 +53,12 @@ class TeilnehmendenListe
         $tabelle = [];
         foreach ($reader->getSheetIterator() as $blatt) {
             foreach ($blatt->getRowIterator() as $row) {
-                $tabelle[] = array_map(fn ($zelle) => $zelle instanceof \DateTimeInterface ? $zelle->format('Y') : (string) $zelle, $row->toArray());
+                $zellen = [];
+                foreach ($row->getCells() as $zelle) {
+                    $wert = $zelle->getValue();
+                    $zellen[] = $wert instanceof \DateTimeInterface ? $wert->format('Y') : (is_scalar($wert) ? (string) $wert : '');
+                }
+                $tabelle[] = $zellen;
                 if (count($tabelle) > self::MAX_ZEILEN + 1) {
                     break 2;
                 }
@@ -124,6 +129,12 @@ class TeilnehmendenListe
                 if ($feld['type'] === 'plz' && ! preg_match('/^\d{4,5}$/', $wert)) {
                     $problem ??= 'Postleitzahl ungültig';
                 }
+                if ($feld['type'] === 'herkunft') {
+                    $wert = self::herkunft($wert, (array) ($feld['options'] ?? []));
+                    if ($wert === '') {
+                        $problem ??= 'Angabe zu „Gast“ unklar (leer/nein oder ja)';
+                    }
+                }
                 if ($feld['type'] === 'select') {
                     $wert = (string) (collect($feld['options'] ?? [])->search(fn (string $label, string $k) => mb_strtolower($label) === mb_strtolower($wert) || $k === mb_strtolower($wert)) ?: '');
                     if ($wert === '') {
@@ -162,6 +173,7 @@ class TeilnehmendenListe
             'name' => 'name', 'e-mail' => 'email', 'email' => 'email', 'mail' => 'email', 'e-mail-adresse' => 'email',
             'geburtsjahr' => 'birth_year', 'jahrgang' => 'birth_year', 'postleitzahl' => 'plz', 'plz' => 'plz',
             'wohnort' => 'wohnort', 'ort' => 'wohnort', 'stamm' => 'stamm', 'telefon' => 'phone', 'anmerkungen' => 'comment',
+            'herkunft' => 'herkunft', 'gast' => 'herkunft',
         ];
         foreach ($felder as $key => $feld) {
             $namen[mb_strtolower((string) $feld['label'])] = $key;
@@ -171,7 +183,29 @@ class TeilnehmendenListe
         $erkannt = array_filter($zuordnung);
 
         return in_array('first_name', $erkannt, true) || in_array('last_name', $erkannt, true) || in_array('name', $erkannt, true)
-            ? array_values($zuordnung) : null;
+            ? $zuordnung : null;
+    }
+
+    /**
+     * Spalte „Gast“ bzw. „Herkunft“: ja/x/1/gast oder der Antworttext =
+     * Gast; nein/0/hier = von hier.
+     *
+     * @param  array<string, string>  $optionen
+     */
+    private static function herkunft(string $wert, array $optionen): string
+    {
+        $w = mb_strtolower(trim($wert));
+        foreach ($optionen as $key => $label) {
+            if ($w === $key || $w === mb_strtolower($label)) {
+                return $key;
+            }
+        }
+
+        return match (true) {
+            in_array($w, ['ja', 'x', '1', 'gast', 'extern'], true) => 'gast',
+            in_array($w, ['nein', '0', 'hier', '-'], true) => 'hier',
+            default => '',
+        };
     }
 
     /** @return array{0: string, 1: string} „Muster, Mia“ oder „Mia Muster“ */

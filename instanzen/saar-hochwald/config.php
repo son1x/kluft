@@ -47,6 +47,10 @@ return [
     'directory' => ['path' => 'staemme', 'title' => 'Unsere Stämme'],
 
     'event_stamm_label' => 'Stamm',
+    'event_herkunft' => [
+        'hier' => 'aus dem Bezirk Saar-Hochwald',
+        'gast' => 'Gast aus einem anderen Bezirk, Diözesanverband oder Verband',
+    ],
 
     // Georgsbote, Roadmap, Rechtsträger und WordPress-Import gibt es hier nicht.
     'features' => [

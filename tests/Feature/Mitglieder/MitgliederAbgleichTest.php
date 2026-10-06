@@ -135,6 +135,19 @@ class MitgliederAbgleichTest extends TestCase
         $this->assertSame('115', $perMail->member_number);
     }
 
+    #[TestDox('Gäste aus anderen Gliederungen/Verbänden werden nicht abgefragt, sondern als „Gast“ markiert')]
+    public function test_guests_are_not_looked_up(): void
+    {
+        $this->bestand = [$this->mitglied('4711', 'Mia', 'Muster', '2010-03-03')];
+        $event = $this->event(['form_fields' => ['birth_year' => 'required', 'stamm' => 'optional']]);
+        $gast = $this->anmeldung($event, 'Mia', 'Muster', 2010);
+        $gast->update(['data' => ['herkunft' => 'gast', 'stamm' => 'DV Köln']]);
+
+        $this->assertSame('gast', app(MitgliederAbgleich::class)->pruefe($gast->fresh()));
+        $this->assertSame([], $this->suchen);
+        $this->assertSame(['gast', null], [$gast->fresh()->member_status, $gast->fresh()->member_number]);
+    }
+
     #[TestDox('Nach der Bestätigung wird automatisch abgeglichen; Einwilligung mit eigenem Hinweis und eigener Version')]
     public function test_flow_after_confirmation(): void
     {

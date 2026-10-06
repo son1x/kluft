@@ -83,7 +83,7 @@ class EventController extends Controller
             $base = [$field['required'] ? 'required' : 'nullable'];
             $rules[$key] = [...$base, ...match ($field['type']) {
                 'year' => ['integer', 'between:'.(now()->year - 100).','.now()->year],
-                'select' => [Rule::in(array_keys($field['options'] ?? []))],
+                'select', 'herkunft' => [Rule::in(array_keys($field['options'] ?? []))],
                 'tel' => ['string', 'max:40', 'regex:/^[0-9 +()\/-]+$/'],
                 'plz' => ['string', 'max:10', 'regex:/^([A-Za-z]{1,2}[- ]?)?[0-9]{4,5}$/'],
                 'textarea' => ['string', 'max:1000'],

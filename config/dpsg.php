@@ -104,6 +104,16 @@ return array_replace([
     | "nicht abfragen / optional / Pflicht" eingestellt. Gesundheitsdaten
     | sind bewusst nicht enthalten (Pflichtenheft 8.2, 9.1).
     */
+    /*
+    | Gäste beim Feld „Stamm“: Ankreuzfeld unter der Stamm-/Bezirksauswahl
+    | für Teilnehmende aus anderen Gliederungen oder Verbänden. Gäste werden
+    | nicht mit der Mitgliederverwaltung abgeglichen. Texte je Instanz.
+    */
+    'event_herkunft' => [
+        'hier' => 'aus unserem Verband',
+        'gast' => 'Gast aus einem anderen Verband',
+    ],
+
     'event_fields' => [
         'birth_year' => ['label' => 'Geburtsjahr', 'type' => 'year'],
         // PLZ und Wohnort, z. B. für Teilnehmendenlisten bei Zuschussanträgen

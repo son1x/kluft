@@ -88,6 +88,28 @@ class EventRegistrationTest extends TestCase
         return $token;
     }
 
+    #[TestDox('Stamm-Auswahl mit Ankreuzfeld „Gast aus einem anderen …“; ohne Stamm-Feld keine Frage')]
+    public function test_guest_checkbox(): void
+    {
+        $event = $this->event();
+        $this->get('/veranstaltungen/woelflingstag')->assertOk()
+            ->assertSee(config('dpsg.event_herkunft.gast'))
+            ->assertSee('name="herkunft" value="gast"', false);
+
+        $this->register($event, ['stamm' => 'VCP Saarbrücken', 'herkunft' => 'gast'])->assertSessionHasNoErrors();
+        $this->register($event, ['first_name' => 'Ben', 'email' => 'ben@example.org'])->assertSessionHasNoErrors();
+        $this->register($event, ['first_name' => 'Tom', 'email' => 'tom@example.org', 'herkunft' => 'quatsch'])->assertSessionHasErrors('herkunft');
+
+        [$gast, $hier] = EventRegistration::query()->orderBy('id')->get()->all();
+        $this->assertSame('gast', $gast->data['herkunft']);
+        $this->assertTrue($gast->isGast());
+        $this->assertFalse($hier->isGast());
+        $this->assertSame(config('dpsg.event_herkunft.hier'), $event->fieldValueLabel($event->formFields()['herkunft'], $hier->data['herkunft'] ?? null));
+
+        $ohneStamm = $this->event(['slug' => 'ohne-stamm', 'form_fields' => ['birth_year' => 'required']]);
+        $this->assertArrayNotHasKey('herkunft', $ohneStamm->formFields());
+    }
+
     #[TestDox('Baukasten-Felder Funktion/Gremium und Übernachtung (z. B. Diözesanversammlung)')]
     public function test_gremium_and_overnight_fields(): void
     {
@@ -384,10 +406,11 @@ class EventRegistrationTest extends TestCase
         $this->assertFalse(RegistrationsRelationManager::canViewForRecord($woelflinge, EditEvent::class));
 
         $export = app(ParticipantExport::class);
-        $this->assertSame(['Nr.', 'Status', 'Vorname', 'Nachname', 'E-Mail', 'Geburtsjahr', 'Stamm oder Bezirk', 'Verpflegung', 'Angemeldet durch (sorgeberechtigt)', 'Bestätigt am'], $export->headings($woelflinge));
+        $this->assertSame(['Nr.', 'Status', 'Vorname', 'Nachname', 'E-Mail', 'Geburtsjahr', 'Stamm oder Bezirk', 'Herkunft', 'Verpflegung', 'Angemeldet durch (sorgeberechtigt)', 'Bestätigt am'], $export->headings($woelflinge));
         $row = $export->rows($woelflinge)[0];
         $this->assertSame("'=HYPERLINK(\"x\")", $row[2]);
-        $this->assertSame('Vegan', $row[7]);
+        $this->assertSame(config('dpsg.event_herkunft.hier'), $row[7], 'ohne Angabe: von hier');
+        $this->assertSame('Vegan', $row[8]);
         $this->assertSame("'+49 651", ParticipantExport::mask('+49 651'));
         $this->assertSame("'@SUMME(A1)", ParticipantExport::mask('@SUMME(A1)'));
         $this->assertSame('Muster', ParticipantExport::mask('Muster'));

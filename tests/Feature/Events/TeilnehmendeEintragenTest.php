@@ -137,6 +137,29 @@ class TeilnehmendeEintragenTest extends TestCase
         $this->assertSame(4, EventRegistration::query()->where('status', 'confirmed')->count(), '„auch über die Platzzahl hinaus“');
     }
 
+    #[TestDox('Liste mit Spalten „Stamm“ und „Gast“ (ja/leer); Einzeln mit Herkunft')]
+    public function test_list_with_guests(): void
+    {
+        $this->event->update(['form_fields' => ['birth_year' => 'optional', 'stamm' => 'optional']]);
+        $this->event->refresh();
+
+        $this->tabelle()->callTableAction('importParticipants', data: [
+            'liste' => "Vorname;Nachname;Stamm;Gast\nMia;Muster;Stamm Sankt Georg;\nLotta;Lang;DV Köln, Stamm Tonsur;ja\nKai;Kurz;;vielleicht",
+            'status' => 'confirmed',
+        ])->assertNotified();
+
+        $this->assertNull(EventRegistration::query()->where('last_name', 'Muster')->sole()->data['herkunft'] ?? null);
+        $lotta = EventRegistration::query()->where('last_name', 'Lang')->sole();
+        $this->assertTrue($lotta->isGast());
+        $this->assertSame('DV Köln, Stamm Tonsur', $lotta->data['stamm']);
+        $this->assertFalse(EventRegistration::query()->where('last_name', 'Kurz')->exists(), '„vielleicht“ ist unklar');
+
+        $this->tabelle()->callTableAction('addParticipant', data: [
+            'first_name' => 'Vera', 'last_name' => 'VCP', 'data' => ['stamm' => 'VCP Trier', 'herkunft' => 'gast'], 'status' => 'auto',
+        ])->assertHasNoTableActionErrors();
+        $this->assertTrue(EventRegistration::query()->where('first_name', 'Vera')->sole()->isGast());
+    }
+
     #[TestDox('Liste als Excel-Datei (.xlsx) hochladen; Datei wird danach gelöscht')]
     public function test_xlsx_upload(): void
     {

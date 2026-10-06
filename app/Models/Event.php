@@ -20,6 +20,9 @@ use Illuminate\Support\Carbon;
  */
 class Event extends Model
 {
+    /** Datenfeld zur Stamm-Auswahl: „hier“ oder „gast“ (andere Gliederung/anderer Verband). */
+    public const HERKUNFT = 'herkunft';
+
     public const STATUSES = [
         'draft' => 'Entwurf',
         'open' => 'Anmeldung offen',
@@ -98,7 +101,7 @@ class Event extends Model
     /**
      * Aktive Felder aus dem Baukasten in fester Reihenfolge.
      *
-     * @return array<string, array{label: string, type: string, required: bool, options?: array<string, string>}>
+     * @return array<string, array{label: string, type: string, required: bool, options?: array<string, string>, default?: string}>
      */
     public function formFields(): array
     {
@@ -112,6 +115,11 @@ class Event extends Model
             }
             if (in_array($config[$key] ?? null, ['optional', 'required'], true)) {
                 $fields[$key] = [...$field, 'required' => $config[$key] === 'required'];
+            }
+            // Unter der Stamm-/Bezirksauswahl: „Gast aus einem anderen …“ (Ankreuzfeld).
+            if ($key === 'stamm' && isset($fields['stamm'])) {
+                $fields[self::HERKUNFT] = ['label' => 'Herkunft', 'type' => 'herkunft', 'required' => false,
+                    'options' => (array) config('dpsg.event_herkunft'), 'default' => 'hier'];
             }
         }
 
@@ -237,16 +245,20 @@ class Event extends Model
     /**
      * Lesbarer Wert eines Baukasten-Felds (Teilnehmerliste, Export).
      *
-     * @param  array{type: string, options?: array<string, string>}  $field
+     * @param  array{type: string, options?: array<string, string>, default?: string}  $field
      */
     public function fieldValueLabel(array $field, mixed $value): ?string
     {
+        // Ohne Angabe (z. B. ältere Anmeldungen): von hier.
+        if ($field['type'] === 'herkunft' && ($value === null || $value === '')) {
+            $value = $field['default'] ?? null;
+        }
         if ($value === null || $value === '' || $value === []) {
             return null;
         }
 
         return match ($field['type']) {
-            'select' => $field['options'][$value] ?? (string) $value,
+            'select', 'herkunft' => $field['options'][$value] ?? (string) $value,
             'days' => array_values((array) $value) === array_keys($this->days())
                 ? 'ganze Zeit'
                 : collect((array) $value)->map(fn (string $d) => $this->days()[$d] ?? $d)->implode(' · '),

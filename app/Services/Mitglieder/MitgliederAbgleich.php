@@ -20,6 +20,7 @@ class MitgliederAbgleich
         'nicht_gefunden' => 'Nicht gefunden',
         'unklar' => 'Unklar (mehrere Treffer)',
         'kein_mitglied' => 'Kein Mitglied',
+        'gast' => 'Gast (nicht abgeglichen)',
     ];
 
     public function __construct(private Mitgliederverzeichnis $verzeichnis) {}
@@ -34,6 +35,14 @@ class MitgliederAbgleich
      */
     public function pruefe(EventRegistration $registration): string
     {
+        // Gäste aus anderen Gliederungen/Verbänden: nicht abfragen, die eigene
+        // Mitgliederverwaltung (bzw. die eigenen NaMi-Rechte) kennt sie nicht.
+        if ($registration->isGast()) {
+            $registration->forceFill(['member_status' => 'gast', 'member_number' => null, 'member_group' => null, 'member_manual' => false, 'member_checked_at' => now()])->save();
+
+            return 'gast';
+        }
+
         $vorname = self::ersterVorname($registration->first_name);
         $treffer = collect($this->verzeichnis->suche($vorname, trim($registration->last_name)))
             ->filter(fn (Mitglied $m) => self::norm($m->nachname) === self::norm($registration->last_name)

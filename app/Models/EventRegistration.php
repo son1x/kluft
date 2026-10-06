@@ -111,4 +111,10 @@ class EventRegistration extends Model
     {
         return static::query()->where('cancel_token_hash', static::hashToken($token))->first();
     }
+
+    /** Gast aus einer anderen Gliederung oder einem anderen Verband (Ankreuzfeld beim Stamm). */
+    public function isGast(): bool
+    {
+        return ($this->data[Event::HERKUNFT] ?? null) === 'gast';
+    }
 }

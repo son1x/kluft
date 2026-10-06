@@ -119,6 +119,7 @@
                         </div>
 
                         @foreach ($fields as $key => $field)
+                            @continue($field['type'] === 'herkunft') {{-- gehört zum Feld „Stamm“ --}}
                             @php($label = $field['label'].($field['required'] ? ' *' : ''))
                             <div>
                                 <label for="{{ $key }}" class="block text-sm font-bold">{{ $label }}</label>
@@ -174,7 +175,15 @@
                                             </ul>
                                             <datalist id="gruppierungen">@foreach ($gruppierungen as $option)<option value="{{ $option['value'] }}">{{ $option['hint'] }}</option>@endforeach</datalist>
                                         </div>
-                                        <p class="mt-1 text-xs text-text-secondary">Tippe den Namen, den Ort oder den Bezirk – oder trag etwas anderes ein.</p>
+                                        @isset($fields['herkunft'])
+                                            <div x-data="{ gast: @js(old('herkunft') === 'gast') }">
+                                                <p class="mt-1 text-xs text-text-secondary" x-show="! gast">Tippe den Namen, den Ort oder den Bezirk – oder trag etwas anderes ein.</p>
+                                                <p class="mt-1 text-xs text-text-secondary" x-show="gast" x-cloak>Bitte trag Verband und Gruppe ein, z. B. „DV Köln, Stamm Sankt Georg“ oder „VCP Saarbrücken“.</p>
+                                                <label class="mt-2 flex items-center gap-2 text-sm"><input type="checkbox" name="herkunft" value="gast" x-model="gast" @checked(old('herkunft') === 'gast') /> {{ $fields['herkunft']['options']['gast'] }}</label>
+                                            </div>
+                                        @else
+                                            <p class="mt-1 text-xs text-text-secondary">Tippe den Namen, den Ort oder den Bezirk – oder trag etwas anderes ein.</p>
+                                        @endisset
                                         @break
                                     @case('days')
                                         {{-- „Ganze Zeit“ oder einzelne Tage; die Tage klappen erst bei

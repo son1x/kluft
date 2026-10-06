@@ -110,6 +110,7 @@ class RegistrationsRelationManager extends RelationManager
                         'mitglied' => 'success',
                         'unklar' => 'warning',
                         'nicht_gefunden', 'ehemalig', 'kein_mitglied' => 'danger',
+                        'gast' => 'info',
                         default => 'gray',
                     })
                     ->placeholder('noch nicht geprüft')
@@ -149,7 +150,7 @@ class RegistrationsRelationManager extends RelationManager
                             ...$this->manualStatusInputs($event),
                         ])
                         ->action(function (array $data) {
-                            $event = $this->getOwnerRecord();
+                            $event = $this->veranstaltung();
                             abort_unless(Filament::auth()->user()?->can('manageParticipants', $event), 403);
 
                             $person = [
@@ -184,7 +185,7 @@ class RegistrationsRelationManager extends RelationManager
                             ...$this->manualStatusInputs($event),
                         ])
                         ->action(function (array $data, TeilnehmendenListe $liste) {
-                            $event = $this->getOwnerRecord();
+                            $event = $this->veranstaltung();
                             abort_unless(Filament::auth()->user()?->can('manageParticipants', $event), 403);
 
                             if (filled($data['datei'] ?? null)) {
@@ -211,12 +212,14 @@ class RegistrationsRelationManager extends RelationManager
                                 $zaehler['duplicate'] ? $zaehler['duplicate'].' schon angemeldet, übersprungen.' : null,
                                 ...$gelesen['fehler'] !== [] ? [count($gelesen['fehler']).' Zeile(n) nicht eingetragen: '.implode('; ', array_slice($gelesen['fehler'], 0, 10)).(count($gelesen['fehler']) > 10 ? ' …' : '')] : [],
                             ]);
-                            Notification::make()
+                            $meldung = Notification::make()
                                 ->title($neu.' '.($neu === 1 ? 'Person' : 'Personen').' eingetragen'.($teile ? ' ('.implode(', ', $teile).')' : '').'.')
                                 ->body($hinweise ? implode(' ', $hinweise) : null)
-                                ->status($gelesen['fehler'] !== [] || $neu === 0 ? 'warning' : 'success')
-                                ->persistent($gelesen['fehler'] !== [])
-                                ->send();
+                                ->status($gelesen['fehler'] !== [] || $neu === 0 ? 'warning' : 'success');
+                            if ($gelesen['fehler'] !== []) {
+                                $meldung->persistent(); // Fehlerliste bleibt stehen, bis sie gelesen ist
+                            }
+                            $meldung->send();
                         }),
                 ])
                     ->label('Teilnehmende eintragen')
@@ -584,6 +587,7 @@ class RegistrationsRelationManager extends RelationManager
                 'year' => TextInput::make($name)->label($field['label'])->numeric()->minValue(1900)->maxValue((int) date('Y')),
                 'plz' => TextInput::make($name)->label($field['label'])->regex('/^\d{4,5}$/')->maxLength(5),
                 'select' => Select::make($name)->label($field['label'])->options($field['options'] ?? []),
+                'herkunft' => Select::make($name)->label($field['label'])->options($field['options'] ?? [])->default($field['default'] ?? null)->selectablePlaceholder(false),
                 'days' => CheckboxList::make($name)->label($field['label'])->options($event->days())->columns(2),
                 'textarea' => Textarea::make($name)->label($field['label'])->rows(2)->maxLength(1000),
                 default => TextInput::make($name)->label($field['label'])->maxLength(255),
@@ -612,5 +616,13 @@ class RegistrationsRelationManager extends RelationManager
         if ($event->checksMembers() && ! NamiVerzeichnis::persoenlich()) {
             CheckEventMembers::dispatch($event->getKey());
         }
+    }
+
+    private function veranstaltung(): Event
+    {
+        $event = $this->getOwnerRecord();
+        abort_unless($event instanceof Event, 404);
+
+        return $event;
     }
 }

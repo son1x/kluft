@@ -19,6 +19,7 @@ use App\Services\ParticipantExport;
 use App\Services\Teilnahmebescheinigung;
 use App\Services\TeilnehmendenListe;
 use App\Support\AuditLogger;
+use App\Support\Features;
 use App\Support\NamiAmpel;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
@@ -126,7 +127,7 @@ class RegistrationsRelationManager extends RelationManager
                         $record->member_manual ? 'von Hand' : null,
                     ])->filter()->implode(' · ') ?: null),
                 TextColumn::make('certificate_approved_at')->label('Bescheinigung')->badge()
-                    ->visible((bool) $event->certificate_enabled)
+                    ->visible($event->bescheinigungAn())
                     ->state(fn (EventRegistration $record) => $record->uploadedCertificate() ? 'hochgeladen'
                         : ($record->certificateApproved() ? 'freigegeben' : ($record->status === 'confirmed' ? 'offen' : null)))
                     ->color(fn (?string $state) => $state === 'offen' ? 'gray' : 'success')
@@ -142,10 +143,10 @@ class RegistrationsRelationManager extends RelationManager
                     ->visible($event->checksMembers()),
                 TernaryFilter::make('member_own_group')->label('Gruppierung')->nullable()
                     ->trueLabel('eigene')->falseLabel('andere')
-                    ->visible($event->checksMembers() && $event->member_gruppierung_id !== null),
+                    ->visible($event->checksMembers() && $event->nurFuerMitglieder()),
                 TernaryFilter::make('certificate_approved_at')->label('Bescheinigung')->nullable()
                     ->trueLabel('freigegeben')->falseLabel('noch nicht freigegeben')
-                    ->visible((bool) $event->certificate_enabled),
+                    ->visible($event->bescheinigungAn()),
             ])
             ->headerActions([
                 ActionGroup::make([
@@ -237,23 +238,25 @@ class RegistrationsRelationManager extends RelationManager
                 ])
                     ->label('Teilnehmende eintragen')
                     ->icon('heroicon-o-user-plus')
-                    ->button(),
+                    ->button()
+                    ->visible(Features::enabled(Features::TEILNEHMENDE_EINTRAGEN)),
                 Action::make('checkMembers')
                     ->label('Mitgliedschaft prüfen')
                     ->icon('heroicon-o-identification')
                     ->visible($event->checksMembers())
                     ->modalHeading('Mit der Mitgliederverwaltung abgleichen')
                     ->modalDescription(fn () => new HtmlString(e('Bestätigte Anmeldungen und Warteliste werden mit '.app(Mitgliederverzeichnis::class)->name().' abgeglichen – im Hintergrund, etwa 30 je Minute. Von Hand entschiedene Anmeldungen bleiben, wie sie sind.')
-                        .(NamiVerzeichnis::persoenlich() ? ' '.e(self::namiNutzer()?->hasNamiZugang()
+                        .(NamiVerzeichnis::persoenlich() ? ' '.e(self::gespeicherterZugang(self::namiNutzer())
                             ? 'Die Anmeldung bei NaMi läuft über deinen im Profil gespeicherten Zugang.'
                             : 'Du meldest dich mit deinem eigenen NaMi-Konto an; das Passwort wird nur gespeichert, wenn du es unten ankreuzst.')
                             .' '.e('Das Ergebnis folgt deinen NaMi-Rechten – „nicht gefunden“ kann auch heißen, dass die Person für dich in NaMi nicht sichtbar ist.') : '')
                         .(config('mitglieder.driver') === 'nami' ? '<div class="mt-3 text-start">'.NamiAmpel::html(self::namiNutzer())->toHtml().'</div>' : '')))
                     ->schema(fn () => [
-                        ...NamiVerzeichnis::persoenlich() && ! self::namiNutzer()?->hasNamiZugang() ? [
+                        ...NamiVerzeichnis::persoenlich() && ! self::gespeicherterZugang(self::namiNutzer()) ? [
                             TextInput::make('nami_user')->label('Deine NaMi-Mitgliedsnummer')->required()->autocomplete('username'),
                             TextInput::make('nami_password')->label('Dein NaMi-Passwort')->password()->required()->autocomplete('current-password'),
-                            Toggle::make('nami_speichern')->label('Zugang verschlüsselt in meinem Profil speichern (dann keine Eingabe mehr nötig)'),
+                            Toggle::make('nami_speichern')->label('Zugang verschlüsselt in meinem Profil speichern (dann keine Eingabe mehr nötig)')
+                                ->visible(Features::enabled(Features::NAMI_PROFIL)),
                         ] : [],
                         Toggle::make('alle')->label('Auch bereits geprüfte Anmeldungen neu prüfen'),
                     ])
@@ -267,22 +270,22 @@ class RegistrationsRelationManager extends RelationManager
                         $nutzer = self::namiNutzer();
                         if (NamiVerzeichnis::persoenlich()) {
                             try {
-                                $session = $nutzer?->hasNamiZugang()
+                                $session = self::gespeicherterZugang($nutzer)
                                     ? (new NamiVerzeichnis)->anmeldenMitProfil($nutzer)
                                     : (new NamiVerzeichnis)->anmelden((string) ($data['nami_user'] ?? ''), (string) ($data['nami_password'] ?? ''));
                             } catch (MitgliederverzeichnisException $e) {
                                 Notification::make()->title('NaMi-Anmeldung fehlgeschlagen')
-                                    ->body($e->getMessage().($nutzer?->hasNamiZugang() ? ' Gespeicherten Zugang unter „Mein Konto → Mein NaMi-Zugang“ prüfen.' : ''))
+                                    ->body($e->getMessage().(self::gespeicherterZugang($nutzer) ? ' Gespeicherten Zugang unter „Mein Konto → Mein NaMi-Zugang“ prüfen.' : ''))
                                     ->danger()->send();
                                 $action->halt();
                             }
-                            if ($nutzer && ! $nutzer->hasNamiZugang() && ($data['nami_speichern'] ?? false)) {
+                            if ($nutzer && ! self::gespeicherterZugang($nutzer) && Features::enabled(Features::NAMI_PROFIL) && ($data['nami_speichern'] ?? false)) {
                                 $nutzer->forceFill(['nami_user' => trim((string) $data['nami_user']), 'nami_password' => (string) $data['nami_password'], 'nami_checked_at' => now(), 'nami_error' => null])->save();
                                 AuditLogger::log('nami.zugang.gespeichert', $nutzer, request: request());
                             }
                         }
 
-                        CheckEventMembers::dispatch($event->getKey(), (bool) ($data['alle'] ?? false), null, null, $session, $nutzer?->hasNamiZugang() ? $nutzer->getKey() : null);
+                        CheckEventMembers::dispatch($event->getKey(), (bool) ($data['alle'] ?? false), null, null, $session, self::gespeicherterZugang($nutzer) ? $nutzer->getKey() : null);
                         AuditLogger::log('event.member_check', Filament::auth()->user(), Event::class, $event->getKey(), request());
                         Notification::make()->title('Abgleich gestartet – die Spalte „Mitglied“ füllt sich in den nächsten Minuten.')->success()->send();
                     }),
@@ -459,7 +462,7 @@ class RegistrationsRelationManager extends RelationManager
                         ->requiresConfirmation()
                         ->deselectRecordsAfterCompletion()
                         ->action(fn (Collection $records) => $this->revokeCertificates($records)),
-                ])->label('Bescheinigungen')->visible((bool) $event->certificate_enabled),
+                ])->label('Bescheinigungen')->visible($event->bescheinigungAn()),
             ]);
     }
 
@@ -640,5 +643,11 @@ class RegistrationsRelationManager extends RelationManager
         abort_unless($event instanceof Event, 404);
 
         return $event;
+    }
+
+    /** Gespeicherten NaMi-Zugang nur nutzen, solange die Funktion eingeschaltet ist. */
+    private static function gespeicherterZugang(?User $user): bool
+    {
+        return $user !== null && $user->hasNamiZugang() && Features::enabled(Features::NAMI_PROFIL);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Services\Mitglieder\MitgliederAbgleich;
+use App\Support\Features;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -73,10 +74,22 @@ class Event extends Model
         return $this->belongsTo(Gruppierung::class, 'member_gruppierung_id');
     }
 
+    /** „Nur für Mitglieder von …“ gesetzt und die Funktion eingeschaltet. */
+    public function nurFuerMitglieder(): bool
+    {
+        return $this->member_gruppierung_id !== null && Features::enabled(Features::NUR_MITGLIEDER);
+    }
+
+    /** Teilnahmebescheinigung angeboten und die Funktion eingeschaltet. */
+    public function bescheinigungAn(): bool
+    {
+        return (bool) $this->certificate_enabled && Features::enabled(Features::TEILNAHMEBESCHEINIGUNG);
+    }
+
     /** z. B. „Mitglieder von Stamm Sankt Konrad“, „Mitglieder im Bezirk Trier“; null = offen für alle */
     public function zielgruppeMitglieder(): ?string
     {
-        $g = $this->memberGruppierung;
+        $g = $this->nurFuerMitglieder() ? $this->memberGruppierung : null;
         if (! $g) {
             return null;
         }
@@ -141,7 +154,7 @@ class Event extends Model
                 $fields[$key] = [...$field, 'required' => $config[$key] === 'required'];
             }
             // Unter der Stamm-/Bezirksauswahl: „Gast aus einem anderen …“ (Ankreuzfeld).
-            if ($key === 'stamm' && isset($fields['stamm'])) {
+            if ($key === 'stamm' && isset($fields['stamm']) && Features::enabled(Features::GAESTE)) {
                 $fields[self::HERKUNFT] = ['label' => 'Herkunft', 'type' => 'herkunft', 'required' => false,
                     'options' => (array) config('dpsg.event_herkunft'), 'default' => 'hier'];
             }

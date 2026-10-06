@@ -59,7 +59,7 @@ Tests: `php artisan test` für den DV, `KLUFT_INSTANZ=saar-hochwald php artisan 
 - `site`: Name, Kurzname, Ebene mit Wortformen (`level`, `level_genitive`, …), Domain, Beschreibung, Leitung und Geschäftsstelle (`office` mit Artikel)
 - `contact`, `gremien`, `person_email_domain`
 - `map`: Ausschnitt (`bbox`) und Mittelpunkt
-- `features` und `sections`: einschalten, was die Gliederung nutzt
+- `features` und `sections`: einschalten, was die Gliederung nutzt (Standard; Admins können einzelne Funktionen im Backend unter „Verwaltung → Funktionen“ an- und abschalten, siehe `App\Support\Features::KATALOG`)
 - `newsletter`: `null`, wenn sie keinen hat
 - `event_consent`: Einwilligungstext mit Version
 

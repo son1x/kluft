@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Notifications\Channels\NtfyChannel;
 use App\Notifications\Messages\NtfyMessage;
 use App\Support\AuditLogger;
+use App\Support\Features;
 use App\Support\PushEvents;
 use BackedEnum;
 use Filament\Facades\Filament;
@@ -46,7 +47,7 @@ class PushSettings extends Page
     {
         $user = Filament::auth()->user();
 
-        return $user instanceof User && $user->status === 'active';
+        return $user instanceof User && $user->status === 'active' && Features::enabled(Features::PUSH);
     }
 
     public function mount(): void

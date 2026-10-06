@@ -80,7 +80,7 @@ class EventRegistration extends Model
     /** Bescheinigung freigegeben: Veranstaltung bietet sie an, Anmeldung bestätigt und von der Leitung freigegeben. */
     public function certificateApproved(): bool
     {
-        return $this->certificate_approved_at !== null && $this->status === 'confirmed' && (bool) $this->event?->certificate_enabled;
+        return $this->certificate_approved_at !== null && $this->status === 'confirmed' && (bool) $this->event?->bescheinigungAn();
     }
 
     /** Hochgeladene Bescheinigung (ersetzt die erzeugte). */

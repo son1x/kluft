@@ -7,6 +7,7 @@ use App\Models\Gruppierung;
 use App\Services\Mitglieder\MitgliederAbgleich;
 use App\Services\Mitglieder\Mitgliederverzeichnis;
 use App\Services\Mitglieder\NamiVerzeichnis;
+use App\Support\Features;
 use App\Support\RoleCatalog;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\DateTimePicker;
@@ -103,7 +104,8 @@ class EventForm
                             ->mapWithKeys(fn (Gruppierung $g) => [$g->id => $g->displayName().($g->typ === 'bezirk' ? ' (mit allen Stämmen)' : '')])->all())
                         ->searchable()
                         ->placeholder('Offen für alle')
-                        ->helperText('Z. B. für Stammes- oder Bezirksveranstaltungen. Die Seite weist darauf hin; der Mitgliederabgleich markiert, wer zu einer anderen Gruppierung gehört. Niemand wird automatisch abgelehnt.'),
+                        ->helperText('Z. B. für Stammes- oder Bezirksveranstaltungen. Die Seite weist darauf hin; der Mitgliederabgleich markiert, wer zu einer anderen Gruppierung gehört. Niemand wird automatisch abgelehnt.')
+                        ->visible(fn () => Features::enabled(Features::NUR_MITGLIEDER)),
                 ]),
 
             Section::make('Teilnahmebescheinigung')
@@ -111,6 +113,7 @@ class EventForm
                 ->columns(2)
                 ->columnSpanFull()
                 ->collapsible()
+                ->visible(fn () => Features::enabled(Features::TEILNAHMEBESCHEINIGUNG))
                 ->components([
                     Toggle::make('certificate_enabled')->label('Teilnahmebescheinigung anbieten')->live()->columnSpanFull(),
                     Textarea::make('certificate_text')->label('Inhalte und Umfang (optional)')

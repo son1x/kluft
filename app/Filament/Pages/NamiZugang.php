@@ -7,6 +7,7 @@ use App\Services\Mitglieder\Mitglied;
 use App\Services\Mitglieder\MitgliederverzeichnisException;
 use App\Services\Mitglieder\NamiVerzeichnis;
 use App\Support\AuditLogger;
+use App\Support\Features;
 use App\Support\NamiAmpel;
 use BackedEnum;
 use Filament\Facades\Filament;
@@ -52,7 +53,8 @@ class NamiZugang extends Page
     {
         $user = Filament::auth()->user();
 
-        return $user instanceof User && $user->status === 'active' && NamiVerzeichnis::persoenlich();
+        return $user instanceof User && $user->status === 'active' && NamiVerzeichnis::persoenlich()
+            && Features::enabled(Features::NAMI_PROFIL) && Features::enabled(Features::MITGLIEDERABGLEICH);
     }
 
     public function mount(): void

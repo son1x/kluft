@@ -33,7 +33,7 @@ class NamiAmpel
             ? ['status' => self::OK, 'label' => 'NaMi-Server', 'message' => 'erreichbar']
             : ['status' => self::FAIL, 'label' => 'NaMi-Server', 'message' => 'nicht erreichbar – bitte später erneut versuchen']];
 
-        if ($user && NamiVerzeichnis::persoenlich()) {
+        if ($user && NamiVerzeichnis::persoenlich() && Features::enabled(Features::NAMI_PROFIL)) {
             $lampen[] = ['status' => self::status($user), 'label' => 'Dein NaMi-Zugang', 'message' => self::meldung($user)];
         }
 

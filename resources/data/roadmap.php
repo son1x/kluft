@@ -110,6 +110,7 @@ return [
             ['status' => 'decide', 'title' => 'Mitglieder anderer Gruppierungen automatisch auf die Warteliste?', 'note' => 'Heute nur Markierung, die Leitung entscheidet. Möglich: Anmeldungen „andere Gruppierung“ nach dem Abgleich automatisch auf die Warteliste setzen und die Leitung benachrichtigen. Aufwand: klein.'],
         ],
         'Testing' => [
+            ['status' => 'done', 'title' => 'Funktionen im Backend an- und abschalten', 'note' => 'Verwaltung → Funktionen (nur Admins): Download-Seite, Zeitschriften-Archiv, Rechtsträger-Schaubild, Roadmap, Teilnehmende von Hand eintragen, Gäste-Kästchen, Teilnahmebescheinigung, Mitgliederabgleich, NaMi-Zugang im Profil, „Nur für Mitglieder von …“, Push-Nachrichten, WordPress-Import. Standard je Website aus der Instanz-Konfiguration; abgeschaltete Funktionen verschwinden aus Website und Backend, Daten bleiben erhalten; jede Änderung im Protokoll.'],
             ['status' => 'done', 'title' => 'Echte Mails an ausgewählte Tester*innen', 'note' => 'Auf test.dpsg-trier.de gehen alle Mails an die Testadresse – außer an bis zu zehn freigeschaltete Adressen (GitHub-Secret MAIL_TEST_ALLOWLIST); diese Empfänger*innen bekommen ihre Bestätigungen, Antworten usw. direkt. Die Testadresse sieht im Mail-Kopf „X-Test-Umgeleitet-Von“, an wen eine umgeleitete Mail gegangen wäre. Mit dem Livegang entfallen Umleitung und Ausnahmen.'],
         ],
         'Talia' => [

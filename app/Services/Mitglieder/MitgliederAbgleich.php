@@ -5,6 +5,7 @@ namespace App\Services\Mitglieder;
 use App\Models\Event;
 use App\Models\EventRegistration;
 use App\Models\Gruppierung;
+use App\Support\Features;
 use Illuminate\Support\Str;
 
 /**
@@ -31,7 +32,7 @@ class MitgliederAbgleich
 
     public static function eingerichtet(): bool
     {
-        return in_array(config('mitglieder.driver'), ['nami', 'hitobito'], true);
+        return in_array(config('mitglieder.driver'), ['nami', 'hitobito'], true) && Features::enabled(Features::MITGLIEDERABGLEICH);
     }
 
     /**
@@ -43,7 +44,7 @@ class MitgliederAbgleich
         // Mitgliederverwaltung (bzw. die eigenen NaMi-Rechte) kennt sie nicht.
         if ($registration->isGast()) {
             $registration->forceFill(['member_status' => 'gast', 'member_number' => null, 'member_group' => null,
-                'member_own_group' => $registration->event->member_gruppierung_id ? false : null, 'member_manual' => false, 'member_checked_at' => now()])->save();
+                'member_own_group' => $registration->event->nurFuerMitglieder() ? false : null, 'member_manual' => false, 'member_checked_at' => now()])->save();
 
             return 'gast';
         }
@@ -110,7 +111,7 @@ class MitgliederAbgleich
      */
     public static function eigeneGruppierung(Event $event, ?string $gruppierung): ?bool
     {
-        $ziel = $event->memberGruppierung;
+        $ziel = $event->nurFuerMitglieder() ? $event->memberGruppierung : null;
         if (! $ziel || blank($gruppierung)) {
             return null;
         }

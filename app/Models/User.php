@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Support\AuditLogger;
+use App\Support\Features;
 use App\Support\PushEvents;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
@@ -169,6 +170,7 @@ class User extends Authenticatable implements FilamentUser
     public function wantsPush(string $event): bool
     {
         return $this->status === 'active'
+            && Features::enabled(Features::PUSH)
             && filled($this->ntfy_topic)
             && in_array($event, $this->ntfy_events ?? [], true)
             && array_key_exists($event, PushEvents::availableFor($this));

@@ -70,6 +70,7 @@ class PrivacyRequests
                     'ergebnis' => MitgliederAbgleich::STATUSES[$r->member_status] ?? $r->member_status,
                     'mitgliedsnummer' => $r->member_number,
                     'stamm' => $r->member_group,
+                    'eigene_gruppierung' => $r->member_own_group,
                     'geprueft_am' => $r->member_checked_at?->toIso8601String(),
                 ] : null,
                 'bestaetigt_am' => $r->confirmed_at?->toIso8601String(),

@@ -197,6 +197,63 @@ class MitgliederAbgleichTest extends TestCase
         $this->assertNull($tom->fresh()->data, 'ohne Stamm-Feld wird nichts übernommen');
     }
 
+    #[TestDox('Nur für Mitglieder eines Stamms/Bezirks: Abgleich markiert eigene/andere Gruppierung (DPSG-Nummer, sonst Karte); Hinweis auf der Seite, Filter, Export')]
+    public function test_members_of_own_gruppierung(): void
+    {
+        $bezirk = Gruppierung::query()->create(['typ' => 'bezirk', 'nummer' => '21-99-00', 'name' => 'Testbezirk', 'slug' => 'testbezirk', 'active' => true]);
+        $konrad = Gruppierung::query()->create(['typ' => 'stamm', 'nummer' => '21-99-08', 'name' => 'Sankt Konrad', 'slug' => 'st-konrad', 'parent_id' => $bezirk->id, 'active' => true]);
+        Gruppierung::query()->create(['typ' => 'stamm', 'name' => 'Ohne Nummer', 'slug' => 'ohne-nummer', 'parent_id' => $bezirk->id, 'active' => true]);
+        $this->bestand = [
+            new Mitglied('1', 'Mia', 'Muster', null, null, 'Testdorf St. Konrad 219908', true),
+            new Mitglied('2', 'Ben', 'Berg', null, null, 'Nachbardorf Sankt Paul 219907', true),
+            new Mitglied('3', 'Lea', 'Klein', null, null, 'Ganz woanders 218801', true),
+            new Mitglied('4', 'Kai', 'Kurz', null, null, 'Stamm Ohne Nummer', true),
+            new Mitglied('5', 'Tom', 'Tal', null, null, 'Irgendwas Unbekanntes', true),
+        ];
+        $abgleich = app(MitgliederAbgleich::class);
+
+        // Stammesveranstaltung
+        $event = $this->event(['member_gruppierung_id' => $konrad->id]);
+        $mia = $this->anmeldung($event, 'Mia', 'Muster', null);
+        $ben = $this->anmeldung($event, 'Ben', 'Berg', null, email: 'ben@example.org');
+        $tom = $this->anmeldung($event, 'Tom', 'Tal', null, email: 'tom@example.org');
+        $gast = $this->anmeldung($event, 'Gina', 'Gast', null, email: 'gina@example.org');
+        $gast->update(['data' => ['herkunft' => 'gast']]);
+        foreach ([$mia, $ben, $tom, $gast] as $r) {
+            $abgleich->pruefe($r->fresh());
+        }
+        $this->assertTrue($mia->fresh()->member_own_group);
+        $this->assertFalse($ben->fresh()->member_own_group, 'anderer Stamm im selben Bezirk');
+        $this->assertNull($tom->fresh()->member_own_group, 'nicht zuzuordnen');
+        $this->assertFalse($gast->fresh()->member_own_group);
+
+        $this->get('/veranstaltungen/woelflingslager')->assertOk()
+            ->assertSee('Mitglieder von Stamm Sankt Konrad')
+            ->assertSee('Diese Veranstaltung ist für Mitglieder von Stamm Sankt Konrad.');
+        $export = app(ParticipantExport::class);
+        $this->assertContains('Eigene Gruppierung', $export->headings($event));
+        $this->assertSame('ja', collect($export->rows($event))->firstWhere(3, 'Muster')[array_search('Eigene Gruppierung', $export->headings($event), true)]);
+
+        // Bezirksveranstaltung: alle Stämme des Bezirks, auch ohne Nummer über die Karte
+        $bezirksEvent = $this->event(['slug' => 'bezirkstag', 'member_gruppierung_id' => $bezirk->id]);
+        $ergebnis = [];
+        foreach (['Mia' => 'Muster', 'Ben' => 'Berg', 'Lea' => 'Klein', 'Kai' => 'Kurz'] as $vor => $nach) {
+            $r = $this->anmeldung($bezirksEvent, $vor, $nach, null, email: strtolower($vor).'@bezirk.example.org');
+            $abgleich->pruefe($r);
+            $ergebnis[$vor] = $r->fresh()->member_own_group;
+        }
+        $this->assertSame(['Mia' => true, 'Ben' => true, 'Lea' => false, 'Kai' => true], $ergebnis);
+        $this->assertSame('Mitglieder im Bezirk Testbezirk', $bezirksEvent->zielgruppeMitglieder());
+
+        // Ohne Einschränkung: kein Ergebnis; Entscheidung von Hand rechnet neu
+        $offen = $this->event(['slug' => 'offen']);
+        $r = $this->anmeldung($offen, 'Mia', 'Muster', null, email: 'x@example.org');
+        $abgleich->pruefe($r);
+        $this->assertNull($r->fresh()->member_own_group);
+        MitgliederAbgleich::manuell($ben->fresh(), 'mitglied', '2', 'Testdorf St. Konrad 219908');
+        $this->assertTrue($ben->fresh()->member_own_group);
+    }
+
     #[TestDox('Gäste aus anderen Gliederungen/Verbänden werden nicht abgefragt, sondern als „Gast“ markiert')]
     public function test_guests_are_not_looked_up(): void
     {

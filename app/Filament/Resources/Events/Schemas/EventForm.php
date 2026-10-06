@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Events\Schemas;
 
 use App\Models\Event;
+use App\Models\Gruppierung;
 use App\Services\Mitglieder\MitgliederAbgleich;
 use App\Services\Mitglieder\Mitgliederverzeichnis;
 use App\Services\Mitglieder\NamiVerzeichnis;
@@ -97,6 +98,12 @@ class EventForm
                             : 'Nach der Bestätigung wird jede Anmeldung anhand von Name und Geburtsjahr mit '.app(Mitgliederverzeichnis::class)->name().' abgeglichen')
                             .' (z. B. für Versicherung oder Mitgliedsbeitrag). Der Einwilligungstext bekommt dafür einen Hinweis; am besten zusammen mit dem Feld „Geburtsjahr“.')
                         ->visible(fn () => MitgliederAbgleich::eingerichtet()),
+                    Select::make('member_gruppierung_id')->label('Nur für Mitglieder von')
+                        ->options(fn () => Gruppierung::query()->active()->orderBy('typ')->orderBy('name')->get()
+                            ->mapWithKeys(fn (Gruppierung $g) => [$g->id => $g->displayName().($g->typ === 'bezirk' ? ' (mit allen Stämmen)' : '')])->all())
+                        ->searchable()
+                        ->placeholder('Offen für alle')
+                        ->helperText('Z. B. für Stammes- oder Bezirksveranstaltungen. Die Seite weist darauf hin; der Mitgliederabgleich markiert, wer zu einer anderen Gruppierung gehört. Niemand wird automatisch abgelehnt.'),
                 ]),
 
             Section::make('Teilnahmebescheinigung')

@@ -52,6 +52,7 @@
                     <div><dt class="font-bold">Wann</dt><dd>{{ $event->dateLabel() }}</dd></div>
                     @if ($event->location)<div><dt class="font-bold">Wo</dt><dd>{{ $event->location }}</dd></div>@endif
                     @if ($event->cost_info)<div><dt class="font-bold">Kosten</dt><dd>{{ $event->cost_info }}</dd></div>@endif
+                    @if ($event->memberGruppierung)<div><dt class="font-bold">Für</dt><dd>{{ $event->zielgruppeMitglieder() }}</dd></div>@endif
                     @if ($event->capacity)<div><dt class="font-bold">Plätze</dt><dd>{{ $event->capacity }} @if ($state === 'offen')(noch {{ $event->spotsLeft() }} frei)@endif</dd></div>@endif
                     <div><dt class="font-bold">Anmeldung</dt><dd>
                         @if ($event->reg_opens_at?->isFuture()) ab {{ $event->reg_opens_at->locale('de')->isoFormat('D. MMMM YYYY, HH:mm') }} Uhr, @endif
@@ -66,6 +67,9 @@
 
         <section id="anmeldung" aria-labelledby="anmeldung-heading" class="mt-12 max-w-3xl scroll-mt-24">
             <h2 id="anmeldung-heading" class="font-serif text-2xl font-bold">Anmeldung</h2>
+            @if ($event->memberGruppierung)
+                <p class="mt-2 border-l-4 border-dpsg-blau bg-white p-3 text-sm shadow">Diese Veranstaltung ist für {{ $event->zielgruppeMitglieder() }}. Wenn du nicht dazugehörst, melde dich bitte vorher bei der Veranstaltungsleitung.</p>
+            @endif
             <p class="mt-1 text-sm text-text-secondary">Schon angemeldet? Unter <a href="{{ route('participants.index') }}" class="underline">Meine Anmeldungen</a> kannst du stornieren und Unterlagen abrufen.</p>
 
             @if (session('anmeldung') === 'angefragt')

@@ -115,7 +115,16 @@ class RegistrationsRelationManager extends RelationManager
                         default => 'gray',
                     })
                     ->placeholder('noch nicht geprüft')
-                    ->description(fn (EventRegistration $record) => collect([$record->member_number ? 'Nr. '.$record->member_number : null, $record->member_group, $record->member_manual ? 'von Hand' : null])->filter()->implode(' · ') ?: null),
+                    ->description(fn (EventRegistration $record) => collect([
+                        $record->member_number ? 'Nr. '.$record->member_number : null,
+                        $record->member_group,
+                        match ($record->member_own_group) {
+                            true => '✓ eigene Gruppierung',
+                            false => '⚠ andere Gruppierung',
+                            default => null,
+                        },
+                        $record->member_manual ? 'von Hand' : null,
+                    ])->filter()->implode(' · ') ?: null),
                 TextColumn::make('certificate_approved_at')->label('Bescheinigung')->badge()
                     ->visible((bool) $event->certificate_enabled)
                     ->state(fn (EventRegistration $record) => $record->uploadedCertificate() ? 'hochgeladen'
@@ -131,6 +140,9 @@ class RegistrationsRelationManager extends RelationManager
                 SelectFilter::make('status')->label('Status')->options(EventRegistration::STATUSES),
                 SelectFilter::make('member_status')->label('Mitglied')->options(MitgliederAbgleich::STATUSES)
                     ->visible($event->checksMembers()),
+                TernaryFilter::make('member_own_group')->label('Gruppierung')->nullable()
+                    ->trueLabel('eigene')->falseLabel('andere')
+                    ->visible($event->checksMembers() && $event->member_gruppierung_id !== null),
                 TernaryFilter::make('certificate_approved_at')->label('Bescheinigung')->nullable()
                     ->trueLabel('freigegeben')->falseLabel('noch nicht freigegeben')
                     ->visible((bool) $event->certificate_enabled),

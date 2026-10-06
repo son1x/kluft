@@ -17,6 +17,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $cancelled_at
  * @property Carbon|null $purge_at
  * @property Carbon|null $member_checked_at
+ * @property bool|null $member_own_group
  * @property Carbon|null $certificate_approved_at
  */
 class EventRegistration extends Model
@@ -50,6 +51,7 @@ class EventRegistration extends Model
             'purge_at' => 'datetime',
             'member_manual' => 'boolean',
             'member_checked_at' => 'datetime',
+            'member_own_group' => 'boolean',
             'certificate_approved_at' => 'datetime',
         ];
     }

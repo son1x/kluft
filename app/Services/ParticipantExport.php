@@ -26,7 +26,7 @@ class ParticipantExport
             ->flatMap(fn (array $field) => $field['type'] === 'days' ? [$field['label'], ...array_values($event->days())] : [$field['label']])
             ->all();
 
-        $member = $event->checksMembers() ? ['Mitglied', 'Mitgliedsnummer', 'Stamm (Mitgliederverwaltung)'] : [];
+        $member = $event->checksMembers() ? ['Mitglied', 'Mitgliedsnummer', 'Stamm (Mitgliederverwaltung)', ...($event->member_gruppierung_id ? ['Eigene Gruppierung'] : [])] : [];
 
         return ['Nr.', 'Status', 'Vorname', 'Nachname', 'E-Mail', ...$fields, ...$member, 'Angemeldet durch (sorgeberechtigt)', 'Bestätigt am'];
     }
@@ -65,6 +65,9 @@ class ParticipantExport
                     $r->email,
                     ...$extra,
                     ...($checksMembers ? [MitgliederAbgleich::STATUSES[$r->member_status] ?? 'nicht geprüft', $r->member_number, $r->member_group] : []),
+                    ...($checksMembers && $event->member_gruppierung_id ? [match ($r->member_own_group) {
+                        true => 'ja', false => 'nein', default => ''
+                    }] : []),
                     $r->guardian_name,
                     $r->confirmed_at?->format('d.m.Y H:i'),
                 ]);

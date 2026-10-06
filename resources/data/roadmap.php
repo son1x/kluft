@@ -29,6 +29,7 @@ return [
         ['Bolivien', 'bolivienpartnerschaft.de', 'partial'],
         ['Beraten', 'beraten-online.de (Phase 2)', 'partial'],
         ['WhatsApp', 'WhatsApp-Newsletter (vorbereitet, aus)', 'partial'],
+        ['Stamm', 'Stammes- und Bezirksveranstaltungen', 'partial'],
     ],
 
     'sections' => [
@@ -103,6 +104,11 @@ return [
     | oben; 'note' = Einschätzung/Empfehlung.
     */
     'feedback' => [
+        'Stamm' => [
+            ['status' => 'done', 'title' => 'Veranstaltungen nur für Mitglieder der eigenen Gruppierung', 'note' => 'Je Veranstaltung „Nur für Mitglieder von …“ (Stamm oder Bezirk mit allen Stämmen). Die Seite weist darauf hin; der Mitgliederabgleich mit NaMi markiert jede Anmeldung als „eigene Gruppierung“ oder „andere Gruppierung“ – über die DPSG-Nummer der Gruppierung (z. B. 21-01-08), sonst über die Karte. Filter und Exportspalte „Eigene Gruppierung“. Niemand wird automatisch abgelehnt; Gäste gelten als „andere“. Gilt die Mitgliedschaft (Stammgruppierung), nicht weitere Tätigkeiten.'],
+            ['status' => 'open', 'title' => 'Erster echter Abgleich: Format der Gruppierung in NaMi prüfen', 'note' => 'Steht die DPSG-Nummer in der NaMi-Gruppierungsbezeichnung (z. B. „… 210108“)? Sonst greift nur der Namensvergleich mit der Karte. Mit dem eigenen NaMi-Zugang an einer Testveranstaltung prüfen.'],
+            ['status' => 'decide', 'title' => 'Mitglieder anderer Gruppierungen automatisch auf die Warteliste?', 'note' => 'Heute nur Markierung, die Leitung entscheidet. Möglich: Anmeldungen „andere Gruppierung“ nach dem Abgleich automatisch auf die Warteliste setzen und die Leitung benachrichtigen. Aufwand: klein.'],
+        ],
         'Testing' => [
             ['status' => 'done', 'title' => 'Echte Mails an ausgewählte Tester*innen', 'note' => 'Auf test.dpsg-trier.de gehen alle Mails an die Testadresse – außer an bis zu zehn freigeschaltete Adressen (GitHub-Secret MAIL_TEST_ALLOWLIST); diese Empfänger*innen bekommen ihre Bestätigungen, Antworten usw. direkt. Die Testadresse sieht im Mail-Kopf „X-Test-Umgeleitet-Von“, an wen eine umgeleitete Mail gegangen wäre. Mit dem Livegang entfallen Umleitung und Ausnahmen.'],
         ],

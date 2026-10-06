@@ -33,7 +33,7 @@ class Event extends Model
     protected $fillable = [
         'title', 'slug', 'teaser', 'description', 'starts_at', 'ends_at', 'location',
         'stage', 'section', 'target_group', 'cover_media_id', 'contact_name', 'contact_email',
-        'cost_info', 'reg_opens_at', 'reg_closes_at', 'capacity', 'waitlist_enabled', 'member_check',
+        'cost_info', 'reg_opens_at', 'reg_closes_at', 'capacity', 'waitlist_enabled', 'member_check', 'member_gruppierung_id',
         'status', 'form_fields', 'retention_days', 'created_by', 'calendar_uid',
         'certificate_enabled', 'certificate_text', 'certificate_signer',
     ];
@@ -60,6 +60,30 @@ class Event extends Model
     public function registrations(): HasMany
     {
         return $this->hasMany(EventRegistration::class);
+    }
+
+    /**
+     * „Nur für Mitglieder von …“ (Stamm oder Bezirk); der Mitgliederabgleich
+     * markiert, wer zu einer anderen Gruppierung gehört.
+     *
+     * @return BelongsTo<Gruppierung, $this>
+     */
+    public function memberGruppierung(): BelongsTo
+    {
+        return $this->belongsTo(Gruppierung::class, 'member_gruppierung_id');
+    }
+
+    /** z. B. „Mitglieder von Stamm Sankt Konrad“, „Mitglieder im Bezirk Trier“; null = offen für alle */
+    public function zielgruppeMitglieder(): ?string
+    {
+        $g = $this->memberGruppierung;
+        if (! $g) {
+            return null;
+        }
+
+        return $g->typ === 'bezirk'
+            ? 'Mitglieder im '.$g->displayName()
+            : 'Mitglieder von '.(str_starts_with($g->name, 'Stamm') ? '' : 'Stamm ').$g->name;
     }
 
     /**

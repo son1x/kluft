@@ -2,6 +2,7 @@
 
 namespace App\Services\Mitglieder;
 
+use App\Models\Event;
 use App\Models\EventRegistration;
 use App\Models\Gruppierung;
 use Illuminate\Support\Str;
@@ -41,7 +42,8 @@ class MitgliederAbgleich
         // Gäste aus anderen Gliederungen/Verbänden: nicht abfragen, die eigene
         // Mitgliederverwaltung (bzw. die eigenen NaMi-Rechte) kennt sie nicht.
         if ($registration->isGast()) {
-            $registration->forceFill(['member_status' => 'gast', 'member_number' => null, 'member_group' => null, 'member_manual' => false, 'member_checked_at' => now()])->save();
+            $registration->forceFill(['member_status' => 'gast', 'member_number' => null, 'member_group' => null,
+                'member_own_group' => $registration->event->member_gruppierung_id ? false : null, 'member_manual' => false, 'member_checked_at' => now()])->save();
 
             return 'gast';
         }
@@ -91,11 +93,42 @@ class MitgliederAbgleich
             'member_status' => $status,
             'member_number' => $mitglied?->nummer,
             'member_group' => $mitglied ? Str::limit((string) $mitglied->gruppierung, 150, '') : null,
+            'member_own_group' => $mitglied ? self::eigeneGruppierung($registration->event, (string) $mitglied->gruppierung) : null,
             'member_manual' => false,
             'member_checked_at' => now(),
         ])->save();
 
         return $status;
+    }
+
+    /**
+     * Gehört die Gruppierung aus der Mitgliederverwaltung zu der, für deren
+     * Mitglieder die Veranstaltung gedacht ist? Stamm: genau dieser; Bezirk:
+     * der Bezirk selbst oder einer seiner Stämme. Vorrang hat die DPSG-Nummer
+     * (DD-BB-SS, in NaMi z. B. „… 210108“), sonst die Zuordnung über die Karte.
+     * null = keine Einschränkung oder nicht feststellbar.
+     */
+    public static function eigeneGruppierung(Event $event, ?string $gruppierung): ?bool
+    {
+        $ziel = $event->memberGruppierung;
+        if (! $ziel || blank($gruppierung)) {
+            return null;
+        }
+
+        if (filled($ziel->nummer) && preg_match('/\b(\d{2})(\d{2})(\d{2})\b/', $gruppierung, $m)) {
+            $nummer = "{$m[1]}-{$m[2]}-{$m[3]}";
+
+            return $ziel->typ === 'bezirk'
+                ? substr($nummer, 0, 6) === substr((string) $ziel->nummer, 0, 6)
+                : $nummer === $ziel->nummer;
+        }
+
+        $treffer = self::gruppierung($gruppierung);
+        if (! $treffer) {
+            return null;
+        }
+
+        return $treffer->is($ziel) || ($ziel->typ === 'bezirk' && $treffer->parent_id === $ziel->id);
     }
 
     /**
@@ -150,6 +183,7 @@ class MitgliederAbgleich
             'member_status' => $status,
             'member_number' => $status === 'mitglied' ? $nummer : null,
             'member_group' => $status === 'mitglied' ? $gruppierung : null,
+            'member_own_group' => $status === 'mitglied' ? self::eigeneGruppierung($registration->event, $gruppierung) : null,
             'member_manual' => true,
             'member_checked_at' => now(),
         ])->save();

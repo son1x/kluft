@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
+use App\Models\Download;
 use App\Models\Page;
 use App\Models\Person;
 use App\Models\Post;
+use App\Support\Features;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -33,6 +35,9 @@ class SectionController extends Controller
             'fak' => ($config['fak'] ?? false)
                 ? Person::query()->visible()->where('section', $section)->where('gremium', 'fak')->with('photo')->orderBy('sort')->orderBy('name')->get()
                 : null,
+            'downloads' => Features::enabled(Features::DOWNLOADS)
+                ? Download::query()->published()->where('section', $section)->orderBy('sort')->orderBy('title')->get()
+                : collect(),
             'posts' => Post::query()->published()->with('coverMedia')
                 ->where('section', $section)
                 ->orderByDesc('published_at')

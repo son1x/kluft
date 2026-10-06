@@ -85,6 +85,29 @@
                 </ul>
             </section>
         @endif
+        @if ($downloads->isNotEmpty())
+            {{-- Dateien von der Download-Seite, die diesem Bereich zugeordnet sind --}}
+            <section class="mt-16" aria-labelledby="dokumente-heading">
+                @include('partials.section-heading', ['id' => 'dokumente-heading', 'title' => 'Dokumente'])
+                <ul class="grid gap-4 sm:grid-cols-2">
+                    @foreach ($downloads as $download)
+                        <li>
+                            <a href="{{ $download->url() }}" class="group flex h-full items-start gap-4 rounded-lg bg-white p-4 shadow-md hover:shadow-lg"
+                               @if (in_array($download->extension(), ['pdf', 'jpg', 'jpeg', 'png'], true)) target="_blank" rel="noopener" @endif>
+                                <span class="flex h-12 w-10 shrink-0 items-end justify-center rounded bg-dpsg-blau pb-1.5 text-[11px] font-bold text-white" aria-hidden="true">{{ $download->badge() }}</span>
+                                <span class="min-w-0">
+                                    <span class="block font-bold text-dpsg-blau group-hover:text-dpsg-rot">{{ $download->title }}</span>
+                                    @if ($download->description)<span class="block text-sm text-text-secondary">{{ $download->description }}</span>@endif
+                                    <span class="mt-1 block text-xs text-text-secondary">{{ $download->meta() }}</span>
+                                </span>
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+                <p class="mt-4 text-sm"><a href="{{ route('downloads.index') }}" class="underline hover:text-dpsg-rot">Alle Downloads</a></p>
+            </section>
+        @endif
+
         @if ($fak !== null)
             {{-- Facharbeitskreis (FAK) des Fachbereichs --}}
             <section id="fak" class="mt-16 scroll-mt-24" aria-labelledby="fak-heading">
@@ -138,7 +161,7 @@
         <section class="mt-16" aria-labelledby="sektion-aktuelles">
             @include('partials.section-heading', ['id' => 'sektion-aktuelles', 'title' => 'Aktuelles'])
             @if ($posts->isEmpty())
-                <p class="text-text-secondary">Noch keine Meldungen {{ ($config['kind'] ?? 'Fachbereich') === 'Fachbereich' ? 'aus dem Fachbereich' : 'von' }} {{ $config['label'] }}.</p>
+                <p class="text-text-secondary">Noch keine Meldungen {{ match ($config['kind'] ?? 'Fachbereich') { 'Fachbereich' => 'aus dem Fachbereich', 'Thema' => 'zum Thema', default => 'von' } }} {{ $config['label'] }}.</p>
             @else
                 <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     @foreach ($posts as $post)

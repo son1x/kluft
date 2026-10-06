@@ -5,6 +5,7 @@ namespace Instanzen\DvTrier\Seeders;
 use App\Models\Page;
 use App\Models\Post;
 use Illuminate\Database\Seeder;
+use Instanzen\DvTrier\Seeders\Inhalt\BereichPraevention;
 use Instanzen\DvTrier\Seeders\Inhalt\DownloadsAbrechnungsformulare;
 use Instanzen\DvTrier\Seeders\Inhalt\FachbereicheSpiritualitaetAusbildungOekologie;
 use Instanzen\DvTrier\Seeders\Inhalt\FachbereichPolitischeBildung;
@@ -230,6 +231,12 @@ class DemoContentSeeder extends Seeder
                 'show_in_nav' => true,
                 'nav_sort' => 10,
                 'body' => self::DV_BODY,
+            ],
+            [
+                ...BereichPraevention::SEITE,
+                'parent' => 'dioezesanverband',
+                'show_in_nav' => true,
+                'body' => BereichPraevention::BODY,
             ],
             [
                 ...DownloadsAbrechnungsformulare::SEITE,

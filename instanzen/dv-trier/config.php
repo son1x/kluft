@@ -203,6 +203,14 @@ return [
             'landing' => 'oekologie',
             'fak' => true,
         ],
+        'praevention' => [
+            'label' => 'Prävention',
+            // Kein Fachbereich: Thema der Hauptberuflichen, unter „Diözesanverband“.
+            'kind' => 'Thema',
+            'color' => 'praevention',
+            'icon' => 'shield-check',
+            'landing' => 'praevention',
+        ],
         'politische-bildung' => [
             'label' => 'Politische Bildung',
             'color' => 'politische-bildung',

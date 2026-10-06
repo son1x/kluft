@@ -54,6 +54,7 @@
     --color-fach-spiritualitaet: #00739f;
     --color-fach-ausbildung: #003056;
     --color-fach-politische-bildung: #7b2d84;
+    --color-fach-praevention: #00646e;
 
     /* Neutralfarben der Website (eigene Festlegung, s. 7.2) */
     --color-text: #1c1f26;
@@ -146,6 +147,7 @@ html {
 .fach-spiritualitaet { --fach: var(--color-fach-spiritualitaet); --fach-ink: #fff; }
 .fach-ausbildung { --fach: var(--color-fach-ausbildung); --fach-ink: #fff; }
 .fach-politische-bildung { --fach: var(--color-fach-politische-bildung); --fach-ink: #fff; }
+.fach-praevention { --fach: var(--color-fach-praevention); --fach-ink: #fff; }
 
 /*
  * Begriffs-Hover (Glossar): gepunktete Unterstreichung, Erklärung als

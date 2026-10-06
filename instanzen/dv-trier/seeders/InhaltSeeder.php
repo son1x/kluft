@@ -45,6 +45,7 @@ class InhaltSeeder extends Seeder
         Inhalt\FachbereicheSpiritualitaetAusbildungOekologie::class, // instanzen/dv-trier/migrations/2026_10_05_120000
         Inhalt\FachbereichPolitischeBildung::class, // instanzen/dv-trier/migrations/2026_10_06_090100
         Inhalt\DownloadsAbrechnungsformulare::class, // instanzen/dv-trier/migrations/2026_10_06_100100
+        Inhalt\BereichPraevention::class, // instanzen/dv-trier/migrations/2026_10_06_130000
     ];
 
     public function run(): void

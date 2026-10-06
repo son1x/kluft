@@ -6,6 +6,7 @@ use App\Jobs\CheckEventMembers;
 use App\Mail\EventRegistrationMail;
 use App\Models\Event;
 use App\Models\EventRegistration;
+use App\Services\Mitglieder\NamiVerzeichnis;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -117,7 +118,9 @@ class EventRegistrations
         $this->send($registration, $result, $cancelToken);
         app(PushNotifier::class)->registration($registration, $result);
 
-        if ($registration->event->checksMembers()) {
+        // Automatisch nur mit technischem Konto; bei persönlicher NaMi-Anmeldung
+        // prüft die Veranstaltungsleitung unter „Teilnehmende“.
+        if ($registration->event->checksMembers() && ! NamiVerzeichnis::persoenlich()) {
             CheckEventMembers::dispatch($registration->event_id, false, [$registration->id]);
         }
 

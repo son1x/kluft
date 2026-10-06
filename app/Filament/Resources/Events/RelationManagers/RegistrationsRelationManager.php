@@ -11,6 +11,8 @@ use App\Models\RegistrationDocument;
 use App\Services\EventRegistrations;
 use App\Services\Mitglieder\MitgliederAbgleich;
 use App\Services\Mitglieder\Mitgliederverzeichnis;
+use App\Services\Mitglieder\MitgliederverzeichnisException;
+use App\Services\Mitglieder\NamiVerzeichnis;
 use App\Services\ParticipantExport;
 use App\Services\Teilnahmebescheinigung;
 use App\Support\AuditLogger;
@@ -131,14 +133,31 @@ class RegistrationsRelationManager extends RelationManager
                     ->icon('heroicon-o-identification')
                     ->visible($event->checksMembers())
                     ->modalHeading('Mit der Mitgliederverwaltung abgleichen')
-                    ->modalDescription('Bestätigte Anmeldungen und Warteliste werden mit '.app(Mitgliederverzeichnis::class)->name().' abgeglichen – im Hintergrund, etwa 30 je Minute. Von Hand entschiedene Anmeldungen bleiben, wie sie sind.')
-                    ->schema([
+                    ->modalDescription(fn () => 'Bestätigte Anmeldungen und Warteliste werden mit '.app(Mitgliederverzeichnis::class)->name().' abgeglichen – im Hintergrund, etwa 30 je Minute. Von Hand entschiedene Anmeldungen bleiben, wie sie sind.'
+                        .(NamiVerzeichnis::persoenlich() ? ' Du meldest dich mit deinem eigenen NaMi-Konto an; das Ergebnis folgt deinen NaMi-Rechten – „nicht gefunden“ kann auch heißen, dass die Person für dich in NaMi nicht sichtbar ist. Das Passwort wird nicht gespeichert.' : ''))
+                    ->schema(fn () => [
+                        ...NamiVerzeichnis::persoenlich() ? [
+                            TextInput::make('nami_user')->label('Deine NaMi-Mitgliedsnummer')->required()->autocomplete('username'),
+                            TextInput::make('nami_password')->label('Dein NaMi-Passwort')->password()->required()->autocomplete('current-password'),
+                        ] : [],
                         Toggle::make('alle')->label('Auch bereits geprüfte Anmeldungen neu prüfen'),
                     ])
-                    ->action(function (array $data) {
+                    ->action(function (array $data, Action $action) {
                         $event = $this->getOwnerRecord();
                         abort_unless(Filament::auth()->user()?->can('manageParticipants', $event), 403);
-                        CheckEventMembers::dispatch($event->getKey(), (bool) ($data['alle'] ?? false));
+
+                        // Persönliche Anmeldung: hier anmelden, nur das Session-Cookie geht in die Warteschlange.
+                        $session = null;
+                        if (NamiVerzeichnis::persoenlich()) {
+                            try {
+                                $session = (new NamiVerzeichnis)->anmelden((string) ($data['nami_user'] ?? ''), (string) ($data['nami_password'] ?? ''));
+                            } catch (MitgliederverzeichnisException $e) {
+                                Notification::make()->title('NaMi-Anmeldung fehlgeschlagen')->body($e->getMessage())->danger()->send();
+                                $action->halt();
+                            }
+                        }
+
+                        CheckEventMembers::dispatch($event->getKey(), (bool) ($data['alle'] ?? false), null, null, $session);
                         AuditLogger::log('event.member_check', Filament::auth()->user(), Event::class, $event->getKey(), request());
                         Notification::make()->title('Abgleich gestartet – die Spalte „Mitglied“ füllt sich in den nächsten Minuten.')->success()->send();
                     }),

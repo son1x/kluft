@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Services\Mitglieder\MitgliederAbgleich;
 use App\Services\Mitglieder\Mitgliederverzeichnis;
 use App\Services\Mitglieder\MitgliederverzeichnisException;
+use App\Services\Mitglieder\NamiVerzeichnis;
 use Illuminate\Console\Command;
 
 /**
@@ -21,6 +22,18 @@ class MitgliederCheckCommand extends Command
     {
         if (! MitgliederAbgleich::eingerichtet()) {
             $this->warn('Mitgliederabgleich aus (MITGLIEDER_DRIVER='.config('mitglieder.driver').').');
+
+            return self::SUCCESS;
+        }
+
+        // Persönliche Anmeldung: kein technisches Konto – nur Erreichbarkeit prüfen.
+        if (NamiVerzeichnis::persoenlich()) {
+            if (! (new NamiVerzeichnis)->erreichbar()) {
+                $this->error('NaMi 2: nicht erreichbar.');
+
+                return self::FAILURE;
+            }
+            $this->info('NaMi 2: erreichbar. Anmeldung persönlich – jede Person prüft mit ihrem eigenen NaMi-Konto.');
 
             return self::SUCCESS;
         }

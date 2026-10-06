@@ -38,7 +38,7 @@ Für einen weiteren Schlüssel muss der Name zusätzlich in den Auswahllisten de
 | Push | `NTFY_SERVER`, `NTFY_TOKEN` | optional |
 | WhatsApp | `WHATSAPP_MODE`, `WHATSAPP_CHANNEL_URL`, `WHATSAPP_TEST_ALLOWLIST` | Standard aus |
 | Kalender | `NEXTCLOUD_ALLOWED_HOSTS` | optional |
-| Mitglieder | `MITGLIEDER_DRIVER`, `NAMI_USER`, `NAMI_PASSWORD`, `HITOBITO_URL`, `HITOBITO_TOKEN`, `HITOBITO_MEMBER_NUMBER_ATTRIBUTE` | Standard aus, siehe docs/mitgliederabgleich.md |
+| Mitglieder | `MITGLIEDER_DRIVER`, `NAMI_AUTH`, `NAMI_USER`, `NAMI_PASSWORD`, `HITOBITO_URL`, `HITOBITO_TOKEN`, `HITOBITO_MEMBER_NUMBER_ATTRIBUTE` | Standard aus; für NaMi 2 mit persönlicher Anmeldung genügt `MITGLIEDER_DRIVER=nami`, siehe docs/mitgliederabgleich.md |
 
 Secrets nie ins Repository oder in einen Chat. Was dort einmal stand, gilt als kompromittiert.
 

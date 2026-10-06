@@ -166,6 +166,7 @@ jobs:
           MAIL_FROM_ADDRESS: ${{ vars.MAIL_FROM_ADDRESS }}
           MAIL_FROM_NAME_VAR: ${{ vars.MAIL_FROM_NAME }}
           MITGLIEDER_DRIVER: ${{ secrets.MITGLIEDER_DRIVER }}
+          NAMI_AUTH: ${{ secrets.NAMI_AUTH }}
           NAMI_USER: ${{ secrets.NAMI_USER }}
           NAMI_PASSWORD: ${{ secrets.NAMI_PASSWORD }}
           HITOBITO_URL: ${{ secrets.HITOBITO_URL }}
@@ -298,6 +299,7 @@ jobs:
           WHATSAPP_MODE=$(trim "${WHATSAPP_MODE:-off}")
           WHATSAPP_CHANNEL_URL=$(trim "$WHATSAPP_CHANNEL_URL")
           MITGLIEDER_DRIVER=$(trim "${MITGLIEDER_DRIVER:-off}")
+          NAMI_AUTH=$(trim "$NAMI_AUTH")
           NAMI_USER="${NAMI_USER}"
           NAMI_PASSWORD="${NAMI_PASSWORD}"
           HITOBITO_URL=$(trim "$HITOBITO_URL")

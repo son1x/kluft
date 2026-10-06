@@ -19,6 +19,12 @@ return [
         'url' => env('NAMI_URL', 'https://nami.dpsg.de'),
         // Pfad der Service-API; wie in der NaMi-App (digital-scouts/dpsg-nami-app).
         'path' => env('NAMI_PATH', '/ica/rest/api/1/1/service/nami'),
+        // Anmeldung: „persoenlich“ – wer im Backend prüft, meldet sich mit dem
+        // eigenen NaMi-Konto an (Passwort wird nicht gespeichert, Ergebnis
+        // folgt den eigenen NaMi-Rechten); „konto“ – technisches Konto aus
+        // NAMI_USER/NAMI_PASSWORD, auch für die automatische Prüfung neuer
+        // Anmeldungen. Ohne NAMI_USER ist „persoenlich“ der Standard.
+        'auth' => env('NAMI_AUTH') ?: (env('NAMI_USER') ? 'konto' : 'persoenlich'),
         'user' => env('NAMI_USER'),          // Mitgliedsnummer des technischen Kontos
         'password' => env('NAMI_PASSWORD'),
     ],

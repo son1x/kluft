@@ -3,6 +3,7 @@
 namespace App\Services\Mitglieder;
 
 use GuzzleHttp\Cookie\CookieJar;
+use GuzzleHttp\Cookie\SetCookie;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Carbon;
@@ -14,6 +15,12 @@ use Illuminate\Support\Facades\Http;
  * Mitgliedsnummer und Passwort, danach Session-Cookie. Gesucht wird über
  * search-multi nur nach Vor- und Nachname, damit nicht die ganze
  * Mitgliederliste geladen wird.
+ *
+ * Zwei Arten der Anmeldung (config mitglieder.nami.auth):
+ * - persoenlich: Wer prüft, meldet sich mit dem eigenen Konto an
+ *   (anmelden()); weiter geht es nur mit dem Session-Cookie (mitSession()),
+ *   das Passwort wird nirgends gespeichert.
+ * - konto: technisches Konto aus NAMI_USER/NAMI_PASSWORD.
  */
 class NamiVerzeichnis implements Mitgliederverzeichnis
 {
@@ -22,6 +29,39 @@ class NamiVerzeichnis implements Mitgliederverzeichnis
     public function name(): string
     {
         return 'NaMi 2';
+    }
+
+    /** Persönliche Anmeldung: jede Person mit ihrem eigenen NaMi-Konto. */
+    public static function persoenlich(): bool
+    {
+        return config('mitglieder.driver') === 'nami' && config('mitglieder.nami.auth') === 'persoenlich';
+    }
+
+    /**
+     * Mit einem persönlichen Konto anmelden. Liefert nur das Session-Cookie
+     * (zum verschlüsselten Weiterreichen an die Warteschlange).
+     *
+     * @return list<array<string, mixed>>
+     *
+     * @throws MitgliederverzeichnisException
+     */
+    public function anmelden(string $mitgliedsnummer, string $passwort): array
+    {
+        $this->session = $this->sessionStartup(trim($mitgliedsnummer), $passwort);
+
+        return array_values($this->session->toArray());
+    }
+
+    /**
+     * Mit einem bestehenden Session-Cookie weiterarbeiten (ohne Passwort).
+     *
+     * @param  list<array<string, mixed>>  $cookies
+     */
+    public function mitSession(array $cookies): static
+    {
+        $this->session = new CookieJar(false, array_map(fn (array $cookie) => new SetCookie($cookie), $cookies));
+
+        return $this;
     }
 
     public function suche(string $vorname, string $nachname): array
@@ -105,10 +145,23 @@ class NamiVerzeichnis implements Mitgliederverzeichnis
             return $this->session;
         }
 
+        if (self::persoenlich()) {
+            throw new NamiSitzungAbgelaufen('NaMi-Sitzung abgelaufen. Bitte „Mitgliedschaft prüfen“ erneut starten und mit dem eigenen NaMi-Konto anmelden.');
+        }
+
         $user = (string) config('mitglieder.nami.user');
         $password = (string) config('mitglieder.nami.password');
         if ($user === '' || $password === '') {
             throw new MitgliederverzeichnisException('NaMi-Zugang fehlt (NAMI_USER, NAMI_PASSWORD).');
+        }
+
+        return $this->session = $this->sessionStartup($user, $password);
+    }
+
+    private function sessionStartup(string $user, string $password): CookieJar
+    {
+        if ($user === '' || $password === '') {
+            throw new MitgliederverzeichnisException('Bitte Mitgliedsnummer und Passwort angeben.');
         }
 
         $jar = new CookieJar;
@@ -125,7 +178,17 @@ class NamiVerzeichnis implements Mitgliederverzeichnis
             throw new MitgliederverzeichnisException('NaMi-Anmeldung fehlgeschlagen (HTTP '.$response->status().'). Zugangsdaten prüfen.');
         }
 
-        return $this->session = $jar;
+        return $jar;
+    }
+
+    /** Ohne Anmeldung: Ist NaMi überhaupt erreichbar? (für die persönliche Anmeldung) */
+    public function erreichbar(): bool
+    {
+        try {
+            return $this->http()->get(rtrim((string) config('mitglieder.nami.url'), '/'))->status() < 500;
+        } catch (ConnectionException) {
+            return false;
+        }
     }
 
     private function http(): PendingRequest

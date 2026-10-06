@@ -7,6 +7,7 @@ use App\Models\IntegrationToken;
 use App\Models\WhatsAppCampaign;
 use App\Services\Backup\BackupService;
 use App\Services\Instagram\InstagramClient;
+use App\Services\Mitglieder\NamiVerzeichnis;
 use App\Services\WhatsApp\WhatsAppSettings;
 use App\Support\Roadmap;
 use App\Support\WhatsAppMode;
@@ -45,6 +46,9 @@ class HealthChecks
             'kalender' => ['Kalender-Abgleich (Nextcloud)', fn () => $this->calendars()],
             'instagram' => ['Instagram-Anbindung', fn () => $this->instagram()],
         ];
+        if (config('mitglieder.driver') === 'nami') {
+            $checks['nami'] = ['Mitgliederverwaltung (NaMi)', fn () => $this->nami()];
+        }
         if (WhatsAppMode::api()) {
             $checks['whatsapp'] = ['WhatsApp-Newsletter', fn () => $this->whatsapp()];
         }
@@ -183,5 +187,16 @@ class HealthChecks
         }
 
         return [self::OK, is_array($health) ? 'Verbunden.' : 'Verbunden (noch nicht geprüft).'];
+    }
+
+    /**
+     * Nur Erreichbarkeit (ohne Anmeldung). Externer Dienst: eine Störung ist
+     * eine Warnung, kein Alarm.
+     *
+     * @return array{0: string, 1: string}
+     */
+    private function nami(): array
+    {
+        return NamiVerzeichnis::erreichbarGemerkt() ? [self::OK, 'Erreichbar.'] : [self::WARN, 'NaMi ist gerade nicht erreichbar.'];
     }
 }

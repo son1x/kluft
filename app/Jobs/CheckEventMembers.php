@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Event;
+use App\Models\User;
 use App\Services\Mitglieder\MitgliederAbgleich;
 use App\Services\Mitglieder\MitgliederverzeichnisException;
 use App\Services\Mitglieder\NamiSitzungAbgelaufen;
@@ -22,7 +23,8 @@ use Illuminate\Support\Facades\Log;
  * Bei persönlicher NaMi-Anmeldung trägt der Job das Session-Cookie der
  * prüfenden Person (verschlüsselt in der Warteschlange, nie das Passwort)
  * und nutzt dafür ein eigenes NaMi-Objekt – so mischt sich nichts mit
- * anderen Läufen.
+ * anderen Läufen. Hat die Person ihren Zugang im Profil gespeichert, trägt
+ * der Job nur ihre ID und meldet sich bei abgelaufener Sitzung neu an.
  */
 class CheckEventMembers implements ShouldBeEncrypted, ShouldQueue
 {
@@ -37,8 +39,9 @@ class CheckEventMembers implements ShouldBeEncrypted, ShouldQueue
      * @param  bool  $alle  auch schon geprüfte (nicht manuell entschiedene) Anmeldungen neu prüfen
      * @param  list<int>|null  $nurIds  nur diese Anmeldungen (z. B. direkt nach der Bestätigung)
      * @param  list<array<string, mixed>>|null  $namiSession  Session-Cookie einer persönlichen NaMi-Anmeldung
+     * @param  int|null  $namiUserId  Person mit gespeichertem NaMi-Zugang (Neuanmeldung bei abgelaufener Sitzung)
      */
-    public function __construct(public int $eventId, public bool $alle = false, public ?array $nurIds = null, public ?int $seit = null, public ?array $namiSession = null) {}
+    public function __construct(public int $eventId, public bool $alle = false, public ?array $nurIds = null, public ?int $seit = null, public ?array $namiSession = null, public ?int $namiUserId = null) {}
 
     public function handle(MitgliederAbgleich $abgleich): void
     {
@@ -49,10 +52,18 @@ class CheckEventMembers implements ShouldBeEncrypted, ShouldQueue
 
         // Persönliche Anmeldung: ohne Sitzung einer prüfenden Person nichts tun.
         if (NamiVerzeichnis::persoenlich()) {
-            if ($this->namiSession === null) {
+            $nutzer = $this->namiUserId ? User::query()->find($this->namiUserId) : null;
+            if ($this->namiSession === null && ! $nutzer?->hasNamiZugang()) {
                 return;
             }
-            $abgleich = new MitgliederAbgleich((new NamiVerzeichnis)->mitSession($this->namiSession));
+            $nami = new NamiVerzeichnis;
+            if ($nutzer) {
+                $nami->mitZugang($nutzer);
+            }
+            if ($this->namiSession !== null) {
+                $nami->mitSession($this->namiSession);
+            }
+            $abgleich = new MitgliederAbgleich($nami);
         }
 
         $seit = $this->seit ?? now()->timestamp;
@@ -87,7 +98,7 @@ class CheckEventMembers implements ShouldBeEncrypted, ShouldQueue
         Log::info('Mitgliederabgleich', ['event' => $event->id, 'ergebnisse' => $ergebnisse]);
 
         if ((clone $offen)->exists()) {
-            self::dispatch($this->eventId, $this->alle, $this->nurIds, $seit, $this->namiSession);
+            self::dispatch($this->eventId, $this->alle, $this->nurIds, $seit, $this->namiSession, $this->namiUserId);
         }
     }
 }

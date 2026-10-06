@@ -17,6 +17,10 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $last_login_at
  * @property string|null $ntfy_topic
  * @property list<string>|null $ntfy_events
+ * @property string|null $nami_user
+ * @property string|null $nami_password
+ * @property Carbon|null $nami_checked_at
+ * @property string|null $nami_error
  */
 class User extends Authenticatable implements FilamentUser
 {
@@ -53,6 +57,8 @@ class User extends Authenticatable implements FilamentUser
         'remember_token',
         'totp_secret',
         'ntfy_topic',
+        'nami_user',
+        'nami_password',
     ];
 
     /**
@@ -70,11 +76,21 @@ class User extends Authenticatable implements FilamentUser
             'totp_secret' => 'encrypted',
             'ntfy_topic' => 'encrypted',
             'ntfy_events' => 'array',
+            'nami_user' => 'encrypted',
+            'nami_password' => 'encrypted',
+            'nami_checked_at' => 'datetime',
         ];
     }
 
     protected static function booted(): void
     {
+        // Gesperrte Konten behalten keinen NaMi-Zugang.
+        static::saving(function (User $user) {
+            if ($user->isDirty('status') && $user->status === 'disabled') {
+                $user->forceFill(['nami_user' => null, 'nami_password' => null, 'nami_checked_at' => null, 'nami_error' => null]);
+            }
+        });
+
         static::updated(function (User $user) {
             if ($user->wasChanged('status')) {
                 AuditLogger::log("user.status:{$user->status}", auth()->user(), 'user', $user->id, request());
@@ -156,6 +172,12 @@ class User extends Authenticatable implements FilamentUser
             && filled($this->ntfy_topic)
             && in_array($event, $this->ntfy_events ?? [], true)
             && array_key_exists($event, PushEvents::availableFor($this));
+    }
+
+    /** Persönlicher NaMi-Zugang im Profil gespeichert (verschlüsselt). */
+    public function hasNamiZugang(): bool
+    {
+        return filled($this->nami_user) && filled($this->nami_password);
     }
 
     public function isActive(): bool

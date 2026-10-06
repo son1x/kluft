@@ -38,6 +38,7 @@ Das CMS spricht nur mit der Schnittstelle `App\Services\Mitglieder\Mitgliederver
 ## Datenschutz (KDG)
 
 - **Zweck:** Prüfung der Mitgliedschaft für die Veranstaltung (Versicherung, Beitrag, Teilnahmevoraussetzung). Die Teilnehmenden werden im Einwilligungstext informiert.
+- **NaMi-Zugänge:** Ein persönlicher Zugang wird nur gespeichert, wenn die Person das selbst will, und zwar verschlüsselt. Er wird gelöscht, sobald die Person es will oder ihr Konto gesperrt wird. Wer `APP_KEY` und Datenbank zugleich hat, könnte ihn entschlüsseln. Beides deshalb wie bisher nur in Secrets bzw. der `.env` halten. Vor dem Einschalten klären, ob die NaMi-Nutzungsbedingungen das Hinterlegen erlauben.
 - **Datensparsamkeit:** Es wird keine Kopie der Mitgliederdaten angelegt. Gespeichert werden nur Ergebnis, Mitgliedsnummer, Stamm und Prüfzeitpunkt an der Anmeldung. Sie werden mit der Anmeldung nach der Löschfrist gelöscht.
 - **Auskunft:** Die Datenschutzauskunft (Backend → Datenschutz) enthält das Ergebnis.
 - **Protokoll:** Abgleich starten und Entscheidungen von Hand stehen im Audit-Log.
@@ -61,7 +62,17 @@ MITGLIEDER_DRIVER=nami
 
 So funktioniert die persönliche Anmeldung:
 - **Ablauf:** Das CMS meldet sich einmal bei NaMi an (`auth/manual/sessionStartup`). Danach arbeitet die Warteschlange nur mit dem Session-Cookie.
-- **Kein gespeichertes Passwort:** Das Passwort wird weder gespeichert noch protokolliert und geht auch nicht in die Warteschlange. Das Cookie liegt dort verschlüsselt (`ShouldBeEncrypted`).
+- **Passwort nur auf Wunsch gespeichert:** Ohne Häkchen wird das Passwort weder gespeichert noch protokolliert. In die Warteschlange geht nur das Session-Cookie, verschlüsselt (`ShouldBeEncrypted`).
+- **Zugang im Profil (freiwillig):** Unter **Mein Konto → Mein NaMi-Zugang** lassen sich Mitgliedsnummer und Passwort speichern. Das geht auch per Häkchen direkt beim Prüfen.
+  - Gespeichert wird nur, wenn die Anmeldung bei NaMi klappt.
+  - Beide Werte liegen verschlüsselt mit dem `APP_KEY` in der Datenbank. Niemand im Backend kann sie lesen.
+  - Danach fragt „Mitgliedschaft prüfen“ nicht mehr. Läuft die NaMi-Sitzung mitten im Abgleich ab, meldet sich der Job neu an. Dafür trägt er nur die ID der Person, nie das Passwort.
+  - Wird ein Konto gesperrt, wird der gespeicherte Zugang gelöscht. Löschen geht jederzeit selbst; das Speichern und Löschen steht im Audit-Log.
+- **„Verbindung testen“** (Profil): meldet sich an und sucht nach dem eigenen Namen aus dem Backend. Zeigt die eigene Person, wenn Anmeldung, Suche und Feldzuordnung stimmen.
+- **Ampel:** im Profil und im Fenster „Mitgliedschaft prüfen“.
+  - **NaMi-Server:** grün = erreichbar, rot = nicht erreichbar. Wird 5 Minuten zwischengespeichert.
+  - **Dein NaMi-Zugang:** grün = Anmeldung klappt, rot = letzte Anmeldung fehlgeschlagen (z. B. Passwort in NaMi geändert), gelb = noch nicht geprüft, grau = nicht gespeichert.
+- **Statusseite:** zeigt „Mitgliederverwaltung (NaMi)“ als eigene Zeile. Ist NaMi nicht erreichbar, ist das eine Warnung, kein Alarm.
 - **Ergebnis nach eigenen Rechten:** Das Ergebnis folgt den **NaMi-Rechten der prüfenden Person**. „Nicht gefunden“ kann auch heißen, dass die Person für sie in NaMi nicht sichtbar ist. Wer nur Leserechte im eigenen Stamm hat, findet Teilnehmende aus anderen Stämmen nicht.
 - **Abgelaufene Sitzung:** Läuft die NaMi-Sitzung ab, hört der Abgleich auf. Der Rest bleibt „noch nicht geprüft“; einfach erneut „Mitgliedschaft prüfen“ starten.
 - **Kein automatischer Abgleich:** Neue Anmeldungen werden nach der Bestätigung nicht automatisch geprüft, weil kein Konto hinterlegt ist.

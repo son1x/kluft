@@ -2,11 +2,13 @@
 
 namespace App\Services\Mitglieder;
 
+use App\Models\User;
 use GuzzleHttp\Cookie\CookieJar;
 use GuzzleHttp\Cookie\SetCookie;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
 /**
@@ -18,13 +20,21 @@ use Illuminate\Support\Facades\Http;
  *
  * Zwei Arten der Anmeldung (config mitglieder.nami.auth):
  * - persoenlich: Wer prüft, meldet sich mit dem eigenen Konto an
- *   (anmelden()); weiter geht es nur mit dem Session-Cookie (mitSession()),
- *   das Passwort wird nirgends gespeichert.
+ *   (anmelden()); weiter geht es mit dem Session-Cookie (mitSession()).
+ *   Wer mag, speichert den Zugang verschlüsselt im Profil (mitZugang());
+ *   dann entfällt die Eingabe und abgelaufene Sitzungen werden erneuert.
  * - konto: technisches Konto aus NAMI_USER/NAMI_PASSWORD.
  */
 class NamiVerzeichnis implements Mitgliederverzeichnis
 {
     private ?CookieJar $session = null;
+
+    /**
+     * Persönlicher Zugang aus dem Profil: erlaubt Neuanmeldung bei abgelaufener Sitzung.
+     *
+     * @var array{0: string, 1: string}|null
+     */
+    private ?array $zugang = null;
 
     public function name(): string
     {
@@ -62,6 +72,45 @@ class NamiVerzeichnis implements Mitgliederverzeichnis
         $this->session = new CookieJar(false, array_map(fn (array $cookie) => new SetCookie($cookie), $cookies));
 
         return $this;
+    }
+
+    /**
+     * Mit dem im Profil gespeicherten Zugang einer Person arbeiten. Meldet
+     * sich erst bei der ersten Abfrage an und bei abgelaufener Sitzung neu.
+     */
+    public function mitZugang(User $user): static
+    {
+        if ($user->hasNamiZugang()) {
+            $this->zugang = [(string) $user->nami_user, (string) $user->nami_password];
+        }
+
+        return $this;
+    }
+
+    /**
+     * Gespeicherten Zugang prüfen und das Ergebnis für die Ampel merken.
+     * Liefert das Session-Cookie.
+     *
+     * @return list<array<string, mixed>>
+     *
+     * @throws MitgliederverzeichnisException
+     */
+    public function anmeldenMitProfil(User $user): array
+    {
+        if (! $user->hasNamiZugang()) {
+            throw new MitgliederverzeichnisException('Kein NaMi-Zugang im Profil gespeichert.');
+        }
+        try {
+            $session = $this->anmelden((string) $user->nami_user, (string) $user->nami_password);
+        } catch (MitgliederverzeichnisException $e) {
+            $user->forceFill(['nami_checked_at' => now(), 'nami_error' => mb_substr($e->getMessage(), 0, 255)])->save();
+
+            throw $e;
+        }
+        $this->zugang = [(string) $user->nami_user, (string) $user->nami_password];
+        $user->forceFill(['nami_checked_at' => now(), 'nami_error' => null])->save();
+
+        return $session;
     }
 
     public function suche(string $vorname, string $nachname): array
@@ -145,6 +194,10 @@ class NamiVerzeichnis implements Mitgliederverzeichnis
             return $this->session;
         }
 
+        if ($this->zugang) {
+            return $this->session = $this->sessionStartup($this->zugang[0], $this->zugang[1]);
+        }
+
         if (self::persoenlich()) {
             throw new NamiSitzungAbgelaufen('NaMi-Sitzung abgelaufen. Bitte „Mitgliedschaft prüfen“ erneut starten und mit dem eigenen NaMi-Konto anmelden.');
         }
@@ -179,6 +232,12 @@ class NamiVerzeichnis implements Mitgliederverzeichnis
         }
 
         return $jar;
+    }
+
+    /** Für Ampel und Statusseite: Erreichbarkeit, 5 Minuten zwischengespeichert. */
+    public static function erreichbarGemerkt(): bool
+    {
+        return (bool) Cache::remember('nami:erreichbar', 300, fn () => (new self)->erreichbar());
     }
 
     /** Ohne Anmeldung: Ist NaMi überhaupt erreichbar? (für die persönliche Anmeldung) */

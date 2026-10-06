@@ -8,6 +8,7 @@ use App\Mail\TeilnahmebescheinigungMail;
 use App\Models\Event;
 use App\Models\EventRegistration;
 use App\Models\RegistrationDocument;
+use App\Models\User;
 use App\Services\EventRegistrations;
 use App\Services\Mitglieder\MitgliederAbgleich;
 use App\Services\Mitglieder\Mitgliederverzeichnis;
@@ -16,6 +17,7 @@ use App\Services\Mitglieder\NamiVerzeichnis;
 use App\Services\ParticipantExport;
 use App\Services\Teilnahmebescheinigung;
 use App\Support\AuditLogger;
+use App\Support\NamiAmpel;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkAction;
@@ -133,12 +135,17 @@ class RegistrationsRelationManager extends RelationManager
                     ->icon('heroicon-o-identification')
                     ->visible($event->checksMembers())
                     ->modalHeading('Mit der Mitgliederverwaltung abgleichen')
-                    ->modalDescription(fn () => 'Bestätigte Anmeldungen und Warteliste werden mit '.app(Mitgliederverzeichnis::class)->name().' abgeglichen – im Hintergrund, etwa 30 je Minute. Von Hand entschiedene Anmeldungen bleiben, wie sie sind.'
-                        .(NamiVerzeichnis::persoenlich() ? ' Du meldest dich mit deinem eigenen NaMi-Konto an; das Ergebnis folgt deinen NaMi-Rechten – „nicht gefunden“ kann auch heißen, dass die Person für dich in NaMi nicht sichtbar ist. Das Passwort wird nicht gespeichert.' : ''))
+                    ->modalDescription(fn () => new HtmlString(e('Bestätigte Anmeldungen und Warteliste werden mit '.app(Mitgliederverzeichnis::class)->name().' abgeglichen – im Hintergrund, etwa 30 je Minute. Von Hand entschiedene Anmeldungen bleiben, wie sie sind.')
+                        .(NamiVerzeichnis::persoenlich() ? ' '.e(self::namiNutzer()?->hasNamiZugang()
+                            ? 'Die Anmeldung bei NaMi läuft über deinen im Profil gespeicherten Zugang.'
+                            : 'Du meldest dich mit deinem eigenen NaMi-Konto an; das Passwort wird nur gespeichert, wenn du es unten ankreuzst.')
+                            .' '.e('Das Ergebnis folgt deinen NaMi-Rechten – „nicht gefunden“ kann auch heißen, dass die Person für dich in NaMi nicht sichtbar ist.') : '')
+                        .(config('mitglieder.driver') === 'nami' ? '<div class="mt-3 text-start">'.NamiAmpel::html(self::namiNutzer())->toHtml().'</div>' : '')))
                     ->schema(fn () => [
-                        ...NamiVerzeichnis::persoenlich() ? [
+                        ...NamiVerzeichnis::persoenlich() && ! self::namiNutzer()?->hasNamiZugang() ? [
                             TextInput::make('nami_user')->label('Deine NaMi-Mitgliedsnummer')->required()->autocomplete('username'),
                             TextInput::make('nami_password')->label('Dein NaMi-Passwort')->password()->required()->autocomplete('current-password'),
+                            Toggle::make('nami_speichern')->label('Zugang verschlüsselt in meinem Profil speichern (dann keine Eingabe mehr nötig)'),
                         ] : [],
                         Toggle::make('alle')->label('Auch bereits geprüfte Anmeldungen neu prüfen'),
                     ])
@@ -146,18 +153,28 @@ class RegistrationsRelationManager extends RelationManager
                         $event = $this->getOwnerRecord();
                         abort_unless(Filament::auth()->user()?->can('manageParticipants', $event), 403);
 
-                        // Persönliche Anmeldung: hier anmelden, nur das Session-Cookie geht in die Warteschlange.
+                        // Persönliche Anmeldung: hier anmelden; in die Warteschlange gehen nur das
+                        // Session-Cookie und ggf. die Person (für eine Neuanmeldung mit ihrem gespeicherten Zugang).
                         $session = null;
+                        $nutzer = self::namiNutzer();
                         if (NamiVerzeichnis::persoenlich()) {
                             try {
-                                $session = (new NamiVerzeichnis)->anmelden((string) ($data['nami_user'] ?? ''), (string) ($data['nami_password'] ?? ''));
+                                $session = $nutzer?->hasNamiZugang()
+                                    ? (new NamiVerzeichnis)->anmeldenMitProfil($nutzer)
+                                    : (new NamiVerzeichnis)->anmelden((string) ($data['nami_user'] ?? ''), (string) ($data['nami_password'] ?? ''));
                             } catch (MitgliederverzeichnisException $e) {
-                                Notification::make()->title('NaMi-Anmeldung fehlgeschlagen')->body($e->getMessage())->danger()->send();
+                                Notification::make()->title('NaMi-Anmeldung fehlgeschlagen')
+                                    ->body($e->getMessage().($nutzer?->hasNamiZugang() ? ' Gespeicherten Zugang unter „Mein Konto → Mein NaMi-Zugang“ prüfen.' : ''))
+                                    ->danger()->send();
                                 $action->halt();
+                            }
+                            if ($nutzer && ! $nutzer->hasNamiZugang() && ($data['nami_speichern'] ?? false)) {
+                                $nutzer->forceFill(['nami_user' => trim((string) $data['nami_user']), 'nami_password' => (string) $data['nami_password'], 'nami_checked_at' => now(), 'nami_error' => null])->save();
+                                AuditLogger::log('nami.zugang.gespeichert', $nutzer, request: request());
                             }
                         }
 
-                        CheckEventMembers::dispatch($event->getKey(), (bool) ($data['alle'] ?? false), null, null, $session);
+                        CheckEventMembers::dispatch($event->getKey(), (bool) ($data['alle'] ?? false), null, null, $session, $nutzer?->hasNamiZugang() ? $nutzer->getKey() : null);
                         AuditLogger::log('event.member_check', Filament::auth()->user(), Event::class, $event->getKey(), request());
                         Notification::make()->title('Abgleich gestartet – die Spalte „Mitglied“ füllt sich in den nächsten Minuten.')->success()->send();
                     }),
@@ -452,5 +469,12 @@ class RegistrationsRelationManager extends RelationManager
         AuditLogger::log("registration.{$method}", Filament::auth()->user(), EventRegistration::class, $record->getKey(), request());
 
         Notification::make()->title('Gespeichert – die Person wurde per E-Mail informiert.')->success()->send();
+    }
+
+    private static function namiNutzer(): ?User
+    {
+        $user = Filament::auth()->user();
+
+        return $user instanceof User ? $user : null;
     }
 }

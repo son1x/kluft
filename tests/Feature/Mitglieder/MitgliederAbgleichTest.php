@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Mitglieder;
 
+use App\Filament\Pages\NamiZugang;
 use App\Filament\Resources\Events\Pages\EditEvent;
 use App\Filament\Resources\Events\RelationManagers\RegistrationsRelationManager;
 use App\Jobs\CheckEventMembers;
@@ -17,11 +18,14 @@ use App\Services\Mitglieder\Mitgliederverzeichnis;
 use App\Services\Mitglieder\MitgliederverzeichnisException;
 use App\Services\Mitglieder\NamiVerzeichnis;
 use App\Services\ParticipantExport;
+use App\Support\Health\HealthChecks;
+use App\Support\NamiAmpel;
 use Filament\Facades\Filament;
 use Illuminate\Contracts\Queue\ShouldBeEncrypted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;
@@ -322,7 +326,7 @@ class MitgliederAbgleichTest extends TestCase
 
     private function backendLogin(): void
     {
-        $user = User::query()->create(['name' => 'Leitung', 'email' => 'leitung@example.org', 'status' => 'active']);
+        $user = User::query()->create(['name' => 'Lea Leitung', 'email' => 'leitung@example.org', 'status' => 'active']);
         $user->roleAssignments()->create(['role' => 'verwaltung', 'scope_type' => 'global', 'scope_key' => null]);
         Filament::setCurrentPanel('admin');
         $this->actingAs($user->fresh());
@@ -334,28 +338,31 @@ class MitgliederAbgleichTest extends TestCase
      *
      * @param  array{logins: int, cookies: list<string>}  $protokoll
      */
-    private function namiPersoenlich(array &$protokoll, bool $abgelaufen = false): void
+    private function namiPersoenlich(array &$protokoll, bool $abgelaufen = false, bool $einmalAbgelaufen = false): void
     {
         config(['mitglieder.nami.auth' => 'persoenlich']);
         $protokoll = ['logins' => 0, 'cookies' => []];
-        Http::fake(function (Request $request) use (&$protokoll, $abgelaufen) {
+        Http::fake(function (Request $request) use (&$protokoll, $abgelaufen, $einmalAbgelaufen) {
             if (str_ends_with($request->url(), '/auth/manual/sessionStartup')) {
                 $protokoll['logins']++;
                 $ok = $request->data() === ['username' => '777', 'password' => 'richtig', 'Login' => 'API'];
 
                 return $ok
-                    ? Http::response(['statusCode' => 0], 200, ['Set-Cookie' => 'JSESSIONID=persoenlich777; Path=/ica'])
+                    ? Http::response(['statusCode' => 0], 200, ['Set-Cookie' => 'JSESSIONID=persoenlich777-'.$protokoll['logins'].'; Path=/ica'])
                     : Http::response(['statusCode' => 3000, 'statusMessage' => 'Benutzer 777 unbekannt'], 200);
             }
             if (str_contains($request->url(), '/search-multi/result-list')) {
                 $protokoll['cookies'][] = $request->header('Cookie')[0] ?? '';
-                if ($abgelaufen) {
+                if ($abgelaufen || ($einmalAbgelaufen && count($protokoll['cookies']) === 1)) {
                     return Http::response(['success' => false, 'message' => 'Session expired'], 200);
                 }
+                parse_str((string) parse_url($request->url(), PHP_URL_QUERY), $query);
+                $nachname = json_decode($query['searchedValues'], true)['nachname'] ?? '';
 
-                return Http::response(['success' => true, 'data' => [
-                    ['id' => 1, 'entries_mitgliedsNummer' => 4711, 'entries_vorname' => 'Mia', 'entries_nachname' => 'Muster', 'entries_geburtsDatum' => '2010-03-03 00:00:00', 'entries_status' => 'Aktiv', 'entries_mglType' => 'Mitglied'],
-                ]]);
+                return Http::response(['success' => true, 'data' => $nachname === 'Leitung'
+                    ? [['id' => 7, 'entries_mitgliedsNummer' => 777, 'entries_vorname' => 'Lea', 'entries_nachname' => 'Leitung', 'entries_gruppierung' => 'Stamm Test', 'entries_status' => 'Aktiv', 'entries_mglType' => 'Mitglied']]
+                    : [['id' => 1, 'entries_mitgliedsNummer' => 4711, 'entries_vorname' => 'Mia', 'entries_nachname' => 'Muster', 'entries_geburtsDatum' => '2010-03-03 00:00:00', 'entries_status' => 'Aktiv', 'entries_mglType' => 'Mitglied']],
+                ]);
             }
 
             return Http::response('', 200);
@@ -381,6 +388,7 @@ class MitgliederAbgleichTest extends TestCase
             ->assertNotified('Abgleich gestartet – die Spalte „Mitglied“ füllt sich in den nächsten Minuten.');
 
         $this->assertSame(1, $protokoll['logins']);
+        $this->assertFalse(auth()->user()->fresh()->hasNamiZugang(), 'Ohne Häkchen nichts gespeichert');
         $this->assertSame(1, AuditLog::query()->where('action', 'event.member_check')->count());
 
         $job = null;
@@ -397,7 +405,7 @@ class MitgliederAbgleichTest extends TestCase
         $job->handle(app(MitgliederAbgleich::class));
         $this->assertSame(['mitglied', '4711'], [$mia->fresh()->member_status, $mia->fresh()->member_number]);
         $this->assertSame(1, $protokoll['logins']);
-        $this->assertStringContainsString('JSESSIONID=persoenlich777', $protokoll['cookies'][0]);
+        $this->assertStringContainsString('JSESSIONID=persoenlich777-1', $protokoll['cookies'][0]);
     }
 
     #[TestDox('NaMi 2 persönlich: falsches Passwort – Fehlermeldung, kein Abgleich; ohne Eingabe Pflichtfelder')]
@@ -462,5 +470,112 @@ class MitgliederAbgleichTest extends TestCase
 
         $this->artisan('mitglieder:check')->expectsOutputToContain('NaMi 2: erreichbar')->assertSuccessful();
         $this->assertSame(0, $protokoll['logins']);
+    }
+
+    #[TestDox('NaMi-Zugang im Profil: nur gespeichert, wenn die Anmeldung klappt; verschlüsselt; Selbsttest, Ampel, Löschen')]
+    public function test_profile_nami_access(): void
+    {
+        $protokoll = [];
+        $this->namiPersoenlich($protokoll);
+        $this->backendLogin();
+        $user = auth()->user();
+
+        $this->get(NamiZugang::getUrl())->assertOk()->assertSee('NaMi-Server')->assertSee('nicht gespeichert');
+
+        Livewire::test(NamiZugang::class)
+            ->set('data.nami_user', '777')->set('data.nami_password', 'falsch')
+            ->call('save')
+            ->assertNotified('Nicht gespeichert: NaMi-Anmeldung fehlgeschlagen');
+        $this->assertFalse($user->fresh()->hasNamiZugang());
+
+        Livewire::test(NamiZugang::class)
+            ->set('data.nami_user', ' 777 ')->set('data.nami_password', 'richtig')
+            ->call('save')
+            ->assertNotified('NaMi-Zugang gespeichert');
+        $user->refresh();
+        $this->assertSame(['777', 'richtig'], [$user->nami_user, $user->nami_password]);
+        $roh = (array) DB::table('users')->where('id', $user->id)->first(['nami_user', 'nami_password']);
+        $this->assertStringNotContainsString('richtig', implode(' ', $roh), 'verschlüsselt gespeichert');
+        $this->assertArrayNotHasKey('nami_password', $user->toArray());
+        $this->assertSame(1, AuditLog::query()->where('action', 'nami.zugang.gespeichert')->count());
+
+        // Passwortfeld leer lassen = gespeichertes behalten; Selbsttest findet die eigene Nummer.
+        Livewire::test(NamiZugang::class)
+            ->assertSee('Anmeldung klappt')
+            ->set('data.nami_password', '')->call('save')->assertNotified('NaMi-Zugang gespeichert')
+            ->call('test')
+            ->assertSet('selbsttest', 'Anmeldung und Suche klappen: Du wirst in NaMi als „Lea Leitung“ geführt (Stamm Test), aktives Mitglied.');
+        $this->assertSame('richtig', $user->fresh()->nami_password);
+
+        // Passwort in NaMi geändert: rote Ampel.
+        $user->forceFill(['nami_password' => 'veraltet'])->save();
+        Livewire::test(NamiZugang::class)->call('test')->assertNotified('NaMi-Test fehlgeschlagen');
+        $this->assertSame(NamiAmpel::FAIL, NamiAmpel::status($user->fresh()));
+
+        $user->forceFill(['nami_password' => 'richtig'])->save();
+        $user->update(['status' => 'disabled']);
+        $this->assertFalse($user->fresh()->hasNamiZugang(), 'Sperren löscht den Zugang');
+        $user->update(['status' => 'active']);
+        $user->forceFill(['nami_user' => '777', 'nami_password' => 'richtig'])->save();
+
+        Livewire::test(NamiZugang::class)->call('delete');
+        $this->assertFalse($user->fresh()->hasNamiZugang());
+        $this->assertSame(NamiAmpel::OFF, NamiAmpel::status($user->fresh()));
+
+        // Technisches Konto: keine Profilseite.
+        config(['mitglieder.nami.auth' => 'konto']);
+        $this->get(NamiZugang::getUrl())->assertForbidden();
+    }
+
+    #[TestDox('Mit gespeichertem Zugang: keine Eingabe, Job trägt kein Passwort und meldet sich bei abgelaufener Sitzung neu an')]
+    public function test_check_with_stored_nami_access(): void
+    {
+        $protokoll = [];
+        $this->namiPersoenlich($protokoll, einmalAbgelaufen: true);
+        Queue::fake();
+        $event = $this->event();
+        $mia = $this->anmeldung($event, 'Mia', 'Muster');
+        $this->backendLogin();
+        auth()->user()->forceFill(['nami_user' => '777', 'nami_password' => 'richtig'])->save();
+
+        Livewire::test(RegistrationsRelationManager::class, ['ownerRecord' => $event, 'pageClass' => EditEvent::class])
+            ->callTableAction('checkMembers', data: ['alle' => false])
+            ->assertHasNoTableActionErrors()
+            ->assertNotified('Abgleich gestartet – die Spalte „Mitglied“ füllt sich in den nächsten Minuten.');
+
+        $job = null;
+        Queue::assertPushed(CheckEventMembers::class, function (CheckEventMembers $pushed) use (&$job) {
+            $job = $pushed;
+
+            return true;
+        });
+        $this->assertSame(auth()->id(), $job->namiUserId);
+        $this->assertStringNotContainsString('richtig', serialize($job));
+        $this->assertNotNull(auth()->user()->fresh()->nami_checked_at);
+
+        // Erste Suche: Sitzung abgelaufen → Neuanmeldung mit dem gespeicherten Zugang.
+        $job->handle(app(MitgliederAbgleich::class));
+        $this->assertSame('mitglied', $mia->fresh()->member_status);
+        $this->assertSame(2, $protokoll['logins']);
+        $this->assertStringContainsString('JSESSIONID=persoenlich777-2', $protokoll['cookies'][1]);
+    }
+
+    #[TestDox('Zugang direkt beim Prüfen speichern; Statusseite zeigt NaMi als eigene Zeile')]
+    public function test_save_access_from_dialog_and_status(): void
+    {
+        $protokoll = [];
+        $this->namiPersoenlich($protokoll);
+        Queue::fake();
+        $event = $this->event();
+        $this->backendLogin();
+
+        Livewire::test(RegistrationsRelationManager::class, ['ownerRecord' => $event, 'pageClass' => EditEvent::class])
+            ->callTableAction('checkMembers', data: ['nami_user' => '777', 'nami_password' => 'richtig', 'nami_speichern' => true])
+            ->assertHasNoTableActionErrors();
+        $this->assertTrue(auth()->user()->fresh()->hasNamiZugang());
+        Queue::assertPushed(CheckEventMembers::class, fn (CheckEventMembers $job) => $job->namiUserId === auth()->id());
+
+        $checks = collect(app(HealthChecks::class)->run())->keyBy('key');
+        $this->assertSame([HealthChecks::OK, 'Erreichbar.'], [$checks['nami']['status'], $checks['nami']['message']]);
     }
 }

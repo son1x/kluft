@@ -1,6 +1,6 @@
 <dl class="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
     <div><dt class="font-semibold">Name</dt><dd>{{ $registration->fullName() }}</dd></div>
-    <div><dt class="font-semibold">E-Mail</dt><dd>{{ $registration->email }}</dd></div>
+    <div><dt class="font-semibold">E-Mail</dt><dd>{{ $registration->email ?: '–' }}</dd></div>
     <div><dt class="font-semibold">Status</dt><dd>{{ $registration->statusLabel() }}</dd></div>
     @foreach ($fields as $key => $field)
         @php($value = $key === 'birth_year' ? $registration->birth_year : ($registration->data[$key] ?? null))
@@ -9,7 +9,11 @@
     @if ($registration->guardian_name)
         <div><dt class="font-semibold">Angemeldet durch (sorgeberechtigt)</dt><dd>{{ $registration->guardian_name }} – Einwilligung {{ $registration->guardian_consent ? 'erteilt' : 'fehlt' }}</dd></div>
     @endif
-    <div><dt class="font-semibold">Einwilligung</dt><dd>{{ $registration->consent_at?->format('d.m.Y H:i') }}, Textversion {{ $registration->consent_text_version }}</dd></div>
+    @if ($registration->consent_text_version === \App\Services\EventRegistrations::MANUELL)
+        <div><dt class="font-semibold">Eingetragen</dt><dd>von Hand im Backend am {{ $registration->consent_at?->format('d.m.Y H:i') }} (wer, steht im Protokoll)</dd></div>
+    @else
+        <div><dt class="font-semibold">Einwilligung</dt><dd>{{ $registration->consent_at?->format('d.m.Y H:i') }}, Textversion {{ $registration->consent_text_version }}</dd></div>
+    @endif
     @if ($registration->documents->isNotEmpty())
         <div><dt class="font-semibold">Dokumente</dt><dd>{{ $registration->documents->map(fn ($d) => $d->label().' ('.$d->created_at->format('d.m.Y').')')->implode(', ') }}</dd></div>
     @endif

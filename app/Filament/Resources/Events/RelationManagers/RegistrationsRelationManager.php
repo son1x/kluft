@@ -16,6 +16,7 @@ use App\Services\Mitglieder\MitgliederverzeichnisException;
 use App\Services\Mitglieder\NamiVerzeichnis;
 use App\Services\ParticipantExport;
 use App\Services\Teilnahmebescheinigung;
+use App\Services\TeilnehmendenListe;
 use App\Support\AuditLogger;
 use App\Support\NamiAmpel;
 use Filament\Actions\Action;
@@ -23,12 +24,15 @@ use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Facades\Filament;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -81,7 +85,7 @@ class RegistrationsRelationManager extends RelationManager
                     ->formatStateUsing(fn (EventRegistration $record) => $record->last_name.', '.$record->first_name)
                     ->searchable(['first_name', 'last_name'])
                     ->sortable(),
-                TextColumn::make('email')->label('E-Mail')->searchable()->toggleable(),
+                TextColumn::make('email')->label('E-Mail')->searchable()->toggleable()->placeholder('–'),
                 TextColumn::make('birth_year')->label('Jg.')->visible(isset($fields['birth_year'])),
                 TextColumn::make('status')->label('Status')->badge()
                     ->formatStateUsing(fn (string $state) => EventRegistration::STATUSES[$state] ?? $state)
@@ -130,6 +134,94 @@ class RegistrationsRelationManager extends RelationManager
                     ->visible((bool) $event->certificate_enabled),
             ])
             ->headerActions([
+                ActionGroup::make([
+                    Action::make('addParticipant')
+                        ->label('Einzeln eintragen')
+                        ->icon('heroicon-o-user-plus')
+                        ->modalHeading('Teilnehmende*n eintragen')
+                        ->modalDescription('Für Anmeldungen per Telefon, E-Mail oder Papier. Ohne Bestätigungslink; die Eintragung wird mit deinem Namen protokolliert.')
+                        ->schema(fn () => [
+                            TextInput::make('first_name')->label('Vorname')->required()->maxLength(255),
+                            TextInput::make('last_name')->label('Nachname')->required()->maxLength(255),
+                            TextInput::make('email')->label('E-Mail-Adresse')->email()->maxLength(255)
+                                ->helperText('Optional. Ohne Adresse gibt es keine E-Mails und keinen Zugang zu „Meine Anmeldungen“.'),
+                            ...$this->eventFieldInputs($event),
+                            ...$this->manualStatusInputs($event),
+                        ])
+                        ->action(function (array $data) {
+                            $event = $this->getOwnerRecord();
+                            abort_unless(Filament::auth()->user()?->can('manageParticipants', $event), 403);
+
+                            $person = [
+                                'first_name' => $data['first_name'], 'last_name' => $data['last_name'], 'email' => $data['email'] ?? '',
+                                'birth_year' => filled($data['birth_year'] ?? null) ? (int) $data['birth_year'] : null,
+                                'data' => (array) ($data['data'] ?? []),
+                            ];
+                            [$result] = app(EventRegistrations::class)->addManually($event, $person, (string) $data['status'], (bool) ($data['notify'] ?? false), self::namiNutzer());
+                            $this->afterManualAdd($event);
+
+                            match ($result) {
+                                'duplicate' => Notification::make()->warning()->title('Nicht eingetragen: '.$data['first_name'].' '.$data['last_name'].' ist schon angemeldet.')->send(),
+                                default => Notification::make()->success()->title($data['first_name'].' '.$data['last_name'].' eingetragen ('.EventRegistration::STATUSES[$result].').')->send(),
+                            };
+                        }),
+                    Action::make('importParticipants')
+                        ->label('Liste eintragen')
+                        ->icon('heroicon-o-queue-list')
+                        ->modalHeading('Mehrere Teilnehmende eintragen')
+                        ->modalDescription(fn () => new HtmlString(e('Liste aus Excel kopieren und einfügen oder als .xlsx/.csv hochladen. Mit Kopfzeile werden die Spalten nach Namen zugeordnet (Vorname, Nachname oder Name, E-Mail, Geburtsjahr')
+                            .e(collect($event->formFields())->except('birth_year')->filter(fn (array $f) => $f['type'] !== 'days')->pluck('label')->map(fn ($l) => ', '.$l)->implode(''))
+                            .e('); ohne Kopfzeile gilt: Vorname, Nachname, E-Mail, Geburtsjahr. Wer schon angemeldet ist, wird übersprungen.')))
+                        ->schema(fn () => [
+                            Textarea::make('liste')->label('Liste einfügen')->rows(8)
+                                ->placeholder("Vorname\tNachname\tE-Mail\tGeburtsjahr\nMia\tMuster\tmia@example.org\t2012")
+                                ->requiredWithout('datei'),
+                            FileUpload::make('datei')->label('… oder Datei hochladen')
+                                ->disk('local')->directory('tmp/teilnehmende')->visibility('private')
+                                ->acceptedFileTypes(['text/csv', 'text/plain', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel'])
+                                ->maxSize(2048)
+                                ->storeFileNamesIn('datei_name'),
+                            ...$this->manualStatusInputs($event),
+                        ])
+                        ->action(function (array $data, TeilnehmendenListe $liste) {
+                            $event = $this->getOwnerRecord();
+                            abort_unless(Filament::auth()->user()?->can('manageParticipants', $event), 403);
+
+                            if (filled($data['datei'] ?? null)) {
+                                $pfad = (string) $data['datei'];
+                                $gelesen = $liste->ausDatei($event, Storage::disk('local')->path($pfad), (string) ($data['datei_name'] ?? $pfad));
+                                Storage::disk('local')->delete($pfad);
+                            } else {
+                                $gelesen = $liste->ausText($event, (string) ($data['liste'] ?? ''));
+                            }
+
+                            $zaehler = ['confirmed' => 0, 'waitlist' => 0, 'duplicate' => 0];
+                            foreach ($gelesen['personen'] as $person) {
+                                [$result] = app(EventRegistrations::class)->addManually($event, $person, (string) $data['status'], (bool) ($data['notify'] ?? false), self::namiNutzer());
+                                $zaehler[$result]++;
+                            }
+                            $this->afterManualAdd($event);
+
+                            $neu = $zaehler['confirmed'] + $zaehler['waitlist'];
+                            $teile = array_filter([
+                                $zaehler['confirmed'] ? $zaehler['confirmed'].' bestätigt' : null,
+                                $zaehler['waitlist'] ? $zaehler['waitlist'].' auf der Warteliste' : null,
+                            ]);
+                            $hinweise = array_filter([
+                                $zaehler['duplicate'] ? $zaehler['duplicate'].' schon angemeldet, übersprungen.' : null,
+                                ...$gelesen['fehler'] !== [] ? [count($gelesen['fehler']).' Zeile(n) nicht eingetragen: '.implode('; ', array_slice($gelesen['fehler'], 0, 10)).(count($gelesen['fehler']) > 10 ? ' …' : '')] : [],
+                            ]);
+                            Notification::make()
+                                ->title($neu.' '.($neu === 1 ? 'Person' : 'Personen').' eingetragen'.($teile ? ' ('.implode(', ', $teile).')' : '').'.')
+                                ->body($hinweise ? implode(' ', $hinweise) : null)
+                                ->status($gelesen['fehler'] !== [] || $neu === 0 ? 'warning' : 'success')
+                                ->persistent($gelesen['fehler'] !== [])
+                                ->send();
+                        }),
+                ])
+                    ->label('Teilnehmende eintragen')
+                    ->icon('heroicon-o-user-plus')
+                    ->button(),
                 Action::make('checkMembers')
                     ->label('Mitgliedschaft prüfen')
                     ->icon('heroicon-o-identification')
@@ -370,7 +462,7 @@ class RegistrationsRelationManager extends RelationManager
         foreach ($offen as $registration) {
             $registration->forceFill(['certificate_approved_at' => now(), 'certificate_approved_by' => Filament::auth()->id()])->save();
             AuditLogger::log('registration.certificate.approve', Filament::auth()->user(), EventRegistration::class, $registration->getKey(), request());
-            if ($notify) {
+            if ($notify && filled($registration->email)) {
                 try {
                     Mail::to($registration->email)->send(new TeilnahmebescheinigungMail($registration));
                 } catch (Throwable $e) {
@@ -450,7 +542,7 @@ class RegistrationsRelationManager extends RelationManager
         ]);
         AuditLogger::log('registration.document.upload', Filament::auth()->user(), EventRegistration::class, $record->getKey(), request());
 
-        if ($data['notify'] ?? false) {
+        if (($data['notify'] ?? false) && filled($record->email)) {
             try {
                 Mail::to($record->email)->send(new RegistrationDocumentMail($document));
             } catch (Throwable $e) {
@@ -476,5 +568,49 @@ class RegistrationsRelationManager extends RelationManager
         $user = Filament::auth()->user();
 
         return $user instanceof User ? $user : null;
+    }
+
+    /**
+     * Eingabefelder für die bei der Veranstaltung abgefragten Angaben.
+     *
+     * @return list<Component>
+     */
+    private function eventFieldInputs(Event $event): array
+    {
+        return collect($event->formFields())->map(function (array $field, string $key) use ($event) {
+            $name = $key === 'birth_year' ? 'birth_year' : 'data.'.$key;
+
+            return match ($field['type']) {
+                'year' => TextInput::make($name)->label($field['label'])->numeric()->minValue(1900)->maxValue((int) date('Y')),
+                'plz' => TextInput::make($name)->label($field['label'])->regex('/^\d{4,5}$/')->maxLength(5),
+                'select' => Select::make($name)->label($field['label'])->options($field['options'] ?? []),
+                'days' => CheckboxList::make($name)->label($field['label'])->options($event->days())->columns(2),
+                'textarea' => Textarea::make($name)->label($field['label'])->rows(2)->maxLength(1000),
+                default => TextInput::make($name)->label($field['label'])->maxLength(255),
+            };
+        })->values()->all();
+    }
+
+    /**
+     * @return list<Component>
+     */
+    private function manualStatusInputs(Event $event): array
+    {
+        return [
+            Select::make('status')->label('Status')->required()->default('auto')->options([
+                'auto' => $event->capacity ? 'Bestätigt, solange Plätze frei sind (noch '.$event->spotsLeft().'), danach Warteliste' : 'Bestätigt',
+                'confirmed' => 'Bestätigt – auch über die Platzzahl hinaus',
+                'waitlist' => 'Warteliste',
+            ]),
+            Toggle::make('notify')->label('Bestätigung per E-Mail schicken (nur wer eine Adresse hat)'),
+        ];
+    }
+
+    /** Wie nach der Online-Bestätigung: neue Anmeldungen abgleichen (nur mit technischem Konto). */
+    private function afterManualAdd(Event $event): void
+    {
+        if ($event->checksMembers() && ! NamiVerzeichnis::persoenlich()) {
+            CheckEventMembers::dispatch($event->getKey());
+        }
     }
 }

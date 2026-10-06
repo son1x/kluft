@@ -6,7 +6,9 @@ use App\Jobs\CheckEventMembers;
 use App\Mail\EventRegistrationMail;
 use App\Models\Event;
 use App\Models\EventRegistration;
+use App\Models\User;
 use App\Services\Mitglieder\NamiVerzeichnis;
+use App\Support\AuditLogger;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -19,6 +21,9 @@ use Throwable;
  */
 class EventRegistrations
 {
+    /** Textversion bei Eintragung im Backend (statt Online-Einwilligung). */
+    public const MANUELL = 'backend';
+
     public const CONFIRM_HOURS = 48;
 
     /**
@@ -59,6 +64,69 @@ class EventRegistrations
         ]);
 
         $this->send($registration, 'doi', $token);
+    }
+
+    /**
+     * Von der Veranstaltungsleitung im Backend eingetragen (einzeln oder als
+     * Liste) – ohne Double-Opt-In. Status: „auto“ = bestätigt, solange Plätze
+     * frei sind, danach Warteliste; „confirmed“ auch über die Platzzahl hinaus;
+     * „waitlist“. Doppelte (gleicher Name und ggf. gleiche E-Mail) werden
+     * übersprungen. Ergebnis je Person: confirmed, waitlist oder duplicate.
+     *
+     * @param  array{first_name: string, last_name: string, email?: string|null, birth_year?: int|null, data?: array<string, mixed>}  $person
+     * @return array{0: string, 1: EventRegistration|null}
+     */
+    public function addManually(Event $event, array $person, string $statusWahl, bool $notify, ?User $by = null): array
+    {
+        $email = mb_strtolower(trim((string) ($person['email'] ?? '')));
+        $vorname = trim($person['first_name']);
+        $nachname = trim($person['last_name']);
+        $cancelToken = Str::random(48);
+
+        [$result, $registration] = DB::transaction(function () use ($event, $person, $statusWahl, $email, $vorname, $nachname, $cancelToken) {
+            $event = Event::query()->lockForUpdate()->findOrFail($event->getKey());
+
+            $doppelt = $event->registrations()
+                ->whereIn('status', ['pending', 'confirmed', 'waitlist'])
+                ->whereRaw('lower(first_name) = ?', [mb_strtolower($vorname)])
+                ->whereRaw('lower(last_name) = ?', [mb_strtolower($nachname)])
+                ->when($email !== '', fn ($q) => $q->whereIn('email', [$email, '']))
+                ->exists();
+            if ($doppelt) {
+                return ['duplicate', null];
+            }
+
+            $status = match ($statusWahl) {
+                'confirmed', 'waitlist' => $statusWahl,
+                default => $event->isFull() ? 'waitlist' : 'confirmed',
+            };
+
+            $registration = $event->registrations()->create([
+                'status' => $status,
+                'first_name' => $vorname,
+                'last_name' => $nachname,
+                'email' => $email,
+                'birth_year' => $person['birth_year'] ?? null,
+                'data' => array_filter($person['data'] ?? [], fn ($v) => filled($v)),
+                // Keine Online-Einwilligung: im Backend eingetragen (wer, steht im Audit-Log).
+                'consent_text_version' => self::MANUELL,
+                'consent_at' => now(),
+                'confirmed_at' => now(),
+                'cancel_token_hash' => $email !== '' ? EventRegistration::hashToken($cancelToken) : null,
+                'purge_at' => $event->purgeAt(),
+            ]);
+
+            return [$status, $registration];
+        });
+
+        if ($registration) {
+            AuditLogger::log('registration.manual', $by, EventRegistration::class, $registration->getKey(), request());
+            if ($notify) {
+                $this->send($registration, $result, $cancelToken);
+            }
+        }
+
+        return [$result, $registration];
     }
 
     /**
@@ -193,6 +261,9 @@ class EventRegistrations
      */
     private function send(EventRegistration $registration, string $kind, ?string $token = null): void
     {
+        if (blank($registration->email)) {
+            return; // von Hand eingetragen ohne E-Mail-Adresse
+        }
         try {
             Mail::to($registration->email)->send(new EventRegistrationMail($registration, $kind, $token));
         } catch (Throwable $e) {

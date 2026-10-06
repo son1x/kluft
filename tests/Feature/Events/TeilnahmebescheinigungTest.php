@@ -81,7 +81,8 @@ class TeilnahmebescheinigungTest extends TestCase
         $this->assertTrue($this->event->is($service->verify(strtolower(str_replace('-', ' ', $code)), 'Mia Mueller-Luedenscheidt')));
         $this->assertNull($service->verify($code, 'Max Muster'), 'Code gilt nur mit dem Namen');
 
-        $falsch = substr($code, 0, -2).($code[-2] === 'A' ? 'B' : 'A').substr($code, -1);
+        // Ein Zeichen der Signatur ändern (vor „-P“), Länge bleibt gleich.
+        $falsch = substr($code, 0, -3).($code[-3] === 'A' ? 'B' : 'A').substr($code, -2);
         $this->assertSame('tippfehler', $service->verify($falsch, 'Mia Müller-Lüdenscheidt'));
 
         $anderes = Event::query()->create(['title' => 'Anderes', 'slug' => 'anderes', 'status' => 'open', 'starts_at' => now(), 'certificate_enabled' => true]);

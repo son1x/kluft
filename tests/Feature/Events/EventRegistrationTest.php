@@ -196,7 +196,7 @@ class EventRegistrationTest extends TestCase
 
     #[Group('dv-trier')]
 
-    #[TestDox('Feld „Stamm oder Bezirk“ schlägt aktive Stämme und Bezirke von der Karte vor')]
+    #[TestDox('Feld „Stamm / Bezirk / Verband“ schlägt aktive Stämme und Bezirke von der Karte vor')]
     public function test_stamm_field_suggests_staemme_and_bezirke(): void
     {
         $bezirk = Gruppierung::query()->create(['typ' => 'bezirk', 'name' => 'Testbezirk', 'slug' => 'testbezirk', 'active' => true]);
@@ -205,7 +205,7 @@ class EventRegistrationTest extends TestCase
         $this->event(['form_fields' => ['stamm' => 'required']]);
 
         $this->get('/veranstaltungen/woelflingstag')->assertOk()
-            ->assertSee('Stamm oder Bezirk *')
+            ->assertSee('Stamm / Bezirk / Verband *')
             ->assertSee('<option value="Bezirk Testbezirk">Bezirk</option>', false)
             ->assertSee('<option value="Testdorf, St. Konrad">Stamm · Bezirk Testbezirk</option>', false)
             ->assertSee('stammAutocomplete(', false)
@@ -406,7 +406,7 @@ class EventRegistrationTest extends TestCase
         $this->assertFalse(RegistrationsRelationManager::canViewForRecord($woelflinge, EditEvent::class));
 
         $export = app(ParticipantExport::class);
-        $this->assertSame(['Nr.', 'Status', 'Vorname', 'Nachname', 'E-Mail', 'Geburtsjahr', 'Stamm oder Bezirk', 'Herkunft', 'Verpflegung', 'Angemeldet durch (sorgeberechtigt)', 'Bestätigt am'], $export->headings($woelflinge));
+        $this->assertSame(['Nr.', 'Status', 'Vorname', 'Nachname', 'E-Mail', 'Geburtsjahr', 'Stamm / Bezirk / Verband', 'Herkunft', 'Verpflegung', 'Angemeldet durch (sorgeberechtigt)', 'Bestätigt am'], $export->headings($woelflinge));
         $row = $export->rows($woelflinge)[0];
         $this->assertSame("'=HYPERLINK(\"x\")", $row[2]);
         $this->assertSame(config('dpsg.event_herkunft.hier'), $row[7], 'ohne Angabe: von hier');

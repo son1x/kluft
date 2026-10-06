@@ -146,6 +146,10 @@
                                     @case('wohnort')
                                         <input id="{{ $key }}" name="{{ $key }}" type="text" autocomplete="address-level2" maxlength="150" @required($field['required']) value="{{ old($key) }}" class="{{ $input }}" />
                                         @break
+                                    @case('mitgliedsnummer')
+                                        <input id="{{ $key }}" name="{{ $key }}" type="text" inputmode="numeric" autocomplete="off" maxlength="10" @required($field['required']) value="{{ old($key) }}" class="{{ $input }} sm:max-w-40" aria-describedby="{{ $key }}-hint" />
+                                        <p id="{{ $key }}-hint" class="mt-1 text-xs text-text-secondary">Steht auf deinem Mitgliedsausweis oder in NaMi. Damit können wir dich eindeutig zuordnen.</p>
+                                        @break
                                     @case('tel')
                                         <input id="{{ $key }}" name="{{ $key }}" type="tel" autocomplete="tel" @required($field['required']) value="{{ old($key) }}" class="{{ $input }}" />
                                         @break

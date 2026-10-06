@@ -586,6 +586,7 @@ class RegistrationsRelationManager extends RelationManager
             return match ($field['type']) {
                 'year' => TextInput::make($name)->label($field['label'])->numeric()->minValue(1900)->maxValue((int) date('Y')),
                 'plz' => TextInput::make($name)->label($field['label'])->regex('/^\d{4,5}$/')->maxLength(5),
+                'mitgliedsnummer' => TextInput::make($name)->label($field['label'])->regex('/^\d{1,10}$/')->maxLength(10),
                 'select' => Select::make($name)->label($field['label'])->options($field['options'] ?? []),
                 'herkunft' => Select::make($name)->label($field['label'])->options($field['options'] ?? [])->default($field['default'] ?? null)->selectablePlaceholder(false),
                 'days' => CheckboxList::make($name)->label($field['label'])->options($event->days())->columns(2),

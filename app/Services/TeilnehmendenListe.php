@@ -129,6 +129,9 @@ class TeilnehmendenListe
                 if ($feld['type'] === 'plz' && ! preg_match('/^\d{4,5}$/', $wert)) {
                     $problem ??= 'Postleitzahl ungültig';
                 }
+                if ($feld['type'] === 'mitgliedsnummer' && ! preg_match('/^\d{1,10}$/', $wert)) {
+                    $problem ??= 'Mitgliedsnummer ungültig';
+                }
                 if ($feld['type'] === 'herkunft') {
                     $wert = self::herkunft($wert, (array) ($feld['options'] ?? []));
                     if ($wert === '') {
@@ -174,6 +177,7 @@ class TeilnehmendenListe
             'geburtsjahr' => 'birth_year', 'jahrgang' => 'birth_year', 'postleitzahl' => 'plz', 'plz' => 'plz',
             'wohnort' => 'wohnort', 'ort' => 'wohnort', 'stamm' => 'stamm', 'telefon' => 'phone', 'anmerkungen' => 'comment',
             'herkunft' => 'herkunft', 'gast' => 'herkunft',
+            'mitgliedsnummer' => 'mitgliedsnummer', 'mitglieds-nr.' => 'mitgliedsnummer', 'mitglieds-nr' => 'mitgliedsnummer', 'nami-nummer' => 'mitgliedsnummer',
         ];
         foreach ($felder as $key => $feld) {
             $namen[mb_strtolower((string) $feld['label'])] = $key;

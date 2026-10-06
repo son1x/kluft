@@ -1,5 +1,5 @@
 /**
- * Autovervollständigung „Stamm oder Bezirk“ im Anmeldeformular: sucht in
+ * Autovervollständigung „Stamm / Bezirk / Verband“ im Anmeldeformular: sucht in
  * Name, Ort und Bezirk, ohne Rücksicht auf Groß-/Kleinschreibung und
  * Umlaute. Treffer am Wortanfang stehen vorn. Freie Eingabe bleibt möglich.
  */

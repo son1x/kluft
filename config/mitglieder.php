@@ -44,8 +44,8 @@ return [
     // Zusatz zum Einwilligungstext bei Veranstaltungen mit Abgleich. Bei
     // inhaltlicher Änderung die Version hochzählen.
     'consent' => [
-        'version' => '2026-10',
-        'text' => 'Für diese Veranstaltung prüfen wir anhand von Name und Geburtsjahr in der Mitgliederverwaltung der DPSG (NaMi), ob du Mitglied bist (z. B. für Versicherungsschutz und Teilnahmebeitrag). Gespeichert wird nur das Ergebnis mit Mitgliedsnummer und Stamm.',
+        'version' => '2026-10-2',
+        'text' => 'Für diese Veranstaltung prüfen wir anhand von Name und Geburtsjahr – und, falls du sie angibst, deiner Mitgliedsnummer – in der Mitgliederverwaltung der DPSG (NaMi), ob du Mitglied bist (z. B. für Versicherungsschutz und Teilnahmebeitrag). Gäste aus anderen Diözesanverbänden oder Verbänden werden nicht abgefragt. Gespeichert wird nur das Ergebnis mit Mitgliedsnummer und Stamm.',
     ],
 
 ];

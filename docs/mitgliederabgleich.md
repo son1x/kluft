@@ -34,13 +34,16 @@ Das CMS spricht nur mit der Schnittstelle `App\Services\Mitglieder\Mitgliederver
 - Sind bei beiden Seiten Geburtsdaten bekannt, muss das Geburtsjahr passen.
 - Aktive Mitgliedschaften gehen vor beendeten. Bleiben mehrere Treffer übrig, entscheidet die E-Mail-Adresse, sonst „unklar“.
 - NaMi 2 führt auch Nicht-Mitglieder (z. B. Kontakte); die zählen nicht als Mitglied.
+- **Mitgliedsnummer:** Im Baukasten der Veranstaltung lässt sich das freiwillige Feld „DPSG-Mitgliedsnummer“ einschalten. Ist die angegebene Nummer unter den Namenstreffern, ordnet sie eindeutig zu, auch bei Namensgleichheit oder falschem Geburtsjahr; führende Nullen spielen keine Rolle. Passt die Nummer zu keinem Treffer, wird die Person als „unklar“ zur Entscheidung von Hand markiert.
+- **Gäste:** Unter „Stamm / Bezirk / Verband“ können Teilnehmende „Gast aus einem anderen Diözesanverband oder Verband“ ankreuzen. Gäste werden nicht abgefragt und als „Gast (nicht abgeglichen)“ markiert.
 
 ## Datenschutz (KDG)
 
 - **Zweck:** Prüfung der Mitgliedschaft für die Veranstaltung (Versicherung, Beitrag, Teilnahmevoraussetzung). Die Teilnehmenden werden im Einwilligungstext informiert.
 - **NaMi-Zugänge:** Ein persönlicher Zugang wird nur gespeichert, wenn die Person das selbst will, und zwar verschlüsselt. Er wird gelöscht, sobald die Person es will oder ihr Konto gesperrt wird. Wer `APP_KEY` und Datenbank zugleich hat, könnte ihn entschlüsseln. Beides deshalb wie bisher nur in Secrets bzw. der `.env` halten. Vor dem Einschalten klären, ob die NaMi-Nutzungsbedingungen das Hinterlegen erlauben.
 - **Datensparsamkeit:** Es wird keine Kopie der Mitgliederdaten angelegt. Gespeichert werden nur Ergebnis, Mitgliedsnummer, Stamm und Prüfzeitpunkt an der Anmeldung. Sie werden mit der Anmeldung nach der Löschfrist gelöscht.
-- **Auskunft:** Die Datenschutzauskunft (Backend → Datenschutz) enthält das Ergebnis.
+- **Auskunft:** Die Datenschutzauskunft (Backend → Datenschutz) enthält das Ergebnis, eine angegebene Mitgliedsnummer und bei Backend-Konten einen gespeicherten NaMi-Zugang (Mitgliedsnummer; das Passwort nicht).
+- **Einwilligungstext:** Er nennt Name, Geburtsjahr und eine freiwillig angegebene Mitgliedsnummer und weist darauf hin, dass Gäste nicht abgefragt werden (Version `2026-10-2`).
 - **Protokoll:** Abgleich starten und Entscheidungen von Hand stehen im Audit-Log.
 - **Rechte:** Nur wer die Teilnehmenden der Veranstaltung sehen darf (`manageParticipants`), sieht das Ergebnis und kann den Abgleich starten.
 - **Vor dem Einschalten:** mit der/dem Datenschutzbeauftragten abstimmen und den Abschnitt zu Veranstaltungen in der Datenschutzerklärung ergänzen.

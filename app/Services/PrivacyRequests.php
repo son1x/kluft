@@ -85,6 +85,12 @@ class PrivacyRequests
             'redaktionskonto' => $found['users']->map(fn (User $u) => [
                 'name' => $u->name, 'status' => $u->status, 'letzte_anmeldung' => $u->last_login_at?->toIso8601String(),
                 'rollen' => $u->roleAssignments->map(fn ($a) => trim($a->role.' '.$a->scope_type.' '.$a->scope_key))->all(),
+                // Freiwillig gespeicherter NaMi-Zugang (Passwort wird nicht ausgegeben).
+                'nami_zugang' => $u->hasNamiZugang() ? [
+                    'mitgliedsnummer' => $u->nami_user,
+                    'passwort' => 'verschlüsselt gespeichert (wird nicht ausgegeben)',
+                    'zuletzt_geprueft' => $u->nami_checked_at?->toIso8601String(),
+                ] : null,
             ])->values()->all(),
             'mails_in_warteschlange' => $found['queued'],
             'hinweise' => array_values(array_filter([

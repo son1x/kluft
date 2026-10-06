@@ -9,7 +9,8 @@ use Illuminate\Support\Str;
  * Gleicht eine Anmeldung mit der Mitgliederverwaltung ab. Treffer zählt,
  * wenn Nachname und erster Vorname übereinstimmen (ohne Groß-/Klein-
  * schreibung, Umlaute, Bindestriche) und – sofern beide bekannt – das
- * Geburtsjahr. Mehrere Treffer löst die E-Mail-Adresse auf, sonst
+ * Geburtsjahr. Eine angegebene Mitgliedsnummer ordnet eindeutig zu.
+ * Mehrere Treffer löst die E-Mail-Adresse auf, sonst
  * „unklar“ zur Entscheidung im Backend. Gespeichert wird nur das Ergebnis.
  */
 class MitgliederAbgleich
@@ -44,7 +45,17 @@ class MitgliederAbgleich
         }
 
         $vorname = self::ersterVorname($registration->first_name);
-        $treffer = collect($this->verzeichnis->suche($vorname, trim($registration->last_name)))
+        $gefunden = $this->verzeichnis->suche($vorname, trim($registration->last_name));
+
+        // Angegebene Mitgliedsnummer: ordnet eindeutig zu, wenn sie unter den
+        // Namenstreffern ist (auch bei abweichender Schreibweise oder Geburtsjahr).
+        $nummer = ltrim((string) ($registration->data['mitgliedsnummer'] ?? ''), '0');
+        $perNummer = $nummer === '' ? null : collect($gefunden)->first(fn (Mitglied $m) => ltrim($m->nummer, '0') === $nummer);
+        if ($perNummer) {
+            return $this->speichern($registration, $perNummer->aktiv ? 'mitglied' : 'ehemalig', $perNummer);
+        }
+
+        $treffer = collect($gefunden)
             ->filter(fn (Mitglied $m) => self::norm($m->nachname) === self::norm($registration->last_name)
                 && self::norm(self::ersterVorname($m->vorname)) === self::norm($vorname))
             ->filter(fn (Mitglied $m) => ! $registration->birth_year || ! $m->geburtsdatum || $m->geburtsdatum->year === $registration->birth_year)
@@ -62,10 +73,17 @@ class MitgliederAbgleich
         $status = match (true) {
             $kandidaten->isEmpty() => 'nicht_gefunden',
             $mitglied === null => 'unklar',
+            // Angegebene Nummer passt nicht zum einzigen Treffer: von Hand entscheiden.
+            $nummer !== '' => 'unklar',
             $mitglied->aktiv => 'mitglied',
             default => 'ehemalig',
         };
 
+        return $this->speichern($registration, $status, $status === 'unklar' ? null : $mitglied);
+    }
+
+    private function speichern(EventRegistration $registration, string $status, ?Mitglied $mitglied): string
+    {
         $registration->forceFill([
             'member_status' => $status,
             'member_number' => $mitglied?->nummer,

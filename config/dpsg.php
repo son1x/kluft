@@ -122,6 +122,8 @@ return array_replace([
         'wohnort' => ['label' => 'Wohnort', 'type' => 'wohnort', 'hint' => 'z. B. für Zuschussanträge (Landesjugendring)'],
         // Bezeichnung je Instanz (event_stamm_label), z. B. „Stamm oder Bezirk“ im DV.
         'stamm' => ['label' => $instanzConfig['event_stamm_label'] ?? 'Stamm', 'type' => 'stamm'],
+        // Freiwillig: macht den Mitgliederabgleich eindeutig (z. B. bei Namensgleichheit).
+        'mitgliedsnummer' => ['label' => 'DPSG-Mitgliedsnummer', 'type' => 'mitgliedsnummer', 'hint' => 'Ordnet beim Mitgliederabgleich eindeutig zu'],
         'gremium' => ['label' => 'Funktion / Gremium (z. B. Bezirksvorstand, Delegierte*r, Gast)', 'type' => 'text'],
         'phone' => ['label' => 'Telefonnummer für Rückfragen', 'type' => 'tel'],
         'diet' => ['label' => 'Verpflegung', 'type' => 'select', 'options' => [

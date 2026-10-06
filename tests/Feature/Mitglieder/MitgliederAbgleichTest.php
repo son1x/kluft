@@ -18,6 +18,7 @@ use App\Services\Mitglieder\Mitgliederverzeichnis;
 use App\Services\Mitglieder\MitgliederverzeichnisException;
 use App\Services\Mitglieder\NamiVerzeichnis;
 use App\Services\ParticipantExport;
+use App\Services\PrivacyRequests;
 use App\Support\Health\HealthChecks;
 use App\Support\NamiAmpel;
 use Filament\Facades\Filament;
@@ -133,6 +134,57 @@ class MitgliederAbgleichTest extends TestCase
         $perMail = $this->anmeldung($event, 'Lea', 'Klein', 2010, 'B@example.org');
         $this->assertSame('mitglied', $abgleich->pruefe($perMail));
         $this->assertSame('115', $perMail->member_number);
+    }
+
+    #[TestDox('Angegebene Mitgliedsnummer ordnet eindeutig zu; passt sie nicht zum Namenstreffer: „unklar“')]
+    public function test_member_number_from_registration(): void
+    {
+        $this->bestand = [
+            $this->mitglied('0012345', 'Mia', 'Muster', '2010-02-02'),
+            $this->mitglied('0067890', 'Mia', 'Muster', '2010-09-09'),
+            $this->mitglied('0099999', 'Mia', 'Muster', '1990-01-01', aktiv: false),
+            $this->mitglied('555', 'Ben', 'Berg', '2011-01-01'),
+        ];
+        $event = $this->event(['form_fields' => ['birth_year' => 'optional', 'mitgliedsnummer' => 'optional']]);
+        $abgleich = app(MitgliederAbgleich::class);
+
+        $ohne = $this->anmeldung($event, 'Mia', 'Muster', 2010);
+        $this->assertSame('unklar', $abgleich->pruefe($ohne), 'Namensgleichheit ohne Nummer');
+
+        $mitNummer = $this->anmeldung($event, 'Mia', 'Muster', 2009, email: 'mia2@example.org');
+        $mitNummer->update(['data' => ['mitgliedsnummer' => '12345']]);
+        $this->assertSame('mitglied', $abgleich->pruefe($mitNummer->fresh()), 'Nummer schlägt Geburtsjahr und führende Nullen');
+        $this->assertSame('0012345', $mitNummer->fresh()->member_number);
+
+        $ehemals = $this->anmeldung($event, 'Mia', 'Muster', null, email: 'mia3@example.org');
+        $ehemals->update(['data' => ['mitgliedsnummer' => '99999']]);
+        $this->assertSame('ehemalig', $abgleich->pruefe($ehemals->fresh()));
+
+        $falsch = $this->anmeldung($event, 'Ben', 'Berg', 2011, email: 'ben@example.org');
+        $falsch->update(['data' => ['mitgliedsnummer' => '999']]);
+        $this->assertSame('unklar', $abgleich->pruefe($falsch->fresh()));
+        $this->assertNull($falsch->fresh()->member_number);
+    }
+
+    #[TestDox('Anmeldeformular: Feld „DPSG-Mitgliedsnummer“, nur Ziffern; Einwilligungstext nennt die Nummer')]
+    public function test_member_number_field(): void
+    {
+        $event = $this->event(['form_fields' => ['birth_year' => 'required', 'mitgliedsnummer' => 'optional']]);
+        $this->get('/veranstaltungen/woelflingslager')->assertOk()
+            ->assertSee('DPSG-Mitgliedsnummer')
+            ->assertSee('falls du sie angibst, deiner Mitgliedsnummer');
+
+        $eingabe = ['first_name' => 'Mia', 'last_name' => 'Muster', 'email' => 'eltern@example.org', 'birth_year' => 2010,
+            'by_guardian' => '1', 'guardian_name' => 'Eva Muster', 'guardian_consent' => '1', 'consent' => '1'];
+        $this->post('/veranstaltungen/woelflingslager/anmeldung', [...$eingabe, 'mitgliedsnummer' => '12-34'])->assertSessionHasErrors('mitgliedsnummer');
+        $this->post('/veranstaltungen/woelflingslager/anmeldung', [...$eingabe, 'mitgliedsnummer' => '1234567'])->assertSessionHasNoErrors();
+        $this->assertSame('1234567', EventRegistration::query()->sole()->data['mitgliedsnummer']);
+
+        // Datenschutzauskunft enthält die Angabe.
+        $zip = new \ZipArchive;
+        $zip->open(app(PrivacyRequests::class)->export('eltern@example.org'));
+        $auskunft = json_decode((string) $zip->getFromName('auskunft.json'), true);
+        $this->assertSame('1234567', $auskunft['veranstaltungsanmeldungen'][0]['angaben']['DPSG-Mitgliedsnummer']);
     }
 
     #[TestDox('Gäste aus anderen Gliederungen/Verbänden werden nicht abgefragt, sondern als „Gast“ markiert')]
@@ -511,6 +563,11 @@ class MitgliederAbgleichTest extends TestCase
         $this->assertStringNotContainsString('richtig', implode(' ', $roh), 'verschlüsselt gespeichert');
         $this->assertArrayNotHasKey('nami_password', $user->toArray());
         $this->assertSame(1, AuditLog::query()->where('action', 'nami.zugang.gespeichert')->count());
+        $zip = new \ZipArchive;
+        $zip->open(app(PrivacyRequests::class)->export('leitung@example.org'));
+        $auskunft = (string) $zip->getFromName('auskunft.json');
+        $this->assertStringContainsString('"mitgliedsnummer": "777"', $auskunft);
+        $this->assertStringNotContainsString('richtig', $auskunft);
 
         // Passwortfeld leer lassen = gespeichertes behalten; Selbsttest findet die eigene Nummer.
         Livewire::test(NamiZugang::class)

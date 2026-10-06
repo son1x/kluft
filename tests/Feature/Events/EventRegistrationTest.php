@@ -196,20 +196,27 @@ class EventRegistrationTest extends TestCase
 
     #[Group('dv-trier')]
 
-    #[TestDox('Feld „Stamm / Bezirk / Verband“ schlägt aktive Stämme und Bezirke von der Karte vor')]
+    #[TestDox('Felder „Bezirk“ (Auswahl) und „Stamm“ (Vorschläge mit Bezirk) aus den aktiven Gruppierungen der Karte')]
     public function test_stamm_field_suggests_staemme_and_bezirke(): void
     {
         $bezirk = Gruppierung::query()->create(['typ' => 'bezirk', 'name' => 'Testbezirk', 'slug' => 'testbezirk', 'active' => true]);
         Gruppierung::query()->create(['typ' => 'stamm', 'name' => 'Testdorf, St. Konrad', 'slug' => 'test-st-konrad', 'ort' => 'Testdorf', 'parent_id' => $bezirk->id, 'active' => true]);
         Gruppierung::query()->create(['typ' => 'stamm', 'name' => 'Aufgelöst', 'slug' => 'test-aufgeloest', 'active' => false]);
-        $this->event(['form_fields' => ['stamm' => 'required']]);
+        $event = $this->event(['form_fields' => ['stamm' => 'required']]);
 
         $this->get('/veranstaltungen/woelflingstag')->assertOk()
-            ->assertSee('Stamm / Bezirk / Verband *')
-            ->assertSee('<option value="Bezirk Testbezirk">Bezirk</option>', false)
+            ->assertSee('<label for="bezirk"', false)
+            ->assertSee('<option value="Testbezirk" >Bezirk Testbezirk</option>', false)
+            ->assertDontSee('<option value="Bezirk Testbezirk">', false)
             ->assertSee('<option value="Testdorf, St. Konrad">Stamm · Bezirk Testbezirk</option>', false)
             ->assertSee('stammAutocomplete(', false)
+            ->assertSee('Diözesanverband / Verband')
             ->assertDontSee('Aufgelöst');
+
+        $this->register($event, ['bezirk' => '', 'stamm' => 'Testdorf, St. Konrad'])->assertSessionHasErrors('bezirk');
+        $this->register($event, ['bezirk' => 'Testbezirk', 'stamm' => 'Testdorf, St. Konrad'])->assertSessionHasNoErrors();
+        $this->assertSame(['bezirk' => 'Testbezirk', 'stamm' => 'Testdorf, St. Konrad'], EventRegistration::query()->sole()->data);
+        $this->assertSame(['bezirk', 'stamm', 'herkunft'], array_keys($event->formFields()));
     }
 
     #[TestDox('Anmeldung mit Bestätigungsmail; Zusatzangaben werden verschlüsselt gespeichert')]
@@ -406,11 +413,11 @@ class EventRegistrationTest extends TestCase
         $this->assertFalse(RegistrationsRelationManager::canViewForRecord($woelflinge, EditEvent::class));
 
         $export = app(ParticipantExport::class);
-        $this->assertSame(['Nr.', 'Status', 'Vorname', 'Nachname', 'E-Mail', 'Geburtsjahr', 'Stamm / Bezirk / Verband', 'Herkunft', 'Verpflegung', 'Angemeldet durch (sorgeberechtigt)', 'Bestätigt am'], $export->headings($woelflinge));
+        $this->assertSame(['Nr.', 'Status', 'Vorname', 'Nachname', 'E-Mail', 'Geburtsjahr', 'Bezirk / Verband', 'Stamm / Gruppe', 'Herkunft', 'Verpflegung', 'Angemeldet durch (sorgeberechtigt)', 'Bestätigt am'], $export->headings($woelflinge));
         $row = $export->rows($woelflinge)[0];
         $this->assertSame("'=HYPERLINK(\"x\")", $row[2]);
-        $this->assertSame(config('dpsg.event_herkunft.hier'), $row[7], 'ohne Angabe: von hier');
-        $this->assertSame('Vegan', $row[8]);
+        $this->assertSame(config('dpsg.event_herkunft.hier'), $row[8], 'ohne Angabe: von hier');
+        $this->assertSame('Vegan', $row[9]);
         $this->assertSame("'+49 651", ParticipantExport::mask('+49 651'));
         $this->assertSame("'@SUMME(A1)", ParticipantExport::mask('@SUMME(A1)'));
         $this->assertSame('Muster', ParticipantExport::mask('Muster'));

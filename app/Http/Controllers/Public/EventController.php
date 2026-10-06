@@ -42,6 +42,7 @@ class EventController extends Controller
             'state' => $event->registrationState(),
             'fields' => $event->formFields(),
             'gruppierungen' => isset($event->formFields()['stamm']) ? $this->gruppierungOptions() : [],
+            'bezirke' => isset($event->formFields()['bezirk']) ? $this->bezirkOptions() : [],
         ]);
     }
 
@@ -85,7 +86,6 @@ class EventController extends Controller
                 'year' => ['integer', 'between:'.(now()->year - 100).','.now()->year],
                 'select', 'herkunft' => [Rule::in(array_keys($field['options'] ?? []))],
                 'tel' => ['string', 'max:40', 'regex:/^[0-9 +()\/-]+$/'],
-                'mitgliedsnummer' => ['string', 'regex:/^\d{1,10}$/'],
                 'plz' => ['string', 'max:10', 'regex:/^([A-Za-z]{1,2}[- ]?)?[0-9]{4,5}$/'],
                 'textarea' => ['string', 'max:1000'],
                 default => ['string', 'max:150'],
@@ -101,7 +101,6 @@ class EventController extends Controller
             'between' => 'Bitte gib ein gültiges Geburtsjahr an.',
             'regex' => 'Bitte nur Ziffern, Leerzeichen und + ( ) / - verwenden.',
             'plz.regex' => 'Bitte gib eine gültige Postleitzahl an (4 oder 5 Ziffern).',
-            'mitgliedsnummer.regex' => 'Bitte nur die Ziffern der Mitgliedsnummer eintragen.',
             'required_if' => 'Bitte wähle mindestens einen Tag aus.',
             'in' => 'Bitte wähle eine der angebotenen Möglichkeiten.',
         ]);
@@ -151,15 +150,29 @@ class EventController extends Controller
      * Vorschläge für das Feld „Stamm“: alle aktiven Bezirke und Stämme von
      * der Karte; gesucht wird auch über Ort und Bezirk.
      *
-     * @return list<array{value: string, hint: string, search: string}>
+     * @return list<array{value: string, hint: string, search: string, bezirk: string|null}>
      */
     private function gruppierungOptions(): array
     {
+        // Mit eigenem Feld „Bezirk“ nur Stämme vorschlagen; der Bezirk wird beim Auswählen gesetzt.
+        $mitBezirken = (bool) config('dpsg.event_bezirk');
+
         return Gruppierung::query()->active()->with('bezirk')->orderBy('typ')->orderBy('name')->get()
+            ->reject(fn (Gruppierung $g) => $mitBezirken && $g->typ === 'bezirk')
             ->map(fn (Gruppierung $g) => $g->typ === 'bezirk'
-                ? ['value' => 'Bezirk '.$g->name, 'hint' => 'Bezirk', 'search' => 'Bezirk '.$g->name]
+                ? ['value' => 'Bezirk '.$g->name, 'hint' => 'Bezirk', 'search' => 'Bezirk '.$g->name, 'bezirk' => $g->name]
                 : ['value' => $g->name, 'hint' => 'Stamm'.($g->bezirk ? ' · Bezirk '.$g->bezirk->name : ''),
-                    'search' => implode(' ', array_filter([$g->name, $g->ort, $g->bezirk?->name]))])
+                    'search' => implode(' ', array_filter([$g->name, $g->ort, $g->bezirk?->name])), 'bezirk' => $g->bezirk?->name])
             ->values()->all();
+    }
+
+    /**
+     * Auswahl für das Feld „Bezirk“: alle aktiven Bezirke.
+     *
+     * @return list<string>
+     */
+    private function bezirkOptions(): array
+    {
+        return Gruppierung::query()->active()->where('typ', 'bezirk')->orderBy('name')->pluck('name')->values()->all();
     }
 }

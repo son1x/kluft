@@ -7,6 +7,7 @@ use App\Mail\RegistrationDocumentMail;
 use App\Mail\TeilnahmebescheinigungMail;
 use App\Models\Event;
 use App\Models\EventRegistration;
+use App\Models\Gruppierung;
 use App\Models\RegistrationDocument;
 use App\Models\User;
 use App\Services\EventRegistrations;
@@ -586,8 +587,11 @@ class RegistrationsRelationManager extends RelationManager
             return match ($field['type']) {
                 'year' => TextInput::make($name)->label($field['label'])->numeric()->minValue(1900)->maxValue((int) date('Y')),
                 'plz' => TextInput::make($name)->label($field['label'])->regex('/^\d{4,5}$/')->maxLength(5),
-                'mitgliedsnummer' => TextInput::make($name)->label($field['label'])->regex('/^\d{1,10}$/')->maxLength(10),
                 'select' => Select::make($name)->label($field['label'])->options($field['options'] ?? []),
+                'bezirk' => TextInput::make($name)->label($field['label'])->maxLength(150)
+                    ->datalist(Gruppierung::query()->active()->where('typ', 'bezirk')->orderBy('name')->pluck('name')->all()),
+                'stamm' => TextInput::make($name)->label($field['label'])->maxLength(150)
+                    ->datalist(Gruppierung::query()->active()->where('typ', 'stamm')->orderBy('name')->pluck('name')->all()),
                 'herkunft' => Select::make($name)->label($field['label'])->options($field['options'] ?? [])->default($field['default'] ?? null)->selectablePlaceholder(false),
                 'days' => CheckboxList::make($name)->label($field['label'])->options($event->days())->columns(2),
                 'textarea' => Textarea::make($name)->label($field['label'])->rows(2)->maxLength(1000),

@@ -10,6 +10,7 @@ use App\Mail\EventRegistrationMail;
 use App\Models\AuditLog;
 use App\Models\Event;
 use App\Models\EventRegistration;
+use App\Models\Gruppierung;
 use App\Models\User;
 use App\Services\Mitglieder\HitobitoVerzeichnis;
 use App\Services\Mitglieder\Mitglied;
@@ -136,55 +137,60 @@ class MitgliederAbgleichTest extends TestCase
         $this->assertSame('115', $perMail->member_number);
     }
 
-    #[TestDox('Angegebene Mitgliedsnummer ordnet eindeutig zu; passt sie nicht zum Namenstreffer: „unklar“')]
-    public function test_member_number_from_registration(): void
+    #[TestDox('Mitgliedsnummer nur aus NaMi: einmal zugeordnet, löst sie beim erneuten Abgleich Namensgleichheit auf')]
+    public function test_member_number_from_earlier_check(): void
     {
         $this->bestand = [
             $this->mitglied('0012345', 'Mia', 'Muster', '2010-02-02'),
             $this->mitglied('0067890', 'Mia', 'Muster', '2010-09-09'),
-            $this->mitglied('0099999', 'Mia', 'Muster', '1990-01-01', aktiv: false),
-            $this->mitglied('555', 'Ben', 'Berg', '2011-01-01'),
         ];
-        $event = $this->event(['form_fields' => ['birth_year' => 'optional', 'mitgliedsnummer' => 'optional']]);
+        $event = $this->event(['form_fields' => ['birth_year' => 'optional']]);
         $abgleich = app(MitgliederAbgleich::class);
 
-        $ohne = $this->anmeldung($event, 'Mia', 'Muster', 2010);
-        $this->assertSame('unklar', $abgleich->pruefe($ohne), 'Namensgleichheit ohne Nummer');
+        $mia = $this->anmeldung($event, 'Mia', 'Muster', 2010);
+        $this->assertSame('unklar', $abgleich->pruefe($mia), 'Namensgleichheit ohne bekannte Nummer');
 
-        $mitNummer = $this->anmeldung($event, 'Mia', 'Muster', 2009, email: 'mia2@example.org');
-        $mitNummer->update(['data' => ['mitgliedsnummer' => '12345']]);
-        $this->assertSame('mitglied', $abgleich->pruefe($mitNummer->fresh()), 'Nummer schlägt Geburtsjahr und führende Nullen');
-        $this->assertSame('0012345', $mitNummer->fresh()->member_number);
+        // z. B. früher eindeutig zugeordnet (vor dem Eintritt der zweiten Mia)
+        $mia->forceFill(['member_number' => '12345'])->save();
+        $this->assertSame('mitglied', $abgleich->pruefe($mia->fresh()));
+        $this->assertSame('0012345', $mia->fresh()->member_number);
 
-        $ehemals = $this->anmeldung($event, 'Mia', 'Muster', null, email: 'mia3@example.org');
-        $ehemals->update(['data' => ['mitgliedsnummer' => '99999']]);
-        $this->assertSame('ehemalig', $abgleich->pruefe($ehemals->fresh()));
-
-        $falsch = $this->anmeldung($event, 'Ben', 'Berg', 2011, email: 'ben@example.org');
-        $falsch->update(['data' => ['mitgliedsnummer' => '999']]);
-        $this->assertSame('unklar', $abgleich->pruefe($falsch->fresh()));
-        $this->assertNull($falsch->fresh()->member_number);
+        // Bekannte Nummer nicht mehr unter den Treffern: Regeln wie ohne Nummer.
+        $mia->forceFill(['member_number' => '999'])->save();
+        $this->assertSame('unklar', $abgleich->pruefe($mia->fresh()));
     }
 
-    #[TestDox('Anmeldeformular: Feld „DPSG-Mitgliedsnummer“, nur Ziffern; Einwilligungstext nennt die Nummer')]
-    public function test_member_number_field(): void
+    #[TestDox('Stamm und Bezirk aus NaMi übernehmen, wenn die Person sie nicht angegeben hat (Zuordnung über die DPSG-Nummer der Gruppierung)')]
+    public function test_stamm_and_bezirk_from_nami(): void
     {
-        $event = $this->event(['form_fields' => ['birth_year' => 'required', 'mitgliedsnummer' => 'optional']]);
-        $this->get('/veranstaltungen/woelflingslager')->assertOk()
-            ->assertSee('DPSG-Mitgliedsnummer')
-            ->assertSee('falls du sie angibst, deiner Mitgliedsnummer');
+        config(['dpsg.event_bezirk' => true]);
+        $bezirk = Gruppierung::query()->create(['typ' => 'bezirk', 'nummer' => '21-99-00', 'name' => 'Testbezirk', 'slug' => 'testbezirk', 'active' => true]);
+        Gruppierung::query()->create(['typ' => 'stamm', 'nummer' => '21-99-08', 'name' => 'Sankt Konrad', 'slug' => 'st-konrad', 'parent_id' => $bezirk->id, 'active' => true]);
+        $this->bestand = [
+            new Mitglied('4711', 'Mia', 'Muster', null, null, 'Testdorf St. Konrad 219908', true),
+            new Mitglied('4712', 'Ben', 'Berg', null, null, 'Irgendwo ganz anders', true),
+            new Mitglied('4713', 'Lea', 'Klein', null, null, 'Testdorf St. Konrad 219908', true),
+        ];
+        $event = $this->event(['form_fields' => ['stamm' => 'optional']]);
+        $abgleich = app(MitgliederAbgleich::class);
 
-        $eingabe = ['first_name' => 'Mia', 'last_name' => 'Muster', 'email' => 'eltern@example.org', 'birth_year' => 2010,
-            'by_guardian' => '1', 'guardian_name' => 'Eva Muster', 'guardian_consent' => '1', 'consent' => '1'];
-        $this->post('/veranstaltungen/woelflingslager/anmeldung', [...$eingabe, 'mitgliedsnummer' => '12-34'])->assertSessionHasErrors('mitgliedsnummer');
-        $this->post('/veranstaltungen/woelflingslager/anmeldung', [...$eingabe, 'mitgliedsnummer' => '1234567'])->assertSessionHasNoErrors();
-        $this->assertSame('1234567', EventRegistration::query()->sole()->data['mitgliedsnummer']);
+        $mia = $this->anmeldung($event, 'Mia', 'Muster', null);
+        $abgleich->pruefe($mia);
+        $this->assertSame(['stamm' => 'Sankt Konrad', 'bezirk' => 'Testbezirk'], $mia->fresh()->data);
 
-        // Datenschutzauskunft enthält die Angabe.
-        $zip = new \ZipArchive;
-        $zip->open(app(PrivacyRequests::class)->export('eltern@example.org'));
-        $auskunft = json_decode((string) $zip->getFromName('auskunft.json'), true);
-        $this->assertSame('1234567', $auskunft['veranstaltungsanmeldungen'][0]['angaben']['DPSG-Mitgliedsnummer']);
+        $ben = $this->anmeldung($event, 'Ben', 'Berg', null, email: 'ben@example.org');
+        $abgleich->pruefe($ben);
+        $this->assertSame(['stamm' => 'Irgendwo ganz anders'], $ben->fresh()->data, 'unbekannte Gruppierung: Bezeichnung aus NaMi');
+
+        $lea = $this->anmeldung($event, 'Lea', 'Klein', null, email: 'lea@example.org');
+        $lea->update(['data' => ['stamm' => 'Mein Stamm']]);
+        $abgleich->pruefe($lea->fresh());
+        $this->assertSame(['stamm' => 'Mein Stamm', 'bezirk' => 'Testbezirk'], $lea->fresh()->data, 'eigene Angabe bleibt, fehlender Bezirk kommt dazu');
+
+        $ohneFeld = $this->event(['slug' => 'ohne-stamm', 'form_fields' => []]);
+        $tom = $this->anmeldung($ohneFeld, 'Mia', 'Muster', null, email: 'tom@example.org');
+        $abgleich->pruefe($tom);
+        $this->assertNull($tom->fresh()->data, 'ohne Stamm-Feld wird nichts übernommen');
     }
 
     #[TestDox('Gäste aus anderen Gliederungen/Verbänden werden nicht abgefragt, sondern als „Gast“ markiert')]

@@ -3,13 +3,15 @@
 namespace App\Services\Mitglieder;
 
 use App\Models\EventRegistration;
+use App\Models\Gruppierung;
 use Illuminate\Support\Str;
 
 /**
  * Gleicht eine Anmeldung mit der Mitgliederverwaltung ab. Treffer zählt,
  * wenn Nachname und erster Vorname übereinstimmen (ohne Groß-/Klein-
  * schreibung, Umlaute, Bindestriche) und – sofern beide bekannt – das
- * Geburtsjahr. Eine angegebene Mitgliedsnummer ordnet eindeutig zu.
+ * Geburtsjahr. Die Mitgliedsnummer kommt nur aus der Mitgliederverwaltung;
+ * ist sie von einem früheren Abgleich bekannt, ordnet sie eindeutig zu.
  * Mehrere Treffer löst die E-Mail-Adresse auf, sonst
  * „unklar“ zur Entscheidung im Backend. Gespeichert wird nur das Ergebnis.
  */
@@ -47,9 +49,9 @@ class MitgliederAbgleich
         $vorname = self::ersterVorname($registration->first_name);
         $gefunden = $this->verzeichnis->suche($vorname, trim($registration->last_name));
 
-        // Angegebene Mitgliedsnummer: ordnet eindeutig zu, wenn sie unter den
-        // Namenstreffern ist (auch bei abweichender Schreibweise oder Geburtsjahr).
-        $nummer = ltrim((string) ($registration->data['mitgliedsnummer'] ?? ''), '0');
+        // Mitgliedsnummer aus einem früheren Abgleich: ordnet eindeutig zu, wenn
+        // sie unter den Namenstreffern ist (z. B. bei Namensgleichheit).
+        $nummer = ltrim((string) $registration->member_number, '0');
         $perNummer = $nummer === '' ? null : collect($gefunden)->first(fn (Mitglied $m) => ltrim($m->nummer, '0') === $nummer);
         if ($perNummer) {
             return $this->speichern($registration, $perNummer->aktiv ? 'mitglied' : 'ehemalig', $perNummer);
@@ -73,8 +75,6 @@ class MitgliederAbgleich
         $status = match (true) {
             $kandidaten->isEmpty() => 'nicht_gefunden',
             $mitglied === null => 'unklar',
-            // Angegebene Nummer passt nicht zum einzigen Treffer: von Hand entscheiden.
-            $nummer !== '' => 'unklar',
             $mitglied->aktiv => 'mitglied',
             default => 'ehemalig',
         };
@@ -84,6 +84,9 @@ class MitgliederAbgleich
 
     private function speichern(EventRegistration $registration, string $status, ?Mitglied $mitglied): string
     {
+        if ($mitglied) {
+            $this->stammUebernehmen($registration, $mitglied);
+        }
         $registration->forceFill([
             'member_status' => $status,
             'member_number' => $mitglied?->nummer,
@@ -93,6 +96,48 @@ class MitgliederAbgleich
         ])->save();
 
         return $status;
+    }
+
+    /**
+     * Stamm und Bezirk aus der Mitgliederverwaltung übernehmen – nur wenn die
+     * Veranstaltung danach fragt und die Person selbst nichts angegeben hat.
+     * Zuordnung über die DPSG-Nummer in der Gruppierungsbezeichnung von NaMi
+     * (z. B. „… 210108“ = 21-01-08), sonst über den Namen.
+     */
+    private function stammUebernehmen(EventRegistration $registration, Mitglied $mitglied): void
+    {
+        $felder = $registration->event->formFields();
+        if (! isset($felder['stamm']) || blank($mitglied->gruppierung)) {
+            return;
+        }
+
+        $daten = (array) ($registration->data ?? []);
+        $gruppierung = self::gruppierung((string) $mitglied->gruppierung);
+        $stamm = $gruppierung?->typ === 'stamm' ? $gruppierung->name : ($gruppierung ? null : (string) $mitglied->gruppierung);
+        $bezirk = $gruppierung?->typ === 'bezirk' ? $gruppierung->name : $gruppierung?->bezirk?->name;
+
+        if (blank($daten['stamm'] ?? null) && filled($stamm)) {
+            $daten['stamm'] = Str::limit($stamm, 150, '');
+        }
+        if (isset($felder['bezirk']) && blank($daten['bezirk'] ?? null) && filled($bezirk)) {
+            $daten['bezirk'] = $bezirk;
+        }
+        $registration->data = $daten;
+    }
+
+    private static function gruppierung(string $name): ?Gruppierung
+    {
+        if (preg_match('/\b(\d{2})(\d{2})(\d{2})\b/', $name, $m)) {
+            $treffer = Gruppierung::query()->with('bezirk')->where('nummer', "{$m[1]}-{$m[2]}-{$m[3]}")->first();
+            if ($treffer) {
+                return $treffer;
+            }
+        }
+        $norm = self::norm($name);
+
+        return Gruppierung::query()->with('bezirk')->active()->get()
+            ->sortByDesc(fn (Gruppierung $g) => mb_strlen($g->name))
+            ->first(fn (Gruppierung $g) => mb_strlen(self::norm($g->name)) >= 4 && str_contains($norm, self::norm($g->name)));
     }
 
     /**

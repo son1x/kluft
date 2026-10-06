@@ -3,7 +3,7 @@ Hallo {{ $name }},
 
 @switch($kind)
 @case('doi')
-danke für deine Anmeldung zu **{{ $event->title }}** ({{ $event->dateLabel() }}).
+danke für deine Anmeldung zur Veranstaltung **{{ $event->title }}** ({{ $event->dateLabel() }}).
 
 Bitte bestätige sie innerhalb von 48 Stunden über diesen Button. Erst dann ist die Anmeldung gültig – ohne Bestätigung löschen wir die Angaben automatisch.
 
@@ -15,7 +15,7 @@ Wenn du dich nicht angemeldet hast, kannst du diese E-Mail einfach ignorieren.
 @break
 
 @case('confirmed')
-deine Anmeldung zu **{{ $event->title }}** ({{ $event->dateLabel() }}) ist bestätigt. Wir freuen uns auf dich!
+deine Anmeldung zur Veranstaltung **{{ $event->title }}** ({{ $event->dateLabel() }}) ist bestätigt. Wir freuen uns auf dich!
 @break
 
 @case('waitlist')
@@ -23,11 +23,11 @@ die Veranstaltung **{{ $event->title }}** ({{ $event->dateLabel() }}) ist im Mom
 @break
 
 @case('promoted')
-gute Nachrichten: Für **{{ $event->title }}** ({{ $event->dateLabel() }}) ist ein Platz frei geworden. Du bist von der Warteliste nachgerückt und jetzt fest angemeldet.
+gute Nachrichten: Bei der Veranstaltung **{{ $event->title }}** ({{ $event->dateLabel() }}) ist ein Platz frei geworden. Du bist von der Warteliste nachgerückt und jetzt fest angemeldet.
 @break
 
 @case('cancelled')
-deine Anmeldung zu **{{ $event->title }}** ist storniert.
+deine Anmeldung zur Veranstaltung **{{ $event->title }}** ist storniert.
 @break
 @endswitch
 

@@ -14,7 +14,7 @@
         @if ($result === 'echt')
             <div class="mt-6 border-l-4 border-[#1e8e3e] bg-white p-5 shadow-md" role="status">
                 <p class="font-bold text-[#1e8e3e]">Die Bescheinigung ist echt.</p>
-                <p class="mt-2">{{ $name }} hat an <strong>{{ $event->title }}</strong> teilgenommen ({{ $event->dateLabel() }}@if ($event->location), {{ $event->location }}@endif). Ausgestellt vom {{ config('dpsg.site.name') }}.</p>
+                <p class="mt-2">{{ $name }} hat an der Veranstaltung <strong>{{ $event->title }}</strong> teilgenommen ({{ $event->dateLabel() }}@if ($event->location), {{ $event->location }}@endif). Ausgestellt vom {{ config('dpsg.site.name') }}.</p>
             </div>
         @elseif ($result === 'tippfehler')
             <div class="mt-6 border-l-4 border-[#f2b600] bg-white p-5 shadow-md" role="alert">

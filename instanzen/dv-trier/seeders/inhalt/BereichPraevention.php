@@ -20,13 +20,18 @@ class BereichPraevention extends Seeder
 
     public const ANSPRECHPERSON = 'Axel Hemgesberg';
 
+    /** Frühere Fassung des Satzes zum Führungszeugnis (für die Korrektur per Migration). */
+    public const FUEHRUNGSZEUGNIS_ALT = 'Leitende legen ein erweitertes Führungszeugnis vor. Die nötige Bestätigung für das Bürgeramt gibt es beim Diözesanbüro.';
+
+    public const FUEHRUNGSZEUGNIS_NEU = 'Leitende legen ein erweitertes Führungszeugnis vor. Die Bestätigung der ehrenamtlichen Tätigkeit für den Antrag beim Bürgeramt erstellen sie in der Regel selbst über ihren NaMi-Zugang.';
+
     public const BODY = <<<'HTML'
         <p>Pfadfinden lebt von Vertrauen. Kinder und Jugendliche sollen sich bei uns sicher fühlen – in der Gruppenstunde, auf dem Lager und bei jeder Veranstaltung. Deshalb nehmen wir den Schutz vor sexualisierter Gewalt ernst: Wir achten Grenzen, sprechen Unsicherheiten an und wissen, was im Ernstfall zu tun ist.</p>
         <h2>Was wir dafür tun</h2>
         <ul>
         <li><strong>Schutzkonzept:</strong> Der Diözesanverband arbeitet nach einem institutionellen Schutzkonzept auf Grundlage der Präventionsordnung des Bistums Trier. Stämme und Bezirke unterstützen wir dabei, ihr eigenes Schutzkonzept zu entwickeln und aktuell zu halten.</li>
         <li><strong>Präventionsschulung:</strong> Wer bei uns mit Kindern und Jugendlichen arbeitet, nimmt an einer Präventionsschulung teil und frischt sie regelmäßig auf. Termine findest du unter <a href="/veranstaltungen">Veranstaltungen</a>.</li>
-        <li><strong>Erweitertes Führungszeugnis:</strong> Leitende legen ein erweitertes Führungszeugnis vor. Die nötige Bestätigung für das Bürgeramt gibt es beim Diözesanbüro.</li>
+        <li><strong>Erweitertes Führungszeugnis:</strong> Leitende legen ein erweitertes Führungszeugnis vor. Die Bestätigung der ehrenamtlichen Tätigkeit für den Antrag beim Bürgeramt erstellen sie in der Regel selbst über ihren NaMi-Zugang.</li>
         <li><strong>Verhaltenskodex:</strong> Leitende verpflichten sich auf einen gemeinsamen Verhaltenskodex für den Umgang mit Kindern und Jugendlichen.</li>
         </ul>
         <h2>Wenn dir etwas passiert ist oder du dir Sorgen machst</h2>

@@ -61,6 +61,23 @@ class PraeventionDvTest extends TestCase
         $this->get('/praevention')->assertOk()->assertSeeInOrder(['Ansprechperson', 'Axel Hemgesberg']);
     }
 
+    #[TestDox('Korrektur: Bestätigung fürs Führungszeugnis über NaMi, nur wenn der Satz unverändert ist')]
+    public function test_fuehrungszeugnis_nami(): void
+    {
+        $alt = Page::query()->create(['title' => 'Prävention', 'slug' => 'praevention', 'status' => 'published', 'published_at' => now(),
+            'body' => '<p>'.BereichPraevention::FUEHRUNGSZEUGNIS_ALT.'</p>']);
+        $migration = require base_path('instanzen/dv-trier/migrations/2026_10_06_140000_praevention_fuehrungszeugnis_nami.php');
+        $migration->up();
+
+        $this->assertStringContainsString('über ihren NaMi-Zugang', (string) $alt->fresh()->body);
+        $this->assertStringNotContainsString('beim Diözesanbüro', (string) $alt->fresh()->body);
+
+        $alt->update(['body' => '<p>Eigener Text</p>']);
+        $migration->up();
+        $this->assertSame('<p>Eigener Text</p>', $alt->fresh()->body);
+        $this->assertStringContainsString('NaMi-Zugang', BereichPraevention::BODY);
+    }
+
     #[TestDox('Downloads mit Bereich „Prävention“ erscheinen als Dokumente auf der Seite')]
     public function test_documents(): void
     {

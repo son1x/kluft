@@ -138,4 +138,15 @@ return [
     // Komma oder Semikolon (wie beim Kopieren aus Outlook) als Trenner.
     'test_allowlist' => array_filter(array_map('trim', preg_split('/[,;]/', (string) env('MAIL_TEST_ALLOWLIST', ''))) ?: []),
 
+    /*
+    | Markdown-Mails im Corporate Design (resources/views/vendor/mail/html,
+    | Theme themes/dpsg.css).
+    */
+    'markdown' => [
+        'theme' => 'dpsg',
+        'paths' => [
+            resource_path('views/vendor/mail'),
+        ],
+    ],
+
 ];

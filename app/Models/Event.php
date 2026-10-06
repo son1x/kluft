@@ -114,10 +114,6 @@ class Event extends Model
                 continue;
             }
             if (in_array($config[$key] ?? null, ['optional', 'required'], true)) {
-                // Mit dem Stamm auch den Bezirk abfragen (wo es Bezirke gibt).
-                if ($key === 'stamm' && config('dpsg.event_bezirk')) {
-                    $fields['bezirk'] = ['label' => 'Bezirk / Verband', 'type' => 'bezirk', 'required' => $config[$key] === 'required'];
-                }
                 $fields[$key] = [...$field, 'required' => $config[$key] === 'required'];
             }
             // Unter der Stamm-/Bezirksauswahl: „Gast aus einem anderen …“ (Ankreuzfeld).

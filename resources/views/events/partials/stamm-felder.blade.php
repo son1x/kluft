@@ -1,32 +1,13 @@
-{{-- Stamm und (wo es Bezirke gibt) Bezirk, darunter „Gast aus einem anderen …“.
-     Bezirk: Auswahl; die Stamm-Vorschläge passen zum gewählten Bezirk, die
-     Wahl eines Stamms setzt den Bezirk. Gäste tragen Diözesanverband/Verband
-     und Gruppe frei ein. Ohne JavaScript: Auswahl und Vorschlagsliste des
-     Browsers, freie Eingabe ist immer möglich. --}}
-@php($mitBezirk = isset($fields['bezirk']))
+{{-- Feld „Stamm / Bezirk / Verband“: Autovervollständigung mit Stämmen und
+     Bezirken von der Karte (Suche auch nach Ort und Bezirk), darunter
+     „Gast aus einem anderen …“. Ohne JavaScript bleibt die Vorschlagsliste
+     des Browsers; freie Eingabe ist immer möglich. --}}
 @php($mitGast = isset($fields['herkunft']))
-@php($stern = $field['required'] ? ' *' : '')
-<div class="space-y-4" x-data="{ gast: @js(old('herkunft') === 'gast'), bezirk: @js((string) old('bezirk', '')) }">
-    @if ($mitBezirk)
-        <div>
-            <label for="bezirk" class="block text-sm font-bold"><span x-show="! gast">Bezirk</span><span x-show="gast" x-cloak>Diözesanverband / Verband</span>{{ $stern }}</label>
-            <select id="bezirk" name="bezirk" x-show="! gast" :disabled="gast" x-model="bezirk" @required($field['required']) class="{{ $input }}">
-                <option value="">Bitte wählen</option>
-                @foreach ($bezirke as $name)
-                    <option value="{{ $name }}" @selected(old('bezirk') === $name)>Bezirk {{ $name }}</option>
-                @endforeach
-            </select>
-            <input id="bezirk-gast" name="bezirk" type="text" maxlength="150" x-show="gast" x-cloak disabled :disabled="! gast" @if ($field['required']) :required="gast" @endif
-                   value="{{ old('herkunft') === 'gast' ? old('bezirk') : '' }}" placeholder="z. B. DV Köln oder VCP" class="{{ $input }}" />
-        </div>
-    @endif
-
+<div class="space-y-2" x-data="{ gast: @js(old('herkunft') === 'gast') }">
     <div>
-        <label for="{{ $key }}" class="block text-sm font-bold">
-            <span x-show="! gast">{{ $mitBezirk ? 'Stamm' : $field['label'] }}</span><span x-show="gast" x-cloak>{{ $mitBezirk ? 'Stamm / Gruppe' : 'Verband und Gruppe' }}</span>{{ $stern }}
-        </label>
-        <div class="relative" x-data="stammAutocomplete(@js($gruppierungen), @js(old($key, '')), @js($mitBezirk))" @click.outside="open = false">
-            <input id="{{ $key }}" name="{{ $key }}" type="text" list="gruppierungen" autocomplete="off" @required($field['required']) value="{{ old($key) }}" class="{{ $input }}"
+        <label for="{{ $key }}" class="block text-sm font-bold">{{ $field['label'].($field['required'] ? ' *' : '') }}</label>
+        <div class="relative" x-data="stammAutocomplete(@js($gruppierungen), @js(old($key, '')))" @click.outside="open = false">
+            <input id="{{ $key }}" name="{{ $key }}" type="text" list="gruppierungen" autocomplete="off" maxlength="150" @required($field['required']) value="{{ old($key) }}" class="{{ $input }}"
                    x-init="$el.removeAttribute('list')" x-model="query"
                    role="combobox" aria-autocomplete="list" aria-controls="{{ $key }}-vorschlaege" :aria-expanded="open.toString()"
                    :aria-activedescendant="active >= 0 ? '{{ $key }}-vorschlag-' + active : null"
@@ -47,10 +28,11 @@
             </ul>
             <datalist id="gruppierungen">@foreach ($gruppierungen as $option)<option value="{{ $option['value'] }}">{{ $option['hint'] }}</option>@endforeach</datalist>
         </div>
-        <p class="mt-1 text-xs text-text-secondary" x-show="! gast">Tippe den Namen oder den Ort{{ $mitBezirk ? '' : ' oder den Bezirk' }} – oder trag etwas anderes ein.</p>
-        <p class="mt-1 text-xs text-text-secondary" x-show="gast" x-cloak>{{ $mitBezirk ? 'z. B. „Stamm Sankt Georg“ oder „Sippe Falken“.' : 'z. B. „DV Köln, Stamm Sankt Georg“ oder „VCP Saarbrücken“.' }}</p>
+        <p class="mt-1 text-xs text-text-secondary" x-show="! gast">Tippe den Namen deines Stamms oder Bezirks oder den Ort – oder trag etwas anderes ein.</p>
+        @if ($mitGast)
+            <p class="mt-1 text-xs text-text-secondary" x-show="gast" x-cloak>Bitte Diözesanverband bzw. Verband und Gruppe eintragen, z. B. „DV Köln, Stamm Sankt Georg“ oder „VCP Saarbrücken“.</p>
+        @endif
         @error($key)<p class="mt-1 text-sm text-dpsg-rot">{{ $message }}</p>@enderror
-        @if ($mitBezirk)@error('bezirk')<p class="mt-1 text-sm text-dpsg-rot">{{ $message }}</p>@enderror @endif
     </div>
 
     @if ($mitGast)

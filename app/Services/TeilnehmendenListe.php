@@ -174,7 +174,7 @@ class TeilnehmendenListe
             'geburtsjahr' => 'birth_year', 'jahrgang' => 'birth_year', 'postleitzahl' => 'plz', 'plz' => 'plz',
             'wohnort' => 'wohnort', 'ort' => 'wohnort', 'stamm' => 'stamm', 'telefon' => 'phone', 'anmerkungen' => 'comment',
             'herkunft' => 'herkunft', 'gast' => 'herkunft',
-            'bezirk' => 'bezirk', 'diözesanverband' => 'bezirk', 'verband' => 'bezirk', 'bezirk / verband' => 'bezirk', 'stamm / gruppe' => 'stamm', 'gruppe' => 'stamm',
+            'bezirk' => 'stamm', 'verband' => 'stamm', 'gruppe' => 'stamm', 'stamm / bezirk' => 'stamm',
         ];
         foreach ($felder as $key => $feld) {
             $namen[mb_strtolower((string) $feld['label'])] = $key;

@@ -69,8 +69,7 @@ return [
     ],
 
     // Feld „Stamm“ der Veranstaltungsanmeldung.
-    'event_stamm_label' => 'Stamm / Gruppe',
-    'event_bezirk' => true,
+    'event_stamm_label' => 'Stamm / Bezirk / Verband',
     'event_herkunft' => [
         'hier' => 'aus dem DV Trier',
         'gast' => 'Gast aus einem anderen Diözesanverband oder Verband',

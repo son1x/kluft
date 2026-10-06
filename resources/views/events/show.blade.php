@@ -119,7 +119,7 @@
                         </div>
 
                         @foreach ($fields as $key => $field)
-                            @continue(in_array($field['type'], ['herkunft', 'bezirk'], true)) {{-- gehören zum Feld „Stamm“ --}}
+                            @continue($field['type'] === 'herkunft') {{-- gehört zum Feld „Stamm“ --}}
                             @if ($field['type'] === 'stamm')
                                 @include('events.partials.stamm-felder', ['key' => $key, 'field' => $field])
                                 @continue

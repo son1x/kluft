@@ -109,9 +109,6 @@ return array_replace([
     | für Teilnehmende aus anderen Gliederungen oder Verbänden. Gäste werden
     | nicht mit der Mitgliederverwaltung abgeglichen. Texte je Instanz.
     */
-    // Zum Feld „Stamm“ auch den Bezirk abfragen (eigenes Feld, nur wo es Bezirke gibt).
-    'event_bezirk' => false,
-
     'event_herkunft' => [
         'hier' => 'aus unserem Verband',
         'gast' => 'Gast aus einem anderen Verband',

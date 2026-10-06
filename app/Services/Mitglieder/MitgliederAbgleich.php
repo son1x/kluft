@@ -99,10 +99,11 @@ class MitgliederAbgleich
     }
 
     /**
-     * Stamm und Bezirk aus der Mitgliederverwaltung übernehmen – nur wenn die
+     * Stamm bzw. Bezirk aus der Mitgliederverwaltung übernehmen – nur wenn die
      * Veranstaltung danach fragt und die Person selbst nichts angegeben hat.
      * Zuordnung über die DPSG-Nummer in der Gruppierungsbezeichnung von NaMi
-     * (z. B. „… 210108“ = 21-01-08), sonst über den Namen.
+     * (z. B. „… 210108“ = 21-01-08), sonst über den Namen; Schreibweise wie
+     * in den Vorschlägen der Anmeldung („Bezirk …“ für Bezirke).
      */
     private function stammUebernehmen(EventRegistration $registration, Mitglied $mitglied): void
     {
@@ -112,30 +113,29 @@ class MitgliederAbgleich
         }
 
         $daten = (array) ($registration->data ?? []);
+        if (filled($daten['stamm'] ?? null)) {
+            return;
+        }
         $gruppierung = self::gruppierung((string) $mitglied->gruppierung);
-        $stamm = $gruppierung?->typ === 'stamm' ? $gruppierung->name : ($gruppierung ? null : (string) $mitglied->gruppierung);
-        $bezirk = $gruppierung?->typ === 'bezirk' ? $gruppierung->name : $gruppierung?->bezirk?->name;
-
-        if (blank($daten['stamm'] ?? null) && filled($stamm)) {
-            $daten['stamm'] = Str::limit($stamm, 150, '');
-        }
-        if (isset($felder['bezirk']) && blank($daten['bezirk'] ?? null) && filled($bezirk)) {
-            $daten['bezirk'] = $bezirk;
-        }
+        $daten['stamm'] = Str::limit(match ($gruppierung?->typ) {
+            'stamm' => $gruppierung->name,
+            'bezirk' => 'Bezirk '.$gruppierung->name,
+            default => (string) $mitglied->gruppierung,
+        }, 150, '');
         $registration->data = $daten;
     }
 
     private static function gruppierung(string $name): ?Gruppierung
     {
         if (preg_match('/\b(\d{2})(\d{2})(\d{2})\b/', $name, $m)) {
-            $treffer = Gruppierung::query()->with('bezirk')->where('nummer', "{$m[1]}-{$m[2]}-{$m[3]}")->first();
+            $treffer = Gruppierung::query()->where('nummer', "{$m[1]}-{$m[2]}-{$m[3]}")->first();
             if ($treffer) {
                 return $treffer;
             }
         }
         $norm = self::norm($name);
 
-        return Gruppierung::query()->with('bezirk')->active()->get()
+        return Gruppierung::query()->active()->get()
             ->sortByDesc(fn (Gruppierung $g) => mb_strlen($g->name))
             ->first(fn (Gruppierung $g) => mb_strlen(self::norm($g->name)) >= 4 && str_contains($norm, self::norm($g->name)));
     }

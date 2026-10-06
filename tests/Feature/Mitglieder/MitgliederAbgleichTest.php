@@ -160,32 +160,36 @@ class MitgliederAbgleichTest extends TestCase
         $this->assertSame('unklar', $abgleich->pruefe($mia->fresh()));
     }
 
-    #[TestDox('Stamm und Bezirk aus NaMi übernehmen, wenn die Person sie nicht angegeben hat (Zuordnung über die DPSG-Nummer der Gruppierung)')]
-    public function test_stamm_and_bezirk_from_nami(): void
+    #[TestDox('Stamm bzw. Bezirk aus NaMi übernehmen, wenn die Person nichts angegeben hat (Zuordnung über die DPSG-Nummer der Gruppierung)')]
+    public function test_stamm_from_nami(): void
     {
-        config(['dpsg.event_bezirk' => true]);
         $bezirk = Gruppierung::query()->create(['typ' => 'bezirk', 'nummer' => '21-99-00', 'name' => 'Testbezirk', 'slug' => 'testbezirk', 'active' => true]);
         Gruppierung::query()->create(['typ' => 'stamm', 'nummer' => '21-99-08', 'name' => 'Sankt Konrad', 'slug' => 'st-konrad', 'parent_id' => $bezirk->id, 'active' => true]);
         $this->bestand = [
             new Mitglied('4711', 'Mia', 'Muster', null, null, 'Testdorf St. Konrad 219908', true),
             new Mitglied('4712', 'Ben', 'Berg', null, null, 'Irgendwo ganz anders', true),
-            new Mitglied('4713', 'Lea', 'Klein', null, null, 'Testdorf St. Konrad 219908', true),
+            new Mitglied('4713', 'Lea', 'Klein', null, null, 'Bezirk Testbezirk 219900', true),
+            new Mitglied('4714', 'Kai', 'Kurz', null, null, 'Testdorf St. Konrad 219908', true),
         ];
         $event = $this->event(['form_fields' => ['stamm' => 'optional']]);
         $abgleich = app(MitgliederAbgleich::class);
 
         $mia = $this->anmeldung($event, 'Mia', 'Muster', null);
         $abgleich->pruefe($mia);
-        $this->assertSame(['stamm' => 'Sankt Konrad', 'bezirk' => 'Testbezirk'], $mia->fresh()->data);
+        $this->assertSame(['stamm' => 'Sankt Konrad'], $mia->fresh()->data);
 
         $ben = $this->anmeldung($event, 'Ben', 'Berg', null, email: 'ben@example.org');
         $abgleich->pruefe($ben);
         $this->assertSame(['stamm' => 'Irgendwo ganz anders'], $ben->fresh()->data, 'unbekannte Gruppierung: Bezeichnung aus NaMi');
 
         $lea = $this->anmeldung($event, 'Lea', 'Klein', null, email: 'lea@example.org');
-        $lea->update(['data' => ['stamm' => 'Mein Stamm']]);
-        $abgleich->pruefe($lea->fresh());
-        $this->assertSame(['stamm' => 'Mein Stamm', 'bezirk' => 'Testbezirk'], $lea->fresh()->data, 'eigene Angabe bleibt, fehlender Bezirk kommt dazu');
+        $abgleich->pruefe($lea);
+        $this->assertSame(['stamm' => 'Bezirk Testbezirk'], $lea->fresh()->data, 'Mitglied auf Bezirksebene');
+
+        $kai = $this->anmeldung($event, 'Kai', 'Kurz', null, email: 'kai@example.org');
+        $kai->update(['data' => ['stamm' => 'Mein Stamm']]);
+        $abgleich->pruefe($kai->fresh());
+        $this->assertSame(['stamm' => 'Mein Stamm'], $kai->fresh()->data, 'eigene Angabe bleibt');
 
         $ohneFeld = $this->event(['slug' => 'ohne-stamm', 'form_fields' => []]);
         $tom = $this->anmeldung($ohneFeld, 'Mia', 'Muster', null, email: 'tom@example.org');

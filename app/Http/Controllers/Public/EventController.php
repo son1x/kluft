@@ -42,7 +42,6 @@ class EventController extends Controller
             'state' => $event->registrationState(),
             'fields' => $event->formFields(),
             'gruppierungen' => isset($event->formFields()['stamm']) ? $this->gruppierungOptions() : [],
-            'bezirke' => isset($event->formFields()['bezirk']) ? $this->bezirkOptions() : [],
         ]);
     }
 
@@ -150,29 +149,15 @@ class EventController extends Controller
      * Vorschläge für das Feld „Stamm“: alle aktiven Bezirke und Stämme von
      * der Karte; gesucht wird auch über Ort und Bezirk.
      *
-     * @return list<array{value: string, hint: string, search: string, bezirk: string|null}>
+     * @return list<array{value: string, hint: string, search: string}>
      */
     private function gruppierungOptions(): array
     {
-        // Mit eigenem Feld „Bezirk“ nur Stämme vorschlagen; der Bezirk wird beim Auswählen gesetzt.
-        $mitBezirken = (bool) config('dpsg.event_bezirk');
-
         return Gruppierung::query()->active()->with('bezirk')->orderBy('typ')->orderBy('name')->get()
-            ->reject(fn (Gruppierung $g) => $mitBezirken && $g->typ === 'bezirk')
             ->map(fn (Gruppierung $g) => $g->typ === 'bezirk'
-                ? ['value' => 'Bezirk '.$g->name, 'hint' => 'Bezirk', 'search' => 'Bezirk '.$g->name, 'bezirk' => $g->name]
+                ? ['value' => 'Bezirk '.$g->name, 'hint' => 'Bezirk', 'search' => 'Bezirk '.$g->name]
                 : ['value' => $g->name, 'hint' => 'Stamm'.($g->bezirk ? ' · Bezirk '.$g->bezirk->name : ''),
-                    'search' => implode(' ', array_filter([$g->name, $g->ort, $g->bezirk?->name])), 'bezirk' => $g->bezirk?->name])
+                    'search' => implode(' ', array_filter([$g->name, $g->ort, $g->bezirk?->name]))])
             ->values()->all();
-    }
-
-    /**
-     * Auswahl für das Feld „Bezirk“: alle aktiven Bezirke.
-     *
-     * @return list<string>
-     */
-    private function bezirkOptions(): array
-    {
-        return Gruppierung::query()->active()->where('typ', 'bezirk')->orderBy('name')->pluck('name')->values()->all();
     }
 }

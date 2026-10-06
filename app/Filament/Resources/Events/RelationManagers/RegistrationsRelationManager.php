@@ -588,10 +588,9 @@ class RegistrationsRelationManager extends RelationManager
                 'year' => TextInput::make($name)->label($field['label'])->numeric()->minValue(1900)->maxValue((int) date('Y')),
                 'plz' => TextInput::make($name)->label($field['label'])->regex('/^\d{4,5}$/')->maxLength(5),
                 'select' => Select::make($name)->label($field['label'])->options($field['options'] ?? []),
-                'bezirk' => TextInput::make($name)->label($field['label'])->maxLength(150)
-                    ->datalist(Gruppierung::query()->active()->where('typ', 'bezirk')->orderBy('name')->pluck('name')->all()),
                 'stamm' => TextInput::make($name)->label($field['label'])->maxLength(150)
-                    ->datalist(Gruppierung::query()->active()->where('typ', 'stamm')->orderBy('name')->pluck('name')->all()),
+                    ->datalist(Gruppierung::query()->active()->orderBy('typ')->orderBy('name')->get()
+                        ->map(fn (Gruppierung $g) => $g->typ === 'bezirk' ? 'Bezirk '.$g->name : $g->name)->all()),
                 'herkunft' => Select::make($name)->label($field['label'])->options($field['options'] ?? [])->default($field['default'] ?? null)->selectablePlaceholder(false),
                 'days' => CheckboxList::make($name)->label($field['label'])->options($event->days())->columns(2),
                 'textarea' => Textarea::make($name)->label($field['label'])->rows(2)->maxLength(1000),

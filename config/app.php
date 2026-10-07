@@ -35,6 +35,9 @@ return [
     // Quellcode-Repository, auf das der Versionstag im Backend verlinkt.
     'repository' => env('KLUFT_REPOSITORY_URL', 'https://github.com/son1x/kluft'),
 
+    // Rechteinhaber, wie er im Kluft-Info-Popup im Backend steht.
+    'copyright' => env('KLUFT_COPYRIGHT', 'Sebastian Hafner'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Debug Mode

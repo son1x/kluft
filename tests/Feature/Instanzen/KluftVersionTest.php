@@ -18,7 +18,7 @@ class KluftVersionTest extends TestCase
 
     private const REVISION = '28a37ee0123456789abcdef0123456789abcdef0';
 
-    #[TestDox('Backend zeigt unten Kluft und die kurze Revision mit Link zum Commit')]
+    #[TestDox('Backend zeigt unten Kluft, die kurze Revision mit Link zum Commit und ein Info-Popup mit Namenserklärung und Copyright')]
     public function test_backend_footer(): void
     {
         config(['app.revision' => self::REVISION, 'app.repository' => 'https://github.com/son1x/kluft']);
@@ -30,6 +30,10 @@ class KluftVersionTest extends TestCase
             ->assertOk()
             ->assertSee('class="kluft-fuss"', false)
             ->assertSee('<span class="name">Kluft</span>', false)
+            ->assertSee('popovertarget="kluft-info"', false)
+            ->assertSee('Die Kluft tragen alle gleich')
+            ->assertSee('© 2026', false)
+            ->assertSee(config('app.copyright'))
             ->assertSee('>28a37ee</a>', false)
             ->assertSee('https://github.com/son1x/kluft/commit/'.self::REVISION, false);
     }

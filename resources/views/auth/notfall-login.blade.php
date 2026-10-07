@@ -39,6 +39,9 @@
                 Anmelden
             </button>
         </form>
+        <div class="mt-4 border-t border-gray-200">
+            @include('kluft.fusszeile')
+        </div>
     </div>
 </body>
 </html>

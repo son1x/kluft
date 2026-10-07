@@ -28,6 +28,13 @@ return [
 
     'env' => env('APP_ENV', 'production'),
 
+    // Git-Revision des laufenden Stands (setzt der Deploy aus GITHUB_SHA);
+    // ohne Wert liest App\Support\KluftVersion das lokale .git.
+    'revision' => env('KLUFT_REVISION'),
+
+    // Quellcode-Repository, auf das der Versionstag im Backend verlinkt.
+    'repository' => env('KLUFT_REPOSITORY_URL', 'https://github.com/son1x/kluft'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Debug Mode

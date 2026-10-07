@@ -255,6 +255,8 @@ jobs:
           # alle Sitzungen ungültig, neu Verschlüsseltes später unlesbar.
           cat > .env.deploy <<ENV
           KLUFT_INSTANZ=${KLUFT_INSTANZ}
+          KLUFT_REVISION=${GITHUB_SHA}
+          KLUFT_REPOSITORY_URL=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}
           APP_NAME="${APP_NAME}"
           APP_ENV=${APP_ENV_VALUE}
           APP_KEY=${APP_KEY}

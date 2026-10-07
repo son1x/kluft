@@ -87,6 +87,11 @@ class AdminPanelProvider extends PanelProvider
                 PanelsRenderHook::HEAD_END,
                 fn (): string => Blade::render("@vite('resources/js/map.js')"),
                 scopes: [CreateGruppierung::class, EditGruppierung::class],
+            )
+            // Unten auf jeder Backend-Seite: Kluft-Logo, Name und Git-Revision.
+            ->renderHook(
+                PanelsRenderHook::FOOTER,
+                fn (): string => view('kluft.fusszeile')->render(),
             );
     }
 }

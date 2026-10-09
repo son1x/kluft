@@ -7,7 +7,7 @@
 */
 
 return [
-    'stand' => '2026-10-05',
+    'stand' => '2026-10-09',
 
     'current_phase' => '1e',
 
@@ -29,7 +29,8 @@ return [
         ['Bolivien', 'bolivienpartnerschaft.de', 'partial'],
         ['Beraten', 'beraten-online.de (Phase 2)', 'partial'],
         ['WhatsApp', 'WhatsApp-Newsletter (vorbereitet, aus)', 'partial'],
-        ['Stamm', 'Stammes- und Bezirksveranstaltungen', 'partial'],
+        ['Bezirke', 'Eigene Websites für Bezirke', 'partial'],
+        ['Stämme', 'Eigenständige Websites für Stämme', 'partial'],
     ],
 
     'sections' => [
@@ -104,7 +105,26 @@ return [
     | oben; 'note' = Einschätzung/Empfehlung.
     */
     'feedback' => [
-        'Stamm' => [
+        'Bezirke' => [
+            ['status' => 'partial', 'title' => 'Eigene Bezirks-Website (Saar-Hochwald als erster Bezirk)', 'note' => 'Gerüst steht: eigener Name, Logo, Titelbild (Saarschleife), Kontakt, Stämme-Verzeichnis, eigene Funktionsschalter, Tests in der CI. Offen: Webspace und Domain, eigener Deploy, Inhalte und Redaktion.'],
+            ['status' => 'done', 'title' => 'Stämme des Bezirks im Verzeichnis mit Karte', 'note' => 'Je Stamm Name, Ort, DPSG-Nummer, Stufen und Kontakt; Karte selbst gehostet.'],
+            ['status' => 'done', 'title' => 'Bezirksveranstaltungen nur für Mitglieder des Bezirks', 'note' => '„Nur für Mitglieder von …“ mit Bezirk wählen: zählt alle Stämme des Bezirks. Details im Meilenstein Stämme.'],
+            ['status' => 'open', 'title' => 'Login ohne Microsoft 365', 'note' => 'Bezirke haben selten ein M365-Konto für alle. Weg: NaMi-Login nach docs/pflichtenheft-sso.md; bis dahin Anmeldung per E-Mail-Code (wie „Meine Anmeldungen“) für freigeschaltete Adressen. Gleicher Baustein wie bei den Stämmen.'],
+            ['status' => 'open', 'title' => 'Interner Bereich für Leiterrunde und Bezirksversammlung', 'note' => 'Protokolle, interne Termine und Unterlagen nur für angemeldete Leitende bzw. Delegierte. Das Feld „Funktion / Gremium“ bei Anmeldungen gibt es schon; es fehlt der geschützte Bereich.'],
+            ['status' => 'open', 'title' => 'Termine der Stämme und des Diözesanverbands einsammeln', 'note' => 'Die Bezirksseite zeigt auf Wunsch auch Termine aus den Stammes-Websites und vom DV – per Abo aus deren Websites, nicht durch Abtippen. Jede Website bleibt Herrin ihrer Termine.'],
+            ['status' => 'open', 'title' => 'Eigene Termine als Kalender-Abo anbieten', 'note' => 'Veranstaltungen als iCal-Feed (für Handykalender, Nextcloud und die Websites der Stämme). Für Beiträge gibt es den RSS-Feed schon.'],
+        ],
+        'Stämme' => [
+            ['status' => 'decide', 'title' => 'Betriebsmodell für eigenständige Stammes-Websites', 'note' => 'Jeder Stamm tritt mit eigenem Namen, Logo, eigener Domain, Redaktion und Datenverantwortung auf – keine Unterseite von DV oder Bezirk. Option A: eigene Kluft-Installation je Stamm auf eigenem Webspace (wie heute; braucht je Stamm jemanden für Technik). Option B (Empfehlung): eine Kluft-Installation betreibt viele vollständig getrennte Websites, je mit eigener Domain und eigener Datenbank; DV oder Bezirk betreibt die Technik, mit Vertrag zur Auftragsverarbeitung je Stamm.'],
+            ['status' => 'open', 'title' => 'Neue Website ohne Programmierung einrichten', 'note' => 'Heute braucht eine neue Gliederung einen Ordner im Code und einen Deploy. Für Stämme: Einrichtung über ein Formular (Name, Logo, Domain, Stufen, Kontakt, Funktionen), danach ist die Seite in Minuten online.'],
+            ['status' => 'open', 'title' => 'Login ohne Microsoft 365', 'note' => 'Stämme haben meist keine M365-Konten. Weg: NaMi-Login nach docs/pflichtenheft-sso.md; bis dahin Anmeldung per E-Mail-Code für freigeschaltete Adressen.'],
+            ['status' => 'open', 'title' => 'Gruppenstunden mit „Schnupperstunde anfragen“', 'note' => 'Fester Baustein je Stufe: Wochentag, Uhrzeit, Ort, Leitende, Ferienpause. Darunter ein Knopf, der über das Kontaktformular direkt die Stufenleitung erreicht. Die wichtigste Frage von Eltern auf einer Stammesseite.'],
+            ['status' => 'open', 'title' => 'Lageranmeldung für Kinder (Elternbogen)', 'note' => 'Anmeldung durch Erziehungsberechtigte mit Notfallkontakt, Allergien, Medikamenten, Schwimmer, Einverständnissen (Fotos, Zecken entfernen, allein heimfahren). Gesundheitsdaten sind nach KDG besonders geschützt: verschlüsselt, nur die Lagerleitung sieht sie, Löschung nach dem Lager. Vorhanden: mehrere Anmeldungen je E-Mail, PLZ/Wohnort für Zuschüsse, Dokumente, Löschfristen.'],
+            ['status' => 'open', 'title' => 'Lagerbeitrag und Zahlungsstatus', 'note' => 'Betrag je Anmeldung, Verwendungszweck zum Überweisen, Häkchen „bezahlt“, Erinnerungsmail. Keine Online-Bezahlung nötig.'],
+            ['status' => 'open', 'title' => 'Schnelle Meldung am Handy', 'note' => 'Für Leitende ohne Zeit: „Gruppenstunde fällt aus“ oder ein kurzer Beitrag mit Foto in unter fünf Minuten, ohne das volle Backend. Ein Teil davon ist schon möglich, wenn nicht benötigte Funktionen abgeschaltet sind.'],
+            ['status' => 'open', 'title' => 'Termine von Bezirk und Diözesanverband übernehmen', 'note' => 'Auf der eigenen Seite Termine aus Bezirk und DV einblenden (Abo, siehe Meilenstein Bezirke) – die Stammesseite bleibt eigenständig, verpasst aber nichts.'],
+            ['status' => 'later', 'title' => 'Zelt- und Materialverleih, Belegung des Stammesheims', 'note' => 'Liste mit Material, Anfrage und Kalender der Belegung.'],
+            ['status' => 'later', 'title' => 'Lagerfotos nur für Eltern', 'note' => 'Galerie, die nur mit Code öffnet (Prinzip wie „Meine Anmeldungen“); nur mit Einwilligung zu Fotos.'],
             ['status' => 'done', 'title' => 'Veranstaltungen nur für Mitglieder der eigenen Gruppierung', 'note' => 'Je Veranstaltung „Nur für Mitglieder von …“ (Stamm oder Bezirk mit allen Stämmen). Die Seite weist darauf hin; der Mitgliederabgleich mit NaMi markiert jede Anmeldung als „eigene Gruppierung“ oder „andere Gruppierung“ – über die DPSG-Nummer der Gruppierung (z. B. 21-01-08), sonst über die Karte. Filter und Exportspalte „Eigene Gruppierung“. Niemand wird automatisch abgelehnt; Gäste gelten als „andere“. Gilt die Mitgliedschaft (Stammgruppierung), nicht weitere Tätigkeiten.'],
             ['status' => 'open', 'title' => 'Erster echter Abgleich: Format der Gruppierung in NaMi prüfen', 'note' => 'Steht die DPSG-Nummer in der NaMi-Gruppierungsbezeichnung (z. B. „… 210108“)? Sonst greift nur der Namensvergleich mit der Karte. Mit dem eigenen NaMi-Zugang an einer Testveranstaltung prüfen.'],
             ['status' => 'decide', 'title' => 'Mitglieder anderer Gruppierungen automatisch auf die Warteliste?', 'note' => 'Heute nur Markierung, die Leitung entscheidet. Möglich: Anmeldungen „andere Gruppierung“ nach dem Abgleich automatisch auf die Warteliste setzen und die Leitung benachrichtigen. Aufwand: klein.'],

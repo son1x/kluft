@@ -60,7 +60,7 @@ class MailQueueTest extends TestCase
         $this->assertStringNotContainsString('erika@example.org', $payload);
         $this->assertSame([], $this->sentTo());
 
-        $this->artisan('queue:work', ['--stop-when-empty' => true])->assertSuccessful();
+        $this->artisan('queue:work', ['--stop-when-empty' => true, '--memory' => 2048])->assertSuccessful();
 
         $this->assertSame(['buero@dpsg-trier.de'], $this->sentTo());
         $this->assertSame(0, DB::table('jobs')->count());
@@ -77,7 +77,7 @@ class MailQueueTest extends TestCase
         $this->queueMail('a@dpsg-trier.de');
         $this->queueMail('b@dpsg-trier.de');
 
-        $this->artisan('queue:work', ['--stop-when-empty' => true])->assertSuccessful();
+        $this->artisan('queue:work', ['--stop-when-empty' => true, '--memory' => 2048])->assertSuccessful();
 
         $this->assertSame(['a@dpsg-trier.de'], $this->sentTo());
         $this->assertSame(1, DB::table('jobs')->count());

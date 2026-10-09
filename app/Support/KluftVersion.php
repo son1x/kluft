@@ -8,6 +8,15 @@ namespace App\Support;
  */
 class KluftVersion
 {
+    /** Versionsnummer aus der Datei VERSION (z. B. „0.9.0“), null ohne Datei. */
+    public static function version(): ?string
+    {
+        $datei = base_path('VERSION');
+        $version = is_file($datei) ? trim((string) file_get_contents($datei)) : '';
+
+        return preg_match('/^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/', $version) ? $version : null;
+    }
+
     public static function revision(): ?string
     {
         $revision = trim((string) config('app.revision'));

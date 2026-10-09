@@ -1,5 +1,6 @@
 <?php
 
+use App\Services\Update\Updater;
 use App\Services\WhatsApp\WhatsAppSettings;
 use App\Support\Roadmap;
 use App\Support\WhatsAppMode;
@@ -48,3 +49,10 @@ Schedule::command('backup:verify')->weeklyOn(0, '05:00');
 Schedule::command('whatsapp:dispatch-scheduled')->everyMinute()->withoutOverlapping()->when(fn () => WhatsAppMode::api());
 Schedule::command('whatsapp:check')->hourly()->when(fn () => app(WhatsAppSettings::class)->configured());
 Schedule::command('whatsapp:prune')->dailyAt('03:50');
+
+// Kluft-Updates für eigenständige Installationen (docs/updates.md): im
+// Backend angestoßene Installation jede Minute abholen, täglich nach neuen
+// Versionen schauen und bei KLUFT_UPDATES=auto nachts installieren – nach
+// dem Backup um 02:00.
+Schedule::command('kluft:update --angefordert')->everyMinute()->withoutOverlapping(60)->when(fn () => Updater::aktiv() && Cache::has(Updater::CACHE_ANGEFORDERT));
+Schedule::command('kluft:update --auto')->dailyAt('04:20')->withoutOverlapping(60)->when(fn () => Updater::aktiv());

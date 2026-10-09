@@ -1,0 +1,178 @@
+name: Release
+
+# Baut ein Kluft-Release für eigenständige Installationen (z. B. je Stamm),
+# signiert es und veröffentlicht es (docs/updates.md). Installationen mit
+# KLUFT_UPDATES=manual|auto holen sich darüber neue Versionen.
+#
+# Ablauf: VERSION erhöhen, Abschnitt „## x.y.z“ in CHANGELOG.md schreiben,
+# committen, dann Actions → „Release“ → „Run workflow“ (oder Tag vx.y.z
+# pushen). Der Workflow testet, baut vendor/ und Assets, packt das Programm
+# ohne Daten einer Installation, signiert die Beschreibung (manifest.json)
+# mit Ed25519 und lädt alles hoch.
+#
+# Secrets (Repository):
+#   KLUFT_RELEASE_SIGNING_KEY  geheimer Signaturschlüssel (php artisan kluft:update-schluessel)
+#   UPDATE_SFTP_HOST, UPDATE_SFTP_PORT, UPDATE_SFTP_USER,
+#   UPDATE_SFTP_KEY, UPDATE_SFTP_DIR   öffentlicher Ablageort der Releases (optional;
+#                                      ohne diese Secrets nur als GitHub-Release)
+
+on:
+  workflow_dispatch:
+    inputs:
+      auto:
+        description: 'Darf nachts automatisch installiert werden? (aus = nur von Hand, z. B. bei großen Umbauten)'
+        type: boolean
+        default: true
+  push:
+    tags: ['v*.*.*']
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Repository auschecken
+        uses: actions/checkout@v4
+
+      - name: PHP einrichten
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: intl, mbstring, gd, zip, xml, curl, openssl, pdo_sqlite, sodium
+          coverage: none
+
+      - name: Node einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Version prüfen
+        id: version
+        run: |
+          VERSION="$(tr -d '[:space:]' < VERSION)"
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([-+][0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::VERSION enthält keine gültige Versionsnummer: $VERSION"; exit 1
+          fi
+          if [ "${GITHUB_REF_TYPE}" = "tag" ] && [ "${GITHUB_REF_NAME}" != "v${VERSION}" ]; then
+            echo "::error::Tag ${GITHUB_REF_NAME} passt nicht zu VERSION ${VERSION}"; exit 1
+          fi
+          if ! grep -q "^## ${VERSION}\$" CHANGELOG.md; then
+            echo "::error::In CHANGELOG.md fehlt der Abschnitt „## ${VERSION}“"; exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Abhängigkeiten installieren und Assets bauen
+        run: |
+          composer install --no-interaction --no-progress
+          npm ci
+          npm run build
+
+      - name: Tests ausführen
+        run: |
+          cp .env.example .env
+          php artisan key:generate --no-interaction
+          touch database/database.sqlite
+          sed -i 's/^DB_CONNECTION=.*/DB_CONNECTION=sqlite/' .env
+          php artisan kluft:assets
+          php artisan test
+          rm -f .env database/database.sqlite
+
+      - name: Paket bauen
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          rm -rf vendor
+          composer install --no-dev --optimize-autoloader --no-interaction --no-progress
+          mkdir -p dist/paket
+          # Nur das Programm: keine Daten, Instanzen oder Entwicklungsdateien.
+          rsync -a ./ dist/paket/ \
+            --exclude .git/ --exclude .github/ --exclude dist/ --exclude node_modules/ \
+            --exclude tests/ --exclude docs/ --exclude legacy-static-site/ --exclude instanzen/ \
+            --exclude storage/ --exclude .env --exclude 'database/*.sqlite' \
+            --exclude public/uploads/ --exclude public/instanz/ \
+            --exclude phpunit.xml --exclude 'phpstan*.neon' --exclude .editorconfig --exclude .gitattributes
+          (cd dist/paket && zip -qr -X "../kluft-${VERSION}.zip" .)
+          ls -la dist
+
+      - name: Beschreibung schreiben und signieren
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          AUTO: ${{ inputs.auto == false && 'false' || 'true' }}
+          KLUFT_RELEASE_SIGNING_KEY: ${{ secrets.KLUFT_RELEASE_SIGNING_KEY }}
+        run: |
+          if [ -z "$KLUFT_RELEASE_SIGNING_KEY" ]; then
+            echo "::error::Secret KLUFT_RELEASE_SIGNING_KEY fehlt (php artisan kluft:update-schluessel, docs/updates.md)"; exit 1
+          fi
+          php -r '
+            $v = getenv("VERSION");
+            $zip = "dist/kluft-$v.zip";
+            $abschnitt = preg_split("/^## /m", file_get_contents("CHANGELOG.md"));
+            $aenderungen = [];
+            foreach ($abschnitt as $teil) {
+                if (str_starts_with($teil, $v."\n")) {
+                    preg_match_all("/^- (.+)$/m", $teil, $m);
+                    $aenderungen = $m[1];
+                }
+            }
+            $manifest = json_encode([
+                "name" => "kluft",
+                "version" => $v,
+                "revision" => getenv("GITHUB_SHA"),
+                "published_at" => gmdate("c"),
+                "php" => "8.3",
+                "auto" => getenv("AUTO") === "true",
+                "package" => ["url" => "kluft-$v.zip", "sha256" => hash_file("sha256", $zip), "size" => filesize($zip)],
+                "changes" => $aenderungen,
+            ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+            $geheim = base64_decode(trim(getenv("KLUFT_RELEASE_SIGNING_KEY")), true);
+            if ($geheim === false || strlen($geheim) !== SODIUM_CRYPTO_SIGN_SECRETKEYBYTES) { fwrite(STDERR, "Signaturschlüssel ungültig\n"); exit(1); }
+            $sig = sodium_crypto_sign_detached($manifest, $geheim);
+            if (! sodium_crypto_sign_verify_detached($sig, $manifest, sodium_crypto_sign_publickey_from_secretkey($geheim))) { exit(1); }
+            file_put_contents("dist/manifest.json", $manifest);
+            file_put_contents("dist/manifest.json.sig", base64_encode($sig));
+            echo "Öffentlicher Schlüssel: ".base64_encode(sodium_crypto_sign_publickey_from_secretkey($geheim))."\n";
+          '
+          cat dist/manifest.json
+
+      - name: GitHub-Release anlegen
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          awk -v v="## ${VERSION}" '$0==v{f=1;next} /^## /{f=0} f' CHANGELOG.md > dist/notizen.md
+          gh release create "v${VERSION}" dist/kluft-${VERSION}.zip dist/manifest.json dist/manifest.json.sig \
+            --title "Kluft ${VERSION}" --notes-file dist/notizen.md --target "${GITHUB_SHA}" \
+            || gh release upload "v${VERSION}" dist/kluft-${VERSION}.zip dist/manifest.json dist/manifest.json.sig --clobber
+
+      - name: Auf den Update-Server laden
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          UPDATE_SFTP_HOST: ${{ secrets.UPDATE_SFTP_HOST }}
+          UPDATE_SFTP_PORT: ${{ secrets.UPDATE_SFTP_PORT }}
+          UPDATE_SFTP_USER: ${{ secrets.UPDATE_SFTP_USER }}
+          UPDATE_SFTP_KEY: ${{ secrets.UPDATE_SFTP_KEY }}
+          UPDATE_SFTP_DIR: ${{ secrets.UPDATE_SFTP_DIR }}
+        run: |
+          if [ -z "$UPDATE_SFTP_HOST" ] || [ -z "$UPDATE_SFTP_DIR" ]; then
+            echo "Kein Update-Server eingerichtet – Release liegt nur bei GitHub."; exit 0
+          fi
+          install -m 600 /dev/null ~/update_key && printf '%s\n' "$UPDATE_SFTP_KEY" > ~/update_key
+          # Paket zuerst, Beschreibung zuletzt: Installationen sehen nie eine
+          # manifest.json, deren Paket noch fehlt.
+          sftp -i ~/update_key -P "${UPDATE_SFTP_PORT:-22}" -o StrictHostKeyChecking=accept-new -b - "$UPDATE_SFTP_USER@$UPDATE_SFTP_HOST" <<EOF
+          put dist/kluft-${VERSION}.zip ${UPDATE_SFTP_DIR}/kluft-${VERSION}.zip
+          put dist/manifest.json.sig ${UPDATE_SFTP_DIR}/manifest.json.sig.neu
+          put dist/manifest.json ${UPDATE_SFTP_DIR}/manifest.json.neu
+          -rm ${UPDATE_SFTP_DIR}/manifest.json.sig
+          -rm ${UPDATE_SFTP_DIR}/manifest.json
+          rename ${UPDATE_SFTP_DIR}/manifest.json.sig.neu ${UPDATE_SFTP_DIR}/manifest.json.sig
+          rename ${UPDATE_SFTP_DIR}/manifest.json.neu ${UPDATE_SFTP_DIR}/manifest.json
+          EOF
+          rm -f ~/update_key

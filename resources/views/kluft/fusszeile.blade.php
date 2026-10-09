@@ -1,6 +1,7 @@
 @php($revision = \App\Support\KluftVersion::kurz())
 @php($link = \App\Support\KluftVersion::link())
 @php($jahre = now()->year > 2026 ? '2026–'.now()->year : '2026')
+@php($version = \App\Support\KluftVersion::version())
 <div class="kluft-fuss">
     <style>
         .kluft-fuss{display:flex;align-items:center;justify-content:center;gap:.5rem;padding:1.25rem 1rem;font-size:.8125rem;line-height:1;color:#57606a}
@@ -9,6 +10,7 @@
         .kluft-fuss .marke{display:inline-flex;align-items:center;gap:.5rem;padding:.25rem .4rem;margin:-.25rem -.4rem;border:0;border-radius:.375rem;background:none;font:inherit;cursor:pointer}
         .kluft-fuss .marke:hover,.kluft-fuss .marke:focus-visible{background:rgba(31,90,71,.08)}
         .kluft-fuss .name{font-weight:700;color:#1f5a47;letter-spacing:-.01em}
+        .kluft-fuss .version{font-size:.75rem;color:#57606a}
         .kluft-fuss .tag{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.75rem;padding:.2rem .45rem;border-radius:.375rem;border:1px solid #d0d7de;background:#f6f8fa;color:#57606a;text-decoration:none}
         .kluft-fuss a.tag:hover{border-color:#1f5a47;color:#1f5a47}
         .kluft-info{box-sizing:border-box;width:min(22rem,calc(100vw - 2rem));padding:1.25rem 1.25rem 1rem;border:1px solid #d0d7de;border-radius:.75rem;background:#fff;color:#24292f;box-shadow:0 12px 32px rgba(0,0,0,.18);font-size:.875rem;line-height:1.5;text-align:left}
@@ -33,6 +35,7 @@
     <button type="button" class="marke" popovertarget="kluft-info" aria-haspopup="dialog" title="Über Kluft">
         @include('kluft.zeichen')
         <span class="name">Kluft</span>
+        @if ($version)<span class="version">{{ $version }}</span>@endif
     </button>
     @if ($revision)
         @if ($link)
@@ -60,7 +63,7 @@
         </p>
         <div class="recht">
             © {{ $jahre }} {{ config('app.copyright') }} · Alle Rechte vorbehalten.<br>
-            Version {{ $revision ?? 'Entwicklungsstand' }}
+            Version {{ $version ?? '–' }}{{ $revision ? ' · '.$revision : ' · Entwicklungsstand' }}
         </div>
     </div>
 </div>

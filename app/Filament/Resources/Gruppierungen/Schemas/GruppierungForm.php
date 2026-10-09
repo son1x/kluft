@@ -112,6 +112,7 @@ class GruppierungForm
                     ViewField::make('karte')
                         ->view('filament.forms.map-picker')
                         ->dehydrated(false)
+                        ->visible(fn () => filled(config('dpsg.map.pmtiles')))
                         ->columnSpanFull(),
                     TextInput::make('lat')->label('Breitengrad')->numeric()->minValue(-90)->maxValue(90)->live(onBlur: true),
                     TextInput::make('lng')->label('Längengrad')->numeric()->minValue(-180)->maxValue(180)->live(onBlur: true),

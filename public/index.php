@@ -10,6 +10,12 @@ if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php'))
     require $maintenance;
 }
 
+// Neue Installation ohne .env: zum Einrichtungsassistenten (docs/einrichtung.md).
+if (! file_exists(__DIR__.'/../.env') && file_exists(__DIR__.'/einrichtung.php') && PHP_SAPI !== 'cli') {
+    header('Location: /einrichtung.php', true, 302);
+    exit;
+}
+
 // Register the Composer autoloader...
 require __DIR__.'/../vendor/autoload.php';
 

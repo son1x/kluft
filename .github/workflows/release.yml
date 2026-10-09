@@ -10,6 +10,9 @@ name: Release
 # ohne Daten einer Installation, signiert die Beschreibung (manifest.json)
 # mit Ed25519 und lädt alles hoch.
 #
+# Variablen (Repository, öffentlich): KLUFT_UPDATE_URL, KLUFT_UPDATE_PUBLIC_KEY –
+#   kommen in neue Installationen aus dem Einrichtungsassistenten.
+#
 # Secrets (Repository):
 #   KLUFT_RELEASE_SIGNING_KEY  geheimer Signaturschlüssel (php artisan kluft:update-schluessel)
 #   UPDATE_SFTP_HOST, UPDATE_SFTP_PORT, UPDATE_SFTP_USER,
@@ -83,6 +86,19 @@ jobs:
           php artisan kluft:assets
           php artisan test
           rm -f .env database/database.sqlite
+
+      # Neue Installationen aus dem Einrichtungsassistenten holen Updates
+      # gleich von hier (Repository-Variablen, keine Geheimnisse).
+      - name: Update-Vorgaben für neue Installationen
+        env:
+          URL: ${{ vars.KLUFT_UPDATE_URL }}
+          KEY: ${{ vars.KLUFT_UPDATE_PUBLIC_KEY }}
+        run: |
+          if [ -n "$URL" ] && [ -n "$KEY" ]; then
+            php -r 'file_put_contents("resources/einrichtung/updates.json", json_encode(["manifest_url" => getenv("URL"), "public_key" => getenv("KEY")], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));'
+          else
+            echo "Repository-Variablen KLUFT_UPDATE_URL/KLUFT_UPDATE_PUBLIC_KEY fehlen – neue Installationen starten mit Updates aus."
+          fi
 
       - name: Paket bauen
         env:

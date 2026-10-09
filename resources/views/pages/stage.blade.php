@@ -55,16 +55,25 @@
             <div class="rounded-lg border-t-4 border-(--stufe) bg-white p-5 shadow-md">
                 <h2 class="font-serif text-lg font-bold">Mitmachen</h2>
                 <p class="mt-2 text-sm text-text-secondary">
-                    @if ($staemmeCount > 0)
+                    @if (! Route::has('gruppierungen.index'))
+                        Komm einfach mal zu einer Gruppenstunde vorbei. Sag uns vorher kurz Bescheid, dann wissen die Leiter*innen, dass du kommst.
+                    @elseif ($staemmeCount > 0)
                         In <strong class="text-text">{{ $staemmeCount }} {{ $staemmeCount === 1 ? 'Stamm' : 'Stämmen' }}</strong> im {{ config('dpsg.site.region') }} gibt es eine Gruppe dieser Stufe.
                     @else
                         Frag im Stamm in deiner Nähe nach, ob es dort eine Gruppe dieser Stufe gibt.
                     @endif
                 </p>
-                <a href="{{ route('gruppierungen.index', ['stufe' => $page->stage]) }}" class="mt-4 inline-flex items-center gap-2 bg-(--stufe) px-4 py-2 font-bold text-(--stufe-ink) hover:opacity-90">
-                    <x-heroicon-o-map-pin class="h-5 w-5" aria-hidden="true" />
-                    Stamm in der Nähe finden
-                </a>
+                @if (Route::has('gruppierungen.index'))
+                    <a href="{{ route('gruppierungen.index', ['stufe' => $page->stage]) }}" class="mt-4 inline-flex items-center gap-2 bg-(--stufe) px-4 py-2 font-bold text-(--stufe-ink) hover:opacity-90">
+                        <x-heroicon-o-map-pin class="h-5 w-5" aria-hidden="true" />
+                        Stamm in der Nähe finden
+                    </a>
+                @else
+                    <a href="{{ url('/kontakt') }}" class="mt-4 inline-flex items-center gap-2 bg-(--stufe) px-4 py-2 font-bold text-(--stufe-ink) hover:opacity-90">
+                        <x-heroicon-o-envelope class="h-5 w-5" aria-hidden="true" />
+                        Schnupperstunde anfragen
+                    </a>
+                @endif
             </div>
 
             <a href="#dak" class="flex items-center gap-4 rounded-lg bg-white p-5 shadow-md hover:shadow-lg">

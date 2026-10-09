@@ -24,6 +24,8 @@ Technik: Laravel 12, Filament 4, Livewire, Tailwind 4, MariaDB oder SQLite. Auf 
 | `dv-trier` | DPSG Diözesanverband Trier | in Betrieb (test.dpsg-trier.de) |
 | `saar-hochwald` | DPSG Bezirk Saar-Hochwald | im Aufbau |
 
+Stämme bekommen je eine eigene Installation ohne GitHub: Release-Paket hochladen, Domain aufrufen, Einrichtungsassistent ausfüllen ([docs/einrichtung.md](docs/einrichtung.md)). Ihre Instanz entsteht dabei auf dem Webspace (`instanzen/stamm-<name>/`), Updates kommen signiert über Kluft selbst ([docs/updates.md](docs/updates.md)).
+
 Die Umgebungsvariable `KLUFT_INSTANZ` wählt die Instanz, Standard ist `dv-trier`. Alles, was eine Gliederung ausmacht, liegt in ihrem Ordner:
 
 ```

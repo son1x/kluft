@@ -156,8 +156,13 @@
                 {{ config('dpsg.site.join_text') }}
             </p>
             <div class="mt-6 flex flex-wrap gap-3">
-                <a href="{{ route('gruppierungen.index') }}" class="inline-block bg-white px-5 py-2 font-bold text-dpsg-blau hover:bg-dpsg-hellbeige">Stamm in der Nähe finden</a>
-                <a href="{{ url('/kontakt') }}" class="inline-block border border-white px-5 py-2 font-bold text-white hover:bg-white hover:text-dpsg-blau">Kontakt aufnehmen</a>
+                @if (Route::has('gruppierungen.index'))
+                    <a href="{{ route('gruppierungen.index') }}" class="inline-block bg-white px-5 py-2 font-bold text-dpsg-blau hover:bg-dpsg-hellbeige">Stamm in der Nähe finden</a>
+                    <a href="{{ url('/kontakt') }}" class="inline-block border border-white px-5 py-2 font-bold text-white hover:bg-white hover:text-dpsg-blau">Kontakt aufnehmen</a>
+                @else
+                    {{-- Stammes-Website: direkt zum Schnuppern anfragen. --}}
+                    <a href="{{ url('/kontakt') }}" class="inline-block bg-white px-5 py-2 font-bold text-dpsg-blau hover:bg-dpsg-hellbeige">Schnupperstunde anfragen</a>
+                @endif
             </div>
         </div>
     </section>
@@ -193,6 +198,7 @@
             ['url' => '/'.config('dpsg.directory.path'), 'label' => config('dpsg.directory.title'), 'icon' => 'heroicon-o-map-pin'],
             ['url' => '/aktuelles', 'label' => 'Aktuelles', 'icon' => 'heroicon-o-newspaper'],
         ])
+        @php($serviceLinks = array_values(array_filter($serviceLinks, fn ($l) => $l['url'] !== '/' && filled($l['label']))))
         @foreach (config('dpsg.home_highlights') as $slug => $tile)
             @if (isset($tile['service']) && $highlightPages->has($slug))
                 @php($serviceLinks[] = ['url' => '/'.$slug] + $tile['service'])

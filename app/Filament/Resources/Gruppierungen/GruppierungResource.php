@@ -29,7 +29,7 @@ class GruppierungResource extends Resource
 
     public static function getPluralModelLabel(): string
     {
-        return (string) config('dpsg.directory.title');
+        return (string) (config('dpsg.directory.title') ?: 'Gruppierungen');
     }
 
     protected static ?string $slug = 'gruppierungen';

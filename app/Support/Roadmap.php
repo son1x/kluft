@@ -201,7 +201,7 @@ class Roadmap
                 'key' => 'update-release',
                 'phase' => 'Stämme',
                 'title' => 'Updates 3/4: Erstes Release veröffentlichen',
-                'detail' => 'Wenn Schlüssel und Ablageort stehen: Actions → „Release“ → „Run workflow“ (Version 0.9.0 aus der Datei VERSION, Änderungen aus CHANGELOG.md). Danach muss https://updates.dpsg-trier.de/kluft/manifest.json im Browser erscheinen. Künftig je Release VERSION erhöhen und einen Abschnitt in CHANGELOG.md schreiben.',
+                'detail' => 'Wenn Schlüssel und Ablageort stehen: zuerst unter Settings → Secrets and variables → Actions → Reiter „Variables“ die öffentlichen Werte KLUFT_UPDATE_URL (z. B. https://updates.dpsg-trier.de/kluft/manifest.json) und KLUFT_UPDATE_PUBLIC_KEY anlegen – damit bekommen neue Installationen aus dem Einrichtungsassistenten die Updates gleich eingerichtet. Dann Actions → „Release“ → „Run workflow“ (Version 0.9.0 aus der Datei VERSION, Änderungen aus CHANGELOG.md). Danach muss https://updates.dpsg-trier.de/kluft/manifest.json im Browser erscheinen. Künftig je Release VERSION erhöhen und einen Abschnitt in CHANGELOG.md schreiben.',
                 'done' => null,
             ],
             [

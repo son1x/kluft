@@ -22,6 +22,11 @@ use Illuminate\Support\Carbon;
  * @property string|null $nami_password
  * @property Carbon|null $nami_checked_at
  * @property string|null $nami_error
+ * @property string $login
+ * @property string $kind
+ * @property string|null $member_number
+ * @property Carbon|null $member_checked_at
+ * @property string|null $member_check_result
  */
 class User extends Authenticatable implements FilamentUser
 {
@@ -46,6 +51,19 @@ class User extends Authenticatable implements FilamentUser
         'last_login_at',
         'ntfy_topic',
         'ntfy_events',
+        'login',
+        'kind',
+        'member_number',
+    ];
+
+    public const LOGIN_OPTIONS = [
+        'email' => 'E-Mail-Code',
+        'entra' => 'Microsoft 365',
+    ];
+
+    public const KIND_OPTIONS = [
+        'person' => 'Person (namentlich)',
+        'rolle' => 'Rollen-Zugang (Funktionspostfach)',
     ];
 
     /**
@@ -80,6 +98,7 @@ class User extends Authenticatable implements FilamentUser
             'nami_user' => 'encrypted',
             'nami_password' => 'encrypted',
             'nami_checked_at' => 'datetime',
+            'member_checked_at' => 'datetime',
         ];
     }
 
@@ -185,6 +204,25 @@ class User extends Authenticatable implements FilamentUser
     public function isActive(): bool
     {
         return $this->status === 'active';
+    }
+
+    /** Rollen-Zugang über ein Funktionspostfach statt einer Person. */
+    public function isRolle(): bool
+    {
+        return $this->kind === 'rolle';
+    }
+
+    /**
+     * Darf sich mit einem Einmalcode per E-Mail anmelden: Funktion an,
+     * Konto aktiv, mit Rolle, Anmeldeweg E-Mail; nie der Notfallzugang.
+     */
+    public function canUseCodeLogin(): bool
+    {
+        return Features::enabled(Features::CODE_LOGIN)
+            && $this->login === 'email'
+            && ! $this->is_local_admin
+            && $this->isActive()
+            && $this->roleAssignments->isNotEmpty();
     }
 
     /**

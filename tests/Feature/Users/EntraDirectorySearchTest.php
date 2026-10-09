@@ -3,12 +3,15 @@
 namespace Tests\Feature\Users;
 
 use App\Filament\Resources\Users\Pages\CreateUser;
+use App\Models\FeatureSwitch;
 use App\Models\User;
 use App\Services\DirectoryUnavailable;
 use App\Services\EntraDirectory;
+use App\Support\Features;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\User as SocialiteUser;
@@ -32,6 +35,10 @@ class EntraDirectorySearchTest extends TestCase
     {
         parent::setUp();
         Filament::setCurrentPanel('admin');
+        // Verzeichnissuche gehört zur Anmeldung mit Microsoft 365; Instanzen
+        // mit E-Mail-Code (z. B. Saar-Hochwald) legen sonst Code-Zugänge an.
+        FeatureSwitch::query()->create(['key' => Features::CODE_LOGIN, 'enabled' => false]);
+        Cache::forget('features.schalter');
     }
 
     private function verwaltung(): User

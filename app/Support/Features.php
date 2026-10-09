@@ -42,6 +42,8 @@ class Features
 
     public const TITELBILD_WECHSEL = 'titelbild_wechsel';
 
+    public const CODE_LOGIN = 'code_login';
+
     private const CACHE_KEY = 'features.schalter';
 
     /**
@@ -63,6 +65,7 @@ class Features
         self::NAMI_PROFIL => ['bereich' => 'Mitgliederabgleich (NaMi)', 'label' => 'NaMi-Zugang im Profil speichern', 'text' => '„Mein Konto → Mein NaMi-Zugang“: Zugang verschlüsselt speichern, Ampel, Verbindungstest.', 'standard' => true, 'braucht' => 'Mitgliederabgleich'],
         self::NUR_MITGLIEDER => ['bereich' => 'Mitgliederabgleich (NaMi)', 'label' => 'Veranstaltungen nur für Mitglieder einer Gruppierung', 'text' => 'Einstellung „Nur für Mitglieder von …“ (Stamm/Bezirk), Markierung eigene/andere Gruppierung.', 'standard' => true],
         self::PUSH => ['bereich' => 'Backend', 'label' => 'Push-Nachrichten (ntfy)', 'text' => '„Mein Konto → Meine Push-Nachrichten“ und Versand aufs Handy.', 'standard' => true],
+        self::CODE_LOGIN => ['bereich' => 'Backend', 'label' => 'Anmeldung per E-Mail-Code', 'text' => 'Redaktion ohne Microsoft 365: Zugänge für Personen oder Rollen (Funktionspostfach, z. B. „Stammesvorstand“), Anmeldung mit Einmalcode per E-Mail. Microsoft 365 bleibt daneben möglich.', 'standard' => false],
         self::WP_IMPORT => ['bereich' => 'Backend', 'label' => 'WordPress-Import', 'text' => 'Übernahme von Seiten und Beiträgen aus einer WordPress-Website.', 'standard' => false],
     ];
 

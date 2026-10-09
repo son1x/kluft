@@ -69,6 +69,7 @@ return [
         'roadmap' => false,
         'rechtstraeger' => false,
         'wp_import' => false,
+        'code_login' => true,      // Redaktion ohne Microsoft 365 (E-Mail-Code)
     ],
 
     'newsletter' => [

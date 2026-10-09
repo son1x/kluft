@@ -5,7 +5,6 @@ namespace App\Support;
 use App\Mail\ParticipantCodeMail;
 use App\Models\EventRegistration;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 use Throwable;
 
@@ -30,7 +29,7 @@ class ParticipantLogin
 
     public static function normalize(string $email): string
     {
-        return mb_strtolower(trim($email));
+        return Einmalcode::normalize($email);
     }
 
     /**
@@ -40,19 +39,14 @@ class ParticipantLogin
     public function sendCode(string $email): void
     {
         $email = self::normalize($email);
-        $key = $this->cacheKey($email);
-
-        $current = Cache::get($key);
-        if ($current && $current['sent_at'] > now()->subSeconds(self::RESEND_SECONDS)->timestamp) {
-            return;
-        }
-
         if (! EventRegistration::query()->where('email', $email)->exists()) {
             return;
         }
 
-        $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-        Cache::put($key, ['hash' => $this->hash($code), 'attempts' => 0, 'sent_at' => now()->timestamp], now()->addMinutes(self::CODE_MINUTES));
+        $code = $this->codes()->ausstellen($email);
+        if ($code === null) {
+            return;
+        }
 
         try {
             Mail::to($email)->send(new ParticipantCodeMail($code));
@@ -63,24 +57,7 @@ class ParticipantLogin
 
     public function verify(string $email, string $code): bool
     {
-        $email = self::normalize($email);
-        $key = $this->cacheKey($email);
-        $current = Cache::get($key);
-
-        if (! $current || $current['attempts'] >= self::MAX_ATTEMPTS) {
-            return false;
-        }
-
-        if (hash_equals($current['hash'], $this->hash(preg_replace('/\D/', '', $code)))) {
-            Cache::forget($key);
-
-            return true;
-        }
-
-        $current['attempts']++;
-        Cache::put($key, $current, now()->addMinutes(self::CODE_MINUTES));
-
-        return false;
+        return $this->codes()->pruefen(self::normalize($email), $code);
     }
 
     public function login(Request $request, string $email): void
@@ -105,13 +82,8 @@ class ParticipantLogin
         return is_array($login) && ($login['until'] ?? 0) > now()->timestamp ? $login['email'] : null;
     }
 
-    private function cacheKey(string $email): string
+    private function codes(): Einmalcode
     {
-        return 'teilnehmende-code:'.hash('sha256', $email);
-    }
-
-    private function hash(string $code): string
-    {
-        return hash_hmac('sha256', $code, (string) config('app.key'));
+        return new Einmalcode('teilnehmende', self::CODE_MINUTES, self::MAX_ATTEMPTS, self::RESEND_SECONDS);
     }
 }

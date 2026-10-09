@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Users\Tables;
 
 use App\Filament\Resources\Users\Schemas\UserForm;
 use App\Models\User;
+use App\Support\Features;
 use App\Support\RoleCatalog;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
@@ -24,6 +25,21 @@ class UsersTable
                 TextColumn::make('email')
                     ->label('E-Mail')
                     ->searchable(),
+                TextColumn::make('zugang')
+                    ->label('Zugang')
+                    ->state(fn (User $record) => array_filter([
+                        $record->isRolle() ? 'Rolle' : 'Person',
+                        User::LOGIN_OPTIONS[$record->login] ?? null,
+                        $record->member_checked_at ? 'NaMi: '.(str_starts_with((string) $record->member_check_result, 'Aktives') ? 'aktiv' : 'prüfen') : null,
+                    ]))
+                    ->badge()
+                    ->color(fn (string $state) => match ($state) {
+                        'Rolle' => 'info',
+                        'NaMi: aktiv' => 'success',
+                        'NaMi: prüfen' => 'warning',
+                        default => 'gray',
+                    })
+                    ->visible(fn () => Features::enabled(Features::CODE_LOGIN)),
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()

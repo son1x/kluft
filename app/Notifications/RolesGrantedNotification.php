@@ -6,6 +6,7 @@ use App\Mail\Concerns\SentViaQueue;
 use App\Models\User;
 use App\Notifications\Concerns\PushesViaNtfy;
 use App\Notifications\Messages\NtfyMessage;
+use App\Support\Features;
 use App\Support\PushEvents;
 use App\Support\RoleCatalog;
 use App\Support\Site;
@@ -45,8 +46,10 @@ class RolesGrantedNotification extends Notification implements ShouldBeEncrypted
         $who = $this->grantedBy ?? Site::office('nom', capitalize: true);
         $site = 'der '.config('dpsg.site.short_name');
         $domain = config('dpsg.site.domain');
-        $name = $notifiable instanceof User ? $notifiable->name : '';
+        $name = $notifiable instanceof User && ! $notifiable->isRolle() ? $notifiable->name : '';
         $email = $notifiable instanceof User ? $notifiable->email : '';
+        $perCode = $notifiable instanceof User && $notifiable->login === 'email' && Features::enabled(Features::CODE_LOGIN);
+        $rolle = $notifiable instanceof User && $notifiable->isRolle() ? $notifiable->name : null;
 
         $mail = (new MailMessage)
             ->subject($this->newAccount
@@ -63,7 +66,10 @@ class RolesGrantedNotification extends Notification implements ShouldBeEncrypted
 
         return $mail
             ->action('Zum Redaktionsbereich', url('/admin'))
-            ->line('Du meldest dich mit deinem Microsoft-365-Konto ('.$email.') an; ein eigenes Passwort gibt es nicht.')
+            ->line($perCode
+                ? 'Zum Anmelden gibst du die Adresse '.$email.' ein und bekommst einen Code per E-Mail; ein Passwort gibt es nicht.'
+                    .($rolle !== null ? ' Der Zugang „'.$rolle.'“ gehört zu diesem Postfach: Wer es hat, kann sich anmelden.' : '')
+                : 'Du meldest dich mit deinem Microsoft-365-Konto ('.$email.') an; ein eigenes Passwort gibt es nicht.')
             ->line('Hast du damit nicht gerechnet? Dann melde dich bitte '.Site::office('bei').'.');
     }
 

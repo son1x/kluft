@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\BreakGlassAuthController;
+use App\Http\Controllers\Auth\CodeLoginController;
 use App\Http\Controllers\Auth\EntraAuthController;
 use App\Http\Controllers\Public\CalendarController;
 use App\Http\Controllers\Public\CertificateController;
@@ -51,6 +52,11 @@ Route::middleware('throttle:whatsapp-webhook')->withoutMiddleware(ValidateCsrfTo
 // Notfall-Super-Admin (Break-Glass), s. Pflichtenheft 5.2. Bewusst nicht
 // in der Navigation verlinkt und mit eigenem Rate-Limit im Controller
 // (zusätzlich zur globalen Throttle-Middleware unten).
+// Redaktion ohne Microsoft 365: Einmalcode per E-Mail (Funktion code_login).
+Route::get('/redaktion/anmelden', [CodeLoginController::class, 'show'])->middleware('throttle:60,1')->name('auth.code');
+Route::post('/redaktion/anmelden', [CodeLoginController::class, 'send'])->middleware('throttle:10,10')->name('auth.code.send');
+Route::post('/redaktion/anmelden/code', [CodeLoginController::class, 'verify'])->middleware('throttle:20,10')->name('auth.code.verify');
+
 Route::middleware('throttle:20,15')->group(function () {
     Route::get('/notfall-login', [BreakGlassAuthController::class, 'show'])
         ->name('notfall-login');

@@ -5,6 +5,7 @@ namespace App\Providers\Filament;
 use App\Filament\AvatarProviders\InitialsAvatarProvider;
 use App\Filament\Resources\Gruppierungen\Pages\CreateGruppierung;
 use App\Filament\Resources\Gruppierungen\Pages\EditGruppierung;
+use App\Support\Features;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -35,9 +36,11 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             // Kein Filament-eigenes Login-Formular: GET /admin/login leitet
             // direkt zur Entra-ID-Anmeldung weiter (Pflichtenheft 5.1,
-            // Routen-Übersicht 11.2). Der Notfall-Super-Admin hat einen
-            // separaten, nicht verlinkten Pfad (/notfall-login, s. 5.2).
-            ->login(fn () => redirect()->route('auth.entra.redirect'))
+            // Routen-Übersicht 11.2), mit der Funktion „Anmeldung per
+            // E-Mail-Code“ zur Code-Anmeldung (dort auch der Weg zu M365).
+            // Der Notfall-Super-Admin hat einen separaten, nicht verlinkten
+            // Pfad (/notfall-login, s. 5.2).
+            ->login(fn () => redirect()->route(Features::enabled(Features::CODE_LOGIN) ? 'auth.code' : 'auth.entra.redirect'))
             // Avatare lokal statt über ui-avatars.com (keine Namen an Dritte).
             ->defaultAvatarProvider(InitialsAvatarProvider::class)
             // Nach „Anlegen“ bzw. „Speichern“ zurück zur Übersicht der Liste

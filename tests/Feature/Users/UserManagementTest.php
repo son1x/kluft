@@ -164,7 +164,7 @@ class UserManagementTest extends TestCase
         $autor = $this->makeUser('autor@dpsg-trier.de', [['autor', 'own', null]]);
 
         $this->actingAs($verwaltung)->get('/admin/users')->assertOk()->assertSee('autor@dpsg-trier.de');
-        $this->actingAs($verwaltung)->get('/admin/users/create')->assertOk()->assertSee('M365-E-Mail-Adresse');
+        $this->actingAs($verwaltung)->get('/admin/users/create')->assertOk()->assertSee('E-Mail-Adresse');
         $this->actingAs($verwaltung)->get("/admin/users/{$autor->id}/edit")->assertOk();
 
         $this->actingAs($autor)->get('/admin/users')->assertForbidden();

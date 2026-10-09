@@ -7,11 +7,22 @@
 
 @section('hero')
     <section class="relative flex h-72 items-center overflow-hidden bg-dpsg-blau md:h-[30rem]">
-        @if ($page->coverMedia)
-            <x-picture :media="$page->coverMedia" loading="eager" fetchpriority="high" class="absolute inset-0 h-full w-full object-cover" />
+        {{-- Titelbild der Seite „start“ oder der Instanz; mit der Funktion
+             „Titelbild wechselt zufällig“ bei jedem Aufruf ein anderes. --}}
+        @php($titelbild = \App\Support\Titelbild::fuer($page))
+        @if ($titelbild)
+            @if ($titelbild['media'])
+                <x-picture :media="$titelbild['media']" loading="eager" fetchpriority="high" class="absolute inset-0 h-full w-full object-cover" />
+            @else
+                <x-static-image :src="$titelbild['src']" :alt="$titelbild['alt']" fetchpriority="high" decoding="async" class="absolute inset-0 h-full w-full object-cover" style="object-position: {{ $titelbild['position'] }}" />
+            @endif
             <div class="absolute inset-0 bg-gradient-to-r from-black/55 via-black/25 to-transparent" aria-hidden="true"></div>
-            @if ($page->coverMedia->credit)
-                <span class="absolute bottom-9 right-2 bg-black/50 px-1 text-[10px] text-white">© {{ $page->coverMedia->credit }}</span>
+            @if ($titelbild['credit'])
+                @if ($titelbild['link'])
+                    <a href="{{ $titelbild['link'] }}" target="_blank" rel="noopener" class="absolute bottom-1 right-2 max-w-[55%] bg-black/50 px-1 text-right text-[10px] leading-tight text-white hover:underline md:bottom-9 md:max-w-none">© {{ $titelbild['credit'] }}</a>
+                @else
+                    <span class="absolute bottom-1 right-2 max-w-[55%] bg-black/50 px-1 text-right text-[10px] leading-tight text-white md:bottom-9 md:max-w-none">© {{ $titelbild['credit'] }}</span>
+                @endif
             @endif
         @else
             {{-- Ohne Titelbild (in der Seite "start" wählbar): DPSG-Blau mit

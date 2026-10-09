@@ -39,6 +39,16 @@ return array_replace([
     'home_highlights' => [],
 
     /*
+    | Titelbilder der Startseite aus instanzen/<schlüssel>/public (landen per
+    | kluft:assets unter public/instanz). Gelten, solange die Seite „start“
+    | kein eigenes Titelbild hat; mit der Funktion „titelbild_wechsel“ kommen
+    | alle in einen Topf, aus dem jeder Aufruf eines zieht. Je Bild: src,
+    | alt, credit (Bildnachweis), optional link (Quelle) und position
+    | (CSS object-position, z. B. '60% 50%').
+    */
+    'titelbilder' => [],
+
+    /*
     | Schaltbare Funktionen (App\Support\Features). Abgeschaltet gibt es
     | weder Routen noch Menüpunkte noch Backend-Bereiche.
     */

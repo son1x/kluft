@@ -53,6 +53,17 @@ return [
     ],
 
     // Georgsbote, Roadmap, Rechtsträger und WordPress-Import gibt es hier nicht.
+    // Titelbild der Startseite, solange „start“ kein eigenes hat (s. config/dpsg.php).
+    'titelbilder' => [
+        [
+            'src' => 'instanz/images/titelbild-saarschleife.jpg',
+            'alt' => 'Die Saarschleife bei Mettlach aus der Luft',
+            'credit' => 'Carsten Steger / Wikimedia Commons, CC BY-SA 4.0',
+            'link' => 'https://commons.wikimedia.org/wiki/File:Aerial_image_of_the_Saarschleife.jpg',
+            'position' => '50% 50%',
+        ],
+    ],
+
     'features' => [
         'georgsbote' => false,
         'roadmap' => false,

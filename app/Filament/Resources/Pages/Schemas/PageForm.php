@@ -86,7 +86,7 @@ class PageForm
                         ->relationship('coverMedia', 'alt_text')
                         ->searchable()
                         ->preload()
-                        ->helperText('Auf der Startseite (Slug "start") das große Hero-Bild; Bilder vorher in der Mediathek hochladen.'),
+                        ->helperText('Auf der Startseite (Slug "start") das große Hero-Bild; Bilder vorher in der Mediathek hochladen. Ist „Titelbild wechselt zufällig“ an (Verwaltung → Funktionen), wechselt es sich mit den Titelbildern der Website ab.'),
                     RichEditor::make('body')
                         ->label('Inhalt')
                         ->required()

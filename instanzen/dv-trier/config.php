@@ -75,6 +75,17 @@ return [
         'gast' => 'Gast aus einem anderen Diözesanverband oder Verband',
     ],
 
+    // Titelbild der Startseite, solange „start“ kein eigenes hat (s. config/dpsg.php).
+    'titelbilder' => [
+        [
+            'src' => 'instanz/images/titelbild-halstuchknoten.jpg',
+            'alt' => 'Nahaufnahme eines Halstuchs mit geflochtenem Lederknoten',
+            // Gespiegelt, damit der Knoten rechts neben der Überschrift sitzt.
+            'credit' => 'Pixabay',
+            'position' => '50% 55%',
+        ],
+    ],
+
     'features' => [
         'georgsbote' => true,
         'roadmap' => true,

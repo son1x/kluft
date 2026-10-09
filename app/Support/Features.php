@@ -40,6 +40,8 @@ class Features
 
     public const PUSH = 'push';
 
+    public const TITELBILD_WECHSEL = 'titelbild_wechsel';
+
     private const CACHE_KEY = 'features.schalter';
 
     /**
@@ -52,6 +54,7 @@ class Features
         self::DOWNLOADS => ['bereich' => 'Website', 'label' => 'Download-Seite', 'text' => 'Seite „Downloads“ mit Methoden, Formularen und Arbeitshilfen; Backend „Downloads“.', 'standard' => false],
         self::GEORGSBOTE => ['bereich' => 'Website', 'label' => 'Zeitschriften-Archiv', 'text' => 'Archiv der Verbandszeitschrift als PDF (beim DV: Georgsbote).', 'standard' => false],
         self::RECHTSTRAEGER => ['bereich' => 'Website', 'label' => 'Schaubild Rechtsträger', 'text' => 'Schaubild auf der Seite „Rechtsträger“.', 'standard' => false],
+        self::TITELBILD_WECHSEL => ['bereich' => 'Website', 'label' => 'Titelbild wechselt zufällig', 'text' => 'Die Startseite zeigt bei jedem Aufruf eines der Titelbilder: das der Seite „start“ und die der Instanz. Aus: immer das der Seite „start“, sonst das erste der Instanz.', 'standard' => true],
         self::ROADMAP => ['bereich' => 'Website', 'label' => 'Roadmap', 'text' => 'Öffentliche Seite /roadmap mit dem Projektstand.', 'standard' => false],
         self::TEILNEHMENDE_EINTRAGEN => ['bereich' => 'Veranstaltungen', 'label' => 'Teilnehmende von Hand eintragen', 'text' => 'Einzeln oder als Liste (Excel, CSV) unter „Teilnehmende“.', 'standard' => true],
         self::GAESTE => ['bereich' => 'Veranstaltungen', 'label' => 'Gäste aus anderen Verbänden', 'text' => 'Ankreuzfeld „Gast aus einem anderen Diözesanverband oder Verband“ unter „Stamm / Bezirk / Verband“.', 'standard' => true],

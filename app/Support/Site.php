@@ -11,7 +11,8 @@ class Site
 {
     private const OFFICE_FORMS = [
         'das' => ['nom' => 'das', 'dat' => 'dem', 'zu' => 'zum', 'bei' => 'beim', 'in' => 'im', 'an' => 'ans'],
-        'der' => ['nom' => 'der', 'dat' => 'dem', 'zu' => 'zum', 'bei' => 'beim', 'in' => 'im', 'an' => 'an den'],
+        // „im Stammesvorstand melden“ klingt schief, daher „beim“.
+        'der' => ['nom' => 'der', 'dat' => 'dem', 'zu' => 'zum', 'bei' => 'beim', 'in' => 'beim', 'an' => 'an den'],
         // „in der Bezirksleitung melden“ klingt schief, daher „bei der“.
         'die' => ['nom' => 'die', 'dat' => 'der', 'zu' => 'zur', 'bei' => 'bei der', 'in' => 'bei der', 'an' => 'an die'],
     ];
@@ -52,5 +53,13 @@ class Site
     public static function akShort(): string
     {
         return (string) (config('dpsg.site.ak_short') ?: 'Arbeitskreis');
+    }
+
+    /** Arbeitskreis mit Artikel im Nominativ, z. B. „Der Diözesanarbeitskreis“, „Das Leitungsteam“. */
+    public static function akNominativ(): string
+    {
+        $artikel = ['der' => 'Der', 'das' => 'Das', 'die' => 'Die'][(string) config('dpsg.site.ak_article', 'der')] ?? 'Der';
+
+        return $artikel.' '.(string) config('dpsg.site.ak');
     }
 }

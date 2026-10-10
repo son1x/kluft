@@ -120,10 +120,14 @@
     <section id="dak" class="stufe-{{ $page->stage }} mt-6 scroll-mt-24 border-y-4 border-(--stufe) bg-white py-12" aria-labelledby="dak-heading">
         <div class="mx-auto max-w-6xl px-4">
             <p class="text-sm font-bold uppercase tracking-wider text-text-secondary">{{ \App\Support\Site::akShort() }} {{ $stage['label'] }}</p>
-            <h2 id="dak-heading" class="mt-1 font-serif text-3xl font-bold">Der {{ config('dpsg.site.ak') }}</h2>
+            <h2 id="dak-heading" class="mt-1 font-serif text-3xl font-bold">{{ \App\Support\Site::akNominativ() }}</h2>
             <p class="mt-3 max-w-3xl text-text-secondary">
-                Im {{ config('dpsg.site.ak') }}@if (config('dpsg.site.ak_short')) ({{ config('dpsg.site.ak_short') }})@endif gestalten Ehrenamtliche gemeinsam mit den Stufenreferent*innen die Arbeit der Stufe im {{ config('dpsg.site.level') }}:
-                Sie planen Aktionen und Fortbildungen, unterstützen die Leiter*innen in den Stämmen und bringen die Stufe in die Gremien ein.
+                @if (filled(config('dpsg.site.ak_text')))
+                    {{ config('dpsg.site.ak_text') }}
+                @else
+                    Im {{ config('dpsg.site.ak') }}@if (config('dpsg.site.ak_short')) ({{ config('dpsg.site.ak_short') }})@endif gestalten Ehrenamtliche gemeinsam mit den Stufenreferent*innen die Arbeit der Stufe im {{ config('dpsg.site.level') }}:
+                    Sie planen Aktionen und Fortbildungen, unterstützen die Leiter*innen in den Stämmen und bringen die Stufe in die Gremien ein.
+                @endif
             </p>
         </div>
         @if ($dak->isNotEmpty())

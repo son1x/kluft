@@ -26,6 +26,8 @@ return [
         'level' => 'Diözesanverband',
         'level_genitive' => 'Diözesanverbands',
         // Arbeitskreis einer Stufe auf dieser Ebene; Kürzel null = „Arbeitskreis“.
+        // Optional: ak_article (der/das/die), ak_text (eigener Einleitungstext),
+        // ak_subgroups (Zwischenüberschriften), siehe Stammes-Vorlage.
         'ak' => 'Diözesanarbeitskreis',
         'ak_short' => 'DAK',
         'domain' => 'dpsg-trier.de',

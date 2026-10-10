@@ -86,7 +86,9 @@ class PageController extends Controller
     {
         return Person::query()->visible()->where('stage', $stage)->whereIn('gremium', ['leitung', 'dak'])
             ->with('photo')->orderByRaw("gremium = 'dak'")->orderBy('sort')->orderBy('name')->get()
-            ->each(fn (Person $p) => $p->subgroup = $p->gremium === 'dak' ? 'Im Arbeitskreis' : 'Stufenreferent*innen');
+            ->each(fn (Person $p) => $p->subgroup = $p->gremium === 'dak'
+                ? config('dpsg.site.ak_subgroups.dak', 'Im Arbeitskreis')
+                : config('dpsg.site.ak_subgroups.leitung', 'Stufenreferent*innen'));
     }
 
     /**

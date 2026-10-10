@@ -192,9 +192,9 @@ class CalendarTest extends TestCase
     #[TestDox('Kalenderseite zeigt Veranstaltungen auch ohne eingetragenen Nextcloud-Kalender')]
     public function test_calendar_without_nextcloud_shows_events(): void
     {
-        Event::query()->create(['title' => 'Leiterrunde', 'slug' => 'leiterrunde', 'status' => 'open', 'starts_at' => now()->addDays(4), 'ends_at' => now()->addDays(4)->addHours(2)]);
+        Event::query()->create(['title' => 'Leitungsrunde', 'slug' => 'leitungsrunde', 'status' => 'open', 'starts_at' => now()->addDays(4), 'ends_at' => now()->addDays(4)->addHours(2)]);
 
-        $this->get('/kalender')->assertOk()->assertSee('Leiterrunde')->assertDontSee('Der Kalender wird gerade eingerichtet');
+        $this->get('/kalender')->assertOk()->assertSee('Leitungsrunde')->assertDontSee('Der Kalender wird gerade eingerichtet');
     }
 
     #[TestDox('Konfiguration für Kalender und Instagram ist vollständig')]

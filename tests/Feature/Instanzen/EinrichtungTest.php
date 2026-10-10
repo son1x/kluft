@@ -166,7 +166,9 @@ class EinrichtungTest extends TestCase
         // Die Routen der Test-Instanz (DV) haben ein Verzeichnis; der Hinweis
         // „Schnupperstunde anfragen“ statt „Stamm in der Nähe finden“ ist im
         // Browser-Durchlauf geprüft (docs/einrichtung.md).
-        $this->get('/stufe-pfadi')->assertOk()->assertSee('Gruppenstunde');
+        $this->get('/stufe-pfadi')->assertOk()->assertSee('Gruppenstunde')
+            ->assertSee('Das Leitungsteam')->assertSee('Leitungsrunde')->assertSee('beim')
+            ->assertDontSee('Stufenreferent');
         $this->get('/')->assertOk()->assertSee('Pfadfinden in Beispielstadt');
     }
 }

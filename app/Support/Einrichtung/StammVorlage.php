@@ -43,8 +43,12 @@ class StammVorlage
                 'region' => $ort !== '' ? $ort : 'Stamm '.$stamm,
                 'level' => 'Stamm',
                 'level_genitive' => 'Stammes',
-                'ak' => 'Leiterrunde',
-                'ak_short' => null,
+                // Leitende einer Stufe; alle Leitenden zusammen sind die Leitungsrunde.
+                'ak' => 'Leitungsteam',
+                'ak_short' => 'Leitungsteam',
+                'ak_article' => 'das',
+                'ak_text' => 'Die Gruppenstunden, Fahrten und Lager der Stufe planen ehrenamtliche Leiter*innen. Zusammen mit allen anderen Leitenden des Stammes bilden sie die Leitungsrunde.',
+                'ak_subgroups' => ['leitung' => 'Aus dem Stammesvorstand', 'dak' => 'Im Leitungsteam'],
                 'domain' => $domain,
                 'description' => 'Deutsche Pfadfinderschaft Sankt Georg, Stamm '.$stamm.($ort !== '' ? ' in '.$ort : '').': Gruppenstunden, Termine und Neuigkeiten.',
                 'logo' => (string) ($a['logo'] ?? 'instanz/images/logo.svg'),
@@ -111,7 +115,7 @@ class StammVorlage
 
             'gremien' => [
                 'leitung' => ['label' => 'Stammesvorstand', 'page' => 'stammesvorstand'],
-                'dak' => ['label' => 'Leiter*innen einer Stufe', 'page' => null],
+                'dak' => ['label' => 'Leitungsteam einer Stufe', 'page' => null],
             ],
 
             'event_consent' => [

@@ -61,9 +61,16 @@ class EinrichtungTest extends TestCase
         $this->assertSame('vorstand@stamm-don-bosco.de', $a['email']);
         $this->assertSame(['woelflinge', 'rover'], $a['stufen']);
         $this->assertSame('rolle', $a['_zugang']['kind']);
+        $this->assertSame('', $a['dioezese_url']);
 
-        $fehler = $installer->pruefen(['nummer' => '123', 'domain' => 'kein domain'])['fehler'];
-        $this->assertEqualsCanonicalizing(['stamm', 'email', 'domain', 'nummer', 'stufen', 'mail', 'admin'], array_keys($fehler));
+        $a = $installer->pruefen([...self::FORMULAR, 'stufen' => ['rover'], 'eltern_url' => 'www.dpsg-trier.de'])['angaben'];
+        $this->assertSame('https://www.dpsg-trier.de', $a['dioezese_url']);
+        $this->assertArrayNotHasKey('eltern_url', $a);
+        $a = $installer->pruefen([...self::FORMULAR, 'stufen' => ['rover'], 'bezirk' => 'Mosel', 'eltern_url' => 'https://bezirk-mosel.de'])['angaben'];
+        $this->assertSame('https://bezirk-mosel.de', $a['bezirk_url']);
+
+        $fehler = $installer->pruefen(['nummer' => '123', 'domain' => 'kein domain', 'eltern_url' => 'kein link'])['fehler'];
+        $this->assertEqualsCanonicalizing(['stamm', 'email', 'domain', 'nummer', 'eltern_url', 'stufen', 'mail', 'admin'], array_keys($fehler));
         $this->assertSame('stamm-don-bosco', Installer::schluessel('Don Bosco'));
         $this->assertSame('stamm-st-georg-oe', Installer::schluessel('St. Georg Ö'));
     }
@@ -124,6 +131,14 @@ class EinrichtungTest extends TestCase
         $this->assertSame('+4965112345', $c['contact']['phone_href']);
         $this->assertStringContainsString('vorstand@stamm-don-bosco.de', $c['event_consent']['text']);
         $this->assertSame(StammStartSeeder::class, $c['seeders']['start']);
+        $this->assertSame('https://www.dpsg-trier.de', $c['site']['parent']['url']);
+
+        // Ohne bekannte Ebene kein doppelter Link auf dpsg.de, mit Bezirks-Website der Bezirk.
+        $this->assertNull(StammVorlage::config(['stamm' => 'Don Bosco', 'dioezese' => 'Köln'])['site']['parent']);
+        $this->assertSame(
+            ['label' => 'DPSG Bezirk Mosel', 'url' => 'https://bezirk-mosel.de'],
+            StammVorlage::config(['stamm' => 'Don Bosco', 'dioezese' => 'Trier', 'bezirk' => 'Mosel', 'bezirk_url' => 'https://bezirk-mosel.de'])['site']['parent'],
+        );
     }
 
     #[TestDox('Startinhalt: Seiten, Stufen, Themen und der Stamm als Gruppierung – zweimal ausgeführt ändert nichts')]

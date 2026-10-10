@@ -203,9 +203,14 @@
             <div>
                 <h2 class="mb-4 font-serif text-base font-bold">{{ $contact['name'] }}</h2>
                 <p class="font-bold">{{ $contact['office'] }}</p>
-                <p>{{ $contact['street'] }}<br />{{ $contact['city'] }}</p>
+                <p>
+                    @if (filled($contact['street'] ?? null)){{ $contact['street'] }}<br />@endif
+                    {{ $contact['city'] }}
+                </p>
                 <ul class="mt-3 space-y-2">
-                    <li class="flex items-center gap-2"><x-heroicon-o-phone class="h-4 w-4 shrink-0" aria-hidden="true" /><a href="tel:{{ $contact['phone_href'] }}" class="hover:underline">{{ $contact['phone'] }}</a></li>
+                    @if (filled($contact['phone'] ?? null))
+                        <li class="flex items-center gap-2"><x-heroicon-o-phone class="h-4 w-4 shrink-0" aria-hidden="true" /><a href="tel:{{ $contact['phone_href'] }}" class="hover:underline">{{ $contact['phone'] }}</a></li>
+                    @endif
                     <li class="flex items-center gap-2"><x-heroicon-o-envelope class="h-4 w-4 shrink-0" aria-hidden="true" /><a href="mailto:{{ $contact['email'] }}" class="hover:underline">{{ $contact['email'] }}</a></li>
                 </ul>
             </div>

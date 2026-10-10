@@ -27,10 +27,12 @@ class StammVorlage
         $bezirk = trim((string) ($a['bezirk'] ?? ''));
         $dioezese = trim((string) ($a['dioezese'] ?? ''));
 
+        // Link zur nächsthöheren Ebene im Fuß; dpsg.de steht dort ohnehin.
         $eltern = match (true) {
             $bezirk !== '' && filled($a['bezirk_url'] ?? null) => ['label' => 'DPSG Bezirk '.$bezirk, 'url' => (string) $a['bezirk_url']],
             $dioezese !== '' && filled($a['dioezese_url'] ?? null) => ['label' => 'DPSG Diözesanverband '.$dioezese, 'url' => (string) $a['dioezese_url']],
-            default => ['label' => 'DPSG Bundesverband', 'url' => 'https://www.dpsg.de'],
+            (bool) preg_match('/^trier$/i', $dioezese) => ['label' => 'DPSG Diözesanverband Trier', 'url' => 'https://www.dpsg-trier.de'],
+            default => null,
         };
 
         return [

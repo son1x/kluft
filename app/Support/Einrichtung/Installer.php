@@ -103,6 +103,7 @@ class Installer
             'strasse' => $t('strasse', 120),
             'plz_ort' => $t('plz_ort', 120),
             'vorstand' => $t('vorstand', 200),
+            'eltern_url' => $t('eltern_url', 200),
             'stufen' => array_values(array_intersect(['biber', 'woelflinge', 'jupfi', 'pfadi', 'rover'], (array) ($e['stufen'] ?? []))),
             'eingerichtet' => date('Y-m-d'),
         ];
@@ -119,6 +120,17 @@ class Installer
         if ($angaben['nummer'] !== '' && strlen($angaben['nummer']) !== 6) {
             $fehler['nummer'] = 'Die DPSG-Nummer hat sechs Ziffern, z. B. 210208.';
         }
+        if ($angaben['eltern_url'] !== '') {
+            if (! preg_match('#^https?://#i', $angaben['eltern_url'])) {
+                $angaben['eltern_url'] = 'https://'.$angaben['eltern_url'];
+            }
+            if (! filter_var($angaben['eltern_url'], FILTER_VALIDATE_URL)) {
+                $fehler['eltern_url'] = 'Bitte eine gültige Adresse angeben, z. B. https://www.dpsg-trier.de.';
+            }
+        }
+        // Gehört zum Bezirk, wenn einer angegeben ist, sonst zum Diözesanverband.
+        $angaben[$angaben['bezirk'] !== '' ? 'bezirk_url' : 'dioezese_url'] = $angaben['eltern_url'];
+        unset($angaben['eltern_url']);
         if ($angaben['stufen'] === []) {
             $fehler['stufen'] = 'Bitte mindestens eine Stufe auswählen.';
         }

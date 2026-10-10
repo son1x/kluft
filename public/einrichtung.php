@@ -164,8 +164,9 @@ legend{font-weight:600;margin-bottom:.3rem}
                 <?= $feld('nummer', 'DPSG-Nummer (optional)', 'text', 'sechs Ziffern, für den NaMi-Abgleich') ?>
                 <?= $feld('bezirk', 'Bezirk (optional)') ?>
                 <?= $feld('dioezese', 'Diözesanverband (optional)', 'text', 'z. B. Trier') ?>
+                <?= $feld('eltern_url', 'Website von Bezirk oder DV (optional)', 'text', 'erscheint unten unter „DPSG im Netz“') ?>
             </div>
-            <?= $fehlerText('nummer') ?>
+            <?= $fehlerText('nummer') ?><?= $fehlerText('eltern_url') ?>
             <fieldset><legend>Welche Stufen gibt es bei euch? *</legend>
                 <div class="stufen">
                 <?php foreach ($stufen as $k => $label) { ?>

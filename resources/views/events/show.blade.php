@@ -108,7 +108,7 @@
                     <p class="text-sm text-text-secondary">Pflichtfelder sind mit * markiert.</p>
 
                     <fieldset class="space-y-4">
-                        <legend class="font-bold">Teilnehmende Person</legend>
+                        <legend class="font-bold">{{ $event->adults_only ? 'Deine Angaben' : 'Teilnehmende Person' }}</legend>
                         <div class="grid gap-4 sm:grid-cols-2">
                             <div>
                                 <label for="first_name" class="block text-sm font-bold">Vorname *</label>
@@ -190,6 +190,7 @@
                         @endforeach
                     </fieldset>
 
+                    @unless ($event->adults_only)
                     <fieldset class="space-y-4 border-t border-dpsg-mittelbeige pt-5">
                         <legend class="sr-only">Anmeldung durch Personensorgeberechtigte</legend>
                         <label class="flex gap-3">
@@ -210,6 +211,7 @@
                             @error('guardian_consent')<p class="text-sm text-dpsg-rot">{{ $message }}</p>@enderror
                         </div>
                     </fieldset>
+                    @endunless
 
                     <div class="border-t border-dpsg-mittelbeige pt-5">
                         <label for="email" class="block text-sm font-bold">E-Mail-Adresse *</label>

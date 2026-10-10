@@ -61,6 +61,10 @@ class EventController extends Controller
         }
 
         $fields = $event->formFields();
+        // Für Erwachsene: kein Abschnitt für Personensorgeberechtigte.
+        if ($event->adults_only) {
+            $request->request->remove('by_guardian');
+        }
         $rules = [
             'first_name' => ['required', 'string', 'max:100'],
             'last_name' => ['required', 'string', 'max:100'],
@@ -108,7 +112,9 @@ class EventController extends Controller
         $validator->after(function (Validator $validator) use ($event, $request) {
             $year = is_numeric($request->input('birth_year')) ? (int) $request->input('birth_year') : null;
 
-            if ($event->mayBeUnderConsentAge($year) && ! $request->boolean('by_guardian')) {
+            if ($event->adults_only && $event->mayBeUnderConsentAge($year)) {
+                $validator->errors()->add('birth_year', 'Diese Veranstaltung ist für Erwachsene; anmelden können sich Personen ab '.config('dpsg.guardian_consent_age').' Jahren.');
+            } elseif ($event->mayBeUnderConsentAge($year) && ! $request->boolean('by_guardian')) {
                 $validator->errors()->add('by_guardian', 'Für Teilnehmende unter '.config('dpsg.guardian_consent_age').' Jahren muss eine personensorgeberechtigte Person die Anmeldung vornehmen.');
             }
         });

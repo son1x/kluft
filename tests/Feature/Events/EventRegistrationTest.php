@@ -322,6 +322,24 @@ class EventRegistrationTest extends TestCase
         $this->assertTrue($registration->guardian_consent);
     }
 
+    #[TestDox('Veranstaltung für Erwachsene: ohne Abschnitt für Sorgeberechtigte, Minderjährige abgewiesen')]
+    public function test_adults_only(): void
+    {
+        $event = $this->event(['adults_only' => true, 'title' => 'Elternabend', 'slug' => 'elternabend']);
+        $this->get('/veranstaltungen/elternabend')->assertOk()->assertSee('Deine Angaben')
+            ->assertDontSee('Ich melde als personensorgeberechtigte Person');
+
+        $child = now()->addMonths(2)->year - 10;
+        $this->register($event, ['birth_year' => $child, 'by_guardian' => '1', 'guardian_name' => 'Eva Muster', 'guardian_consent' => '1'])
+            ->assertSessionHasErrors('birth_year');
+
+        $this->register($event, ['by_guardian' => '1', 'guardian_name' => 'Eva Muster', 'guardian_consent' => '1'])
+            ->assertSessionHasNoErrors()->assertSessionHas('anmeldung', 'angefragt');
+        $registration = EventRegistration::query()->sole();
+        $this->assertNull($registration->guardian_name);
+        $this->assertFalse($registration->guardian_consent);
+    }
+
     #[TestDox('Eingaben werden geprüft, Spam-Bots abgewiesen, geschlossene Anmeldungen gesperrt')]
     public function test_validation_honeypot_and_unavailable_events(): void
     {

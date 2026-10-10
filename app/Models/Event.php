@@ -34,7 +34,7 @@ class Event extends Model
     protected $fillable = [
         'title', 'slug', 'teaser', 'description', 'starts_at', 'ends_at', 'location',
         'stage', 'section', 'target_group', 'cover_media_id', 'contact_name', 'contact_email',
-        'cost_info', 'reg_opens_at', 'reg_closes_at', 'capacity', 'waitlist_enabled', 'member_check', 'member_gruppierung_id',
+        'cost_info', 'reg_opens_at', 'reg_closes_at', 'capacity', 'waitlist_enabled', 'adults_only', 'member_check', 'member_gruppierung_id',
         'status', 'form_fields', 'retention_days', 'created_by', 'calendar_uid',
         'certificate_enabled', 'certificate_text', 'certificate_signer',
     ];
@@ -47,6 +47,7 @@ class Event extends Model
             'reg_opens_at' => 'datetime',
             'reg_closes_at' => 'datetime',
             'waitlist_enabled' => 'boolean',
+            'adults_only' => 'boolean',
             'member_check' => 'boolean',
             'certificate_enabled' => 'boolean',
             'form_fields' => 'array',

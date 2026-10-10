@@ -53,7 +53,7 @@ class StammStartSeeder extends Seeder
                 'stage' => $key,
                 'show_in_nav' => true,
                 'nav_sort' => ($i + 1) * 10,
-                'seo_title' => $stage['label'].' ('.$stage['age'].') – Stamm '.$stamm,
+                // Kein eigener SEO-Titel: Der Standard enthält das Alter, das der Stamm anpassen kann.
                 'body' => '<p>'.e(self::STUFEN_TEXTE[$key] ?? '').'</p>'
                     .'<h2>Gruppenstunde</h2>'
                     .'<p>Die Zeiten und den Ort der Gruppenstunde tragen wir hier bald ein. Bis dahin frag einfach über das <a href="/kontakt">Kontaktformular</a> nach – wir melden uns.</p>',

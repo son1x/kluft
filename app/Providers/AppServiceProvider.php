@@ -11,6 +11,7 @@ use App\Services\Mitglieder\Mitgliederverzeichnis;
 use App\Services\Mitglieder\NamiVerzeichnis;
 use App\Support\Embeds;
 use App\Support\Galerie;
+use App\Support\StufenAlter;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Mail\Events\MessageSending;
@@ -48,6 +49,9 @@ class AppServiceProvider extends ServiceProvider
         if (is_dir($instanzMigrationen)) {
             $this->loadMigrationsFrom($instanzMigrationen);
         }
+
+        // Altersangaben der Stufen, wie die Gruppierung sie festgelegt hat.
+        StufenAlter::anwenden();
 
         // „Meine Anmeldungen“: eigene Zähler, damit Codeeingaben nicht das
         // Anfordern oder andere Formulare blockieren (throttle:x,y teilt

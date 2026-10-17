@@ -7,6 +7,7 @@ use App\Filament\Resources\GlossaryTerms\Pages\CreateGlossaryTerm;
 use App\Filament\Resources\GlossaryTerms\Pages\EditGlossaryTerm;
 use App\Models\GlossaryTerm;
 use App\Models\User;
+use App\Support\Features;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -30,8 +31,9 @@ class AdminSmokeTest extends TestCase
         $admin->roleAssignments()->create(['role' => 'superadmin', 'scope_type' => 'global']);
         $this->actingAs($admin);
 
-        // WhatsApp-Seiten sind standardmäßig ausgeschaltet; hier mitprüfen.
+        // WhatsApp-Seiten und Kasse sind standardmäßig ausgeschaltet; hier mitprüfen.
         config(['whatsapp.mode' => 'api']);
+        Features::setzen(Features::MITGLIEDSBEITRAEGE, true);
         $this->get('/admin')->assertOk();
         $checked = 0;
 

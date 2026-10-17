@@ -173,6 +173,12 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasRole('verwaltung') || $this->isAdmin();
     }
 
+    /** Kasse (Mitgliedsbeiträge); Admins ebenso. */
+    public function isKasse(): bool
+    {
+        return $this->hasRole('kasse') || $this->isAdmin();
+    }
+
     /**
      * WhatsApp-Newsletter-Admin (docs/whatsapp_newsletter.md): darf das
      * ganze Modul inkl. Verbindung zu Meta; Admins (Technik) ebenso.

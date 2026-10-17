@@ -134,6 +134,100 @@ class NamiVerzeichnis implements Mitgliederverzeichnis
         return array_values(array_map(fn (array $row) => $this->mitglied($row), (array) ($body['data'] ?? [])));
     }
 
+    /**
+     * Interne NaMi-ID der Gruppierung mit dieser DPSG-Nummer (z. B. 210601),
+     * gesucht im Gruppierungsbaum ab der Bundesebene. Abgestiegen wird nur in
+     * Diözese und Bezirk dieser Nummer, damit nicht der ganze Baum geladen wird.
+     *
+     * @throws MitgliederverzeichnisException
+     */
+    public function gruppierungId(string $nummer): int
+    {
+        $nummer = preg_replace('/\D/', '', $nummer) ?? '';
+        if (strlen($nummer) !== 6) {
+            throw new MitgliederverzeichnisException('Für den Abruf fehlt die DPSG-Nummer des Stamms (sechs Ziffern).');
+        }
+        $wege = [substr($nummer, 0, 2).'0000', substr($nummer, 0, 4).'00', $nummer];
+        $knoten = [1];
+        for ($tiefe = 0; $tiefe < 5 && $knoten !== []; $tiefe++) {
+            $weiter = [];
+            foreach ($knoten as $id) {
+                foreach ((array) ($this->get('/gruppierungen/filtered-for-navigation/gruppierung/node/'.$id, [])['data'] ?? []) as $g) {
+                    $gid = (int) ($g['id'] ?? 0);
+                    preg_match('/(\d{6})\s*$/', (string) ($g['descriptor'] ?? ''), $m);
+                    $nr = $m[1] ?? null;
+                    if ($nr === $nummer || $gid === (int) $nummer) {
+                        return $gid;
+                    }
+                    if ($nr === null || in_array($nr, $wege, true)) {
+                        $weiter[] = $gid;
+                    }
+                }
+            }
+            $knoten = array_slice($weiter, 0, 20);
+        }
+
+        throw new MitgliederverzeichnisException("Die Gruppierung {$nummer} ist in NaMi für dieses Konto nicht sichtbar.");
+    }
+
+    /**
+     * Mitgliederliste einer Gruppierung (eine Zeile je Person, ohne Beitragsart).
+     *
+     * @return list<array<string, mixed>>
+     *
+     * @throws MitgliederverzeichnisException
+     */
+    public function mitgliederListe(int $gruppierungId): array
+    {
+        $body = $this->get('/mitglied/filtered-for-navigation/gruppierung/gruppierung/'.$gruppierungId.'/flist', ['page' => 1, 'start' => 0, 'limit' => 5000]);
+
+        return array_values(array_filter((array) ($body['data'] ?? []), 'is_array'));
+    }
+
+    /**
+     * Stammdaten eines Mitglieds (u. a. beitragsartId, eintrittsdatum, austrittsDatum).
+     *
+     * @return array<string, mixed>
+     *
+     * @throws MitgliederverzeichnisException
+     */
+    public function mitgliedDetails(int $gruppierungId, int $namiId): array
+    {
+        $body = $this->get('/mitglied/filtered-for-navigation/gruppierung/gruppierung/'.$gruppierungId.'/'.$namiId, []);
+
+        return (array) ($body['data'] ?? []);
+    }
+
+    /**
+     * Beitragsarten (ID => Bezeichnung, z. B. „Voller Beitrag“). Ohne Antwort
+     * die bekannten Arten der DPSG.
+     *
+     * @return array<int, string>
+     */
+    public function beitragsarten(int $gruppierungId): array
+    {
+        $bekannt = [1 => 'Familienermäßigt – Stiftungseuro', 2 => 'Familienermäßigt', 3 => 'Sozialermäßigt – Stiftungseuro',
+            4 => 'Sozialermäßigt', 5 => 'Voller Beitrag – Stiftungseuro', 6 => 'Voller Beitrag'];
+        try {
+            $response = $this->http()->withOptions(['cookies' => $this->login()])
+                ->get(rtrim((string) config('mitglieder.nami.url'), '/').'/ica/rest/namiBeitrag/beitragsartmgl/gruppierung/'.$gruppierungId);
+            $arten = [];
+            foreach ((array) ($response->json('data') ?? []) as $a) {
+                // „Voller Beitrag (VOLLER BEITRAG - VERBANDSBEITRAG)“ → Text in der Klammer, wie in der NaMi-App.
+                $text = (string) ($a['descriptor'] ?? '');
+                $text = preg_match('/\((.*?)\)/', $text, $m) ? str_replace(' - VERBANDSBEITRAG', '', $m[1]) : $text;
+                // Bekannte Arten behalten ihre Schreibweise (NaMi liefert Großbuchstaben).
+                if (is_numeric($a['id'] ?? null) && trim($text) !== '' && ! isset($bekannt[(int) $a['id']])) {
+                    $arten[(int) $a['id']] = mb_convert_case(trim($text), MB_CASE_TITLE);
+                }
+            }
+
+            return $bekannt + $arten;
+        } catch (\Throwable) {
+            return $bekannt;
+        }
+    }
+
     public function pruefe(): void
     {
         $this->session = null;

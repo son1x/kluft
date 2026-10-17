@@ -109,7 +109,8 @@ class Funktionen extends Page
         if (! Ausbau::reicht($ab)) {
             $teile[] = 'Wirkt erst ab Ausbaustufe '.$ab.' („'.Ausbau::name($ab).'“).';
         }
-        if (($f['braucht'] ?? null) && $key === Features::MITGLIEDERABGLEICH && ! in_array(config('mitglieder.driver'), ['nami', 'hitobito'], true)) {
+        $treiber = $key === Features::MITGLIEDSBEITRAEGE ? ['nami'] : ['nami', 'hitobito'];
+        if (($f['braucht'] ?? null) && in_array($key, [Features::MITGLIEDERABGLEICH, Features::MITGLIEDSBEITRAEGE], true) && ! in_array(config('mitglieder.driver'), $treiber, true)) {
             $teile[] = 'Wirkt erst mit '.$f['braucht'].'.';
         }
 

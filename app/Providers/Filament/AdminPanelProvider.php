@@ -56,6 +56,7 @@ class AdminPanelProvider extends PanelProvider
                 NavigationGroup::make('Inhalte'),
                 NavigationGroup::make('Termine & Veranstaltungen'),
                 NavigationGroup::make('Verband & Kontakt'),
+                NavigationGroup::make('Kasse'),
                 NavigationGroup::make('WhatsApp-Newsletter'),
                 NavigationGroup::make('Verwaltung')->collapsed(),
                 NavigationGroup::make('Mein Konto'),

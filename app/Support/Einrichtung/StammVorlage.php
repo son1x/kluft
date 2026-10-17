@@ -88,6 +88,7 @@ class StammVorlage
                 'wp_import' => false,
                 'downloads' => false,
                 'code_login' => true,
+                'mitgliedsbeitraege' => true,
             ],
 
             'newsletter' => null,

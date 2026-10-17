@@ -47,6 +47,7 @@ class RoleCatalog
 
         $options['vorstand|global|'] = 'Vorstand';
         $options['verwaltung|global|'] = 'Verwaltung';
+        $options['kasse|global|'] = 'Kasse (Mitgliedsbeiträge)';
         if (WhatsAppMode::enabled()) {
             $options['whatsapp|global|'] = 'WhatsApp-Newsletter-Admin';
         }
@@ -140,6 +141,7 @@ class RoleCatalog
             'sektionsadmin' => 'Seiten, Beiträge und Veranstaltungen des Bereichs pflegen, Autor:innen freischalten',
             'vorstand' => 'Vorstandsseiten pflegen, Beiträge freigeben',
             'verwaltung' => 'alle Inhalte und Veranstaltungen, Benutzer und Datenschutz-Anfragen',
+            'kasse' => 'Mitgliedsbeiträge: offene und bezahlte Beiträge, Abgleich mit NaMi und der Rechnung des Bundesverbands',
             'whatsapp' => 'WhatsApp-Newsletter: Aussendungen, Vorlagen, Abonnent:innen und Verbindung',
             'admin' => 'Technik: Integrationen und Einstellungen',
             'superadmin' => 'Notfallzugang',
@@ -153,7 +155,7 @@ class RoleCatalog
      */
     public static function isPrivileged(string $key): bool
     {
-        return in_array(self::decode($key)['role'], ['verwaltung', 'whatsapp', 'admin', 'superadmin'], true);
+        return in_array(self::decode($key)['role'], ['verwaltung', 'kasse', 'whatsapp', 'admin', 'superadmin'], true);
     }
 
     public static function label(RoleAssignment $assignment): string

@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        instanz: [dv-trier, saar-hochwald]
+        instanz: [dv-trier, saar-hochwald, roden]
     environment: ${{ matrix.instanz }}
     env:
       SITE: ${{ vars.MONITOR_URL }}

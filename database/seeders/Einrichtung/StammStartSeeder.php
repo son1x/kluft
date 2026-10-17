@@ -5,6 +5,7 @@ namespace Database\Seeders\Einrichtung;
 use App\Models\Gruppierung;
 use App\Models\Page;
 use App\Support\Ausbau;
+use App\Support\Einrichtung\Installer;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -18,6 +19,9 @@ use Illuminate\Support\Str;
  */
 class StammStartSeeder extends Seeder
 {
+    /** @var list<string> In diesem Lauf angelegte Seiten. */
+    private array $neu = [];
+
     private const STUFEN_TEXTE = [
         'biber' => 'Bei den Bibern lernen Kinder ab etwa vier Jahren das Abenteuer Pfadfinden kennen: gemeinsam spielen, draußen sein und die Welt mit neugierigen Augen entdecken.',
         'woelflinge' => 'Wölflinge sind Forscher*innen, Entdecker*innen und Kundschafter*innen. In der Meute erleben Kinder von etwa sechs bis zehn Jahren Gemeinschaft, Spiel und erste Abenteuer.',
@@ -105,6 +109,31 @@ class StammStartSeeder extends Seeder
         if ($gruppierung->wasRecentlyCreated) {
             $gruppierung->syncStufen($stufen);
         }
+
+        $this->vorbereiteteSeiten($a['seiten'] ?? null);
+    }
+
+    /**
+     * Fertige Seiten aus der Konfiguration (angaben.json einer Instanz im
+     * Repository): fehlende anlegen; gerade eben angelegte Startseiten
+     * gleichen Namens (z. B. „start“) bekommen deren Titel und Text. Im
+     * Backend Gepflegtes bleibt unberührt.
+     */
+    private function vorbereiteteSeiten(mixed $roh): void
+    {
+        foreach (Installer::seitenPruefen($roh) as $s) {
+            $seite = Page::query()->firstOrNew(['slug' => $s['slug']]);
+            if ($seite->exists && ! in_array($s['slug'], $this->neu, true)) {
+                continue;
+            }
+            if (! $seite->exists) {
+                $seite->fill([
+                    'status' => 'published', 'published_at' => now(), 'show_in_nav' => true, 'nav_sort' => $s['nav_sort'],
+                    'parent_id' => $s['parent'] ? Page::query()->where('slug', $s['parent'])->value('id') : null,
+                ]);
+            }
+            $seite->fill(['title' => $s['title'], 'body' => $s['body']])->save();
+        }
     }
 
     /**
@@ -112,7 +141,7 @@ class StammStartSeeder extends Seeder
      */
     private function seite(string $slug, string $titel, array $werte): void
     {
-        Page::query()->firstOrCreate(['slug' => $slug], [
+        $seite = Page::query()->firstOrCreate(['slug' => $slug], [
             'parent_id' => isset($werte['parent']) ? Page::query()->where('slug', $werte['parent'])->value('id') : null,
             'title' => $titel,
             'body' => $werte['body'],
@@ -124,6 +153,9 @@ class StammStartSeeder extends Seeder
             'show_in_nav' => $werte['show_in_nav'] ?? false,
             'nav_sort' => $werte['nav_sort'] ?? 0,
         ]);
+        if ($seite->wasRecentlyCreated) {
+            $this->neu[] = $slug;
+        }
     }
 
     /**

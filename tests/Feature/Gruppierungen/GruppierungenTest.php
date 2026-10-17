@@ -253,7 +253,9 @@ class GruppierungenTest extends TestCase
         $stamm = Gruppierung::query()->where('slug', 'stamm-neu')->firstOrFail();
         $this->assertSame($verwaltung->id, $stamm->position_gesetzt_von);
         $this->assertSame(['biber', 'rover'], $stamm->stufen());
-        $this->actingAs($verwaltung)->get("/admin/gruppierungen/{$stamm->id}/edit")->assertOk()->assertSee('data-map-picker', false);
+        // Kartenpunkt per Klick nur in Instanzen mit Karte (Stammes-Websites haben keine).
+        $bearbeiten = $this->actingAs($verwaltung)->get("/admin/gruppierungen/{$stamm->id}/edit")->assertOk();
+        filled(config('dpsg.map.pmtiles')) ? $bearbeiten->assertSee('data-map-picker', false) : $bearbeiten->assertDontSee('data-map-picker', false);
     }
 
     #[TestDox('Name der Ansprechperson nur mit bestätigter Einwilligung')]

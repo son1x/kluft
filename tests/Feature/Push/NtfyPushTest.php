@@ -8,6 +8,7 @@ use App\Models\Event;
 use App\Models\Post;
 use App\Models\User;
 use App\Notifications\RolesGrantedNotification;
+use App\Support\Ausbau;
 use App\Support\PushEvents;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -31,7 +32,8 @@ class NtfyPushTest extends TestCase
     {
         parent::setUp();
         Filament::setCurrentPanel('admin');
-        config(['services.ntfy.server' => 'https://ntfy.example.org', 'services.ntfy.token' => null]);
+        // Push gibt es erst im Vollausbau (Stammes-Instanzen starten kleiner).
+        config(['dpsg.ausbau' => Ausbau::VOLL, 'services.ntfy.server' => 'https://ntfy.example.org', 'services.ntfy.token' => null]);
         Http::fake(['ntfy.example.org*' => Http::response(['id' => 'x'])]);
         Mail::fake();
     }

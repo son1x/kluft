@@ -74,7 +74,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        instanz: [dv-trier, saar-hochwald]
+        instanz: [dv-trier, saar-hochwald, roden]
     env:
       KLUFT_INSTANZ: ${{ matrix.instanz }}
     steps:

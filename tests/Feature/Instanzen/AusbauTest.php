@@ -45,6 +45,7 @@ class AusbauTest extends TestCase
     #[TestDox('Ohne Einstellung gilt der Standard der Instanz (DV/Bezirk: Vollausbau); gleich dem Standard entfernt die Einstellung')]
     public function test_standard(): void
     {
+        config(['dpsg.ausbau' => null]);
         $this->assertSame(Ausbau::VOLL, Ausbau::stufe());
         Ausbau::setzen(Ausbau::TERMINE);
         $this->assertSame(Ausbau::TERMINE, Ausbau::stufe());

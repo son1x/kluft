@@ -131,8 +131,20 @@ class Installer
     public function vorbereiteteSeiten(): array
     {
         $daten = json_decode((string) @file_get_contents($this->basis.'/'.self::VORBELEGUNG_DATEI), true);
+
+        return self::seitenPruefen(is_array($daten) ? ($daten['seiten'] ?? null) : null);
+    }
+
+    /**
+     * Vorbereitete Seiten prüfen (Vorbelegung oder angaben.json einer Instanz
+     * im Repository): gültiger Slug, Titel und Text, höchstens 12.
+     *
+     * @return list<array{slug: string, title: string, body: string, parent: ?string, nav_sort: int}>
+     */
+    public static function seitenPruefen(mixed $roh): array
+    {
         $seiten = [];
-        foreach (array_slice(is_array($daten) && is_array($daten['seiten'] ?? null) ? $daten['seiten'] : [], 0, 12) as $i => $s) {
+        foreach (array_slice(is_array($roh) ? array_values($roh) : [], 0, 12) as $i => $s) {
             $slug = is_array($s) ? (string) ($s['slug'] ?? '') : '';
             $titel = is_array($s) ? trim((string) ($s['title'] ?? '')) : '';
             if (! preg_match('/^[a-z0-9]+(-[a-z0-9]+)*$/', $slug) || strlen($slug) > 60 || $titel === '' || ! is_string($s['body'] ?? null)) {

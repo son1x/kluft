@@ -8,9 +8,19 @@ GitHub baut und testet (Tests der Instanz, Frontend, `vendor/`, Bilder der Insta
 
 ## Environment anlegen
 
-Settings → Environments → **New environment**. Der Name ist der Schlüssel der Instanz: `dv-trier` bzw. `saar-hochwald`.
+Settings → Environments → **New environment**. Der Name ist der Schlüssel der Instanz: `dv-trier`, `saar-hochwald` bzw. `roden`.
 
-Für einen weiteren Schlüssel muss der Name zusätzlich in den Auswahllisten der Workflows `deploy.yml`, `server-check.yml` und `wp-import.yml` sowie in den Matrix-Listen von `monitoring.yml`, `web-checks.yml` und `quality.yml` ergänzt werden.
+Für einen weiteren Schlüssel muss der Name zusätzlich in den Auswahllisten der Workflows `deploy.yml` und `server-check.yml` (bei Bedarf `wp-import.yml`) sowie in den Matrix-Listen von `monitoring.yml`, `web-checks.yml` und `quality.yml` ergänzt werden.
+
+### Bequemer: per Kommandozeile
+
+Statt jedes Secret einzeln auf github.com einzutippen, legt `scripts/environment-anlegen.sh` das Environment an und setzt alle Werte aus zwei Dateien – mit der GitHub-CLI (`gh auth login`, Admin-Recht am Repository):
+
+1. Ordner **außerhalb** des Repositories anlegen, z. B. `~/kluft-geheim/roden`, und die Vorlagen aus `docs/environment-vorlage/` hineinkopieren.
+2. `variablen.env` und `secrets.env` ausfüllen; den privaten Deploy-Schlüssel als `ssh_key` daneben legen. Zeilen ohne Wert werden übersprungen.
+3. `scripts/environment-anlegen.sh roden ~/kluft-geheim/roden`
+
+Das Skript zeigt am Ende die Variablen und die Namen der Secrets. Ein zweiter Aufruf überschreibt nur, was in den Dateien steht. Den Ordner danach sicher aufbewahren oder löschen; die Werte lassen sich aus GitHub nicht zurücklesen. Einzelne Werte gehen auch direkt: `gh secret set DB_PASSWORD --env roden` (fragt den Wert verdeckt ab) bzw. `gh variable set APP_URL --env roden --body https://www.dpsg-roden.de`.
 
 ### Variablen (Environment variables)
 
@@ -62,6 +72,16 @@ Secrets nie ins Repository oder in einen Chat. Was dort einmal stand, gilt als k
 5. MariaDB: eigene Datenbank und eigener Benutzer.
 6. Cronjob des Deploy-Benutzers: `* * * * * cd <pfad> && php artisan schedule:run >> /dev/null 2>&1`.
 7. Ein bisheriges eigenes Deploy-Skript erst abschalten, wenn der Workflow einmal erfolgreich durchgelaufen ist.
+
+## Stammes-Instanz im Repository (Beispiel Roden)
+
+Statt mit dem Einrichtungsassistenten auf eigenem Webspace kann eine Stammes-Website auch wie der DV über GitHub deployt werden, z. B. auf dem DV-Server in einem eigenen Verzeichnis:
+
+- `instanzen/roden/config.php` (baut die Konfiguration mit `StammVorlage`), `angaben.json` (Angaben wie aus dem Assistenten, mit `ausbau` und fertigen `seiten`), `public/images/logo.png`. Keine Passwörter oder persönlichen Adressen.
+- Auf dem Server: eigenes Verzeichnis (z. B. `/var/www/dpsg-roden`), VirtualHost für `www.dpsg-roden.de` mit DocumentRoot `<pfad>/public`, eigener php-fpm-Pool oder Deploy-Benutzer, eigene MariaDB-Datenbank, Cronjob für `<pfad>/artisan schedule:run`, Let's Encrypt. Nur `www` bzw. die Hauptdomain umziehen – Subdomains wie `webmail.` oder `cloud.` bleiben, wo sie sind.
+- Mail: Die Absenderadresse (`MAIL_FROM_ADDRESS`, z. B. `website@dpsg-roden.de`) muss in Brevo als Absender bzw. Domain bestätigt sein (DNS-Einträge beim Domain-Anbieter). Während der Testphase das Postfach des ersten Zugangs in `MAIL_TEST_ALLOWLIST` aufnehmen, sonst kommt der Anmeldecode nicht an.
+- Startinhalt beim ersten Deploy: `StammStartSeeder` legt Seiten, Stufen mit Gruppenstunden, Kontaktthemen und die vorbereiteten Seiten aus `angaben.json` an.
+- Erster Zugang: per SSH `php artisan cms:create-superadmin`, dann unter „Benutzer“ den Rollen-Zugang „Stammesvorstand“ mit dem Funktionspostfach anlegen (Anmeldung per E-Mail-Code).
 
 ## Erster Deploy einer neuen Instanz
 

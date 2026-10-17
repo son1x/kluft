@@ -15,3 +15,4 @@ Admins. Kurz und aus Sicht der Redaktion schreiben.
 - Stammes-Websites: „Leitungsteam“ und „Leitungsrunde“ auf den Stufenseiten.
 - Einrichtungsassistent: Gruppenstundenzeiten je Stufe, NaMi-Abgleich für Lageranmeldungen; Vorbelegung für einen bestimmten Stamm, auch mit fertigen Seiten.
 - Ausbaustufen von der Visitenkarte bis zum Vollausbau (Verwaltung → Ausbaustufe); im Assistenten Ort der Gruppenstunde je Gruppe.
+- Stammes-Websites auch per GitHub deployen (erste: Roden); Environment per Kommandozeile anlegen (scripts/environment-anlegen.sh).

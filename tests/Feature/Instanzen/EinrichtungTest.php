@@ -185,6 +185,33 @@ class EinrichtungTest extends TestCase
         );
     }
 
+    #[TestDox('Instanz im Repository (Roden): vollständige Konfiguration; vorbereitete Seiten ersetzen frische Startseiten, Gepflegtes bleibt')]
+    public function test_instanz_roden(): void
+    {
+        $c = require base_path('instanzen/roden/config.php');
+        foreach (array_keys((array) require base_path('instanzen/saar-hochwald/config.php')) as $schluessel) {
+            $this->assertArrayHasKey($schluessel, $c, $schluessel);
+        }
+        $this->assertSame('DPSG Stamm Graf Folke Bernadotte', $c['site']['name']);
+        $this->assertSame(Ausbau::ANMELDUNGEN, $c['ausbau']);
+        $this->assertFileExists(base_path('instanzen/roden/public/images/logo.png'));
+        $this->assertNotEmpty(Installer::seitenPruefen($c['einrichtung']['seiten']));
+
+        config(['dpsg' => array_replace(config('dpsg'), $c)]);
+        Page::query()->delete();
+        DB::table('contact_topics')->delete();
+        $this->seed(StammStartSeeder::class);
+
+        $this->assertSame('Pfadfinden in Saarlouis-Roden', Page::query()->where('slug', 'start')->value('title'));
+        $this->assertStringContainsString('Kimberly Lamprecht', (string) Page::query()->where('slug', 'stammesvorstand')->value('body'));
+        $this->assertTrue(Page::query()->where('slug', 'foerderverein')->where('show_in_nav', true)->exists());
+        $this->assertStringContainsString('dienstags, 16:00–17:00 Uhr', (string) Page::query()->where('slug', 'stufe-biber')->value('body'));
+
+        Page::query()->where('slug', 'start')->update(['title' => 'Von Hand geändert']);
+        $this->seed(StammStartSeeder::class);
+        $this->assertSame('Von Hand geändert', Page::query()->where('slug', 'start')->value('title'));
+    }
+
     #[TestDox('Startinhalt: Seiten, Stufen, Themen und der Stamm als Gruppierung – zweimal ausgeführt ändert nichts')]
     public function test_startinhalt(): void
     {

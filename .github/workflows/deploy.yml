@@ -45,6 +45,7 @@ on:
       - 'docs/**'
       - '**.md'
       - 'instanzen/saar-hochwald/**'
+      - 'instanzen/roden/**'
   workflow_dispatch:
     inputs:
       instanz:
@@ -53,6 +54,7 @@ on:
         options:
           - dv-trier
           - saar-hochwald
+          - roden
         required: true
       nur_pruefen:
         description: 'Nur prüfen: bauen, testen, Server-Zugang prüfen – nichts hochladen'
@@ -216,7 +218,8 @@ jobs:
             exit 1
           fi
           # Name und Newsletter-Adresse aus der Instanz-Konfiguration.
-          CFG='if (! function_exists("env")) { function env($k, $d = null) { $v = getenv($k); return $v === false ? $d : $v; } } $c = require "config/dpsg.php";'
+          # Mit Autoloader: Stammes-Instanzen bauen ihre Konfiguration mit StammVorlage.
+          CFG='require "vendor/autoload.php"; $c = require "config/dpsg.php";'
           SITE_NAME="$(php -r "$CFG"' echo $c["site"]["name"];')"
           NEWSLETTER_SLUG="$(php -r "$CFG"' echo $c["newsletter"]["slug"] ?? "";')"
           APP_NAME="${APP_NAME_VAR:-$SITE_NAME}"

@@ -84,7 +84,7 @@ class EinrichtungTest extends TestCase
         File::ensureDirectoryExists(dirname($this->basis.'/'.Installer::VORBELEGUNG_DATEI));
         File::put($this->basis.'/'.Installer::VORBELEGUNG_DATEI, json_encode([
             'stamm' => 'Don Bosco', 'stufen' => ['biber', 'rover'], 'gruppenstunden' => ['biber' => 'dienstags, 16 Uhr'],
-            'mail_pass' => 'geheim', 'db_pass' => 'geheim', 'unbekannt' => 'x',
+            'mail_pass' => 'geheim', 'db_pass' => 'geheim', 'unbekannt' => 'x', 'nami' => true,
             'seiten' => [
                 ['slug' => 'unser-stamm', 'title' => 'Unser Stamm', 'body' => '<p>Geschichte</p>'],
                 ['slug' => '../böse', 'title' => 'X', 'body' => '<p>x</p>'],
@@ -98,6 +98,7 @@ class EinrichtungTest extends TestCase
         $this->assertArrayNotHasKey('mail_pass', $v);
         $this->assertArrayNotHasKey('db_pass', $v);
         $this->assertArrayNotHasKey('unbekannt', $v);
+        $this->assertSame('1', $v['nami']);
 
         $a = $installer->pruefen([...self::FORMULAR, 'stufen' => ['biber', 'rover'], 'gruppenstunden' => [
             'biber' => '  dienstags,   16:00–17:00 Uhr ', 'rover' => '', 'pfadi' => 'nicht gewählt',
@@ -139,6 +140,11 @@ class EinrichtungTest extends TestCase
         $this->assertSame('false', $werte['APP_DEBUG']);
         $this->assertSame('off', $werte['KLUFT_UPDATES']);
         $this->assertSame('DPSG Stamm Don Bosco', $werte['APP_NAME']);
+        $this->assertSame('off', $werte['MITGLIEDER_DRIVER']);
+
+        $a = $installer->pruefen([...self::FORMULAR, 'stufen' => ['rover'], 'nami' => '1'])['angaben'];
+        $this->assertTrue($a['nami']);
+        $this->assertSame('nami', Dotenv::parse($installer->env('stamm-don-bosco', $a, $a['_db'], $a['_mail'], 'base64:x', 'b'))['MITGLIEDER_DRIVER']);
 
         foreach (['einfach', 'mit leerzeichen', 'a\'b', 'a"b\\c', '$HOME', 'x#y'] as $wert) {
             $this->assertSame($wert, Dotenv::parse('X='.Installer::wert($wert))['X'], $wert);

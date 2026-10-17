@@ -35,7 +35,7 @@ class Installer
     /** Felder, die eine Vorbelegung füllen darf. */
     private const VORBELEGBAR = ['stamm', 'ort', 'nummer', 'bezirk', 'dioezese', 'eltern_url', 'stufen', 'gruppenstunden',
         'domain', 'email', 'telefon', 'vorstand', 'strasse', 'plz_ort', 'db_art', 'db_host', 'db_port', 'db_name', 'db_user',
-        'mail_host', 'mail_port', 'mail_user', 'mail_from', 'admin_kind', 'admin_name', 'admin_email'];
+        'mail_host', 'mail_port', 'mail_user', 'mail_from', 'admin_kind', 'admin_name', 'admin_email', 'nami'];
 
     public const STUFEN = ['biber' => 'Biber', 'woelflinge' => 'Wölflinge', 'jupfi' => 'Jungpfadfinder*innen', 'pfadi' => 'Pfadfinder*innen', 'rover' => 'Rover'];
 
@@ -109,7 +109,9 @@ class Installer
         $werte = [];
         foreach (self::VORBELEGBAR as $k) {
             $v = $daten[$k] ?? null;
-            if (is_string($v) || is_int($v)) {
+            if (is_bool($v)) {
+                $werte[$k] = $v ? '1' : '';
+            } elseif (is_string($v) || is_int($v)) {
                 $werte[$k] = mb_substr((string) $v, 0, 200);
             } elseif (is_array($v) && in_array($k, ['stufen', 'gruppenstunden'], true)) {
                 $werte[$k] = array_map(fn ($x) => mb_substr(is_scalar($x) ? (string) $x : '', 0, 120), $v);
@@ -167,6 +169,8 @@ class Installer
             'vorstand' => $t('vorstand', 200),
             'eltern_url' => $t('eltern_url', 200),
             'stufen' => array_values(array_intersect(array_keys(self::STUFEN), (array) ($e['stufen'] ?? []))),
+            // Anmeldungen mit NaMi abgleichen (persönliches NaMi-Konto, nichts gespeichert).
+            'nami' => ! empty($e['nami']),
             'eingerichtet' => date('Y-m-d'),
         ];
         // Gruppenstunde je gewählter Stufe, z. B. „dienstags, 16:00–17:00 Uhr“.
@@ -238,15 +242,22 @@ class Installer
         return ['angaben' => $angaben + ['_db' => $db, '_mail' => $mail, '_zugang' => $zugang], 'fehler' => $fehler];
     }
 
-    /** Vorbereitete Seiten anlegen (nur fehlende; läuft mit gestartetem Laravel). */
+    /**
+     * Vorbereitete Seiten anlegen (läuft mit gestartetem Laravel). Eine Seite
+     * mit dem Slug einer Startseite (z. B. „start“, „stammesvorstand“)
+     * ersetzt deren Titel und Text; Menü und Elternseite bleiben.
+     */
     private function seitenAnlegen(): void
     {
         foreach ($this->vorbereiteteSeiten() as $s) {
-            Page::query()->firstOrCreate(['slug' => $s['slug']], [
-                'title' => $s['title'], 'body' => $s['body'], 'status' => 'published', 'published_at' => now(),
-                'parent_id' => $s['parent'] ? Page::query()->where('slug', $s['parent'])->value('id') : null,
-                'show_in_nav' => true, 'nav_sort' => $s['nav_sort'],
-            ]);
+            $seite = Page::query()->firstOrNew(['slug' => $s['slug']]);
+            if (! $seite->exists) {
+                $seite->fill([
+                    'status' => 'published', 'published_at' => now(), 'show_in_nav' => true, 'nav_sort' => $s['nav_sort'],
+                    'parent_id' => $s['parent'] ? Page::query()->where('slug', $s['parent'])->value('id') : null,
+                ]);
+            }
+            $seite->fill(['title' => $s['title'], 'body' => $s['body']])->save();
         }
     }
 
@@ -358,6 +369,8 @@ class Installer
             'MAIL_FROM_ADDRESS' => $mail['from'],
             'MAIL_FROM_NAME' => 'DPSG Stamm '.$angaben['stamm'],
             'BACKUP_PASSWORD' => $backupPasswort,
+            // NaMi 2, Anmeldung zum Prüfen mit dem eigenen NaMi-Konto (NAMI_AUTH=persoenlich).
+            'MITGLIEDER_DRIVER' => ! empty($angaben['nami']) ? 'nami' : 'off',
             'KLUFT_UPDATES' => $updates ? 'manual' : 'off',
             'KLUFT_UPDATE_URL' => $updates['manifest_url'] ?? '',
             'KLUFT_UPDATE_PUBLIC_KEY' => $updates['public_key'] ?? '',

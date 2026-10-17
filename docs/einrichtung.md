@@ -26,7 +26,9 @@ Formular ausfüllen.
    `storage/app/private/einrichtungscode.txt` lesen und eintragen. So kann
    niemand Fremdes eine frisch hochgeladene Website übernehmen.
 6. **Formular ausfüllen:** Name des Stamms, Ort, DPSG-Nummer (für den
-   NaMi-Abgleich), Stufen mit Gruppenstundenzeiten, Logo, Kontakt und Angaben fürs Impressum, Datenbank,
+   NaMi-Abgleich), Stufen mit Gruppenstundenzeiten, ob Anmeldungen mit NaMi
+   abgeglichen werden (`MITGLIEDER_DRIVER=nami`; geprüft wird mit dem eigenen
+   NaMi-Konto, gespeichert wird kein Zugang), Logo, Kontakt und Angaben fürs Impressum, Datenbank,
    E-Mail-Versand und der erste Zugang zur Redaktion – am besten als
    Rollen-Zugang mit dem Funktionspostfach des Vorstands.
 7. **Backup-Passwort** von der Abschlussseite im Passwortmanager des Stamms
@@ -60,10 +62,12 @@ der Einrichtung wird die Datei gelöscht.
 ```
 
 Erlaubt sind außerdem `telefon`, `db_art`, `db_host`, `db_port`, `db_name`,
-`db_user`, `mail_host`, `mail_port`, `mail_user` und `mail_from`. Unter
-`seiten` (höchstens 12) stehen fertige Seiten, etwa von der bisherigen
-Website; sie erscheinen im Menü (`parent` = Slug einer Elternseite, optional)
-und werden wie jede Seite beim Anzeigen bereinigt. Der WordPress-Import im
+`db_user`, `mail_host`, `mail_port`, `mail_user`, `mail_from` und `nami`
+(`true` = Anmeldungen mit NaMi abgleichen). Unter `seiten` (höchstens 12)
+stehen fertige Seiten, etwa von der bisherigen Website; sie erscheinen im Menü
+(`parent` = Slug einer Elternseite, optional) und werden wie jede Seite beim
+Anzeigen bereinigt. Trägt eine Seite den Slug einer Startseite (`start`,
+`stammesvorstand`, `stufen`, …), ersetzt sie deren Titel und Text. Der WordPress-Import im
 Backend übernimmt dagegen nur Beiträge.
 
 ## Was der Assistent anlegt

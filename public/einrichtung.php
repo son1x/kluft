@@ -189,6 +189,10 @@ legend{font-weight:600;margin-bottom:.3rem}
                 <?php } ?>
                 </div>
             </fieldset>
+            <fieldset><legend>Anmeldungen zu Lagern und Aktionen</legend>
+                <label><input type="checkbox" name="nami" value="1" <?= ! empty($e['nami']) ? 'checked' : '' ?>> Mitgliedschaft mit NaMi abgleichen</label>
+                <p class="klein">Wer im Redaktionsbereich die Anmeldungen prüft, meldet sich dafür mit dem eigenen NaMi-Konto an. Zugangsdaten werden nicht gespeichert; je Veranstaltung einschaltbar. Am besten mit DPSG-Nummer.</p>
+            </fieldset>
             <label class="feld"><span>Logo (optional)</span><input type="file" name="logo" accept="image/png,image/jpeg,image/webp"><small>PNG, JPG oder WebP, höchstens 2 MB. Ohne Logo erzeugt Kluft ein schlichtes Schriftlogo.</small></label>
         </section>
         <section>

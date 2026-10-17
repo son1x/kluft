@@ -9,6 +9,7 @@ use App\Filament\Resources\Events\RelationManagers\RegistrationsRelationManager;
 use App\Filament\Resources\Events\Schemas\EventForm;
 use App\Filament\Resources\Events\Tables\EventsTable;
 use App\Models\Event;
+use App\Support\Ausbau;
 use BackedEnum;
 use Filament\Facades\Filament;
 use Filament\Resources\Resource;
@@ -25,6 +26,12 @@ class EventResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTicket;
 
     protected static string|UnitEnum|null $navigationGroup = 'Termine & Veranstaltungen';
+
+    // Erst ab Ausbaustufe „Termine & Aktuelles“ im Menü; die Daten bleiben.
+    public static function shouldRegisterNavigation(): bool
+    {
+        return Ausbau::termine() && parent::shouldRegisterNavigation();
+    }
 
     protected static ?int $navigationSort = 10;
 

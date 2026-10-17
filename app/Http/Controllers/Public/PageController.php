@@ -9,6 +9,7 @@ use App\Models\Gruppierung;
 use App\Models\Page;
 use App\Models\Person;
 use App\Models\TeamPhoto;
+use App\Support\Ausbau;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 
@@ -16,6 +17,7 @@ class PageController extends Controller
 {
     public function show(string $slug): View
     {
+        abort_unless(Ausbau::seiteSichtbar($slug), 404);
         $page = Page::query()->published()->where('slug', $slug)->firstOrFail();
 
         if ($page->stage && config("dpsg.stages.{$page->stage}")) {

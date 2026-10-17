@@ -8,6 +8,7 @@ use App\Filament\Resources\Posts\Pages\ListPosts;
 use App\Filament\Resources\Posts\Schemas\PostForm;
 use App\Filament\Resources\Posts\Tables\PostsTable;
 use App\Models\Post;
+use App\Support\Ausbau;
 use BackedEnum;
 use Filament\Facades\Filament;
 use Filament\Resources\Resource;
@@ -24,6 +25,12 @@ class PostResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static string|UnitEnum|null $navigationGroup = 'Inhalte';
+
+    // Erst ab Ausbaustufe „Termine & Aktuelles“ im Menü; die Daten bleiben.
+    public static function shouldRegisterNavigation(): bool
+    {
+        return Ausbau::termine() && parent::shouldRegisterNavigation();
+    }
 
     protected static ?int $navigationSort = 20;
 

@@ -11,6 +11,7 @@
         'bald' => ['Anmeldung bald', 'bg-surface-muted text-text'],
         'geschlossen' => ['Anmeldung geschlossen', 'bg-surface-muted text-text'],
         'abgesagt' => ['Abgesagt', 'bg-dpsg-rot text-white'],
+        'ohne' => ['Anmeldung bei der Leitung', 'bg-surface-muted text-text'],
     ];
 @endphp
 

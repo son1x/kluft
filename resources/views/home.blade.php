@@ -66,17 +66,21 @@
             <aside class="flex flex-col justify-between gap-6 bg-dpsg-hellbeige p-8">
                 <div>
                     <h2 class="mb-3 font-serif text-xl font-bold">{{ $contact['office'] }}</h2>
-                    <p>{{ $contact['name'] }}<br />{{ $contact['street'] }}<br />{{ $contact['city'] }}</p>
+                    <p>{{ $contact['name'] }}@if (filled($contact['street'] ?? null))<br />{{ $contact['street'] }}@endif<br />{{ $contact['city'] }}</p>
                     <p class="mt-3">
-                        <a href="tel:{{ $contact['phone_href'] }}" class="hover:underline">{{ $contact['phone'] }}</a><br />
+                        @if (filled($contact['phone'] ?? null))
+                            <a href="tel:{{ $contact['phone_href'] }}" class="hover:underline">{{ $contact['phone'] }}</a><br />
+                        @endif
                         <a href="mailto:{{ $contact['email'] }}" class="hover:underline">{{ $contact['email'] }}</a>
                     </p>
                 </div>
-                <a href="{{ \App\Support\Site::officeUrl() }}" class="self-start border border-dpsg-rot px-4 py-2 text-dpsg-rot hover:bg-dpsg-rot hover:text-white">{{ \App\Support\Site::office('zu', capitalize: true) }}</a>
+                {{-- Visitenkarte (Ausbaustufe 1): zum Kontaktformular statt zur Seite des Vorstands. --}}
+                <a href="{{ \App\Support\Site::officeUrl() }}" class="self-start border border-dpsg-rot px-4 py-2 text-dpsg-rot hover:bg-dpsg-rot hover:text-white">{{ \App\Support\Ausbau::gruppen() ? \App\Support\Site::office('zu', capitalize: true) : 'Kontakt aufnehmen' }}</a>
             </aside>
         </div>
     </section>
 
+    @if (\App\Support\Ausbau::termine())
     <section class="mx-auto mt-20 max-w-6xl px-4" aria-labelledby="aktuelles-heading">
         @include('partials.section-heading', ['id' => 'aktuelles-heading', 'title' => 'Aktuelles'])
 
@@ -118,6 +122,7 @@
 
         <a href="{{ url('/aktuelles') }}" class="mt-8 inline-block border border-dpsg-rot px-4 py-2 text-dpsg-rot hover:bg-dpsg-rot hover:text-white">Alle Meldungen</a>
     </section>
+    @endif
 
     @if ($stagePages->isNotEmpty())
         <section class="mx-auto mt-20 max-w-6xl px-4" aria-labelledby="stufen-heading">
@@ -189,21 +194,25 @@
         </section>
     @endif
 
-    <section class="mx-auto mt-20 max-w-6xl px-4" aria-labelledby="service-heading">
-        @include('partials.section-heading', ['id' => 'service-heading', 'title' => 'Service'])
-
-        @php($serviceLinks = [
+    @php($serviceLinks = [
             ['url' => '/'.config('dpsg.site.office.page'), 'label' => config('dpsg.site.office.label'), 'icon' => 'heroicon-o-building-office-2'],
             ['url' => '/stufen', 'label' => 'Die Stufen', 'icon' => 'heroicon-o-user-group'],
             ['url' => '/'.config('dpsg.directory.path'), 'label' => config('dpsg.directory.title'), 'icon' => 'heroicon-o-map-pin'],
             ['url' => '/aktuelles', 'label' => 'Aktuelles', 'icon' => 'heroicon-o-newspaper'],
         ])
-        @php($serviceLinks = array_values(array_filter($serviceLinks, fn ($l) => $l['url'] !== '/' && filled($l['label']))))
+        {{-- Nur, was es in der Ausbaustufe gibt (Vorstand und Stufen ab 2, Aktuelles ab 3). --}}
+        @php($serviceLinks = array_values(array_filter($serviceLinks, fn ($l) => $l['url'] !== '/' && filled($l['label'])
+            && (\App\Support\Ausbau::gruppen() || ! in_array($l['url'], ['/'.config('dpsg.site.office.page'), '/stufen'], true))
+            && (\App\Support\Ausbau::termine() || $l['url'] !== '/aktuelles'))))
         @foreach (config('dpsg.home_highlights') as $slug => $tile)
             @if (isset($tile['service']) && $highlightPages->has($slug))
                 @php($serviceLinks[] = ['url' => '/'.$slug] + $tile['service'])
             @endif
         @endforeach
+    @if ($serviceLinks !== [])
+    <section class="mx-auto mt-20 max-w-6xl px-4" aria-labelledby="service-heading">
+        @include('partials.section-heading', ['id' => 'service-heading', 'title' => 'Service'])
+
         <div @class(['grid grid-cols-2 gap-5 sm:grid-cols-3', 'lg:grid-cols-6' => count($serviceLinks) <= 6, 'lg:grid-cols-7' => count($serviceLinks) > 6])>
             @foreach ($serviceLinks as $link)
                 <a href="{{ url($link['url']) }}" class="group flex aspect-square flex-col items-center justify-center gap-3 bg-white p-4 text-center shadow-md transition hover:-translate-y-0.5 hover:shadow-lg">
@@ -213,4 +222,5 @@
             @endforeach
         </div>
     </section>
+    @endif
 @endsection

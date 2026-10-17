@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Services\Mitglieder\MitgliederAbgleich;
+use App\Support\Ausbau;
 use App\Support\Features;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
@@ -189,7 +190,8 @@ class Event extends Model
      */
     public function acceptsRegistrations(): bool
     {
-        if ($this->status !== 'open') {
+        // Online-Anmeldung erst ab Ausbaustufe „Anmeldungen“.
+        if ($this->status !== 'open' || ! Ausbau::anmeldungen()) {
             return false;
         }
         if ($this->reg_opens_at?->isFuture() || $this->registrationClosesAt()->isPast()) {
@@ -206,6 +208,8 @@ class Event extends Model
     {
         return match (true) {
             $this->status === 'cancelled' => 'abgesagt',
+            // Ausbaustufe ohne Online-Anmeldung: Anmeldung direkt bei der Leitung.
+            ! Ausbau::anmeldungen() => 'ohne',
             $this->status !== 'open' || $this->registrationClosesAt()->isPast() => 'geschlossen',
             (bool) $this->reg_opens_at?->isFuture() => 'bald',
             $this->isFull() && ! $this->waitlist_enabled => 'ausgebucht',

@@ -48,28 +48,39 @@ class Features
 
     /**
      * Alle schaltbaren Funktionen: Bereich, Bezeichnung, Beschreibung, Standard
-     * (wenn die Instanz nichts festlegt) und ggf. Voraussetzung.
+     * (wenn die Instanz nichts festlegt), ggf. Voraussetzung und die nötige
+     * Ausbaustufe („ab“, App\Support\Ausbau; ohne Angabe: immer).
      *
-     * @var array<string, array{bereich: string, label: string, text: string, standard: bool, braucht?: string}>
+     * @var array<string, array{ab?: int, bereich: string, label: string, text: string, standard: bool, braucht?: string}>
      */
     public const KATALOG = [
-        self::DOWNLOADS => ['bereich' => 'Website', 'label' => 'Download-Seite', 'text' => 'Seite „Downloads“ mit Methoden, Formularen und Arbeitshilfen; Backend „Downloads“.', 'standard' => false],
-        self::GEORGSBOTE => ['bereich' => 'Website', 'label' => 'Zeitschriften-Archiv', 'text' => 'Archiv der Verbandszeitschrift als PDF (beim DV: Georgsbote).', 'standard' => false],
-        self::RECHTSTRAEGER => ['bereich' => 'Website', 'label' => 'Schaubild Rechtsträger', 'text' => 'Schaubild auf der Seite „Rechtsträger“.', 'standard' => false],
+        self::DOWNLOADS => ['ab' => 5, 'bereich' => 'Website', 'label' => 'Download-Seite', 'text' => 'Seite „Downloads“ mit Methoden, Formularen und Arbeitshilfen; Backend „Downloads“.', 'standard' => false],
+        self::GEORGSBOTE => ['ab' => 5, 'bereich' => 'Website', 'label' => 'Zeitschriften-Archiv', 'text' => 'Archiv der Verbandszeitschrift als PDF (beim DV: Georgsbote).', 'standard' => false],
+        self::RECHTSTRAEGER => ['ab' => 5, 'bereich' => 'Website', 'label' => 'Schaubild Rechtsträger', 'text' => 'Schaubild auf der Seite „Rechtsträger“.', 'standard' => false],
         self::TITELBILD_WECHSEL => ['bereich' => 'Website', 'label' => 'Titelbild wechselt zufällig', 'text' => 'Die Startseite zeigt bei jedem Aufruf eines der Titelbilder: das der Seite „start“ und die der Instanz. Aus: immer das der Seite „start“, sonst das erste der Instanz.', 'standard' => true],
-        self::ROADMAP => ['bereich' => 'Website', 'label' => 'Roadmap', 'text' => 'Öffentliche Seite /roadmap mit dem Projektstand.', 'standard' => false],
-        self::TEILNEHMENDE_EINTRAGEN => ['bereich' => 'Veranstaltungen', 'label' => 'Teilnehmende von Hand eintragen', 'text' => 'Einzeln oder als Liste (Excel, CSV) unter „Teilnehmende“.', 'standard' => true],
-        self::GAESTE => ['bereich' => 'Veranstaltungen', 'label' => 'Gäste aus anderen Verbänden', 'text' => 'Ankreuzfeld „Gast aus einem anderen Diözesanverband oder Verband“ unter „Stamm / Bezirk / Verband“.', 'standard' => true],
-        self::TEILNAHMEBESCHEINIGUNG => ['bereich' => 'Veranstaltungen', 'label' => 'Teilnahmebescheinigung', 'text' => 'PDF mit Prüfcode, Freigabe durch die Veranstaltungsleitung. Die Echtheitsprüfung ausgestellter Bescheinigungen bleibt immer erreichbar.', 'standard' => true],
-        self::MITGLIEDERABGLEICH => ['bereich' => 'Mitgliederabgleich (NaMi)', 'label' => 'Mitgliederabgleich', 'text' => 'Teilnehmende mit NaMi abgleichen („Mitgliedschaft prüfen“).', 'standard' => true, 'braucht' => 'MITGLIEDER_DRIVER (Secret)'],
-        self::NAMI_PROFIL => ['bereich' => 'Mitgliederabgleich (NaMi)', 'label' => 'NaMi-Zugang im Profil speichern', 'text' => '„Mein Konto → Mein NaMi-Zugang“: Zugang verschlüsselt speichern, Ampel, Verbindungstest.', 'standard' => true, 'braucht' => 'Mitgliederabgleich'],
-        self::NUR_MITGLIEDER => ['bereich' => 'Mitgliederabgleich (NaMi)', 'label' => 'Veranstaltungen nur für Mitglieder einer Gruppierung', 'text' => 'Einstellung „Nur für Mitglieder von …“ (Stamm/Bezirk), Markierung eigene/andere Gruppierung.', 'standard' => true],
-        self::PUSH => ['bereich' => 'Backend', 'label' => 'Push-Nachrichten (ntfy)', 'text' => '„Mein Konto → Meine Push-Nachrichten“ und Versand aufs Handy.', 'standard' => true],
+        self::ROADMAP => ['ab' => 5, 'bereich' => 'Website', 'label' => 'Roadmap', 'text' => 'Öffentliche Seite /roadmap mit dem Projektstand.', 'standard' => false],
+        self::TEILNEHMENDE_EINTRAGEN => ['ab' => 4, 'bereich' => 'Veranstaltungen', 'label' => 'Teilnehmende von Hand eintragen', 'text' => 'Einzeln oder als Liste (Excel, CSV) unter „Teilnehmende“.', 'standard' => true],
+        self::GAESTE => ['ab' => 4, 'bereich' => 'Veranstaltungen', 'label' => 'Gäste aus anderen Verbänden', 'text' => 'Ankreuzfeld „Gast aus einem anderen Diözesanverband oder Verband“ unter „Stamm / Bezirk / Verband“.', 'standard' => true],
+        self::TEILNAHMEBESCHEINIGUNG => ['ab' => 4, 'bereich' => 'Veranstaltungen', 'label' => 'Teilnahmebescheinigung', 'text' => 'PDF mit Prüfcode, Freigabe durch die Veranstaltungsleitung. Die Echtheitsprüfung ausgestellter Bescheinigungen bleibt immer erreichbar.', 'standard' => true],
+        self::MITGLIEDERABGLEICH => ['ab' => 4, 'bereich' => 'Mitgliederabgleich (NaMi)', 'label' => 'Mitgliederabgleich', 'text' => 'Teilnehmende mit NaMi abgleichen („Mitgliedschaft prüfen“).', 'standard' => true, 'braucht' => 'MITGLIEDER_DRIVER (Secret)'],
+        self::NAMI_PROFIL => ['ab' => 4, 'bereich' => 'Mitgliederabgleich (NaMi)', 'label' => 'NaMi-Zugang im Profil speichern', 'text' => '„Mein Konto → Mein NaMi-Zugang“: Zugang verschlüsselt speichern, Ampel, Verbindungstest.', 'standard' => true, 'braucht' => 'Mitgliederabgleich'],
+        self::NUR_MITGLIEDER => ['ab' => 4, 'bereich' => 'Mitgliederabgleich (NaMi)', 'label' => 'Veranstaltungen nur für Mitglieder einer Gruppierung', 'text' => 'Einstellung „Nur für Mitglieder von …“ (Stamm/Bezirk), Markierung eigene/andere Gruppierung.', 'standard' => true],
+        self::PUSH => ['ab' => 5, 'bereich' => 'Backend', 'label' => 'Push-Nachrichten (ntfy)', 'text' => '„Mein Konto → Meine Push-Nachrichten“ und Versand aufs Handy.', 'standard' => true],
         self::CODE_LOGIN => ['bereich' => 'Backend', 'label' => 'Anmeldung per E-Mail-Code', 'text' => 'Redaktion ohne Microsoft 365: Zugänge für Personen oder Rollen (Funktionspostfach, z. B. „Stammesvorstand“), Anmeldung mit Einmalcode per E-Mail. Microsoft 365 bleibt daneben möglich.', 'standard' => false],
-        self::WP_IMPORT => ['bereich' => 'Backend', 'label' => 'WordPress-Import', 'text' => 'Übernahme von Seiten und Beiträgen aus einer WordPress-Website.', 'standard' => false],
+        self::WP_IMPORT => ['ab' => 3, 'bereich' => 'Backend', 'label' => 'WordPress-Import', 'text' => 'Übernahme von Seiten und Beiträgen aus einer WordPress-Website.', 'standard' => false],
     ];
 
     public static function enabled(string $feature): bool
+    {
+        if (! Ausbau::reicht(self::KATALOG[$feature]['ab'] ?? Ausbau::VISITENKARTE)) {
+            return false;
+        }
+
+        return self::geschaltet($feature);
+    }
+
+    /** Schalter bzw. Standard, ohne Ausbaustufe (für Verwaltung → Funktionen). */
+    public static function geschaltet(string $feature): bool
     {
         $schalter = self::schalter();
         if (array_key_exists($feature, $schalter)) {

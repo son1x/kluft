@@ -9,6 +9,7 @@ use App\Services\Mitglieder\HitobitoVerzeichnis;
 use App\Services\Mitglieder\KeinVerzeichnis;
 use App\Services\Mitglieder\Mitgliederverzeichnis;
 use App\Services\Mitglieder\NamiVerzeichnis;
+use App\Support\Ausbau;
 use App\Support\Embeds;
 use App\Support\Galerie;
 use App\Support\StufenAlter;
@@ -103,6 +104,12 @@ class AppServiceProvider extends ServiceProvider
         // Wiederholung in jedem Controller zur Verfügung (F-CMS-01).
         View::composer(['layouts.app', 'home'], function ($view) {
             $stageOrder = array_keys(config('dpsg.stages'));
+            // Visitenkarte (Ausbaustufe 1): keine Seiten im Menü, keine Stufen.
+            if (! Ausbau::gruppen()) {
+                $view->with(['navPages' => collect(), 'stagePages' => collect()]);
+
+                return;
+            }
 
             $view->with([
                 // Hauptmenü: oberste Ebene, Unterseiten als Unterpunkte.

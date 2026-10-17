@@ -4,6 +4,7 @@ namespace Tests\Feature\Instanzen;
 
 use App\Models\Gruppierung;
 use App\Models\Page;
+use App\Support\Ausbau;
 use App\Support\Einrichtung\Installer;
 use App\Support\Einrichtung\StammVorlage;
 use Database\Seeders\Einrichtung\StammStartSeeder;
@@ -104,6 +105,13 @@ class EinrichtungTest extends TestCase
             'biber' => '  dienstags,   16:00–17:00 Uhr ', 'rover' => '', 'pfadi' => 'nicht gewählt',
         ]])['angaben'];
         $this->assertSame(['biber' => 'dienstags, 16:00–17:00 Uhr'], $a['gruppenstunden']);
+        $this->assertSame(Ausbau::GRUPPEN, $a['ausbau']);
+
+        $a = $installer->pruefen([...self::FORMULAR, 'stufen' => ['biber'], 'ausbau' => '4', 'gruppenstunden_orte' => ['biber' => ' Pfarrheim  St. Martin ', 'rover' => 'nicht gewählt']])['angaben'];
+        $this->assertSame(Ausbau::ANMELDUNGEN, $a['ausbau']);
+        $this->assertSame(['biber' => 'Pfarrheim St. Martin'], $a['gruppenstunden_orte']);
+        $this->assertSame(Ausbau::GRUPPEN, $installer->pruefen([...self::FORMULAR, 'stufen' => ['biber'], 'ausbau' => '9'])['angaben']['ausbau']);
+        $this->assertSame(Ausbau::ANMELDUNGEN, StammVorlage::config(['stamm' => 'X', 'ausbau' => 4])['ausbau']);
     }
 
     #[TestDox('Einrichtungscode: liegt nur unter storage/, wird genau verglichen; mit .env gilt die Installation als eingerichtet')]
@@ -181,7 +189,8 @@ class EinrichtungTest extends TestCase
     public function test_startinhalt(): void
     {
         $angaben = ['stamm' => 'Don Bosco', 'ort' => 'Beispielstadt', 'nummer' => '210208', 'email' => 'vorstand@stamm-don-bosco.de', 'domain' => 'stamm-don-bosco.de', 'vorstand' => 'Erika Beispiel', 'stufen' => ['woelflinge', 'pfadi'],
-            'gruppenstunden' => ['woelflinge' => 'donnerstags, 16:30–18:00 Uhr'], 'strasse' => 'Kirchplatz 1', 'plz_ort' => '54290 Beispielstadt'];
+            'gruppenstunden' => ['woelflinge' => 'donnerstags, 16:30–18:00 Uhr', 'pfadi' => 'freitags, 18 Uhr'], 'gruppenstunden_orte' => ['pfadi' => 'Pfarrheim St. Martin'],
+            'strasse' => 'Kirchplatz 1', 'plz_ort' => '54290 Beispielstadt'];
         config(['dpsg' => array_replace(config('dpsg'), StammVorlage::config($angaben))]);
         Page::query()->delete();
         DB::table('contact_topics')->delete();
@@ -204,7 +213,7 @@ class EinrichtungTest extends TestCase
         // „Schnupperstunde anfragen“ statt „Stamm in der Nähe finden“ ist im
         // Browser-Durchlauf geprüft (docs/einrichtung.md).
         $this->get('/stufe-woelflinge')->assertOk()->assertSee('donnerstags, 16:30–18:00 Uhr')->assertSee('Kirchplatz 1, 54290 Beispielstadt');
-        $this->get('/stufe-pfadi')->assertOk()->assertSee('Gruppenstunde')->assertSee('tragen wir hier bald ein')
+        $this->get('/stufe-pfadi')->assertOk()->assertSee('freitags, 18 Uhr')->assertSee('Pfarrheim St. Martin')->assertDontSee('Kirchplatz 1, 54290 Beispielstadt')
             ->assertSee('Das Leitungsteam')->assertSee('Leitungsrunde')->assertSee('beim')
             ->assertDontSee('Stufenreferent');
         $this->get('/')->assertOk()->assertSee('Pfadfinden in Beispielstadt');

@@ -36,6 +36,28 @@ Formular ausfüllen.
 8. **Cronjob** anlegen: `php <pfad>/artisan schedule:run` jede Minute.
 9. Unter `/redaktion/anmelden` mit der Adresse des ersten Zugangs anmelden.
 
+## Ausbaustufen
+
+Ein Stamm muss nicht mit allem starten. Kluft läuft immer vollständig im
+Hintergrund; die Ausbaustufe bestimmt nur, was Website und Backend zeigen
+(`App\Support\Ausbau`). Im Assistenten wählbar, danach unter
+„Verwaltung → Ausbaustufe“ jederzeit änderbar (Admins, mit Protokoll).
+Zurückschalten blendet nur aus; Inhalte bleiben gespeichert.
+
+| Stufe | Name | Zeigt |
+|---|---|---|
+| 1 | Visitenkarte | Startseite, Kontakt, Impressum, Datenschutz |
+| 2 | Gruppen | dazu „Unsere Gruppen“ mit Gruppenstunde und Ort je Gruppe, Stammesvorstand und alle weiteren Seiten (Heim, Förderverein …) |
+| 3 | Termine & Aktuelles | dazu Kalender, Veranstaltungen (Anmeldung direkt bei der Leitung), Meldungen mit RSS-Feed |
+| 4 | Anmeldungen | dazu Online-Anmeldung, „Meine Anmeldungen“, NaMi-Abgleich, Teilnahmebescheinigungen |
+| 5 | Vollausbau | alle Funktionen, z. B. Downloads und Push-Nachrichten |
+
+Was in einer Stufe fehlt, antwortet mit „nicht gefunden“ und verschwindet aus
+den Menüs; schaltbare Funktionen (Verwaltung → Funktionen) wirken erst ab
+ihrer Stufe. Bestätigungs- und Stornolinks bereits Angemeldeter und die
+Echtheitsprüfung von Bescheinigungen bleiben immer erreichbar. DV und Bezirk
+haben keine Stufe in der Konfiguration und laufen im Vollausbau.
+
 ## Für einen Stamm vorbereiten (Vorbelegung)
 
 Wer die Einrichtung für einen Stamm vorbereitet (z. B. der DV), legt vor dem
@@ -62,8 +84,10 @@ der Einrichtung wird die Datei gelöscht.
 ```
 
 Erlaubt sind außerdem `telefon`, `db_art`, `db_host`, `db_port`, `db_name`,
-`db_user`, `mail_host`, `mail_port`, `mail_user`, `mail_from` und `nami`
-(`true` = Anmeldungen mit NaMi abgleichen). Unter `seiten` (höchstens 12)
+`db_user`, `mail_host`, `mail_port`, `mail_user`, `mail_from`, `nami`
+(`true` = Anmeldungen mit NaMi abgleichen), `ausbau` (1–5, ohne Angabe 2)
+und `gruppenstunden_orte` (Ort je Stufe, z. B. `{"pfadi": "Pfarrheim St. Martin"}`;
+ohne Ort gilt die Adresse des Stamms). Unter `seiten` (höchstens 12)
 stehen fertige Seiten, etwa von der bisherigen Website; sie erscheinen im Menü
 (`parent` = Slug einer Elternseite, optional) und werden wie jede Seite beim
 Anzeigen bereinigt. Trägt eine Seite den Slug einer Startseite (`start`,

@@ -92,6 +92,7 @@
                 </span>
             </a>
 
+            @if (\App\Support\Ausbau::termine())
             <div class="rounded-lg bg-white p-5 shadow-md">
                 <h2 class="font-serif text-lg font-bold">Termine</h2>
                 @if ($events->isNotEmpty())
@@ -113,6 +114,7 @@
                     <a href="{{ route('calendar.index', ['stufe' => $page->stage]) }}" class="text-dpsg-rot underline">Kalender</a>
                 </div>
             </div>
+            @endif
         </aside>
     </div>
 

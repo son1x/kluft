@@ -7,6 +7,7 @@ use App\Filament\Resources\Events\EventResource;
 use App\Models\Calendar;
 use App\Models\CalendarEvent;
 use App\Models\Event;
+use App\Support\Ausbau;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Resources\Resource;
@@ -32,6 +33,12 @@ class CalendarEntryResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendar;
 
     protected static string|UnitEnum|null $navigationGroup = 'Termine & Veranstaltungen';
+
+    // Erst ab Ausbaustufe „Termine & Aktuelles“ im Menü; die Daten bleiben.
+    public static function shouldRegisterNavigation(): bool
+    {
+        return Ausbau::termine() && parent::shouldRegisterNavigation();
+    }
 
     protected static ?string $modelLabel = 'Kalendertermin';
 

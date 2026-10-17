@@ -70,7 +70,9 @@
             @if ($event->memberGruppierung)
                 <p class="mt-2 border-l-4 border-dpsg-blau bg-white p-3 text-sm shadow">Diese Veranstaltung ist für {{ $event->zielgruppeMitglieder() }}. Wenn du nicht dazugehörst, melde dich bitte vorher bei der Veranstaltungsleitung.</p>
             @endif
-            <p class="mt-1 text-sm text-text-secondary">Schon angemeldet? Unter <a href="{{ route('participants.index') }}" class="underline">Meine Anmeldungen</a> kannst du stornieren und Unterlagen abrufen.</p>
+            @if ($state !== 'ohne')
+                <p class="mt-1 text-sm text-text-secondary">Schon angemeldet? Unter <a href="{{ route('participants.index') }}" class="underline">Meine Anmeldungen</a> kannst du stornieren und Unterlagen abrufen.</p>
+            @endif
 
             @if (session('anmeldung') === 'angefragt')
                 <div class="mt-4 border-l-4 border-stufe-pfadi bg-white p-4 shadow" role="status">
@@ -79,6 +81,15 @@
                 </div>
             @elseif ($state === 'abgesagt')
                 <p class="mt-4 text-text-secondary">Die Veranstaltung ist abgesagt, eine Anmeldung ist nicht möglich.</p>
+            @elseif ($state === 'ohne')
+                <p class="mt-4 text-text-secondary">
+                    Eine Online-Anmeldung gibt es hier nicht.
+                    @if ($event->contact_email)
+                        Melde dich bitte direkt bei <a href="mailto:{{ $event->contact_email }}" class="text-dpsg-rot underline">{{ $event->contact_name ?: $event->contact_email }}</a> an.
+                    @else
+                        Melde dich bitte über das <a href="{{ url('/'.config('dpsg.contact_page')) }}" class="text-dpsg-rot underline">Kontaktformular</a> an.
+                    @endif
+                </p>
             @elseif ($state === 'bald')
                 <p class="mt-4 text-text-secondary">Die Anmeldung öffnet am {{ $event->reg_opens_at->locale('de')->isoFormat('D. MMMM YYYY [um] HH:mm') }} Uhr.</p>
             @elseif ($state === 'geschlossen')

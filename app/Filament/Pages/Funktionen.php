@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Models\FeatureSwitch;
 use App\Models\User;
 use App\Support\AuditLogger;
+use App\Support\Ausbau;
 use App\Support\Features;
 use BackedEnum;
 use Filament\Facades\Filament;
@@ -50,7 +51,7 @@ class Funktionen extends Page
 
     public function mount(): void
     {
-        $this->form->fill(['schalter' => collect(Features::KATALOG)->mapWithKeys(fn ($f, string $key) => [$key => Features::enabled($key)])->all()]);
+        $this->form->fill(['schalter' => collect(Features::KATALOG)->mapWithKeys(fn ($f, string $key) => [$key => Features::geschaltet($key)])->all()]);
     }
 
     public function form(Schema $schema): Schema
@@ -76,7 +77,7 @@ class Funktionen extends Page
         $geaendert = [];
         foreach (array_keys(Features::KATALOG) as $key) {
             $an = (bool) ($werte[$key] ?? false);
-            if ($an === Features::enabled($key)) {
+            if ($an === Features::geschaltet($key)) {
                 continue;
             }
             // Gleich dem Standard: Schalter entfernen, sonst setzen.
@@ -96,13 +97,17 @@ class Funktionen extends Page
     }
 
     /**
-     * @param  array{text: string, braucht?: string}  $f
+     * @param  array{ab?: int, text: string, braucht?: string}  $f
      */
     private static function hinweis(string $key, array $f, ?FeatureSwitch $schalter): string
     {
         $teile = [$f['text'], 'Standard dieser Website: '.(Features::standard($key) ? 'an' : 'aus').'.'];
         if ($schalter) {
             $teile[] = 'Geändert am '.$schalter->updated_at?->format('d.m.Y').($schalter->updatedBy ? ' von '.$schalter->updatedBy->name : '').'.';
+        }
+        $ab = $f['ab'] ?? Ausbau::VISITENKARTE;
+        if (! Ausbau::reicht($ab)) {
+            $teile[] = 'Wirkt erst ab Ausbaustufe '.$ab.' („'.Ausbau::name($ab).'“).';
         }
         if (($f['braucht'] ?? null) && $key === Features::MITGLIEDERABGLEICH && ! in_array(config('mitglieder.driver'), ['nami', 'hitobito'], true)) {
             $teile[] = 'Wirkt erst mit '.$f['braucht'].'.';

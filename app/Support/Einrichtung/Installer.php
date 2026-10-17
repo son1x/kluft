@@ -4,6 +4,7 @@ namespace App\Support\Einrichtung;
 
 use App\Models\Page;
 use App\Models\User;
+use App\Support\Ausbau;
 use Illuminate\Contracts\Console\Kernel;
 use PDO;
 use RuntimeException;
@@ -35,7 +36,7 @@ class Installer
     /** Felder, die eine Vorbelegung füllen darf. */
     private const VORBELEGBAR = ['stamm', 'ort', 'nummer', 'bezirk', 'dioezese', 'eltern_url', 'stufen', 'gruppenstunden',
         'domain', 'email', 'telefon', 'vorstand', 'strasse', 'plz_ort', 'db_art', 'db_host', 'db_port', 'db_name', 'db_user',
-        'mail_host', 'mail_port', 'mail_user', 'mail_from', 'admin_kind', 'admin_name', 'admin_email', 'nami'];
+        'mail_host', 'mail_port', 'mail_user', 'mail_from', 'admin_kind', 'admin_name', 'admin_email', 'nami', 'ausbau', 'gruppenstunden_orte'];
 
     public const STUFEN = ['biber' => 'Biber', 'woelflinge' => 'Wölflinge', 'jupfi' => 'Jungpfadfinder*innen', 'pfadi' => 'Pfadfinder*innen', 'rover' => 'Rover'];
 
@@ -113,7 +114,7 @@ class Installer
                 $werte[$k] = $v ? '1' : '';
             } elseif (is_string($v) || is_int($v)) {
                 $werte[$k] = mb_substr((string) $v, 0, 200);
-            } elseif (is_array($v) && in_array($k, ['stufen', 'gruppenstunden'], true)) {
+            } elseif (is_array($v) && in_array($k, ['stufen', 'gruppenstunden', 'gruppenstunden_orte'], true)) {
                 $werte[$k] = array_map(fn ($x) => mb_substr(is_scalar($x) ? (string) $x : '', 0, 120), $v);
             }
         }
@@ -171,15 +172,20 @@ class Installer
             'stufen' => array_values(array_intersect(array_keys(self::STUFEN), (array) ($e['stufen'] ?? []))),
             // Anmeldungen mit NaMi abgleichen (persönliches NaMi-Konto, nichts gespeichert).
             'nami' => ! empty($e['nami']),
+            // Was die Website zu Beginn zeigt (App\Support\Ausbau, später im Backend änderbar).
+            'ausbau' => isset(Ausbau::STUFEN[(int) ($e['ausbau'] ?? 0)]) ? (int) $e['ausbau'] : Ausbau::GRUPPEN,
             'eingerichtet' => date('Y-m-d'),
         ];
         // Gruppenstunde je gewählter Stufe, z. B. „dienstags, 16:00–17:00 Uhr“.
-        $zeiten = (array) ($e['gruppenstunden'] ?? []);
-        $angaben['gruppenstunden'] = [];
-        foreach ($angaben['stufen'] as $stufe) {
-            $zeit = mb_substr(trim((string) preg_replace('/\s+/', ' ', is_string($zeiten[$stufe] ?? null) ? $zeiten[$stufe] : '')), 0, 120);
-            if ($zeit !== '') {
-                $angaben['gruppenstunden'][$stufe] = $zeit;
+        // Gruppenstunde und Ort je gewählter Stufe; ohne Ort gilt die Adresse des Stamms.
+        foreach (['gruppenstunden' => 120, 'gruppenstunden_orte' => 160] as $feld => $max) {
+            $werte = (array) ($e[$feld] ?? []);
+            $angaben[$feld] = [];
+            foreach ($angaben['stufen'] as $stufe) {
+                $wert = mb_substr(trim((string) preg_replace('/\s+/', ' ', is_string($werte[$stufe] ?? null) ? $werte[$stufe] : '')), 0, $max);
+                if ($wert !== '') {
+                    $angaben[$feld][$stufe] = $wert;
+                }
             }
         }
 

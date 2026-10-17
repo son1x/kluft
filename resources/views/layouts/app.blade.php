@@ -13,7 +13,9 @@
     {{-- Ohne eigene Beschreibung eine allgemeine, damit Suchmaschinen nicht raten. --}}
     <meta name="description" content="@yield('seo_description', config('dpsg.site.description'))" />
     <link rel="icon" href="{{ asset(config('dpsg.site.favicon', 'favicon.ico')) }}" />
-    <link rel="alternate" type="application/rss+xml" title="{{ config('dpsg.site.name') }} – Aktuelles" href="{{ route('feed') }}" />
+    @if (\App\Support\Ausbau::termine())
+        <link rel="alternate" type="application/rss+xml" title="{{ config('dpsg.site.name') }} – Aktuelles" href="{{ route('feed') }}" />
+    @endif
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
 </head>
@@ -37,8 +39,12 @@
             <nav aria-label="Service" class="hidden text-sm md:block">
                 <ul class="flex gap-6">
                     <li><a href="{{ url('/kontakt') }}" class="hover:underline">Kontakt</a></li>
-                    <li><a href="{{ \App\Support\Site::officeUrl() }}" class="hover:underline">{{ \App\Support\Site::officeLabel() }}</a></li>
-                    <li><a href="{{ url('/meine-anmeldungen') }}" class="hover:underline">Meine Anmeldungen</a></li>
+                    @if (\App\Support\Ausbau::gruppen())
+                        <li><a href="{{ \App\Support\Site::officeUrl() }}" class="hover:underline">{{ \App\Support\Site::officeLabel() }}</a></li>
+                    @endif
+                    @if (\App\Support\Ausbau::anmeldungen())
+                        <li><a href="{{ url('/meine-anmeldungen') }}" class="hover:underline">Meine Anmeldungen</a></li>
+                    @endif
                     <li><a href="https://www.dpsg.de" target="_blank" rel="noopener" class="hover:underline">dpsg.de</a></li>
                 </ul>
             </nav>
@@ -66,14 +72,18 @@
                         @endif
                     </li>
                 @endforeach
-                <li>
-                    <a href="{{ url('/veranstaltungen') }}" @class(['block px-4 py-3', 'text-dpsg-rot' => request()->is('veranstaltungen*')])>Veranstaltungen</a>
-                    <ul class="-mt-2 pb-2 font-normal">
-                        <li><a href="{{ url('/meine-anmeldungen') }}" @class(['block py-1.5 pr-4 pl-8', 'text-dpsg-rot font-bold' => request()->is('meine-anmeldungen*')])>Meine Anmeldungen</a></li>
-                    </ul>
-                </li>
-                <li><a href="{{ url('/kalender') }}" @class(['block px-4 py-3', 'text-dpsg-rot' => request()->is('kalender')])>Kalender</a></li>
-                <li><a href="{{ url('/aktuelles') }}" @class(['block px-4 py-3', 'text-dpsg-rot' => request()->is('aktuelles*')])>Aktuelles</a></li>
+                @if (\App\Support\Ausbau::termine())
+                    <li>
+                        <a href="{{ url('/veranstaltungen') }}" @class(['block px-4 py-3', 'text-dpsg-rot' => request()->is('veranstaltungen*')])>Veranstaltungen</a>
+                        @if (\App\Support\Ausbau::anmeldungen())
+                            <ul class="-mt-2 pb-2 font-normal">
+                                <li><a href="{{ url('/meine-anmeldungen') }}" @class(['block py-1.5 pr-4 pl-8', 'text-dpsg-rot font-bold' => request()->is('meine-anmeldungen*')])>Meine Anmeldungen</a></li>
+                            </ul>
+                        @endif
+                    </li>
+                    <li><a href="{{ url('/kalender') }}" @class(['block px-4 py-3', 'text-dpsg-rot' => request()->is('kalender')])>Kalender</a></li>
+                    <li><a href="{{ url('/aktuelles') }}" @class(['block px-4 py-3', 'text-dpsg-rot' => request()->is('aktuelles*')])>Aktuelles</a></li>
+                @endif
                 <li><a href="{{ url('/kontakt') }}" class="block px-4 py-3">Kontakt</a></li>
             </ul>
         </nav>
@@ -158,35 +168,44 @@
                         </li>
                     @endif
                 @endforeach
-                {{-- Veranstaltungen mit Unterpunkt „Meine Anmeldungen“; gleiches
-                     Aufklappverhalten wie bei den Seiten oben. --}}
-                @php($eventsCurrent = request()->is('veranstaltungen'))
-                @php($mineActive = request()->is('meine-anmeldungen*'))
-                <li class="relative flex-1 border-l border-dpsg-mittelbeige text-center"
-                    x-data="{ open: false }"
-                    @mouseenter="open = true" @mouseleave="open = false"
-                    @keydown.escape="open = false; $refs.toggle.focus()"
-                    @focusout="$el.contains($event.relatedTarget) || (open = false)">
-                    <div class="flex items-center justify-center">
-                        <a href="{{ url('/veranstaltungen') }}" @class(['block py-1 pl-3 hover:text-dpsg-rot', 'text-dpsg-rot' => request()->is('veranstaltungen*') || $mineActive]) @if ($eventsCurrent) aria-current="page" @endif>Veranstaltungen</a>
-                        <button type="button" x-ref="toggle" class="px-1 py-1 hover:text-dpsg-rot" @click="open = ! open" x-bind:aria-expanded="open.toString()" aria-expanded="false" aria-controls="subnav-veranstaltungen">
-                            <span class="sr-only">Unterpunkte von Veranstaltungen</span>
-                            <x-heroicon-m-chevron-down class="h-4 w-4 transition" x-bind:class="open && 'rotate-180'" aria-hidden="true" />
-                        </button>
-                    </div>
-                    <div id="subnav-veranstaltungen" class="absolute left-1/2 top-full z-50 -translate-x-1/2 pt-3" x-show="open" x-transition.opacity x-cloak>
-                        <ul class="min-w-60 border-t-4 border-dpsg-rot bg-white py-2 text-left whitespace-nowrap shadow-xl">
-                            <li><a href="{{ url('/veranstaltungen') }}" @class(['block px-4 py-2 text-xs uppercase tracking-wide text-text-secondary hover:text-dpsg-rot', 'text-dpsg-rot' => $eventsCurrent])>Übersicht Veranstaltungen</a></li>
-                            <li><a href="{{ url('/meine-anmeldungen') }}" @class(['flex items-center gap-2 px-4 py-2 hover:bg-surface-muted hover:text-dpsg-rot', 'text-dpsg-rot' => $mineActive, 'font-normal' => ! $mineActive]) @if ($mineActive) aria-current="page" @endif>Meine Anmeldungen</a></li>
-                        </ul>
-                    </div>
-                </li>
-                <li class="flex-1 border-l border-dpsg-mittelbeige text-center">
-                    <a href="{{ url('/kalender') }}" @class(['block px-3 py-1 hover:text-dpsg-rot', 'text-dpsg-rot' => request()->is('kalender')])>Kalender</a>
-                </li>
-                <li class="flex-1 border-l border-dpsg-mittelbeige text-center">
-                    <a href="{{ url('/aktuelles') }}" @class(['block px-3 py-1 hover:text-dpsg-rot', 'text-dpsg-rot' => request()->is('aktuelles*')])>Aktuelles</a>
-                </li>
+                @if (\App\Support\Ausbau::termine())
+                    {{-- Veranstaltungen mit Unterpunkt „Meine Anmeldungen“; gleiches
+                         Aufklappverhalten wie bei den Seiten oben. --}}
+                    @php($eventsCurrent = request()->is('veranstaltungen'))
+                    @php($mineActive = request()->is('meine-anmeldungen*'))
+                    <li class="relative flex-1 border-l border-dpsg-mittelbeige text-center"
+                        x-data="{ open: false }"
+                        @mouseenter="open = true" @mouseleave="open = false"
+                        @keydown.escape="open = false; $refs.toggle.focus()"
+                        @focusout="$el.contains($event.relatedTarget) || (open = false)">
+                        <div class="flex items-center justify-center">
+                            <a href="{{ url('/veranstaltungen') }}" @class(['block py-1 pl-3 hover:text-dpsg-rot', 'text-dpsg-rot' => request()->is('veranstaltungen*') || $mineActive]) @if ($eventsCurrent) aria-current="page" @endif>Veranstaltungen</a>
+                            <button type="button" x-ref="toggle" class="px-1 py-1 hover:text-dpsg-rot" @click="open = ! open" x-bind:aria-expanded="open.toString()" aria-expanded="false" aria-controls="subnav-veranstaltungen">
+                                <span class="sr-only">Unterpunkte von Veranstaltungen</span>
+                                <x-heroicon-m-chevron-down class="h-4 w-4 transition" x-bind:class="open && 'rotate-180'" aria-hidden="true" />
+                            </button>
+                        </div>
+                        <div id="subnav-veranstaltungen" class="absolute left-1/2 top-full z-50 -translate-x-1/2 pt-3" x-show="open" x-transition.opacity x-cloak>
+                            <ul class="min-w-60 border-t-4 border-dpsg-rot bg-white py-2 text-left whitespace-nowrap shadow-xl">
+                                <li><a href="{{ url('/veranstaltungen') }}" @class(['block px-4 py-2 text-xs uppercase tracking-wide text-text-secondary hover:text-dpsg-rot', 'text-dpsg-rot' => $eventsCurrent])>Übersicht Veranstaltungen</a></li>
+                                @if (\App\Support\Ausbau::anmeldungen())
+                                    <li><a href="{{ url('/meine-anmeldungen') }}" @class(['flex items-center gap-2 px-4 py-2 hover:bg-surface-muted hover:text-dpsg-rot', 'text-dpsg-rot' => $mineActive, 'font-normal' => ! $mineActive]) @if ($mineActive) aria-current="page" @endif>Meine Anmeldungen</a></li>
+                                @endif
+                            </ul>
+                        </div>
+                    </li>
+                    <li class="flex-1 border-l border-dpsg-mittelbeige text-center">
+                        <a href="{{ url('/kalender') }}" @class(['block px-3 py-1 hover:text-dpsg-rot', 'text-dpsg-rot' => request()->is('kalender')])>Kalender</a>
+                    </li>
+                    <li class="flex-1 border-l border-dpsg-mittelbeige text-center">
+                        <a href="{{ url('/aktuelles') }}" @class(['block px-3 py-1 hover:text-dpsg-rot', 'text-dpsg-rot' => request()->is('aktuelles*')])>Aktuelles</a>
+                    </li>
+                @else
+                    {{-- Ohne Termine (Ausbaustufe 1–2): Kontakt im Menü, damit die Leiste nicht leer ist. --}}
+                    <li class="flex-1 border-l border-dpsg-mittelbeige text-center first:border-l-0">
+                        <a href="{{ url('/kontakt') }}" @class(['block px-3 py-1 hover:text-dpsg-rot', 'text-dpsg-rot' => request()->is('kontakt')])>Kontakt</a>
+                    </li>
+                @endif
             </ul>
         </nav>
     </div>
@@ -218,8 +237,12 @@
                 <h2 class="mb-4 font-serif text-base font-bold">Service</h2>
                 <ul class="space-y-2">
                     <li><a href="{{ url('/kontakt') }}" class="hover:underline">Kontakt</a></li>
-                    <li><a href="{{ \App\Support\Site::officeUrl() }}" class="hover:underline">{{ \App\Support\Site::officeLabel() }}</a></li>
-                    <li><a href="{{ url('/meine-anmeldungen') }}" class="hover:underline">Meine Anmeldungen</a></li>
+                    @if (\App\Support\Ausbau::gruppen())
+                        <li><a href="{{ \App\Support\Site::officeUrl() }}" class="hover:underline">{{ \App\Support\Site::officeLabel() }}</a></li>
+                    @endif
+                    @if (\App\Support\Ausbau::anmeldungen())
+                        <li><a href="{{ url('/meine-anmeldungen') }}" class="hover:underline">Meine Anmeldungen</a></li>
+                    @endif
                     <li>
                         <button type="button" onclick="window.dispatchEvent(new CustomEvent('open-consent-settings'))" class="hover:underline">Datenschutz-Einstellungen</button>
                     </li>

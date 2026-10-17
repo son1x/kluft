@@ -182,17 +182,26 @@ legend{font-weight:600;margin-bottom:.3rem}
             </fieldset>
             <?= $fehlerText('stufen') ?>
             <fieldset><legend>Gruppenstunden (optional)</legend>
-                <p class="klein">Wann trifft sich welche Gruppe? Erscheint auf der Seite der Stufe; später im Redaktionsbereich änderbar.</p>
-                <div class="zwei">
+                <p class="klein">Wann und wo trifft sich welche Gruppe? Ohne Ort gilt die Adresse unten (z. B. euer Heim); trifft sich eine Gruppe woanders, z. B. im Pfarrheim, hier eintragen. Erscheint auf der Seite der Stufe; später im Redaktionsbereich änderbar.</p>
                 <?php foreach ($stufen as $k => $label) { ?>
-                    <label class="feld"><span><?= $h($label) ?></span><input type="text" name="gruppenstunden[<?= $h($k) ?>]" value="<?= $h(((array) ($e['gruppenstunden'] ?? []))[$k] ?? '') ?>" placeholder="z. B. dienstags, 16:00–17:30 Uhr" maxlength="120" autocomplete="off"></label>
+                    <div class="zwei">
+                        <label class="feld"><span><?= $h($label) ?>: wann</span><input type="text" name="gruppenstunden[<?= $h($k) ?>]" value="<?= $h(((array) ($e['gruppenstunden'] ?? []))[$k] ?? '') ?>" placeholder="z. B. dienstags, 16:00–17:30 Uhr" maxlength="120" autocomplete="off"></label>
+                        <label class="feld"><span><?= $h($label) ?>: wo (optional)</span><input type="text" name="gruppenstunden_orte[<?= $h($k) ?>]" value="<?= $h(((array) ($e['gruppenstunden_orte'] ?? []))[$k] ?? '') ?>" placeholder="wie Adresse des Stamms" maxlength="160" autocomplete="off"></label>
+                    </div>
                 <?php } ?>
-                </div>
             </fieldset>
             <fieldset><legend>Anmeldungen zu Lagern und Aktionen</legend>
                 <label><input type="checkbox" name="nami" value="1" <?= ! empty($e['nami']) ? 'checked' : '' ?>> Mitgliedschaft mit NaMi abgleichen</label>
                 <p class="klein">Wer im Redaktionsbereich die Anmeldungen prüft, meldet sich dafür mit dem eigenen NaMi-Konto an. Zugangsdaten werden nicht gespeichert; je Veranstaltung einschaltbar. Am besten mit DPSG-Nummer.</p>
             </fieldset>
+            <label class="feld"><span>Was soll die Website zu Beginn zeigen?</span>
+                <select name="ausbau">
+                <?php foreach (\App\Support\Ausbau::STUFEN as $n => $stufe) { ?>
+                    <option value="<?= $n ?>" <?= (int) ($e['ausbau'] ?? \App\Support\Ausbau::GRUPPEN) === $n ? 'selected' : '' ?>><?= $n ?>. <?= $h($stufe['name']) ?> – <?= $h($stufe['text']) ?></option>
+                <?php } ?>
+                </select>
+                <small>Klein anfangen geht: Im Redaktionsbereich unter „Verwaltung → Ausbaustufe“ jederzeit mehr freischalten.</small>
+            </label>
             <label class="feld"><span>Logo (optional)</span><input type="file" name="logo" accept="image/png,image/jpeg,image/webp"><small>PNG, JPG oder WebP, höchstens 2 MB. Ohne Logo erzeugt Kluft ein schlichtes Schriftlogo.</small></label>
         </section>
         <section>

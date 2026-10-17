@@ -22,6 +22,8 @@ use App\Http\Controllers\Public\SectionController;
 use App\Http\Controllers\Public\StatusController;
 use App\Http\Controllers\Public\WhatsAppController;
 use App\Http\Controllers\Webhooks\WhatsAppWebhookController;
+use App\Http\Middleware\Ausbaustufe;
+use App\Support\Ausbau;
 use App\Support\Features;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Support\Facades\Route;
@@ -66,11 +68,15 @@ Route::middleware('throttle:20,15')->group(function () {
 
 // Blog/Aktuelles (F-CMS-03). Vor dem Seiten-Catch-all registriert, damit
 // "/aktuelles" nicht als Seiten-Slug interpretiert wird.
-Route::get('/aktuelles', [PostController::class, 'index'])->name('posts.index');
-Route::get('/aktuelles/{slug}', [PostController::class, 'show'])->name('posts.show');
+// Meldungen, Kalender und Veranstaltungen ab Ausbaustufe 3, Anmeldungen ab 4
+// (App\Support\Ausbau); darunter „nicht gefunden“.
+$termine = Ausbaustufe::class.':'.Ausbau::TERMINE;
+$anmeldungen = Ausbaustufe::class.':'.Ausbau::ANMELDUNGEN;
+Route::get('/aktuelles', [PostController::class, 'index'])->middleware($termine)->name('posts.index');
+Route::get('/aktuelles/{slug}', [PostController::class, 'show'])->middleware($termine)->name('posts.show');
 
 // RSS-Feed der Beiträge (Pflichtenheft 11.1).
-Route::get('/feed', [FeedController::class, 'index'])->name('feed');
+Route::get('/feed', [FeedController::class, 'index'])->middleware($termine)->name('feed');
 
 // Verzeichnis der Stämme (beim DV mit Bezirken) mit Karte (F-MAP, Pflichtenheft 11.1).
 // Verzeichnis der Bezirke/Stämme; Stammes-Websites haben keins (directory = null).
@@ -82,19 +88,19 @@ Route::get('/api/gruppierungen.geojson', [GruppierungController::class, 'geojson
     ->name('gruppierungen.geojson');
 
 // Kalender (F-CAL, Pflichtenheft 11.1).
-Route::get('/kalender', [CalendarController::class, 'index'])->name('calendar.index');
+Route::get('/kalender', [CalendarController::class, 'index'])->middleware($termine)->name('calendar.index');
 Route::get('/api/calendar/events', [CalendarController::class, 'api'])
-    ->middleware('throttle:60,1')
+    ->middleware(['throttle:60,1', $termine])
     ->name('calendar.api');
 
 // Veranstaltungen mit Anmeldung (F-EV, Pflichtenheft 11.1).
-Route::get('/veranstaltungen', [EventController::class, 'index'])->name('events.index');
-Route::get('/veranstaltungen/{slug}', [EventController::class, 'show'])->name('events.show');
+Route::get('/veranstaltungen', [EventController::class, 'index'])->middleware($termine)->name('events.index');
+Route::get('/veranstaltungen/{slug}', [EventController::class, 'show'])->middleware($termine)->name('events.show');
 Route::post('/veranstaltungen/{slug}/anmeldung', [EventController::class, 'register'])
-    ->middleware('throttle:5,10')
+    ->middleware(['throttle:5,10', $anmeldungen])
     ->name('events.register');
 Route::post('/veranstaltungen/{slug}/frage', [ContactController::class, 'askEvent'])
-    ->middleware('throttle:5,10')
+    ->middleware(['throttle:5,10', $termine])
     ->name('events.ask');
 Route::middleware('throttle:20,10')->group(function () {
     Route::get('/anmeldung/bestaetigen/{token}', [RegistrationController::class, 'showConfirm'])->name('registrations.confirm');
@@ -104,29 +110,33 @@ Route::middleware('throttle:20,10')->group(function () {
 });
 
 // Meine Anmeldungen: Übersicht für Teilnehmende mit E-Mail und Einmalcode.
-Route::get('/meine-anmeldungen', [ParticipantController::class, 'index'])->name('participants.index');
-Route::post('/meine-anmeldungen/code', [ParticipantController::class, 'sendCode'])
-    ->middleware('throttle:teilnehmende-code')
-    ->name('participants.code');
-Route::post('/meine-anmeldungen/anmelden', [ParticipantController::class, 'verify'])
-    ->middleware('throttle:teilnehmende-anmelden')
-    ->name('participants.verify');
-Route::post('/meine-anmeldungen/neu', [ParticipantController::class, 'restart'])->name('participants.restart');
-Route::post('/meine-anmeldungen/abmelden', [ParticipantController::class, 'logout'])->name('participants.logout');
-Route::post('/meine-anmeldungen/{registration}/stornieren', [ParticipantController::class, 'cancel'])
-    ->whereNumber('registration')
-    ->middleware('throttle:teilnehmende')
-    ->name('participants.cancel');
-Route::get('/meine-anmeldungen/dokument/{document}', [ParticipantController::class, 'document'])
-    ->whereNumber('document')
-    ->middleware('throttle:teilnehmende')
-    ->name('participants.document');
+// Bestätigen/Stornieren per Link und die Echtheitsprüfung bleiben immer
+// erreichbar, auch wenn die Ausbaustufe später gesenkt wird.
+Route::middleware($anmeldungen)->group(function () {
+    Route::get('/meine-anmeldungen', [ParticipantController::class, 'index'])->name('participants.index');
+    Route::post('/meine-anmeldungen/code', [ParticipantController::class, 'sendCode'])
+        ->middleware('throttle:teilnehmende-code')
+        ->name('participants.code');
+    Route::post('/meine-anmeldungen/anmelden', [ParticipantController::class, 'verify'])
+        ->middleware('throttle:teilnehmende-anmelden')
+        ->name('participants.verify');
+    Route::post('/meine-anmeldungen/neu', [ParticipantController::class, 'restart'])->name('participants.restart');
+    Route::post('/meine-anmeldungen/abmelden', [ParticipantController::class, 'logout'])->name('participants.logout');
+    Route::post('/meine-anmeldungen/{registration}/stornieren', [ParticipantController::class, 'cancel'])
+        ->whereNumber('registration')
+        ->middleware('throttle:teilnehmende')
+        ->name('participants.cancel');
+    Route::get('/meine-anmeldungen/dokument/{document}', [ParticipantController::class, 'document'])
+        ->whereNumber('document')
+        ->middleware('throttle:teilnehmende')
+        ->name('participants.document');
 
-// Teilnahmebescheinigung: Download für Teilnehmende, Echtheitsprüfung für alle.
-Route::get('/meine-anmeldungen/{registration}/bescheinigung', [ParticipantController::class, 'certificate'])
-    ->whereNumber('registration')
-    ->middleware('throttle:teilnehmende')
-    ->name('participants.certificate');
+    // Teilnahmebescheinigung: Download für Teilnehmende, Echtheitsprüfung für alle.
+    Route::get('/meine-anmeldungen/{registration}/bescheinigung', [ParticipantController::class, 'certificate'])
+        ->whereNumber('registration')
+        ->middleware('throttle:teilnehmende')
+        ->name('participants.certificate');
+});
 Route::get('/bescheinigung-pruefen', [CertificateController::class, 'show'])->name('certificates.verify');
 Route::post('/bescheinigung-pruefen', [CertificateController::class, 'check'])
     ->middleware('throttle:10,1')

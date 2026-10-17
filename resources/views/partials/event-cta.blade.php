@@ -12,6 +12,7 @@
         'bald' => 'Anmeldung ab '.$event->reg_opens_at?->locale('de')->isoFormat('dd, D. MMMM YYYY, HH:mm').' Uhr',
         'ausgebucht' => 'Leider ausgebucht',
         'abgesagt' => 'Die Veranstaltung ist abgesagt',
+        'ohne' => 'Anmeldung direkt bei der Leitung',
         default => 'Die Anmeldung ist geschlossen',
     };
 @endphp

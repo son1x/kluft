@@ -4,6 +4,7 @@ namespace Database\Seeders\Einrichtung;
 
 use App\Models\Gruppierung;
 use App\Models\Page;
+use App\Support\Ausbau;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -37,7 +38,10 @@ class StammStartSeeder extends Seeder
             'seo_description' => 'Deutsche Pfadfinderschaft Sankt Georg – Stamm '.$stamm,
             'body' => '<h2>Willkommen beim Stamm '.e($stamm).'</h2>'
                 .'<p>Wir sind der Stamm '.e($stamm).' der Deutschen Pfadfinderschaft Sankt Georg (DPSG)'.($ort !== '' ? ' in '.e($ort) : '').'. Bei uns erleben Kinder und Jugendliche Gemeinschaft, Abenteuer und Natur – in wöchentlichen Gruppenstunden, auf Fahrten und im Zeltlager.</p>'
-                .'<p>Welche Gruppen es gibt und wann sie sich treffen, steht bei den <a href="/stufen">Stufen</a>. Komm einfach mal vorbei – sag uns vorher über das <a href="/kontakt">Kontaktformular</a> kurz Bescheid.</p>',
+                // Visitenkarte (Ausbaustufe 1): noch keine Gruppenseiten zum Verlinken.
+                .((int) ($a['ausbau'] ?? Ausbau::VOLL) >= Ausbau::GRUPPEN
+                    ? '<p>Welche Gruppen es gibt und wann sie sich treffen, steht bei den <a href="/stufen">Stufen</a>. Komm einfach mal vorbei – sag uns vorher über das <a href="/kontakt">Kontaktformular</a> kurz Bescheid.</p>'
+                    : '<p>Wann sich welche Gruppe trifft, erfährst du bei uns: Schreib uns über das <a href="/kontakt">Kontaktformular</a> – wir melden uns.</p>'),
         ]);
 
         $this->seite('stufen', 'Unsere Gruppen', [
@@ -47,9 +51,12 @@ class StammStartSeeder extends Seeder
             'body' => '<p>Die DPSG begleitet Kinder und Jugendliche in altersgerechten Stufen. Hier findest du unsere Gruppen und wann sie sich treffen.</p>',
         ]);
         $zeiten = (array) ($a['gruppenstunden'] ?? []);
-        $ortZeile = implode(', ', array_filter([trim((string) ($a['strasse'] ?? '')), trim((string) ($a['plz_ort'] ?? ''))]));
+        $orte = (array) ($a['gruppenstunden_orte'] ?? []);
+        $adresse = implode(', ', array_filter([trim((string) ($a['strasse'] ?? '')), trim((string) ($a['plz_ort'] ?? ''))]));
         foreach ($stufen as $i => $key) {
             $stage = (array) config("dpsg.stages.{$key}");
+            // Eigener Ort der Gruppe (z. B. Pfarrheim), sonst die Adresse des Stamms.
+            $ortZeile = filled($orte[$key] ?? null) ? (string) $orte[$key] : $adresse;
             $this->seite('stufe-'.$key, (string) $stage['label'], [
                 'parent' => 'stufen',
                 'stage' => $key,

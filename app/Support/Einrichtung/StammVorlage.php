@@ -63,6 +63,9 @@ class StammVorlage
                 'hashtags' => '#dpsg #pfadfinden',
             ],
 
+            // Ausbaustufe zu Beginn (App\Support\Ausbau); ältere Installationen: Vollausbau.
+            'ausbau' => (int) ($a['ausbau'] ?? 5),
+
             'seeders' => ['start' => StammStartSeeder::class, 'basis' => null],
 
             // Angaben des Assistenten, z. B. für den Startinhalt.

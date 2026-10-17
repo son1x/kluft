@@ -46,6 +46,11 @@ class Site
 
     public static function officeUrl(): string
     {
+        // Visitenkarte (Ausbaustufe 1): Die Seite des Vorstands gibt es noch nicht.
+        if (! Ausbau::gruppen()) {
+            return url('/'.config('dpsg.contact_page'));
+        }
+
         return url('/'.config('dpsg.site.office.page'));
     }
 

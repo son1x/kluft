@@ -46,6 +46,8 @@ class StammStartSeeder extends Seeder
             'seo_description' => 'Gruppenstunden für Kinder und Jugendliche',
             'body' => '<p>Die DPSG begleitet Kinder und Jugendliche in altersgerechten Stufen. Hier findest du unsere Gruppen und wann sie sich treffen.</p>',
         ]);
+        $zeiten = (array) ($a['gruppenstunden'] ?? []);
+        $ortZeile = implode(', ', array_filter([trim((string) ($a['strasse'] ?? '')), trim((string) ($a['plz_ort'] ?? ''))]));
         foreach ($stufen as $i => $key) {
             $stage = (array) config("dpsg.stages.{$key}");
             $this->seite('stufe-'.$key, (string) $stage['label'], [
@@ -56,7 +58,10 @@ class StammStartSeeder extends Seeder
                 // Kein eigener SEO-Titel: Der Standard enthält das Alter, das der Stamm anpassen kann.
                 'body' => '<p>'.e(self::STUFEN_TEXTE[$key] ?? '').'</p>'
                     .'<h2>Gruppenstunde</h2>'
-                    .'<p>Die Zeiten und den Ort der Gruppenstunde tragen wir hier bald ein. Bis dahin frag einfach über das <a href="/kontakt">Kontaktformular</a> nach – wir melden uns.</p>',
+                    .(filled($zeiten[$key] ?? null)
+                        ? '<p><strong>'.e($zeiten[$key]).'</strong>'.($ortZeile !== '' ? '<br>'.e($ortZeile) : '').'</p>'
+                            .'<p>Komm einfach mal vorbei – sag uns vorher über das <a href="/kontakt">Kontaktformular</a> kurz Bescheid.</p>'
+                        : '<p>Die Zeiten und den Ort der Gruppenstunde tragen wir hier bald ein. Bis dahin frag einfach über das <a href="/kontakt">Kontaktformular</a> nach – wir melden uns.</p>'),
             ]);
         }
 

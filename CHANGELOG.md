@@ -13,3 +13,4 @@ Admins. Kurz und aus Sicht der Redaktion schreiben.
 - Altersangaben der Stufen selbst festlegen, je Grenze bis zu einem Jahr um den DPSG-Standard (Verwaltung → Stufen).
 - Veranstaltungen für Erwachsene: eigenverantwortliche Anmeldung ohne Abschnitt für Sorgeberechtigte, z. B. für Elternabende.
 - Stammes-Websites: „Leitungsteam“ und „Leitungsrunde“ auf den Stufenseiten.
+- Einrichtungsassistent: Gruppenstundenzeiten je Stufe; Vorbelegung für einen bestimmten Stamm, auch mit fertigen Seiten.

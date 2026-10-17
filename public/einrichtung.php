@@ -38,6 +38,8 @@ if ($installer->eingerichtet()) {
 } else {
     $voraussetzungen = $installer->voraussetzungen();
     $installer->code();
+    // Vorbereitete Angaben (falls hochgeladen) füllen das Formular vor.
+    $vorbelegt = $_SERVER['REQUEST_METHOD'] !== 'POST' && ($e = $installer->vorbelegung()) !== [];
     if (in_array(false, array_column($voraussetzungen, 'ok'), true)) {
         $schritt = 'voraussetzungen';
     } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -69,7 +71,8 @@ $feld = fn (string $name, string $label, string $typ = 'text', string $hinweis =
     .'<input type="'.$typ.'" name="'.$name.'" value="'.$h($e[$name] ?? $standard).'"'.($pflicht ? ' required' : '').' autocomplete="off">'
     .($hinweis !== '' ? '<small>'.$h($hinweis).'</small>' : '').'</label>';
 $fehlerText = fn (string $k) => isset($fehler[$k]) ? '<p class="fehler">'.$h($fehler[$k]).'</p>' : '';
-$stufen = ['biber' => 'Biber', 'woelflinge' => 'Wölflinge', 'jupfi' => 'Jungpfadfinder*innen', 'pfadi' => 'Pfadfinder*innen', 'rover' => 'Rover'];
+$stufen = Installer::STUFEN;
+$vorbelegt ??= false;
 ?>
 <!doctype html>
 <html lang="de">
@@ -97,6 +100,8 @@ h2{margin:0 0 .75rem;font-size:1.15rem;color:var(--blau)}
 @media (max-width:600px){.zwei{grid-template-columns:1fr}}
 .stufen{display:flex;flex-wrap:wrap;gap:.5rem 1.25rem}
 .fehler,.meldung{color:var(--rot);font-weight:600;margin:.25rem 0 .9rem}
+.hinweis{background:#eef4fb;border-left:4px solid var(--blau);padding:.75rem 1rem;margin:0 0 1.25rem}
+.klein{color:var(--grau);font-size:.9rem;margin:0 0 .5rem}
 .meldung{background:#fbeeee;border-left:4px solid var(--rot);padding:.75rem 1rem}
 button{background:var(--blau);color:#fff;border:0;border-radius:5px;padding:.8rem 1.4rem;font:inherit;font-weight:700;cursor:pointer}
 button:focus-visible,input:focus-visible{outline:3px solid #e8a92a;outline-offset:2px}
@@ -142,11 +147,12 @@ legend{font-weight:600;margin-bottom:.3rem}
             <li>Cronjob jede Minute: <code>php <?= $h($basis) ?>/artisan schedule:run</code><br><small>Ohne ihn gehen keine Mails raus und es gibt keine Backups und Updates.</small></li>
             <li>SSL-Zertifikat (Let’s Encrypt) für <?= $h($domain) ?> einschalten, falls noch nicht geschehen.</li>
         </ol>
-        <p>Danach im Redaktionsbereich: Impressum und Datenschutz prüfen (markierte Stellen ergänzen), Gruppenstunden bei den Stufen eintragen, Titelbild der Startseite wählen.</p>
+        <p>Danach im Redaktionsbereich: Impressum und Datenschutz prüfen (markierte Stellen ergänzen), Gruppenstunden bei den Stufen prüfen, Titelbild der Startseite wählen.</p>
     </section>
 
 <?php } else { ?>
     <?php if ($meldung) { ?><p class="meldung"><?= $h($meldung) ?></p><?php } ?>
+    <?php if ($vorbelegt) { ?><p class="hinweis">Die Angaben für <?= $h(($e['stamm'] ?? '') !== '' ? 'Stamm '.$e['stamm'] : 'euren Stamm') ?> sind schon vorbereitet. Bitte prüfen und die Passwörter für Datenbank und E-Mail ergänzen.</p><?php } ?>
     <form method="post" enctype="multipart/form-data">
         <input type="hidden" name="_token" value="<?= $h($_SESSION['token']) ?>">
         <section>
@@ -175,6 +181,14 @@ legend{font-weight:600;margin-bottom:.3rem}
                 </div>
             </fieldset>
             <?= $fehlerText('stufen') ?>
+            <fieldset><legend>Gruppenstunden (optional)</legend>
+                <p class="klein">Wann trifft sich welche Gruppe? Erscheint auf der Seite der Stufe; später im Redaktionsbereich änderbar.</p>
+                <div class="zwei">
+                <?php foreach ($stufen as $k => $label) { ?>
+                    <label class="feld"><span><?= $h($label) ?></span><input type="text" name="gruppenstunden[<?= $h($k) ?>]" value="<?= $h(((array) ($e['gruppenstunden'] ?? []))[$k] ?? '') ?>" placeholder="z. B. dienstags, 16:00–17:30 Uhr" maxlength="120" autocomplete="off"></label>
+                <?php } ?>
+                </div>
+            </fieldset>
             <label class="feld"><span>Logo (optional)</span><input type="file" name="logo" accept="image/png,image/jpeg,image/webp"><small>PNG, JPG oder WebP, höchstens 2 MB. Ohne Logo erzeugt Kluft ein schlichtes Schriftlogo.</small></label>
         </section>
         <section>

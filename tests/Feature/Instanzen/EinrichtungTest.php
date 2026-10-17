@@ -75,6 +75,36 @@ class EinrichtungTest extends TestCase
         $this->assertSame('stamm-st-georg-oe', Installer::schluessel('St. Georg Ö'));
     }
 
+    #[TestDox('Vorbelegung: füllt nur erlaubte Felder vor, nie Passwörter; Gruppenstunden nur für gewählte Stufen')]
+    public function test_vorbelegung_und_gruppenstunden(): void
+    {
+        $installer = new Installer($this->basis);
+        $this->assertSame([], $installer->vorbelegung());
+
+        File::ensureDirectoryExists(dirname($this->basis.'/'.Installer::VORBELEGUNG_DATEI));
+        File::put($this->basis.'/'.Installer::VORBELEGUNG_DATEI, json_encode([
+            'stamm' => 'Don Bosco', 'stufen' => ['biber', 'rover'], 'gruppenstunden' => ['biber' => 'dienstags, 16 Uhr'],
+            'mail_pass' => 'geheim', 'db_pass' => 'geheim', 'unbekannt' => 'x',
+            'seiten' => [
+                ['slug' => 'unser-stamm', 'title' => 'Unser Stamm', 'body' => '<p>Geschichte</p>'],
+                ['slug' => '../böse', 'title' => 'X', 'body' => '<p>x</p>'],
+                ['slug' => 'ohne-text', 'title' => 'Ohne Text'],
+            ],
+        ]));
+        $this->assertSame(['unser-stamm'], array_column($installer->vorbereiteteSeiten(), 'slug'));
+        $v = $installer->vorbelegung();
+        $this->assertSame('Don Bosco', $v['stamm']);
+        $this->assertSame(['biber', 'rover'], $v['stufen']);
+        $this->assertArrayNotHasKey('mail_pass', $v);
+        $this->assertArrayNotHasKey('db_pass', $v);
+        $this->assertArrayNotHasKey('unbekannt', $v);
+
+        $a = $installer->pruefen([...self::FORMULAR, 'stufen' => ['biber', 'rover'], 'gruppenstunden' => [
+            'biber' => '  dienstags,   16:00–17:00 Uhr ', 'rover' => '', 'pfadi' => 'nicht gewählt',
+        ]])['angaben'];
+        $this->assertSame(['biber' => 'dienstags, 16:00–17:00 Uhr'], $a['gruppenstunden']);
+    }
+
     #[TestDox('Einrichtungscode: liegt nur unter storage/, wird genau verglichen; mit .env gilt die Installation als eingerichtet')]
     public function test_code_und_sperre(): void
     {
@@ -144,7 +174,8 @@ class EinrichtungTest extends TestCase
     #[TestDox('Startinhalt: Seiten, Stufen, Themen und der Stamm als Gruppierung – zweimal ausgeführt ändert nichts')]
     public function test_startinhalt(): void
     {
-        $angaben = ['stamm' => 'Don Bosco', 'ort' => 'Beispielstadt', 'nummer' => '210208', 'email' => 'vorstand@stamm-don-bosco.de', 'domain' => 'stamm-don-bosco.de', 'vorstand' => 'Erika Beispiel', 'stufen' => ['woelflinge', 'pfadi']];
+        $angaben = ['stamm' => 'Don Bosco', 'ort' => 'Beispielstadt', 'nummer' => '210208', 'email' => 'vorstand@stamm-don-bosco.de', 'domain' => 'stamm-don-bosco.de', 'vorstand' => 'Erika Beispiel', 'stufen' => ['woelflinge', 'pfadi'],
+            'gruppenstunden' => ['woelflinge' => 'donnerstags, 16:30–18:00 Uhr'], 'strasse' => 'Kirchplatz 1', 'plz_ort' => '54290 Beispielstadt'];
         config(['dpsg' => array_replace(config('dpsg'), StammVorlage::config($angaben))]);
         Page::query()->delete();
         DB::table('contact_topics')->delete();
@@ -166,7 +197,8 @@ class EinrichtungTest extends TestCase
         // Die Routen der Test-Instanz (DV) haben ein Verzeichnis; der Hinweis
         // „Schnupperstunde anfragen“ statt „Stamm in der Nähe finden“ ist im
         // Browser-Durchlauf geprüft (docs/einrichtung.md).
-        $this->get('/stufe-pfadi')->assertOk()->assertSee('Gruppenstunde')
+        $this->get('/stufe-woelflinge')->assertOk()->assertSee('donnerstags, 16:30–18:00 Uhr')->assertSee('Kirchplatz 1, 54290 Beispielstadt');
+        $this->get('/stufe-pfadi')->assertOk()->assertSee('Gruppenstunde')->assertSee('tragen wir hier bald ein')
             ->assertSee('Das Leitungsteam')->assertSee('Leitungsrunde')->assertSee('beim')
             ->assertDontSee('Stufenreferent');
         $this->get('/')->assertOk()->assertSee('Pfadfinden in Beispielstadt');

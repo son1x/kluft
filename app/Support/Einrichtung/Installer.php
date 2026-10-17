@@ -2,6 +2,7 @@
 
 namespace App\Support\Einrichtung;
 
+use App\Models\Page;
 use App\Models\User;
 use Illuminate\Contracts\Console\Kernel;
 use PDO;
@@ -23,6 +24,20 @@ use Throwable;
 class Installer
 {
     public const CODE_DATEI = 'storage/app/private/einrichtungscode.txt';
+
+    /**
+     * Vorbereitete Angaben für einen bestimmten Stamm (JSON), z. B. vom
+     * DV erstellt und per FTP hochgeladen: füllt das Formular vor.
+     * Passwörter stehen nie darin; die gibt der Stamm selbst ein.
+     */
+    public const VORBELEGUNG_DATEI = 'storage/app/private/einrichtung-vorbelegung.json';
+
+    /** Felder, die eine Vorbelegung füllen darf. */
+    private const VORBELEGBAR = ['stamm', 'ort', 'nummer', 'bezirk', 'dioezese', 'eltern_url', 'stufen', 'gruppenstunden',
+        'domain', 'email', 'telefon', 'vorstand', 'strasse', 'plz_ort', 'db_art', 'db_host', 'db_port', 'db_name', 'db_user',
+        'mail_host', 'mail_port', 'mail_user', 'mail_from', 'admin_kind', 'admin_name', 'admin_email'];
+
+    public const STUFEN = ['biber' => 'Biber', 'woelflinge' => 'Wölflinge', 'jupfi' => 'Jungpfadfinder*innen', 'pfadi' => 'Pfadfinder*innen', 'rover' => 'Rover'];
 
     public function __construct(private string $basis) {}
 
@@ -81,6 +96,53 @@ class Installer
     }
 
     /**
+     * Vorbelegung des Formulars (nur erlaubte Felder, nur Text bzw. Listen).
+     *
+     * @return array<string, mixed>
+     */
+    public function vorbelegung(): array
+    {
+        $daten = json_decode((string) @file_get_contents($this->basis.'/'.self::VORBELEGUNG_DATEI), true);
+        if (! is_array($daten)) {
+            return [];
+        }
+        $werte = [];
+        foreach (self::VORBELEGBAR as $k) {
+            $v = $daten[$k] ?? null;
+            if (is_string($v) || is_int($v)) {
+                $werte[$k] = mb_substr((string) $v, 0, 200);
+            } elseif (is_array($v) && in_array($k, ['stufen', 'gruppenstunden'], true)) {
+                $werte[$k] = array_map(fn ($x) => mb_substr(is_scalar($x) ? (string) $x : '', 0, 120), $v);
+            }
+        }
+
+        return $werte;
+    }
+
+    /**
+     * Fertige Seiten aus der Vorbelegung (z. B. Stammesgeschichte, Heim),
+     * höchstens 12. Der Inhalt wird wie jede Seite beim Anzeigen bereinigt.
+     *
+     * @return list<array{slug: string, title: string, body: string, parent: ?string, nav_sort: int}>
+     */
+    public function vorbereiteteSeiten(): array
+    {
+        $daten = json_decode((string) @file_get_contents($this->basis.'/'.self::VORBELEGUNG_DATEI), true);
+        $seiten = [];
+        foreach (array_slice(is_array($daten) && is_array($daten['seiten'] ?? null) ? $daten['seiten'] : [], 0, 12) as $i => $s) {
+            $slug = is_array($s) ? (string) ($s['slug'] ?? '') : '';
+            $titel = is_array($s) ? trim((string) ($s['title'] ?? '')) : '';
+            if (! preg_match('/^[a-z0-9]+(-[a-z0-9]+)*$/', $slug) || strlen($slug) > 60 || $titel === '' || ! is_string($s['body'] ?? null)) {
+                continue;
+            }
+            $eltern = is_string($s['parent'] ?? null) && preg_match('/^[a-z0-9-]{1,60}$/', $s['parent']) ? $s['parent'] : null;
+            $seiten[] = ['slug' => $slug, 'title' => mb_substr($titel, 0, 120), 'body' => mb_substr($s['body'], 0, 60000), 'parent' => $eltern, 'nav_sort' => 50 + $i * 10];
+        }
+
+        return $seiten;
+    }
+
+    /**
      * Angaben aus dem Formular prüfen.
      *
      * @param  array<string, mixed>  $e
@@ -104,9 +166,18 @@ class Installer
             'plz_ort' => $t('plz_ort', 120),
             'vorstand' => $t('vorstand', 200),
             'eltern_url' => $t('eltern_url', 200),
-            'stufen' => array_values(array_intersect(['biber', 'woelflinge', 'jupfi', 'pfadi', 'rover'], (array) ($e['stufen'] ?? []))),
+            'stufen' => array_values(array_intersect(array_keys(self::STUFEN), (array) ($e['stufen'] ?? []))),
             'eingerichtet' => date('Y-m-d'),
         ];
+        // Gruppenstunde je gewählter Stufe, z. B. „dienstags, 16:00–17:00 Uhr“.
+        $zeiten = (array) ($e['gruppenstunden'] ?? []);
+        $angaben['gruppenstunden'] = [];
+        foreach ($angaben['stufen'] as $stufe) {
+            $zeit = mb_substr(trim((string) preg_replace('/\s+/', ' ', is_string($zeiten[$stufe] ?? null) ? $zeiten[$stufe] : '')), 0, 120);
+            if ($zeit !== '') {
+                $angaben['gruppenstunden'][$stufe] = $zeit;
+            }
+        }
 
         if ($angaben['stamm'] === '') {
             $fehler['stamm'] = 'Bitte den Namen des Stamms angeben.';
@@ -165,6 +236,18 @@ class Installer
         }
 
         return ['angaben' => $angaben + ['_db' => $db, '_mail' => $mail, '_zugang' => $zugang], 'fehler' => $fehler];
+    }
+
+    /** Vorbereitete Seiten anlegen (nur fehlende; läuft mit gestartetem Laravel). */
+    private function seitenAnlegen(): void
+    {
+        foreach ($this->vorbereiteteSeiten() as $s) {
+            Page::query()->firstOrCreate(['slug' => $s['slug']], [
+                'title' => $s['title'], 'body' => $s['body'], 'status' => 'published', 'published_at' => now(),
+                'parent_id' => $s['parent'] ? Page::query()->where('slug', $s['parent'])->value('id') : null,
+                'show_in_nav' => true, 'nav_sort' => $s['nav_sort'],
+            ]);
+        }
     }
 
     public static function schluessel(string $stamm): string
@@ -227,6 +310,7 @@ class Installer
                 'login' => 'email', 'kind' => $zugang['kind'],
             ]);
             $user->roleAssignments()->create(['role' => 'admin', 'scope_type' => 'global', 'scope_key' => null]);
+            $this->seitenAnlegen();
         } catch (Throwable $e) {
             throw new RuntimeException('Einrichtung abgebrochen: '.$e->getMessage(), previous: $e);
         }
@@ -236,6 +320,7 @@ class Installer
         @chmod($this->basis.'/.env.neu', 0640);
         rename($this->basis.'/.env.neu', $this->basis.'/.env');
         @unlink($this->basis.'/'.self::CODE_DATEI);
+        @unlink($this->basis.'/'.self::VORBELEGUNG_DATEI);
 
         return $backupPasswort;
     }

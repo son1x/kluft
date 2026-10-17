@@ -7,6 +7,7 @@
 | App\Support\Einrichtung\Installer.
 */
 
+use App\Support\Ausbau;
 use App\Support\Einrichtung\Installer;
 
 require __DIR__.'/../vendor/autoload.php';
@@ -196,8 +197,8 @@ legend{font-weight:600;margin-bottom:.3rem}
             </fieldset>
             <label class="feld"><span>Was soll die Website zu Beginn zeigen?</span>
                 <select name="ausbau">
-                <?php foreach (\App\Support\Ausbau::STUFEN as $n => $stufe) { ?>
-                    <option value="<?= $n ?>" <?= (int) ($e['ausbau'] ?? \App\Support\Ausbau::GRUPPEN) === $n ? 'selected' : '' ?>><?= $n ?>. <?= $h($stufe['name']) ?> – <?= $h($stufe['text']) ?></option>
+                <?php foreach (Ausbau::STUFEN as $n => $stufe) { ?>
+                    <option value="<?= $n ?>" <?= (int) ($e['ausbau'] ?? Ausbau::GRUPPEN) === $n ? 'selected' : '' ?>><?= $n ?>. <?= $h($stufe['name']) ?> – <?= $h($stufe['text']) ?></option>
                 <?php } ?>
                 </select>
                 <small>Klein anfangen geht: Im Redaktionsbereich unter „Verwaltung → Ausbaustufe“ jederzeit mehr freischalten.</small>

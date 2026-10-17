@@ -109,7 +109,7 @@ jobs:
           mkdir -p dist/paket
           # Nur das Programm: keine Daten, Instanzen oder Entwicklungsdateien.
           rsync -a ./ dist/paket/ \
-            --exclude .git/ --exclude .github/ --exclude dist/ --exclude node_modules/ \
+            --exclude .git/ --exclude .github/ --exclude .claude/ --exclude dist/ --exclude node_modules/ \
             --exclude tests/ --exclude docs/ --exclude legacy-static-site/ --exclude instanzen/ \
             --exclude storage/ --exclude .env --exclude 'database/*.sqlite' \
             --exclude public/uploads/ --exclude public/instanz/ \

@@ -478,6 +478,7 @@ jobs:
           mirror --reverse --delete --verbose \
             --exclude-glob .git/ \
             --exclude-glob .github/ \
+            --exclude-glob .claude/ \
             --exclude-glob node_modules/ \
             --exclude-glob vendor/ \
             --exclude-glob tests/ \

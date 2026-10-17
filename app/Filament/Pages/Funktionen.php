@@ -51,7 +51,7 @@ class Funktionen extends Page
 
     public function mount(): void
     {
-        $this->form->fill(['schalter' => collect(Features::KATALOG)->mapWithKeys(fn ($f, string $key) => [$key => Features::geschaltet($key)])->all()]);
+        $this->form->fill(['schalter' => collect(Features::katalog())->mapWithKeys(fn ($f, string $key) => [$key => Features::geschaltet($key)])->all()]);
     }
 
     public function form(Schema $schema): Schema
@@ -60,7 +60,7 @@ class Funktionen extends Page
 
         return $schema
             ->statePath('data')
-            ->components(collect(Features::KATALOG)->groupBy('bereich', preserveKeys: true)
+            ->components(collect(Features::katalog())->groupBy('bereich', preserveKeys: true)
                 ->map(fn ($funktionen, string $bereich) => Section::make($bereich)->columns(1)->components(
                     $funktionen->map(fn (array $f, string $key) => Toggle::make("schalter.{$key}")
                         ->label($f['label'])
@@ -75,7 +75,7 @@ class Funktionen extends Page
         $werte = (array) ($this->form->getState()['schalter'] ?? []);
 
         $geaendert = [];
-        foreach (array_keys(Features::KATALOG) as $key) {
+        foreach (array_keys(Features::katalog()) as $key) {
             $an = (bool) ($werte[$key] ?? false);
             if ($an === Features::geschaltet($key)) {
                 continue;

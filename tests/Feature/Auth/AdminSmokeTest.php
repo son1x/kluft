@@ -31,15 +31,17 @@ class AdminSmokeTest extends TestCase
         $admin->roleAssignments()->create(['role' => 'superadmin', 'scope_type' => 'global']);
         $this->actingAs($admin);
 
-        // WhatsApp-Seiten und Kasse sind standardmäßig ausgeschaltet; hier mitprüfen.
+        // WhatsApp-Seiten und Kasse sind standardmäßig ausgeschaltet; hier mitprüfen
+        // (die Kasse gibt es nur auf Stammes-Websites, s. BeitraegeTest).
         config(['whatsapp.mode' => 'api']);
         Features::setzen(Features::MITGLIEDSBEITRAEGE, true);
+        $kasse = Features::enabled(Features::MITGLIEDSBEITRAEGE);
         $this->get('/admin')->assertOk();
         $checked = 0;
 
         foreach ($panel->getResources() as $resource) {
             foreach (['index', 'create'] as $page) {
-                if (! $resource::hasPage($page)) {
+                if (! $resource::hasPage($page) || (! $kasse && $resource::getNavigationGroup() === 'Kasse')) {
                     continue;
                 }
                 $url = $resource::getUrl($page);

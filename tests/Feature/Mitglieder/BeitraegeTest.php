@@ -16,6 +16,7 @@ use App\Services\Beitraege\BeitragsAbruf;
 use App\Services\Mitglieder\NamiVerzeichnis;
 use App\Support\Beitraege;
 use App\Support\Features;
+use App\Support\RoleCatalog;
 use Filament\Facades\Filament;
 use Illuminate\Contracts\Queue\ShouldBeEncrypted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -49,7 +50,7 @@ class BeitraegeTest extends TestCase
         parent::setUp();
         Filament::setCurrentPanel('admin');
         config(['mitglieder.driver' => 'nami', 'mitglieder.nami.auth' => 'konto', 'mitglieder.nami.user' => '123456', 'mitglieder.nami.password' => 'geheim',
-            'dpsg.einrichtung.nummer' => '210601']);
+            'dpsg.einrichtung.nummer' => '210601', 'dpsg.site.level' => 'Stamm']);
         Features::setzen(Features::MITGLIEDSBEITRAEGE, true);
         Beitraege::saetzeSetzen(['Voller Beitrag' => ['bund' => 1700, 'stamm' => 2500], 'Familienermäßigt' => ['bund' => 1100, 'stamm' => 1700]]);
 
@@ -198,6 +199,24 @@ class BeitraegeTest extends TestCase
 
         Features::setzen(Features::MITGLIEDSBEITRAEGE, false);
         $this->assertFalse(BeitragResource::canViewAny());
+    }
+
+    #[TestDox('Mitgliedsbeiträge gibt es nur auf Stammes-Websites: bei DV und Bezirk weder Funktion noch Rolle „Kasse“')]
+    public function test_nur_stammesebene(): void
+    {
+        $this->assertArrayHasKey(Features::MITGLIEDSBEITRAEGE, Features::katalog());
+        $this->assertArrayHasKey('kasse|global|', RoleCatalog::all());
+
+        foreach (['Diözesanverband', 'Bezirk'] as $ebene) {
+            config(['dpsg.site.level' => $ebene]);
+            $this->assertTrue(Features::geschaltet(Features::MITGLIEDSBEITRAEGE), 'Schalter bleibt gesetzt …');
+            $this->assertFalse(Features::enabled(Features::MITGLIEDSBEITRAEGE), '… wirkt aber nicht');
+            $this->assertArrayNotHasKey(Features::MITGLIEDSBEITRAEGE, Features::katalog());
+            $this->assertArrayNotHasKey('kasse|global|', RoleCatalog::all());
+        }
+        $this->actingAs($this->user('admin'));
+        $this->get(BeitragResource::getUrl())->assertForbidden();
+        $this->get('/admin/funktionen')->assertOk()->assertDontSee('Mitgliedsbeiträge');
     }
 
     #[TestDox('Liste: Zahlung erfassen, mehrere als bezahlt markieren, nach offen filtern, Abruf starten')]

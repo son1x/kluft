@@ -47,7 +47,9 @@ class RoleCatalog
 
         $options['vorstand|global|'] = 'Vorstand';
         $options['verwaltung|global|'] = 'Verwaltung';
-        $options['kasse|global|'] = 'Kasse (Mitgliedsbeiträge)';
+        if (Features::verfuegbar(Features::MITGLIEDSBEITRAEGE)) {
+            $options['kasse|global|'] = 'Kasse (Mitgliedsbeiträge)';
+        }
         if (WhatsAppMode::enabled()) {
             $options['whatsapp|global|'] = 'WhatsApp-Newsletter-Admin';
         }

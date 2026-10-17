@@ -7,6 +7,10 @@ Halbjahren (1. Halbjahr = Januar bis Juni, 2. Halbjahr = Juli bis Dezember).
 
 ## Einschalten
 
+Die Kasse gibt es nur auf Stammes-Websites (Ebene „Stamm“). Bei
+Diözesanverband und Bezirk erscheinen weder die Funktion noch die Rolle
+„Kasse“ – Mitgliedsbeiträge rechnet der Stamm ab.
+
 1. **Verwaltung → Funktionen → Mitgliedsbeiträge** einschalten. Bei Stämmen
    aus dem Einrichtungsassistenten ist die Funktion schon an.
 2. Voraussetzung ist NaMi als Mitgliederverwaltung (`MITGLIEDER_DRIVER=nami`,

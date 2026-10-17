@@ -143,9 +143,15 @@ class NamiDiagnose
             }
             $werte = array_map(fn (array $z) => is_scalar($z[$feld] ?? null) ? (string) $z[$feld] : '…', $zeilen);
             $anzahl = array_count_values($werte);
-            if (count($anzahl) <= min(8, intdiv(count($zeilen), 3)) && min($anzahl) >= 3) {
-                arsort($anzahl);
-                $this->zeile('  Verteilung '.$feld.': '.json_encode($anzahl, JSON_UNESCAPED_UNICODE));
+            // Werte unter drei Personen nur als Summe, damit niemand erkennbar wird.
+            $haeufig = array_filter($anzahl, fn (int $n) => $n >= 3);
+            $selten = array_diff_key($anzahl, $haeufig);
+            if ($haeufig !== [] && count($haeufig) <= 8 && count($selten) <= 8) {
+                arsort($haeufig);
+                if ($selten !== []) {
+                    $haeufig['(seltene Werte, je unter 3)'] = array_sum($selten);
+                }
+                $this->zeile('  Verteilung '.$feld.': '.json_encode($haeufig, JSON_UNESCAPED_UNICODE));
             }
         }
     }

@@ -181,7 +181,7 @@ class ListBeitraege extends ListRecords
      */
     private static function arten(): array
     {
-        $arten = ['Voller Beitrag', 'Voller Beitrag – Stiftungseuro', 'Familienermäßigt', 'Familienermäßigt – Stiftungseuro', 'Sozialermäßigt', 'Sozialermäßigt – Stiftungseuro'];
+        $arten = ['Voller Beitrag', 'Voller Beitrag – Stiftungseuro', 'Familienermäßigt', 'Familienermäßigt – Stiftungseuro', 'Ermäßigt', 'Ermäßigt – Stiftungseuro', 'Übernahme'];
         $arten = array_values(array_unique([...$arten, ...array_keys(Beitraege::saetze()),
             ...BeitragsMitglied::query()->whereNotNull('beitragsart')->distinct()->pluck('beitragsart')->all()]));
 

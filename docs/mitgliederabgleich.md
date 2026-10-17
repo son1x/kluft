@@ -111,6 +111,33 @@ HITOBITO_TOKEN=<Service-Token>
 
 `php artisan mitglieder:check` bzw. Actions → „Server-Prüfung“ → `mitglieder:check`: meldet sich an und sucht einen Namen, den es nicht gibt. Gibt keine Mitgliederdaten aus. Bei persönlicher NaMi-Anmeldung nur Erreichbarkeit; den eigentlichen Test macht man mit dem eigenen Konto an einer Testveranstaltung.
 
+## Was NaMi 2 liefert (Testabfrage vom 17.10.2026)
+
+Ermittelt mit „Verwaltung → NaMi-Testabfrage“ (ohne Personendaten), Konto auf
+DV-Ebene, Stamm 210601. Grundlage für den Beitragsabruf und die Umstellung.
+
+- **Gruppierungsbaum** (`gruppierungen/filtered-for-navigation/gruppierung/node/1`):
+  nur die für das Konto sichtbare Gruppierung, Felder `id`, `descriptor`,
+  `name`, `representedClass`. Die interne ID ist die sechsstellige DPSG-Nummer
+  (DV Trier = 210000, Stamm 210601 = 210601); `descriptor` endet mit ihr.
+- **Mitgliederliste** (`…/gruppierung/{id}/flist`): eine Zeile je Person mit
+  `id`, `entries_mitgliedsNummer`, Name, `entries_mglType` (Mitglied,
+  Nicht-Mitglied, …), `entries_status` (Aktiv/Inaktiv), `entries_stufe`,
+  `entries_eintrittsdatum`, `entries_austrittsDatum`, `entries_version`,
+  `entries_lastUpdated`. `entries_beitragsarten` und `entries_fixBeitrag` sind
+  leer – die Beitragsart gibt es nur in den Details. Beispiel: 86 Zeilen,
+  73 aktiv, 69 vom Typ „Mitglied“.
+- **Mitgliedsdetails** (`…/gruppierung/{id}/{mitglied}`): u. a. `beitragsart`
+  als Text („Voller Beitrag“, „Familienermäßigt - Stiftungseuro“),
+  `beitragsartId`, `mglTypeId` („MITGLIED“), `version`, Adresse, Kontakt und
+  `kontoverbindung` (IBAN, Kontoinhaber, Zahlungskondition). Kluft übernimmt
+  davon nur die Beitragsart.
+- **Beitragsarten** (`/ica/rest/namiBeitrag/beitragsartmgl/gruppierung/{id}`):
+  „DPSG Bundesverband 000000 (… - VERBANDSBEITRAG)“ mit den IDs
+  1 Voller Beitrag, 2 Familienermäßigt, 3 Ermäßigt, 4 Voller Beitrag –
+  Stiftungseuro, 5 Familienermäßigt – Stiftungseuro, 6 Ermäßigt –
+  Stiftungseuro, 7 Übernahme.
+
 ## Umstellung NaMi 2 → NaMi 3 (Checkliste)
 
 1. Sobald die NaMi 3 als Testsystem erreichbar ist: Service-Token anlegen und auf `test.<domain>` mit `MITGLIEDER_DRIVER=hitobito` prüfen (`mitglieder:check`, dann eine Testveranstaltung).

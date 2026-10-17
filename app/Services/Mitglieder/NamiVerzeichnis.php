@@ -3,6 +3,7 @@
 namespace App\Services\Mitglieder;
 
 use App\Models\User;
+use App\Support\Beitraege;
 use GuzzleHttp\Cookie\CookieJar;
 use GuzzleHttp\Cookie\SetCookie;
 use Illuminate\Http\Client\ConnectionException;
@@ -199,30 +200,30 @@ class NamiVerzeichnis implements Mitgliederverzeichnis
     }
 
     /**
-     * Beitragsarten (ID => Bezeichnung, z. B. „Voller Beitrag“). Ohne Antwort
-     * die bekannten Arten der DPSG.
+     * Beitragsarten (ID => Bezeichnung, z. B. „Voller Beitrag – Stiftungseuro“).
+     * NaMi liefert „DPSG Bundesverband 000000 (Voller Beitrag - Stiftungseuro
+     * - VERBANDSBEITRAG)“; gelesen wird der Text in der Klammer. Ohne Antwort
+     * die Arten des Bundesverbands, wie NaMi sie im Oktober 2026 lieferte.
      *
      * @return array<int, string>
      */
     public function beitragsarten(int $gruppierungId): array
     {
-        $bekannt = [1 => 'Familienermäßigt – Stiftungseuro', 2 => 'Familienermäßigt', 3 => 'Sozialermäßigt – Stiftungseuro',
-            4 => 'Sozialermäßigt', 5 => 'Voller Beitrag – Stiftungseuro', 6 => 'Voller Beitrag'];
+        $bekannt = [1 => 'Voller Beitrag', 2 => 'Familienermäßigt', 3 => 'Ermäßigt', 4 => 'Voller Beitrag – Stiftungseuro',
+            5 => 'Familienermäßigt – Stiftungseuro', 6 => 'Ermäßigt – Stiftungseuro', 7 => 'Übernahme'];
         try {
             $response = $this->http()->withOptions(['cookies' => $this->login()])
                 ->get(rtrim((string) config('mitglieder.nami.url'), '/').'/ica/rest/namiBeitrag/beitragsartmgl/gruppierung/'.$gruppierungId);
             $arten = [];
             foreach ((array) ($response->json('data') ?? []) as $a) {
-                // „Voller Beitrag (VOLLER BEITRAG - VERBANDSBEITRAG)“ → Text in der Klammer, wie in der NaMi-App.
                 $text = (string) ($a['descriptor'] ?? '');
-                $text = preg_match('/\((.*?)\)/', $text, $m) ? str_replace(' - VERBANDSBEITRAG', '', $m[1]) : $text;
-                // Bekannte Arten behalten ihre Schreibweise (NaMi liefert Großbuchstaben).
-                if (is_numeric($a['id'] ?? null) && trim($text) !== '' && ! isset($bekannt[(int) $a['id']])) {
-                    $arten[(int) $a['id']] = mb_convert_case(trim($text), MB_CASE_TITLE);
+                $text = preg_match('/\(([^()]*)\)\s*$/u', $text, $m) ? (string) preg_replace('/\s*-\s*VERBANDSBEITRAG$/u', '', $m[1]) : $text;
+                if (is_numeric($a['id'] ?? null) && trim($text) !== '') {
+                    $arten[(int) $a['id']] = Beitraege::artName($text);
                 }
             }
 
-            return $bekannt + $arten;
+            return $arten + $bekannt;
         } catch (\Throwable) {
             return $bekannt;
         }

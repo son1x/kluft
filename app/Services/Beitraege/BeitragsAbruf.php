@@ -53,18 +53,21 @@ class BeitragsAbruf
                 'aktiv' => mb_strtolower((string) ($zeile['entries_status'] ?? 'aktiv')) === 'aktiv',
                 'abgerufen_am' => now(),
             ]);
+            // Ein- und Austritt stehen schon in der Liste (NaMi 2), die Beitragsart nur in den Details.
+            if (array_key_exists('entries_eintrittsdatum', $zeile)) {
+                $mitglied->fill(['eintritt' => self::datum($zeile['entries_eintrittsdatum']), 'austritt' => self::datum($zeile['entries_austrittsDatum'] ?? null)]);
+            }
             $brauchtDetails = ! $mitglied->exists || $version === null || $mitglied->nami_version !== $version || $mitglied->beitragsart === null;
             if ($brauchtDetails && $maxDetails !== null && $ergebnis['details'] >= $maxDetails) {
                 // Ohne Details speichern; nami_version bleibt alt, damit der nächste Lauf sie holt.
                 $ergebnis['offen']++;
             } elseif ($brauchtDetails) {
                 $details = $this->nami->mitgliedDetails($gruppierung, $namiId);
-                $mitglied->fill([
-                    'beitragsart' => $arten[(int) ($details['beitragsartId'] ?? 0)] ?? null,
-                    'eintritt' => self::datum($details['eintrittsdatum'] ?? null),
-                    'austritt' => self::datum($details['austrittsDatum'] ?? null),
-                    'nami_version' => $version,
-                ]);
+                $art = filled($details['beitragsart'] ?? null) ? Beitraege::artName((string) $details['beitragsart']) : ($arten[(int) ($details['beitragsartId'] ?? 0)] ?? null);
+                $mitglied->fill(['beitragsart' => $art, 'nami_version' => $version]);
+                if (! array_key_exists('entries_eintrittsdatum', $zeile)) {
+                    $mitglied->fill(['eintritt' => self::datum($details['eintrittsdatum'] ?? null), 'austritt' => self::datum($details['austrittsDatum'] ?? null)]);
+                }
                 $ergebnis['details']++;
             }
             $ergebnis['neu'] += $mitglied->exists ? 0 : 1;

@@ -23,8 +23,9 @@ Diözesanverband und Bezirk erscheinen weder die Funktion noch die Rolle
 
 ## Ablauf je Halbjahr
 
-1. **Kasse → Mitgliedsbeiträge → Beitragssätze**: je Beitragsart (voller
-   Beitrag, familien- und sozialermäßigt, jeweils mit und ohne Stiftungseuro)
+1. **Kasse → Mitgliedsbeiträge → Beitragssätze**: je Beitragsart, wie NaMi
+   sie führt (voller Beitrag, familienermäßigt, ermäßigt, jeweils mit und
+   ohne Stiftungseuro, dazu „Übernahme“)
    zwei Beträge für ein Halbjahr eintragen: den **Bundesbeitrag**, den der
    Bundesverband in Rechnung stellt (laut Rechnung bzw. Beitragsordnung), und
    den **Stammesanteil**, den der Stamm beschließt. Das Soll eines Mitglieds

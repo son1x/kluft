@@ -129,6 +129,16 @@ class Beitraege
         return filled($nummer) ? (string) $nummer : null;
     }
 
+    /**
+     * Einheitliche Bezeichnung einer Beitragsart, wie NaMi sie liefert, mit
+     * Halbgeviertstrich: „Voller Beitrag - Stiftungseuro“ → „Voller Beitrag –
+     * Stiftungseuro“. Schlüssel der Beitragssätze.
+     */
+    public static function artName(string $text): string
+    {
+        return trim((string) preg_replace(['/\s+[-–]\s+/u', '/\s+/u'], [' – ', ' '], trim($text)));
+    }
+
     public static function euro(?int $cent): string
     {
         return $cent === null ? '–' : number_format($cent / 100, 2, ',', '.').' €';

@@ -55,16 +55,16 @@ class BeitraegeTest extends TestCase
         Beitraege::saetzeSetzen(['Voller Beitrag' => ['bund' => 1700, 'stamm' => 2500], 'Familienermäßigt' => ['bund' => 1100, 'stamm' => 1700]]);
 
         $this->liste = [
-            ['id' => 101, 'entries_vorname' => 'Mia', 'entries_nachname' => 'Muster', 'entries_mitgliedsNummer' => 4711, 'entries_geburtsDatum' => '2010-03-03 00:00:00', 'entries_email' => 'mia@example.org', 'entries_status' => 'Aktiv', 'entries_mglType' => 'Mitglied', 'entries_version' => 3],
+            ['id' => 101, 'entries_vorname' => 'Mia', 'entries_nachname' => 'Muster', 'entries_mitgliedsNummer' => 4711, 'entries_geburtsDatum' => '2010-03-03 00:00:00', 'entries_email' => 'mia@example.org', 'entries_eintrittsdatum' => '2019-04-01 00:00:00', 'entries_austrittsDatum' => '', 'entries_status' => 'Aktiv', 'entries_mglType' => 'Mitglied', 'entries_version' => 3],
             ['id' => 102, 'entries_vorname' => 'Ben', 'entries_nachname' => 'Muster', 'entries_mitgliedsNummer' => 4712, 'entries_status' => 'Aktiv', 'entries_mglType' => 'Mitglied', 'entries_version' => 1],
             ['id' => 103, 'entries_vorname' => 'Sam', 'entries_nachname' => 'Schnupper', 'entries_mitgliedsNummer' => 4713, 'entries_status' => 'Aktiv', 'entries_mglType' => 'Schnuppermitglied', 'entries_version' => 1],
             ['id' => 104, 'entries_vorname' => 'Ella', 'entries_nachname' => 'Elternbeirat', 'entries_mitgliedsNummer' => 4714, 'entries_status' => 'Aktiv', 'entries_mglType' => 'Nicht-Mitglied', 'entries_version' => 1],
-            ['id' => 105, 'entries_vorname' => 'Neo', 'entries_nachname' => 'Neu', 'entries_mitgliedsNummer' => 4715, 'entries_status' => 'Aktiv', 'entries_mglType' => 'Mitglied', 'entries_version' => 1],
+            ['id' => 105, 'entries_vorname' => 'Neo', 'entries_nachname' => 'Neu', 'entries_mitgliedsNummer' => 4715, 'entries_eintrittsdatum' => '2027-03-01 00:00:00', 'entries_austrittsDatum' => '', 'entries_status' => 'Aktiv', 'entries_mglType' => 'Mitglied', 'entries_version' => 1],
         ];
         $this->details = [
-            101 => ['beitragsartId' => 6, 'eintrittsdatum' => '2019-04-01 00:00:00', 'austrittsDatum' => '', 'vorname' => 'Mia', 'strasse' => 'Musterweg 1', 'mitgliedsNummer' => 4711],
+            101 => ['beitragsartId' => 1, 'beitragsart' => 'Voller Beitrag', 'eintrittsdatum' => '2019-04-01 00:00:00', 'austrittsDatum' => '', 'vorname' => 'Mia', 'strasse' => 'Musterweg 1', 'mitgliedsNummer' => 4711],
             102 => ['beitragsartId' => 2, 'eintrittsdatum' => '2021-09-01 00:00:00', 'austrittsDatum' => null],
-            105 => ['beitragsartId' => 6, 'eintrittsdatum' => '2027-03-01 00:00:00', 'austrittsDatum' => null],
+            105 => ['beitragsartId' => 1, 'beitragsart' => 'Voller Beitrag', 'eintrittsdatum' => '2000-01-01 00:00:00', 'austrittsDatum' => null],
         ];
 
         Http::fake(function (Request $request) {
@@ -89,7 +89,12 @@ class BeitraegeTest extends TestCase
                 return Http::response(['success' => true, 'data' => $this->details[(int) $m[1]] ?? []]);
             }
             if (str_contains($url, '/namiBeitrag/beitragsartmgl/gruppierung/30')) {
-                return Http::response(['success' => true, 'data' => [['id' => 6, 'descriptor' => 'Voller Beitrag (VOLLER BEITRAG - VERBANDSBEITRAG)']]]);
+                return Http::response(['success' => true, 'data' => [
+                    ['id' => 1, 'descriptor' => 'DPSG Bundesverband 000000 (Voller Beitrag - VERBANDSBEITRAG)'],
+                    ['id' => 2, 'descriptor' => 'DPSG Bundesverband 000000 (Familienermäßigt - VERBANDSBEITRAG)'],
+                    ['id' => 5, 'descriptor' => 'DPSG Bundesverband 000000 (Familienermäßigt - Stiftungseuro - VERBANDSBEITRAG)'],
+                    ['id' => 8, 'descriptor' => 'DPSG Bundesverband 000000 (Neue Art - VERBANDSBEITRAG)'],
+                ]]);
             }
 
             return Http::response('', 404);
@@ -135,7 +140,7 @@ class BeitraegeTest extends TestCase
         // Zweiter Abruf: unveränderte Versionen ohne Detailabfrage; wer fehlt, ist nicht mehr aktiv.
         $this->detailAbfragen = [];
         $this->liste[0]['entries_version'] = 4;
-        $this->details[101]['beitragsartId'] = 2;
+        $this->details[101] = ['beitragsartId' => 2, 'beitragsart' => 'Familienermäßigt'];
         unset($this->liste[1]);
         $this->liste = array_values($this->liste);
         $ergebnis = $abruf->abrufen('210601');
@@ -147,6 +152,18 @@ class BeitraegeTest extends TestCase
         $this->assertSame(['neu' => 0, 'angepasst' => 1], $abruf->halbjahrAnlegen('2026-2'));
         $this->assertSame(2800, Beitrag::query()->whereRelation('mitglied', 'nami_id', 101)->value('soll_cent'));
         $this->assertSame(2, Beitrag::query()->where('halbjahr', '2026-2')->count());
+    }
+
+    #[TestDox('Beitragsarten wie NaMi 2 sie liefert: Text in der Klammer, Halbgeviertstrich, ohne Antwort die bekannten IDs')]
+    public function test_beitragsarten(): void
+    {
+        $nami = new NamiVerzeichnis;
+        $arten = $nami->beitragsarten(30);
+        $this->assertSame('Voller Beitrag', $arten[1]);
+        $this->assertSame('Familienermäßigt – Stiftungseuro', $arten[5]);
+        $this->assertSame('Neue Art', $arten[8]);
+        $this->assertSame(['Ermäßigt', 'Voller Beitrag – Stiftungseuro', 'Ermäßigt – Stiftungseuro', 'Übernahme'], [$arten[3], $arten[4], $arten[6], $arten[7]]);
+        $this->assertSame('Familienermäßigt – Stiftungseuro', Beitraege::artName(' Familienermäßigt - Stiftungseuro '));
     }
 
     #[TestDox('Bezahlte Beiträge bleiben bei geänderter Beitragsart, wie sie sind; erlassen zählt als bezahlt')]
@@ -301,8 +318,8 @@ class BeitraegeTest extends TestCase
         $this->assertStringContainsString('Kluft würde 3 von 5 als beitragspflichtige Mitglieder übernehmen', $bericht);
         $this->assertStringContainsString('entries_mglType: "Mitglied" (lesbar)', $bericht);
         $this->assertStringContainsString('entries_geburtsDatum: "9999-99-99 99:99:99" (Text, 19 Zeichen)', $bericht);
-        $this->assertStringContainsString('beitragsartId: 6 (lesbar)', $bericht);
-        $this->assertStringContainsString('Voller Beitrag (VOLLER BEITRAG - VERBANDSBEITRAG)', $bericht);
+        $this->assertStringContainsString('beitragsartId: 1 (lesbar)', $bericht);
+        $this->assertStringContainsString('DPSG Bundesverband 000000 (Voller Beitrag - VERBANDSBEITRAG)', $bericht);
         foreach (['Mia', 'Muster', '4711', 'mia@example', 'Musterweg', '123456', 'geheim'] as $geheim) {
             $this->assertStringNotContainsString($geheim, $bericht);
         }

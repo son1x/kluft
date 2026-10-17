@@ -98,7 +98,11 @@ class BeitragResource extends Resource
                         ->where('nachname', 'like', "%{$search}%")->orWhere('vorname', 'like', "%{$search}%")->orWhere('mitgliedsnummer', 'like', "%{$search}%"))),
                 TextColumn::make('beitragsart')->label('Beitragsart')->placeholder('unbekannt')->wrap(),
                 TextColumn::make('soll_cent')->label('Soll')->formatStateUsing($euro)->alignEnd()
+                    ->description(fn (Beitrag $record) => $record->bundes_cent !== null ? 'Bund '.Beitraege::euro($record->bundes_cent) : null)
                     ->summarize(Sum::make()->label('Soll')->formatStateUsing(fn ($state) => Beitraege::euro((int) $state))),
+                TextColumn::make('bundes_cent')->label('Bundesbeitrag')->formatStateUsing($euro)->placeholder('–')->alignEnd()
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->summarize(Sum::make()->label('An den Bundesverband')->formatStateUsing(fn ($state) => Beitraege::euro((int) $state))),
                 TextColumn::make('bezahlt_cent')->label('Bezahlt')->formatStateUsing($euro)->placeholder('–')->alignEnd()
                     ->summarize(Sum::make()->label('Eingegangen')->formatStateUsing(fn ($state) => Beitraege::euro((int) $state))),
                 TextColumn::make('offen')->label('Offen')->alignEnd()
@@ -125,7 +129,7 @@ class BeitragResource extends Resource
                 SelectFilter::make('stand')->label('Status')
                     ->options(['offen' => 'offen oder teilweise', 'bezahlt' => 'bezahlt oder erlassen'])
                     ->query(fn (Builder $query, array $data) => match ($data['value'] ?? null) {
-                        'offen' => $query->offen(),
+                        'offen' => $query->whereIn('beitraege.id', Beitrag::query()->offen()->select('id')),
                         'bezahlt' => $query->whereNotIn('beitraege.id', Beitrag::query()->offen()->select('id')),
                         default => $query,
                     }),

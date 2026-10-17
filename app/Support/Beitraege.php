@@ -73,23 +73,34 @@ class Beitraege
     }
 
     /**
-     * Beitrag je Halbjahr in Cent, nach Beitragsart (Bezeichnung aus NaMi).
+     * Beitrag je Halbjahr in Cent nach Beitragsart (Bezeichnung aus NaMi):
+     * Bundesbeitrag (geht mit der Rechnung an den Bundesverband) plus
+     * Stammesanteil (beschließt der Stamm).
      *
-     * @return array<string, int>
+     * @return array<string, array{bund: int, stamm: int}>
      */
     public static function saetze(): array
     {
         $json = json_decode((string) SiteSetting::query()->whereKey(self::SAETZE)->value('value'), true);
+        $saetze = [];
+        foreach (is_array($json) ? $json : [] as $art => $satz) {
+            $saetze[(string) $art] = is_array($satz)
+                ? ['bund' => max(0, (int) ($satz['bund'] ?? 0)), 'stamm' => max(0, (int) ($satz['stamm'] ?? 0))]
+                : ['bund' => 0, 'stamm' => max(0, (int) $satz)];
+        }
 
-        return is_array($json) ? array_map('intval', array_filter($json, 'is_numeric')) : [];
+        return $saetze;
     }
 
     /**
-     * @param  array<string, int>  $saetze
+     * @param  array<string, array{bund?: int|null, stamm?: int|null}>  $saetze
      */
     public static function saetzeSetzen(array $saetze, ?int $userId = null): void
     {
-        $saetze = array_filter(array_map(fn ($c) => max(0, (int) $c), $saetze), fn (int $c) => $c > 0);
+        $saetze = array_filter(
+            array_map(fn (array $s) => ['bund' => max(0, (int) ($s['bund'] ?? 0)), 'stamm' => max(0, (int) ($s['stamm'] ?? 0))], $saetze),
+            fn (array $s) => $s['bund'] + $s['stamm'] > 0
+        );
         SiteSetting::query()->updateOrCreate(['key' => self::SAETZE], ['value' => (string) json_encode($saetze, JSON_UNESCAPED_UNICODE), 'updated_by' => $userId]);
     }
 
@@ -109,10 +120,11 @@ class Beitraege
         return is_array($json) ? ['status' => (string) ($json['status'] ?? ''), 'text' => (string) ($json['text'] ?? ''), 'am' => isset($json['am']) ? Carbon::parse($json['am']) : null] : null;
     }
 
-    /** DPSG-Nummer des Stamms (Einrichtung oder Gruppierung „Stamm“). */
+    /** DPSG-Nummer des Stamms (Einrichtung oder die einzige Gruppierung „Stamm“). */
     public static function stammNummer(): ?string
     {
-        $nummer = config('dpsg.einrichtung.nummer') ?: Gruppierung::query()->where('typ', 'stamm')->value('nummer');
+        $staemme = Gruppierung::query()->where('typ', 'stamm')->whereNotNull('nummer')->limit(2)->pluck('nummer');
+        $nummer = config('dpsg.einrichtung.nummer') ?: ($staemme->count() === 1 ? $staemme->first() : null);
 
         return filled($nummer) ? (string) $nummer : null;
     }

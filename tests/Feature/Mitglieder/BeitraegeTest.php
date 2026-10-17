@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Mitglieder;
 
+use App\Filament\Pages\NamiTestabfrage;
 use App\Filament\Resources\Beitraege\BeitragResource;
 use App\Filament\Resources\Beitraege\Pages\ListBeitraege;
 use App\Filament\Resources\BeitragsAbrechnungen\BeitragsAbrechnungResource;
@@ -50,17 +51,17 @@ class BeitraegeTest extends TestCase
         config(['mitglieder.driver' => 'nami', 'mitglieder.nami.auth' => 'konto', 'mitglieder.nami.user' => '123456', 'mitglieder.nami.password' => 'geheim',
             'dpsg.einrichtung.nummer' => '210601']);
         Features::setzen(Features::MITGLIEDSBEITRAEGE, true);
-        Beitraege::saetzeSetzen(['Voller Beitrag' => 4200, 'Familienermäßigt' => 2800]);
+        Beitraege::saetzeSetzen(['Voller Beitrag' => ['bund' => 1700, 'stamm' => 2500], 'Familienermäßigt' => ['bund' => 1100, 'stamm' => 1700]]);
 
         $this->liste = [
-            ['id' => 101, 'entries_vorname' => 'Mia', 'entries_nachname' => 'Muster', 'entries_mitgliedsNummer' => 4711, 'entries_status' => 'Aktiv', 'entries_mglType' => 'Mitglied', 'entries_version' => 3],
+            ['id' => 101, 'entries_vorname' => 'Mia', 'entries_nachname' => 'Muster', 'entries_mitgliedsNummer' => 4711, 'entries_geburtsDatum' => '2010-03-03 00:00:00', 'entries_email' => 'mia@example.org', 'entries_status' => 'Aktiv', 'entries_mglType' => 'Mitglied', 'entries_version' => 3],
             ['id' => 102, 'entries_vorname' => 'Ben', 'entries_nachname' => 'Muster', 'entries_mitgliedsNummer' => 4712, 'entries_status' => 'Aktiv', 'entries_mglType' => 'Mitglied', 'entries_version' => 1],
             ['id' => 103, 'entries_vorname' => 'Sam', 'entries_nachname' => 'Schnupper', 'entries_mitgliedsNummer' => 4713, 'entries_status' => 'Aktiv', 'entries_mglType' => 'Schnuppermitglied', 'entries_version' => 1],
             ['id' => 104, 'entries_vorname' => 'Ella', 'entries_nachname' => 'Elternbeirat', 'entries_mitgliedsNummer' => 4714, 'entries_status' => 'Aktiv', 'entries_mglType' => 'Nicht-Mitglied', 'entries_version' => 1],
             ['id' => 105, 'entries_vorname' => 'Neo', 'entries_nachname' => 'Neu', 'entries_mitgliedsNummer' => 4715, 'entries_status' => 'Aktiv', 'entries_mglType' => 'Mitglied', 'entries_version' => 1],
         ];
         $this->details = [
-            101 => ['beitragsartId' => 6, 'eintrittsdatum' => '2019-04-01 00:00:00', 'austrittsDatum' => ''],
+            101 => ['beitragsartId' => 6, 'eintrittsdatum' => '2019-04-01 00:00:00', 'austrittsDatum' => '', 'vorname' => 'Mia', 'strasse' => 'Musterweg 1', 'mitgliedsNummer' => 4711],
             102 => ['beitragsartId' => 2, 'eintrittsdatum' => '2021-09-01 00:00:00', 'austrittsDatum' => null],
             105 => ['beitragsartId' => 6, 'eintrittsdatum' => '2027-03-01 00:00:00', 'austrittsDatum' => null],
         ];
@@ -128,6 +129,7 @@ class BeitraegeTest extends TestCase
         // Neo tritt erst 2027 ein: im 2. Halbjahr 2026 kein Beitrag.
         $this->assertSame(['neu' => 2, 'angepasst' => 0], $abruf->halbjahrAnlegen('2026-2'));
         $this->assertSame(7000, (int) Beitrag::query()->where('halbjahr', '2026-2')->sum('soll_cent'));
+        $this->assertSame(2800, (int) Beitrag::query()->where('halbjahr', '2026-2')->sum('bundes_cent'));
 
         // Zweiter Abruf: unveränderte Versionen ohne Detailabfrage; wer fehlt, ist nicht mehr aktiv.
         $this->detailAbfragen = [];
@@ -157,7 +159,7 @@ class BeitraegeTest extends TestCase
         $ben = Beitrag::query()->whereRelation('mitglied', 'nami_id', 102)->firstOrFail();
         $ben->update(['zahlart' => 'erlassen']);
 
-        Beitraege::saetzeSetzen(['Voller Beitrag' => 5000, 'Familienermäßigt' => 3000]);
+        Beitraege::saetzeSetzen(['Voller Beitrag' => ['bund' => 1800, 'stamm' => 3200], 'Familienermäßigt' => ['bund' => 1200, 'stamm' => 1800]]);
         $this->assertSame(['neu' => 0, 'angepasst' => 0], $abruf->halbjahrAnlegen('2026-2'));
         $this->assertSame(['bezahlt', 'bezahlt'], [$mia->fresh()->status(), $ben->fresh()->status()]);
         $this->assertSame(0, Beitrag::query()->offen()->count());
@@ -232,7 +234,7 @@ class BeitraegeTest extends TestCase
         Queue::assertPushed(BeitraegeAbrufen::class, fn (BeitraegeAbrufen $job) => $job->nummer === '210601' && $job->halbjahr === '2027-1' && $job->namiSession === null);
     }
 
-    #[TestDox('Beitragssätze ändern passt offene Beiträge an; Rechnung des Bundesverbands neben Soll und Eingang')]
+    #[TestDox('Beitragssätze aus Bundesbeitrag und Stammesanteil; Änderung passt offene Beiträge an; Rechnung neben Bundesbeitrag, Soll und Eingang')]
     public function test_saetze_und_abrechnung(): void
     {
         $abruf = new BeitragsAbruf(new NamiVerzeichnis);
@@ -241,20 +243,52 @@ class BeitraegeTest extends TestCase
         Beitrag::query()->whereRelation('mitglied', 'nami_id', 101)->update(['bezahlt_cent' => 4200, 'bezahlt_am' => '2026-08-01']);
         $this->actingAs($this->user('kasse'));
 
+        $this->travelTo(Carbon::parse('2026-10-17 12:00'));
         $felder = Livewire::test(ListBeitraege::class)->mountAction('saetze')->get('mountedActions.0.data');
-        $feld = array_search('42,00', $felder, true);
+        $feld = collect($felder)->filter(fn ($wert, string $key) => str_ends_with($key, '_stamm') && $wert === '17,00')->keys()->first();
         $this->assertIsString($feld);
-        $neu = array_map(fn ($wert) => $wert === '28,00' ? '30' : $wert, $felder);
-        Livewire::test(ListBeitraege::class)->callAction('saetze', $neu)->assertHasNoActionErrors();
-        $this->assertSame(3000, Beitraege::saetze()['Familienermäßigt']);
+        $this->assertSame('11,00', $felder[str_replace('_stamm', '_bund', $feld)]);
+        Livewire::test(ListBeitraege::class)->callAction('saetze', [...$felder, $feld => '19'])->assertHasNoActionErrors();
+        $this->assertSame(['bund' => 1100, 'stamm' => 1900], Beitraege::saetze()['Familienermäßigt']);
         $this->assertSame([3000, 4200], Beitrag::query()->orderBy('soll_cent')->pluck('soll_cent')->all());
 
         Livewire::test(ManageBeitragsAbrechnungen::class)
-            ->callAction('create', ['halbjahr' => '2026-2', 'mitglieder' => 3, 'rechnungsbetrag_cent' => '75,50', 'rechnungsdatum' => '2026-07-15'])
+            ->callAction('create', ['halbjahr' => '2026-2', 'mitglieder' => 3, 'rechnungsbetrag_cent' => '30,50', 'rechnungsdatum' => '2026-07-15'])
             ->assertHasNoActionErrors();
         $rechnung = BeitragsAbrechnung::query()->firstOrFail();
-        $this->assertSame(7550, $rechnung->rechnungsbetrag_cent);
+        $this->assertSame(3050, $rechnung->rechnungsbetrag_cent);
         Livewire::test(ManageBeitragsAbrechnungen::class)
-            ->assertSee('2. Halbjahr 2026')->assertSee('75,50 €')->assertSee('in Kluft: 2 – abweichend')->assertSee('72,00 €')->assertSee('1 offen');
+            ->assertSee('2. Halbjahr 2026')->assertSee('30,50 €')->assertSee('in Kluft: 2 – abweichend')
+            ->assertSee('28,00 €')->assertSee('abweichend von der Rechnung')->assertSee('72,00 €')->assertSee('1 offen');
+    }
+
+    #[TestDox('NaMi-Testabfrage: mit gespeichertem Zugang, Ergebnis ohne Namen, Nummern und Adressen')]
+    public function test_testabfrage(): void
+    {
+        config(['mitglieder.nami.auth' => 'persoenlich']);
+        $admin = $this->user('admin');
+        $admin->forceFill(['nami_user' => '123456', 'nami_password' => 'geheim'])->save();
+        $this->actingAs($admin->fresh());
+        $this->assertTrue(NamiTestabfrage::canAccess());
+
+        $bericht = (string) Livewire::test(NamiTestabfrage::class)
+            ->assertSet('data.nummer', '210601')
+            ->call('abfragen')
+            ->assertHasNoErrors()
+            ->get('bericht');
+
+        $this->assertStringContainsString('NaMi-ID 30', $bericht);
+        $this->assertStringContainsString('Diözesanverband Trier 210000', $bericht);
+        $this->assertStringContainsString('Kluft würde 3 von 5 als beitragspflichtige Mitglieder übernehmen', $bericht);
+        $this->assertStringContainsString('entries_mglType: "Mitglied" (lesbar)', $bericht);
+        $this->assertStringContainsString('entries_geburtsDatum: "9999-99-99 99:99:99" (Text, 19 Zeichen)', $bericht);
+        $this->assertStringContainsString('beitragsartId: 6 (lesbar)', $bericht);
+        $this->assertStringContainsString('Voller Beitrag (VOLLER BEITRAG - VERBANDSBEITRAG)', $bericht);
+        foreach (['Mia', 'Muster', '4711', 'mia@example', 'Musterweg', '123456', 'geheim'] as $geheim) {
+            $this->assertStringNotContainsString($geheim, $bericht);
+        }
+
+        $this->actingAs($this->user('verwaltung'));
+        $this->assertFalse(NamiTestabfrage::canAccess());
     }
 }

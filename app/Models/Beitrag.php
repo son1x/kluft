@@ -15,6 +15,7 @@ use Illuminate\Support\Carbon;
  * @property string $halbjahr
  * @property ?string $beitragsart
  * @property int $soll_cent
+ * @property ?int $bundes_cent
  * @property ?int $bezahlt_cent
  * @property ?Carbon $bezahlt_am
  * @property ?string $zahlart
@@ -26,11 +27,11 @@ class Beitrag extends Model
 
     public const ZAHLARTEN = ['ueberweisung' => 'Überweisung', 'lastschrift' => 'Lastschrift', 'bar' => 'bar', 'erlassen' => 'erlassen'];
 
-    protected $fillable = ['beitrags_mitglied_id', 'halbjahr', 'beitragsart', 'soll_cent', 'bezahlt_cent', 'bezahlt_am', 'zahlart', 'notiz', 'erfasst_von'];
+    protected $fillable = ['beitrags_mitglied_id', 'halbjahr', 'beitragsart', 'soll_cent', 'bundes_cent', 'bezahlt_cent', 'bezahlt_am', 'zahlart', 'notiz', 'erfasst_von'];
 
     protected function casts(): array
     {
-        return ['soll_cent' => 'integer', 'bezahlt_cent' => 'integer', 'bezahlt_am' => 'date'];
+        return ['soll_cent' => 'integer', 'bundes_cent' => 'integer', 'bezahlt_cent' => 'integer', 'bezahlt_am' => 'date'];
     }
 
     /**

@@ -228,6 +228,29 @@ class NamiVerzeichnis implements Mitgliederverzeichnis
         }
     }
 
+    /**
+     * Rohe Abfrage für die Testabfrage (NamiDiagnose): Antwort ungeprüft,
+     * mit Status und Dauer. Pfade mit „/“ relativ zum Service-Pfad, sonst
+     * relativ zur NaMi-Adresse (z. B. „ica/rest/namiBeitrag/…“).
+     *
+     * @param  array<string, mixed>  $query
+     * @return array{status: int, body: mixed, ms: int}
+     *
+     * @throws MitgliederverzeichnisException
+     */
+    public function rohAbfrage(string $pfad, array $query = []): array
+    {
+        $url = str_starts_with($pfad, '/') ? $this->base().$pfad : rtrim((string) config('mitglieder.nami.url'), '/').'/'.$pfad;
+        $start = microtime(true);
+        try {
+            $response = $this->http()->withOptions(['cookies' => $this->login()])->get($url, $query);
+        } catch (ConnectionException) {
+            throw new MitgliederverzeichnisException('NaMi nicht erreichbar.');
+        }
+
+        return ['status' => $response->status(), 'body' => $response->json() ?? mb_substr($response->body(), 0, 200), 'ms' => (int) round((microtime(true) - $start) * 1000)];
+    }
+
     public function pruefe(): void
     {
         $this->session = null;

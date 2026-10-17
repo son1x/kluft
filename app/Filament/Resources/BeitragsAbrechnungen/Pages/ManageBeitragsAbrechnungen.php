@@ -12,7 +12,7 @@ class ManageBeitragsAbrechnungen extends ManageRecords
 
     public function getSubheading(): ?string
     {
-        return 'Die Rechnung des Bundesverbands je Halbjahr neben dem, was in Kluft als Soll steht und schon eingegangen ist.';
+        return 'Die Rechnung des Bundesverbands je Halbjahr neben dem Bundesbeitrag aus der Beitragsliste, dem Soll gesamt (mit Stammesanteil) und dem, was schon eingegangen ist.';
     }
 
     protected function getHeaderActions(): array

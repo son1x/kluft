@@ -21,6 +21,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Schemas\Components\Fieldset;
 use Illuminate\Support\HtmlString;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -123,18 +124,24 @@ class ListBeitraege extends ListRecords
                 ->icon('heroicon-o-currency-euro')
                 ->color('gray')
                 ->modalHeading('Beitrag je Halbjahr nach Beitragsart')
-                ->modalDescription('So viel zieht der Stamm je Halbjahr ein – meist der Verbandsbeitrag laut Rechnung des Bundesverbands plus ein Anteil für Stamm, Bezirk und Diözese. Offene Beiträge werden angepasst, bezahlte nicht.')
-                ->fillForm(fn () => collect(self::arten())->mapWithKeys(fn (string $art, string $feld) => [$feld => BeitragResource::alsEuro(Beitraege::saetze()[$art] ?? null)])->all())
-                ->schema(fn () => collect(self::arten())->map(fn (string $art, string $feld) => TextInput::make($feld)->label($art)->suffix('€')->rules(BeitragResource::EURO)->inputMode('decimal'))->values()->all())
+                ->modalDescription('Der Beitrag ist Bundesbeitrag plus Stammesanteil, jeweils für ein Halbjahr. Den Bundesbeitrag stellt der Bundesverband in Rechnung (Betrag laut Rechnung bzw. Beitragsordnung), den Stammesanteil beschließt der Stamm. Offene Beiträge ab dem laufenden Halbjahr werden angepasst, bezahlte und ältere nicht.')
+                ->fillForm(fn () => collect(self::arten())->flatMap(fn (string $art, string $feld) => [
+                    $feld.'_bund' => BeitragResource::alsEuro(Beitraege::saetze()[$art]['bund'] ?? null),
+                    $feld.'_stamm' => BeitragResource::alsEuro(Beitraege::saetze()[$art]['stamm'] ?? null),
+                ])->all())
+                ->schema(fn () => collect(self::arten())->map(fn (string $art, string $feld) => Fieldset::make($art)->columns(2)->schema([
+                    TextInput::make($feld.'_bund')->label('Bundesbeitrag')->suffix('€')->rules(BeitragResource::EURO)->inputMode('decimal'),
+                    TextInput::make($feld.'_stamm')->label('Stammesanteil')->suffix('€')->rules(BeitragResource::EURO)->inputMode('decimal'),
+                ]))->values()->all())
                 ->action(function (array $data) {
                     abort_unless(BeitragResource::canViewAny(), 403);
                     $saetze = [];
                     foreach (self::arten() as $feld => $art) {
-                        $saetze[$art] = (int) BeitragResource::alsCent($data[$feld] ?? null);
+                        $saetze[$art] = ['bund' => (int) BeitragResource::alsCent($data[$feld.'_bund'] ?? null), 'stamm' => (int) BeitragResource::alsCent($data[$feld.'_stamm'] ?? null)];
                     }
                     Beitraege::saetzeSetzen($saetze, Filament::auth()->id());
                     $angepasst = 0;
-                    foreach (Beitrag::query()->offen()->distinct()->pluck('halbjahr') as $halbjahr) {
+                    foreach (Beitrag::query()->offen()->where('halbjahr', '>=', Beitraege::aktuell())->distinct()->pluck('halbjahr') as $halbjahr) {
                         $angepasst += app(BeitragsAbruf::class)->halbjahrAnlegen((string) $halbjahr)['angepasst'];
                     }
                     AuditLogger::log('beitraege.saetze', self::nutzer(), request: request());
@@ -152,12 +159,12 @@ class ListBeitraege extends ListRecords
                     return response()->streamDownload(function () use ($halbjahr) {
                         $out = fopen('php://output', 'w');
                         fwrite($out, "\xEF\xBB\xBF");
-                        fputcsv($out, ['Nachname', 'Vorname', 'Mitgliedsnummer', 'Beitragsart', 'Soll', 'Bezahlt', 'Offen', 'Notiz'], ';');
+                        fputcsv($out, ['Nachname', 'Vorname', 'Mitgliedsnummer', 'Beitragsart', 'Soll', 'davon Bundesbeitrag', 'Bezahlt', 'Offen', 'Notiz'], ';');
                         Beitrag::query()->offen()->where('halbjahr', $halbjahr)->with('mitglied')->get()
                             ->sortBy(fn (Beitrag $b) => $b->mitglied?->name())
                             ->each(fn (Beitrag $b) => fputcsv($out, [
                                 $b->mitglied?->nachname, $b->mitglied?->vorname, $b->mitglied?->mitgliedsnummer, $b->beitragsart,
-                                BeitragResource::alsEuro($b->soll_cent), BeitragResource::alsEuro($b->bezahlt_cent),
+                                BeitragResource::alsEuro($b->soll_cent), BeitragResource::alsEuro($b->bundes_cent), BeitragResource::alsEuro($b->bezahlt_cent),
                                 BeitragResource::alsEuro(max(0, $b->soll_cent - (int) $b->bezahlt_cent)), $b->notiz,
                             ], ';'));
                         fclose($out);

@@ -16,4 +16,5 @@ Admins. Kurz und aus Sicht der Redaktion schreiben.
 - Einrichtungsassistent: Gruppenstundenzeiten je Stufe, NaMi-Abgleich für Lageranmeldungen; Vorbelegung für einen bestimmten Stamm, auch mit fertigen Seiten.
 - Ausbaustufen von der Visitenkarte bis zum Vollausbau (Verwaltung → Ausbaustufe); im Assistenten Ort der Gruppenstunde je Gruppe.
 - Stammes-Websites auch per GitHub deployen (erste: Roden); Environment per Kommandozeile anlegen (scripts/environment-anlegen.sh).
-- Kasse für Stämme: Mitgliedsbeiträge je Halbjahr aus NaMi, offene und bezahlte Beiträge abhaken, Abgleich mit der Rechnung des Bundesverbands (Rolle „Kasse“).
+- Kasse für Stämme: Mitgliedsbeiträge je Halbjahr aus NaMi (Bundesbeitrag plus Stammesanteil), offene und bezahlte Beiträge abhaken, Abgleich mit der Rechnung des Bundesverbands (Rolle „Kasse“).
+- NaMi-Testabfrage (Verwaltung): zeigt, was NaMi liefert, ohne Personendaten – zum Weitergeben an die Technik.

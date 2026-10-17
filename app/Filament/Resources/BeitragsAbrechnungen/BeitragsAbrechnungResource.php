@@ -98,7 +98,10 @@ class BeitragsAbrechnungResource extends Resource
                 TextColumn::make('rechnungsbetrag_cent')->label('Rechnung')->alignEnd()
                     ->formatStateUsing(fn (?int $state) => Beitraege::euro($state))->placeholder('–')
                     ->description(fn (BeitragsAbrechnung $record) => $record->rechnungsdatum ? 'vom '.$record->rechnungsdatum->format('d.m.Y') : null),
-                TextColumn::make('soll')->label('Soll (Kluft)')->alignEnd()
+                TextColumn::make('bund')->label('Bundesbeitrag (Kluft)')->alignEnd()
+                    ->state(fn (BeitragsAbrechnung $record) => Beitraege::euro($summe($record, 'bundes_cent')))
+                    ->description(fn (BeitragsAbrechnung $record) => $record->rechnungsbetrag_cent !== null && $record->rechnungsbetrag_cent !== $summe($record, 'bundes_cent') ? 'abweichend von der Rechnung' : null),
+                TextColumn::make('soll')->label('Soll gesamt (Kluft)')->alignEnd()
                     ->state(fn (BeitragsAbrechnung $record) => Beitraege::euro($summe($record, 'soll_cent'))),
                 TextColumn::make('eingegangen')->label('Eingegangen')->alignEnd()
                     ->state(fn (BeitragsAbrechnung $record) => Beitraege::euro($summe($record, 'bezahlt_cent')))

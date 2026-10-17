@@ -19,10 +19,12 @@ Halbjahren (1. Halbjahr = Januar bis Juni, 2. Halbjahr = Juli bis Dezember).
 
 ## Ablauf je Halbjahr
 
-1. **Kasse → Mitgliedsbeiträge → Beitragssätze**: Betrag je Beitragsart und
-   Halbjahr eintragen (voller Beitrag, familien- und sozialermäßigt, jeweils
-   mit und ohne Stiftungseuro). Das ist, was der Stamm einzieht, also meist
-   der Verbandsbeitrag plus Anteile für Stamm, Bezirk und Diözese.
+1. **Kasse → Mitgliedsbeiträge → Beitragssätze**: je Beitragsart (voller
+   Beitrag, familien- und sozialermäßigt, jeweils mit und ohne Stiftungseuro)
+   zwei Beträge für ein Halbjahr eintragen: den **Bundesbeitrag**, den der
+   Bundesverband in Rechnung stellt (laut Rechnung bzw. Beitragsordnung), und
+   den **Stammesanteil**, den der Stamm beschließt. Das Soll eines Mitglieds
+   ist die Summe; der Bundesanteil wird je Beitrag mitgespeichert.
 2. **Aus NaMi abrufen**: Halbjahr wählen, mit dem eigenen NaMi-Konto anmelden
    (oder dem im Profil gespeicherten Zugang). Kluft holt im Hintergrund die
    Mitglieder des Stamms mit Beitragsart, Ein- und Austritt und legt für alle,
@@ -37,14 +39,27 @@ Halbjahren (1. Halbjahr = Januar bis Juni, 2. Halbjahr = Juli bis Dezember).
 4. **Offene als CSV** für Erinnerungen oder die Vorstandssitzung.
 5. **Kasse → Bundesverbandsrechnung**: Rechnung des Halbjahres eintragen
    (Anzahl Mitglieder, Betrag, Datum, wann bezahlt). Daneben stehen die Zahl
-   der Beiträge in Kluft, das Soll und was eingegangen ist; weicht die Zahl
-   der Mitglieder ab, steht „abweichend“ dabei.
+   der Beiträge in Kluft, die Summe der Bundesbeiträge (sollte dem
+   Rechnungsbetrag entsprechen), das Soll gesamt und was eingegangen ist.
+   Weichen Anzahl oder Betrag ab, steht „abweichend“ dabei. Auch erlassene
+   Beiträge zählen beim Bundesbeitrag mit – den schuldet der Stamm trotzdem.
 
 Erneut abrufen ist jederzeit möglich: Neue Mitglieder kommen dazu, offene
 Beiträge folgen einer geänderten Beitragsart oder einem geänderten Satz,
 bezahlte bleiben, wie sie sind. Wer nicht mehr in NaMi steht, wird nicht
 gelöscht, sondern als „nicht mehr in NaMi“ markiert – seine Zahlungen
-bleiben erhalten. Geänderte Beitragssätze passen offene Beiträge sofort an.
+bleiben erhalten. Geänderte Beitragssätze passen offene Beiträge ab dem
+laufenden Halbjahr sofort an; ältere Halbjahre bleiben bei ihren Sätzen.
+
+## NaMi-Testabfrage
+
+**Verwaltung → NaMi-Testabfrage** (für Admins und die Kasse) fragt NaMi so ab
+wie der Beitragsabruf – Anmeldung, Gruppierungsbaum, Mitgliederliste, zwei
+Beispiel-Details, Beitragsarten – und zeigt nur die Form der Antworten:
+Namen, Nummern, Adressen und Daten als Muster („Aaaa“, „9999-99-99“),
+Merkmale wie Mitgliedstyp nur als Anzahlen ab zehn Personen. Das Ergebnis
+lässt sich kopieren und an die Technik geben, z. B. für die Umstellung auf
+NaMi 3. Es wird nicht gespeichert; die Abfrage steht im Protokoll.
 
 ## Daten und Datenschutz
 

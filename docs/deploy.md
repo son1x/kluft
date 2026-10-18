@@ -81,6 +81,7 @@ Statt mit dem Einrichtungsassistenten auf eigenem Webspace kann eine Stammes-Web
 - Auf dem Server: eigenes Verzeichnis (z. B. `/var/www/dpsg-roden`), VirtualHost für `www.dpsg-roden.de` mit DocumentRoot `<pfad>/public`, eigener php-fpm-Pool oder Deploy-Benutzer, eigene MariaDB-Datenbank, Cronjob für `<pfad>/artisan schedule:run`, Let's Encrypt. Nur `www` bzw. die Hauptdomain umziehen – Subdomains wie `webmail.` oder `cloud.` bleiben, wo sie sind.
 - Mail: Die Absenderadresse (`MAIL_FROM_ADDRESS`, z. B. `website@dpsg-roden.de`) muss in Brevo als Absender bzw. Domain bestätigt sein (DNS-Einträge beim Domain-Anbieter). Während der Testphase das Postfach des ersten Zugangs in `MAIL_TEST_ALLOWLIST` aufnehmen, sonst kommt der Anmeldecode nicht an.
 - Startinhalt beim ersten Deploy: `StammStartSeeder` legt Seiten, Stufen mit Gruppenstunden, Kontaktthemen und die vorbereiteten Seiten aus `angaben.json` an.
+- Erster Zugang: `zugang` in `angaben.json` (Roden: Rollen-Zugang „Stammesvorstand“ mit `kontakt@dpsg-roden.de`). Der Seeder legt ihn beim ersten Deploy als Admin mit Anmeldung per E-Mail-Code an, solange noch niemand eine Rolle hat. Anmelden unter `/redaktion/anmelden`; die Adresse muss in `MAIL_TEST_ALLOWLIST` stehen, solange `MAIL_TEST_REDIRECT_TO` gesetzt ist.
 - Erster Zugang: per SSH `php artisan cms:create-superadmin`, dann unter „Benutzer“ den Rollen-Zugang „Stammesvorstand“ mit dem Funktionspostfach anlegen (Anmeldung per E-Mail-Code).
 
 ## Erster Deploy einer neuen Instanz

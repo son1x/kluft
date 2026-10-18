@@ -4,6 +4,8 @@ namespace Database\Seeders\Einrichtung;
 
 use App\Models\Gruppierung;
 use App\Models\Page;
+use App\Models\RoleAssignment;
+use App\Models\User;
 use App\Support\Ausbau;
 use App\Support\Einrichtung\Installer;
 use Illuminate\Database\Seeder;
@@ -36,6 +38,7 @@ class StammStartSeeder extends Seeder
         $stamm = (string) ($a['stamm'] ?? 'Beispiel');
         $ort = (string) ($a['ort'] ?? '');
         $stufen = array_values(array_intersect(array_keys((array) config('dpsg.stages')), (array) ($a['stufen'] ?? array_keys((array) config('dpsg.stages')))));
+        $this->ersterZugang((array) ($a['zugang'] ?? []));
 
         $this->seite('start', 'Pfadfinden'.($ort !== '' ? ' in '.$ort : ' beim Stamm '.$stamm), [
             'seo_title' => (string) config('dpsg.site.name'),
@@ -238,5 +241,25 @@ class StammStartSeeder extends Seeder
             <h2>8. Deine Rechte nach dem KDG</h2>
             <p>Du hast das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit und Widerspruch sowie auf Widerruf einer Einwilligung. Wende dich dazu an die oben genannte Adresse. Beschwerden richtest du an die Katholische Datenschutzaufsicht, die für dein Bistum zuständig ist.</p>
             HTML;
+    }
+
+    /**
+     * Erster Zugang für Stammes-Instanzen im Repository (angaben.json
+     * „zugang“), wie ihn sonst der Einrichtungsassistent anlegt: Admin mit
+     * Anmeldung per E-Mail-Code. Nur solange noch niemand eine Rolle hat.
+     *
+     * @param  array<string, mixed>  $zugang
+     */
+    private function ersterZugang(array $zugang): void
+    {
+        $email = mb_strtolower(trim((string) ($zugang['email'] ?? '')));
+        if (! filter_var($email, FILTER_VALIDATE_EMAIL) || RoleAssignment::query()->exists()) {
+            return;
+        }
+        $user = User::query()->firstOrCreate(['email' => $email], [
+            'name' => trim((string) ($zugang['name'] ?? '')) ?: 'Stammesvorstand', 'status' => 'active',
+            'login' => 'email', 'kind' => ($zugang['kind'] ?? 'rolle') === 'person' ? 'person' : 'rolle',
+        ]);
+        $user->roleAssignments()->create(['role' => 'admin', 'scope_type' => 'global', 'scope_key' => null]);
     }
 }

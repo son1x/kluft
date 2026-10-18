@@ -4,6 +4,7 @@ namespace Tests\Feature\Instanzen;
 
 use App\Models\Gruppierung;
 use App\Models\Page;
+use App\Models\User;
 use App\Support\Ausbau;
 use App\Support\Einrichtung\Installer;
 use App\Support\Einrichtung\StammVorlage;
@@ -207,9 +208,15 @@ class EinrichtungTest extends TestCase
         $this->assertTrue(Page::query()->where('slug', 'foerderverein')->where('show_in_nav', true)->exists());
         $this->assertStringContainsString('dienstags, 16:00–17:00 Uhr', (string) Page::query()->where('slug', 'stufe-biber')->value('body'));
 
+        // Erster Zugang aus angaben.json: Rollen-Zugang „Stammesvorstand“ als Admin mit E-Mail-Code.
+        $zugang = User::query()->where('email', 'kontakt@dpsg-roden.de')->firstOrFail();
+        $this->assertSame(['email', 'rolle', 'active'], [$zugang->login, $zugang->kind, $zugang->status]);
+        $this->assertTrue($zugang->fresh()->isAdmin());
+
         Page::query()->where('slug', 'start')->update(['title' => 'Von Hand geändert']);
         $this->seed(StammStartSeeder::class);
         $this->assertSame('Von Hand geändert', Page::query()->where('slug', 'start')->value('title'));
+        $this->assertSame(1, User::query()->count(), 'kein zweiter Zugang beim erneuten Seeden');
     }
 
     #[TestDox('Startinhalt: Seiten, Stufen, Themen und der Stamm als Gruppierung – zweimal ausgeführt ändert nichts')]

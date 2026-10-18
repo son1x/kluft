@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $stage
  * @property int $from
  * @property int $to
+ * @property ?string $text
  */
 class StageAge extends Model
 {
@@ -21,7 +22,7 @@ class StageAge extends Model
 
     public $incrementing = false;
 
-    protected $fillable = ['stage', 'from', 'to', 'updated_by'];
+    protected $fillable = ['stage', 'from', 'to', 'text', 'updated_by'];
 
     protected function casts(): array
     {

@@ -12,7 +12,9 @@ use Throwable;
  * dpsg.stages); jede Gruppierung darf jede Grenze um bis zu SPIELRAUM Jahre
  * verschieben, z. B. Wölflinge 7 bis 10 statt 6 bis 10. Festgelegt unter
  * „Verwaltung → Stufen“, gespeichert in stage_ages, beim Start in die
- * Konfiguration übernommen (from, to und der Text age).
+ * Konfiguration übernommen (from, to und der Text age). Statt „7 bis 11
+ * Jahre“ darf die Website auch eine eigene Angabe zeigen, z. B. „3. bis
+ * 5. Klasse“; from/to gelten weiter für Altersprüfungen.
  */
 class StufenAlter
 {
@@ -69,16 +71,17 @@ class StufenAlter
             if ($eigen && self::gueltig($stage, $eigen['from'], $eigen['to'])) {
                 [$from, $to] = [$eigen['from'], $eigen['to']];
             }
+            $text = filled($eigen['text'] ?? null) ? (string) $eigen['text'] : self::text($from, $to);
             $aktuell = (array) config("dpsg.stages.{$stage}");
-            if ($aktuell['from'] === $from && $aktuell['to'] === $to) {
+            if ($aktuell['from'] === $from && $aktuell['to'] === $to && ($aktuell['age'] ?? null) === $text) {
                 continue;
             }
-            config(["dpsg.stages.{$stage}" => ['from' => $from, 'to' => $to, 'age' => self::text($from, $to), 'standard' => $standard] + $aktuell]);
+            config(["dpsg.stages.{$stage}" => ['from' => $from, 'to' => $to, 'age' => $text, 'standard' => $standard] + $aktuell]);
         }
     }
 
     /**
-     * @return array<string, array{from: int, to: int}>
+     * @return array<string, array{from: int, to: int, text: ?string}>
      */
     public static function festgelegt(): array
     {
@@ -91,7 +94,7 @@ class StufenAlter
                 return [];
             }
             $werte = StageAge::query()->get()
-                ->mapWithKeys(fn (StageAge $a) => [$a->stage => ['from' => $a->from, 'to' => $a->to]])->all();
+                ->mapWithKeys(fn (StageAge $a) => [$a->stage => ['from' => $a->from, 'to' => $a->to, 'text' => $a->text]])->all();
             Cache::forever(self::CACHE_KEY, $werte);
 
             return $werte;
@@ -100,16 +103,17 @@ class StufenAlter
         }
     }
 
-    /** Festlegen; gleich dem Standard entfernt den Eintrag. */
-    public static function setzen(string $stage, int $from, int $to, ?int $userId = null): void
+    /** Festlegen; gleich dem Standard ohne eigenen Text entfernt den Eintrag. */
+    public static function setzen(string $stage, int $from, int $to, ?int $userId = null, ?string $text = null): void
     {
         if (! self::gueltig($stage, $from, $to)) {
             throw new \InvalidArgumentException("Alter {$from}–{$to} für {$stage} außerhalb des Rahmens.");
         }
-        if (['from' => $from, 'to' => $to] === self::standard($stage)) {
+        $text = trim((string) $text) !== '' ? mb_substr(trim((string) $text), 0, 80) : null;
+        if (['from' => $from, 'to' => $to] === self::standard($stage) && $text === null) {
             StageAge::query()->whereKey($stage)->delete();
         } else {
-            StageAge::query()->updateOrCreate(['stage' => $stage], ['from' => $from, 'to' => $to, 'updated_by' => $userId]);
+            StageAge::query()->updateOrCreate(['stage' => $stage], ['from' => $from, 'to' => $to, 'text' => $text, 'updated_by' => $userId]);
         }
         Cache::forget(self::CACHE_KEY);
         self::anwenden();

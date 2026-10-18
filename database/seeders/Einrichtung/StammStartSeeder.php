@@ -4,10 +4,13 @@ namespace Database\Seeders\Einrichtung;
 
 use App\Models\Gruppierung;
 use App\Models\Page;
+use App\Models\Person;
 use App\Models\RoleAssignment;
+use App\Models\StageAge;
 use App\Models\User;
 use App\Support\Ausbau;
 use App\Support\Einrichtung\Installer;
+use App\Support\StufenAlter;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -39,6 +42,8 @@ class StammStartSeeder extends Seeder
         $ort = (string) ($a['ort'] ?? '');
         $stufen = array_values(array_intersect(array_keys((array) config('dpsg.stages')), (array) ($a['stufen'] ?? array_keys((array) config('dpsg.stages')))));
         $this->ersterZugang((array) ($a['zugang'] ?? []));
+        $this->altersangaben((array) ($a['alter'] ?? []), $stufen);
+        $this->leitende((array) ($a['leitende'] ?? []), $stufen);
 
         $this->seite('start', 'Pfadfinden'.($ort !== '' ? ' in '.$ort : ' beim Stamm '.$stamm), [
             'seo_title' => (string) config('dpsg.site.name'),
@@ -261,5 +266,52 @@ class StammStartSeeder extends Seeder
             'login' => 'email', 'kind' => ($zugang['kind'] ?? 'rolle') === 'person' ? 'person' : 'rolle',
         ]);
         $user->roleAssignments()->create(['role' => 'admin', 'scope_type' => 'global', 'scope_key' => null]);
+    }
+
+    /**
+     * Altersangaben je Stufe (angaben.json „alter“: from, to, text), nur
+     * solange die Stufe noch keine eigene Angabe hat (Verwaltung → Stufen).
+     *
+     * @param  array<string, mixed>  $alter
+     * @param  list<string>  $stufen
+     */
+    private function altersangaben(array $alter, array $stufen): void
+    {
+        foreach ($alter as $stage => $a) {
+            if (! in_array($stage, $stufen, true) || ! is_array($a) || StageAge::query()->whereKey($stage)->exists()) {
+                continue;
+            }
+            $standard = StufenAlter::standard((string) $stage);
+            $from = (int) ($a['from'] ?? $standard['from']);
+            $to = (int) ($a['to'] ?? $standard['to']);
+            if (StufenAlter::gueltig((string) $stage, $from, $to)) {
+                StufenAlter::setzen((string) $stage, $from, $to, null, isset($a['text']) ? (string) $a['text'] : null);
+            }
+        }
+    }
+
+    /**
+     * Leitungsteams je Stufe (angaben.json „leitende“: Namen), nur Name und
+     * Stufe, ohne Adresse. Wer schon im Leitungsteam der Stufe steht, wird
+     * nicht doppelt angelegt.
+     *
+     * @param  array<string, mixed>  $leitende
+     * @param  list<string>  $stufen
+     */
+    private function leitende(array $leitende, array $stufen): void
+    {
+        foreach ($leitende as $stage => $namen) {
+            if (! in_array($stage, $stufen, true) || ! is_array($namen)) {
+                continue;
+            }
+            foreach (array_values($namen) as $i => $name) {
+                $name = trim((string) $name);
+                if ($name === '' || Person::query()->where('stage', $stage)->where('name', $name)->exists()) {
+                    continue;
+                }
+                Person::query()->create(['gremium' => 'dak', 'stage' => $stage, 'name' => mb_substr($name, 0, 120),
+                    'consent' => true, 'active' => true, 'sort' => ($i + 1) * 10]);
+            }
+        }
     }
 }

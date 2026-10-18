@@ -24,14 +24,66 @@
     "gruppenstunden": {
         "biber": "dienstags, 16:00–17:00 Uhr",
         "woelflinge": "donnerstags, 16:30–18:00 Uhr",
-        "jupfi": "donnerstags, 16:30–18:00 Uhr",
-        "pfadi": "donnerstags, 18:00–19:30 Uhr",
-        "rover": "dienstags, 17:00–18:30 Uhr"
+        "jupfi": "dienstags, 17:15–18:45 Uhr",
+        "pfadi": "donnerstags, 16:30–18:00 Uhr",
+        "rover": "donnerstags, 18:00–19:30 Uhr"
     },
     "ausbau": 4,
     "telefon": "",
     "bezirk_url": "https://www.dpsg-saar-hochwald.de",
     "gruppenstunden_orte": {},
+    "alter": {
+        "biber": {
+            "from": 4,
+            "to": 7,
+            "text": "4 Jahre bis 2. Klasse"
+        },
+        "woelflinge": {
+            "from": 7,
+            "to": 11,
+            "text": "3. bis 5. Klasse"
+        },
+        "jupfi": {
+            "from": 11,
+            "to": 14,
+            "text": "6. bis 8. Klasse"
+        },
+        "pfadi": {
+            "from": 14,
+            "to": 16,
+            "text": "9. und 10. Klasse"
+        },
+        "rover": {
+            "from": 16,
+            "to": 21,
+            "text": "ab der 11. Klasse bis 21 Jahre"
+        }
+    },
+    "leitende": {
+        "biber": [
+            "Michele Franke",
+            "Kimberly Lamprecht"
+        ],
+        "woelflinge": [
+            "Julia Rusello",
+            "Hendrik Schuler"
+        ],
+        "jupfi": [
+            "Michele Franke",
+            "Eva Schmidt",
+            "Less Knoll"
+        ],
+        "pfadi": [
+            "Less Knoll",
+            "Ruben Schmidt",
+            "Flavio Rusello"
+        ],
+        "rover": [
+            "Gian-Luca Blasius",
+            "Sebastian Hafner",
+            "Flavio Rusello"
+        ]
+    },
     "logo": "instanz/images/logo.png",
     "logo_size": [
         832,

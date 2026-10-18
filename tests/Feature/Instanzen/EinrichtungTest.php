@@ -4,6 +4,7 @@ namespace Tests\Feature\Instanzen;
 
 use App\Models\Gruppierung;
 use App\Models\Page;
+use App\Models\Person;
 use App\Models\User;
 use App\Support\Ausbau;
 use App\Support\Einrichtung\Installer;
@@ -217,6 +218,14 @@ class EinrichtungTest extends TestCase
         $this->seed(StammStartSeeder::class);
         $this->assertSame('Von Hand geändert', Page::query()->where('slug', 'start')->value('title'));
         $this->assertSame(1, User::query()->count(), 'kein zweiter Zugang beim erneuten Seeden');
+
+        // Altersangaben als Klassenstufen, Leitungsteams je Stufe – auch beim zweiten Lauf nur einmal.
+        $this->assertSame('3. bis 5. Klasse', config('dpsg.stages.woelflinge.age'));
+        $this->assertSame([7, 11], [config('dpsg.stages.woelflinge.from'), config('dpsg.stages.woelflinge.to')]);
+        $this->assertStringContainsString('dienstags, 17:15–18:45 Uhr', (string) Page::query()->where('slug', 'stufe-jupfi')->value('body'));
+        $this->assertSame(['Michele Franke', 'Eva Schmidt', 'Less Knoll'], Person::query()->where('stage', 'jupfi')->orderBy('sort')->pluck('name')->all());
+        $this->assertSame(13, Person::query()->where('gremium', 'dak')->count());
+        $this->get('/stufe-woelflinge')->assertOk()->assertSee('3. bis 5. Klasse')->assertSee('Hendrik Schuler')->assertSee('Im Leitungsteam');
     }
 
     #[TestDox('Startinhalt: Seiten, Stufen, Themen und der Stamm als Gruppierung – zweimal ausgeführt ändert nichts')]

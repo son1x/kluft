@@ -60,6 +60,24 @@ class StufenAlterTest extends TestCase
         $this->assertSame($standard['from'], config('dpsg.stages.woelflinge.from'));
     }
 
+    #[TestDox('Eigene Angabe für die Website, z. B. Klassenstufen; leer zeigt wieder die Jahre')]
+    public function test_eigene_angabe(): void
+    {
+        $standard = StufenAlter::standard('woelflinge');
+        $this->login('admin');
+        Page::query()->create(['title' => 'Wölflinge', 'slug' => 'stufe-woelflinge', 'stage' => 'woelflinge', 'body' => '<p>Text</p>', 'status' => 'published', 'published_at' => now()->subDay()]);
+
+        Livewire::test(Stufen::class)->set('data.alter.woelflinge.text', '3. bis 5. Klasse')->call('save')->assertNotified();
+        $this->assertSame('3. bis 5. Klasse', config('dpsg.stages.woelflinge.age'));
+        $this->assertSame($standard['from'], config('dpsg.stages.woelflinge.from'), 'Jahre bleiben für Altersprüfungen');
+        $this->get('/stufe-woelflinge')->assertOk()->assertSee('3. bis 5. Klasse');
+
+        Livewire::test(Stufen::class)->assertSet('data.alter.woelflinge.text', '3. bis 5. Klasse')
+            ->set('data.alter.woelflinge.text', '')->call('save');
+        $this->assertNull(StageAge::query()->find('woelflinge'));
+        $this->assertSame(StufenAlter::text($standard['from'], $standard['to']), config('dpsg.stages.woelflinge.age'));
+    }
+
     #[TestDox('Nur im Rahmen: außerhalb wird abgelehnt, ungültige Einträge in der Datenbank werden ignoriert')]
     public function test_rahmen(): void
     {

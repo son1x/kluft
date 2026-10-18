@@ -9,6 +9,7 @@ use App\Support\StufenAlter;
 use BackedEnum;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
@@ -48,8 +49,9 @@ class Stufen extends Page
 
     public function mount(): void
     {
+        $texte = StufenAlter::festgelegt();
         $this->form->fill(['alter' => collect((array) config('dpsg.stages'))
-            ->map(fn (array $s) => ['from' => (int) $s['from'], 'to' => (int) $s['to']])->all()]);
+            ->map(fn (array $s, string $stage) => ['from' => (int) $s['from'], 'to' => (int) $s['to'], 'text' => $texte[$stage]['text'] ?? null])->all()]);
     }
 
     public function form(Schema $schema): Schema
@@ -70,6 +72,9 @@ class Stufen extends Page
                     ->components([
                         Select::make("alter.{$stage}.from")->label('ab')->options($jahre('from'))->required()->native(false)->selectablePlaceholder(false),
                         Select::make("alter.{$stage}.to")->label('bis')->options($jahre('to'))->required()->native(false)->selectablePlaceholder(false),
+                        TextInput::make("alter.{$stage}.text")->label('Angabe auf der Website (optional)')->maxLength(80)->columnSpanFull()
+                            ->placeholder('z. B. „3. bis 5. Klasse“')
+                            ->helperText('Leer: „ab … bis … Jahre“. Die Jahre oben gelten weiter, z. B. für Altersprüfungen bei Anmeldungen.'),
                     ]);
             })->values()->all());
     }
@@ -84,7 +89,8 @@ class Stufen extends Page
         foreach ((array) config('dpsg.stages') as $stage => $s) {
             $from = (int) ($werte[$stage]['from'] ?? $s['from']);
             $to = (int) ($werte[$stage]['to'] ?? $s['to']);
-            if ($from === (int) $s['from'] && $to === (int) $s['to']) {
+            $text = trim((string) ($werte[$stage]['text'] ?? '')) ?: null;
+            if ($from === (int) $s['from'] && $to === (int) $s['to'] && $text === (StufenAlter::festgelegt()[$stage]['text'] ?? null)) {
                 continue;
             }
             if (! StufenAlter::gueltig($stage, $from, $to)) {
@@ -92,15 +98,15 @@ class Stufen extends Page
 
                 return;
             }
-            $neu[$stage] = [$from, $to];
+            $neu[$stage] = [$from, $to, $text];
         }
 
         $geaendert = [];
-        foreach ($neu as $stage => [$from, $to]) {
+        foreach ($neu as $stage => [$from, $to, $text]) {
             $s = (array) config("dpsg.stages.{$stage}");
-            StufenAlter::setzen($stage, $from, $to, $user?->getKey());
+            StufenAlter::setzen($stage, $from, $to, $user?->getKey(), $text);
             AuditLogger::log('stufe.alter:'.$stage, $user instanceof User ? $user : null, request: request());
-            $geaendert[] = $s['label'].': '.StufenAlter::text($from, $to);
+            $geaendert[] = $s['label'].': '.($text ?? StufenAlter::text($from, $to));
         }
 
         if ($geaendert === []) {

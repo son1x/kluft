@@ -455,6 +455,15 @@ jobs:
             # 503-Seite statt 500er durch halb hochgeladene Dateien.
             if [ -f vendor/autoload.php ] && [ -f .env ]; then "${{ env.PHP_BIN }}" artisan down --retry=60 --render="errors::503" || true; fi
 
+      # Angaben anderer Instanzen (z. B. Namen aus deren angaben.json) gehören
+      # nicht auf diesen Server. Ordner vor dem Spiegeln entfernen – dann
+      # löscht „mirror --delete“ dort auch frühere Reste.
+      - name: Nur die eigene Instanz hochladen
+        if: env.NUR_PRUEFEN != 'true'
+        run: |
+          [ -d "instanzen/$KLUFT_INSTANZ" ] || { echo "::error::instanzen/$KLUFT_INSTANZ fehlt"; exit 1; }
+          find instanzen -mindepth 1 -maxdepth 1 -type d ! -name "$KLUFT_INSTANZ" -print -exec rm -rf {} +
+
       - name: Per lftp über SFTP synchronisieren (inkl. Löschen entfernter Dateien)
         if: env.NUR_PRUEFEN != 'true'
         env:

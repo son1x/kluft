@@ -149,7 +149,13 @@ class ContactMessageResource extends Resource
             ->toolbarActions([
                 BulkAction::make('erledigtAlle')->label('Als erledigt markieren')->icon('heroicon-o-check-circle')
                     ->deselectRecordsAfterCompletion()
-                    ->action(fn (Collection $records) => $records->each(fn (ContactMessage $r) => self::status($r, 'erledigt'))),
+                    ->action(function (Collection $records) {
+                        foreach ($records as $record) {
+                            if ($record instanceof ContactMessage) {
+                                self::status($record, 'erledigt');
+                            }
+                        }
+                    }),
                 DeleteBulkAction::make(),
             ]);
     }

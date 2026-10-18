@@ -138,7 +138,7 @@ class ContactController extends Controller
         try {
             ContactMessage::query()->create($werte + [
                 'name' => $data['name'], 'email' => mb_strtolower((string) $data['email']), 'nachricht' => $data['nachricht'],
-                'empfaenger' => array_values($recipients), 'zugestellt' => $zugestellt,
+                'empfaenger' => $recipients, 'zugestellt' => $zugestellt,
             ]);
 
             return true;

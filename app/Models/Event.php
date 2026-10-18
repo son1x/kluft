@@ -66,6 +66,16 @@ class Event extends Model
     }
 
     /**
+     * Fragen zur Veranstaltung im Nachrichten-Eingang.
+     *
+     * @return HasMany<ContactMessage, $this>
+     */
+    public function contactMessages(): HasMany
+    {
+        return $this->hasMany(ContactMessage::class);
+    }
+
+    /**
      * „Nur für Mitglieder von …“ (Stamm oder Bezirk); der Mitgliederabgleich
      * markiert, wer zu einer anderen Gruppierung gehört.
      *

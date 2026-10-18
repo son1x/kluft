@@ -4,6 +4,8 @@ namespace Tests\Feature\Content;
 
 use App\Filament\Resources\ContactMessages\ContactMessageResource;
 use App\Filament\Resources\ContactMessages\Pages\ListContactMessages;
+use App\Filament\Resources\Events\Pages\EditEvent;
+use App\Filament\Resources\Events\RelationManagers\QuestionsRelationManager;
 use App\Mail\ContactMessageMail;
 use App\Models\ContactMessage;
 use App\Models\ContactTopic;
@@ -144,5 +146,44 @@ class NachrichtenEingangTest extends TestCase
         $this->assertStringContainsString('Partnerschaftstag', (string) $zip->getFromName('auskunft.json'));
         $this->assertSame(1, $requests->delete('erika@example.org')['messages']);
         $this->assertSame(0, ContactMessage::query()->count());
+    }
+
+    #[TestDox('Stufenadmins sehen die Fragen zu ihren Veranstaltungen gebündelt – im Eingang und als Reiter „Fragen“ bei der Veranstaltung')]
+    public function test_fragen_fuer_veranstaltungsverantwortliche(): void
+    {
+        $termin = fn (string $slug, string $stage) => Event::query()->create([
+            'title' => ucfirst($slug), 'slug' => $slug, 'location' => 'Trier', 'status' => 'open', 'stage' => $stage,
+            'starts_at' => now()->addMonth()->setTime(10, 0), 'ends_at' => now()->addMonth()->setTime(17, 0), 'contact_email' => $stage.'@example.org',
+        ]);
+        $woelflingstag = $termin('woelflingstag', 'woelflinge');
+        $termin('roverhajk', 'rover');
+        foreach (['woelflingstag', 'roverhajk'] as $slug) {
+            $this->post('/veranstaltungen/'.$slug.'/frage', ['name' => 'Erika', 'email' => 'erika@example.org', 'nachricht' => 'Frage zu '.$slug.' bitte', '_t' => $this->token()]);
+        }
+        $this->senden();
+        [$frageW, $frageR] = [ContactMessage::query()->where('event_id', $woelflingstag->id)->sole(), ContactMessage::query()->where('betreff', 'Roverhajk')->sole()];
+        $kontakt = ContactMessage::query()->where('art', 'kontakt')->sole();
+
+        $admin = User::query()->create(['name' => 'Wö', 'email' => 'woe@example.org', 'status' => 'active']);
+        $admin->roleAssignments()->create(['role' => 'stufenadmin', 'scope_type' => 'stage', 'scope_key' => 'woelflinge']);
+        $this->actingAs($admin->fresh());
+
+        $this->assertTrue(ContactMessageResource::canViewAny());
+        $this->assertSame('1', ContactMessageResource::getNavigationBadge());
+        Livewire::test(ListContactMessages::class)
+            ->assertCanSeeTableRecords([$frageW])
+            ->assertCanNotSeeTableRecords([$frageR, $kontakt]);
+
+        $this->assertTrue(QuestionsRelationManager::canViewForRecord($woelflingstag, EditEvent::class));
+        $this->assertSame('1', QuestionsRelationManager::getBadge($woelflingstag, EditEvent::class));
+        Livewire::test(QuestionsRelationManager::class, ['ownerRecord' => $woelflingstag, 'pageClass' => EditEvent::class])
+            ->assertCanSeeTableRecords([$frageW])
+            ->callTableAction('erledigt', $frageW, ['notiz' => 'Ja, gibt es'])
+            ->assertHasNoTableActionErrors();
+        $this->assertSame('erledigt', $frageW->fresh()->status);
+
+        // Fremde Nachricht: kein Zugriff, auch nicht über die Statusaktion.
+        $this->assertFalse(ContactMessageResource::darf($frageR));
+        $this->assertFalse(ContactMessageResource::darf($kontakt));
     }
 }

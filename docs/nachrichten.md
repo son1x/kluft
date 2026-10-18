@@ -8,7 +8,8 @@ was hereinkommt und ob es erledigt ist.
 
 ## Einschalten
 
-**Verwaltung → Funktionen → Nachrichten-Eingang.** Beim DV ist die Funktion
+**Verwaltung → Funktionen → Nachrichten-Eingang** (jederzeit an- und
+abschaltbar). Beim DV ist die Funktion
 an (seine Datenschutzerklärung sagt schon, dass Anfragen gespeichert
 werden), sonst aus. Vor dem Einschalten die Datenschutzerklärung anpassen –
 Stammes- und Bezirksvorlagen sagen bisher „nicht gespeichert“. Der Hinweis
@@ -16,9 +17,13 @@ unter den Formularen passt sich von selbst an.
 
 ## Wer sieht was
 
-- Verwaltung, Admins und Super-Admins: alle Nachrichten. Andere Rollen
-  nicht – sie bekommen ihre Nachrichten per Mail.
-- Der Menüpunkt zeigt die Zahl der neuen Nachrichten.
+- Verwaltung, Admins und Super-Admins: alle Nachrichten.
+- Stufen- und Sektionsadmins: gebündelt die Fragen zu den Veranstaltungen
+  ihrer Stufe bzw. ihres Bereichs – im selben Menüpunkt (nur diese) und bei
+  jeder Veranstaltung im Reiter **Fragen** neben „Teilnehmende“. Dort sieht
+  sie jede Person, die die Teilnehmenden der Veranstaltung verwalten darf.
+- Andere Rollen nicht – sie bekommen ihre Nachrichten per Mail.
+- Menüpunkt und Reiter zeigen die Zahl der neuen Nachrichten.
 
 ## Arbeiten im Eingang
 

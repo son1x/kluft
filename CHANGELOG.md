@@ -18,4 +18,4 @@ Admins. Kurz und aus Sicht der Redaktion schreiben.
 - Stammes-Websites auch per GitHub deployen (erste: Roden); Environment per Kommandozeile anlegen (scripts/environment-anlegen.sh).
 - Kasse für Stämme: Mitgliedsbeiträge je Halbjahr aus NaMi (Bundesbeitrag plus Stammesanteil), offene und bezahlte Beiträge abhaken, Abgleich mit der Rechnung des Bundesverbands (Rolle „Kasse“).
 - NaMi-Testabfrage (Verwaltung): zeigt, was NaMi liefert, ohne Personendaten – zum Weitergeben an die Technik.
-- Nachrichten-Eingang: Nachrichten aus dem Kontaktformular und Fragen zu Veranstaltungen zentral für die Verwaltung (Status, Notiz, Antworten per Mail); die zuständige Person bekommt sie weiter per Mail.
+- Nachrichten-Eingang: Nachrichten aus dem Kontaktformular und Fragen zu Veranstaltungen zentral für die Verwaltung (Status, Notiz, Antworten per Mail); die zuständige Person bekommt sie weiter per Mail. Fragen zu Veranstaltungen sehen Stufen- und Sektionsadmins gebündelt, auch im Reiter „Fragen“ der Veranstaltung.

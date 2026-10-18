@@ -91,7 +91,8 @@ class BeitragsAbrechnungResource extends Resource
                 TextColumn::make('halbjahr')->label('Halbjahr')->formatStateUsing(fn (string $state) => Beitraege::label($state))->sortable(),
                 TextColumn::make('mitglieder')->label('Mitglieder (Rechnung)')->placeholder('–')
                     ->description(function (BeitragsAbrechnung $record) {
-                        $kluft = Beitrag::query()->where('halbjahr', $record->halbjahr)->count();
+                        $kluft = Beitrag::query()->where('halbjahr', $record->halbjahr)
+                            ->where(fn ($q) => $q->whereNull('beitragsart')->orWhere('beitragsart', '!=', Beitraege::UEBERNAHME))->count();
 
                         return "in Kluft: {$kluft}".($record->mitglieder !== null && $record->mitglieder !== $kluft ? ' – abweichend' : '');
                     }),

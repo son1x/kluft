@@ -126,7 +126,9 @@ DV-Ebene, Stamm 210601. Grundlage für den Beitragsabruf und die Umstellung.
   `entries_eintrittsdatum`, `entries_austrittsDatum`, `entries_version`,
   `entries_lastUpdated`. `entries_beitragsarten` und `entries_fixBeitrag` sind
   leer – die Beitragsart gibt es nur in den Details. Beispiel: 86 Zeilen,
-  73 aktiv, 69 vom Typ „Mitglied“.
+  73 aktiv / 13 inaktiv (`entries_rowCssClass` „inaktives-mitglied“);
+  Typen: 69 „Mitglied“, 15 „Nicht-Mitglied“, 2 seltene (vermutlich
+  Schnuppermitglieder).
 - **Mitgliedsdetails** (`…/gruppierung/{id}/{mitglied}`): u. a. `beitragsart`
   als Text („Voller Beitrag“, „Familienermäßigt - Stiftungseuro“),
   `beitragsartId`, `mglTypeId` („MITGLIED“), `version`, Adresse, Kontakt und
@@ -136,7 +138,7 @@ DV-Ebene, Stamm 210601. Grundlage für den Beitragsabruf und die Umstellung.
   „DPSG Bundesverband 000000 (… - VERBANDSBEITRAG)“ mit den IDs
   1 Voller Beitrag, 2 Familienermäßigt, 3 Ermäßigt, 4 Voller Beitrag –
   Stiftungseuro, 5 Familienermäßigt – Stiftungseuro, 6 Ermäßigt –
-  Stiftungseuro, 7 Übernahme.
+  Stiftungseuro, 7 Übernahme (Beitrag zahlt nicht der Stamm).
 
 ## Umstellung NaMi 2 → NaMi 3 (Checkliste)
 

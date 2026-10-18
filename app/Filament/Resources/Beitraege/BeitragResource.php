@@ -106,7 +106,7 @@ class BeitragResource extends Resource
                 TextColumn::make('bezahlt_cent')->label('Bezahlt')->formatStateUsing($euro)->placeholder('–')->alignEnd()
                     ->summarize(Sum::make()->label('Eingegangen')->formatStateUsing(fn ($state) => Beitraege::euro((int) $state))),
                 TextColumn::make('offen')->label('Offen')->alignEnd()
-                    ->state(fn (Beitrag $record) => $record->status() === 'bezahlt' ? 0 : max(0, $record->soll_cent - (int) $record->bezahlt_cent))
+                    ->state(fn (Beitrag $record) => in_array($record->status(), ['bezahlt', 'frei'], true) ? 0 : max(0, $record->soll_cent - (int) $record->bezahlt_cent))
                     ->formatStateUsing(fn (int $state) => $state > 0 ? Beitraege::euro($state) : '–')
                     ->summarize(Summarizer::make()->label('Offen')
                         ->using(fn (QueryBuilder $query) => (int) $query->where(fn (QueryBuilder $q) => $q->whereNull('zahlart')->orWhere('zahlart', '!=', 'erlassen'))
@@ -114,9 +114,13 @@ class BeitragResource extends Resource
                         ->formatStateUsing(fn ($state) => Beitraege::euro((int) $state))),
                 TextColumn::make('status')->label('Status')->badge()
                     ->state(fn (Beitrag $record) => $record->status())
-                    ->formatStateUsing(fn (string $state, Beitrag $record) => $record->zahlart === 'erlassen' ? 'erlassen' : $state)
+                    ->formatStateUsing(fn (string $state, Beitrag $record) => match (true) {
+                        $record->zahlart === 'erlassen' => 'erlassen',
+                        $state === 'frei' => 'nichts zu zahlen',
+                        default => $state,
+                    })
                     ->color(fn (string $state) => match ($state) {
-                        'bezahlt' => 'success', 'teilweise' => 'warning', default => 'danger',
+                        'bezahlt' => 'success', 'teilweise' => 'warning', 'frei' => 'gray', default => 'danger',
                     }),
                 TextColumn::make('bezahlt_am')->label('Bezahlt am')->date('d.m.Y')->placeholder('–')->sortable()
                     ->description(fn (Beitrag $record) => Beitrag::ZAHLARTEN[$record->zahlart ?? ''] ?? null),
@@ -198,7 +202,7 @@ class BeitragResource extends Resource
                         abort_unless(static::canViewAny(), 403);
                         $n = 0;
                         foreach ($records as $record) {
-                            if ($record instanceof Beitrag && $record->status() !== 'bezahlt') {
+                            if ($record instanceof Beitrag && in_array($record->status(), ['offen', 'teilweise'], true)) {
                                 $record->fill(['bezahlt_cent' => $record->soll_cent, 'bezahlt_am' => $data['bezahlt_am'], 'zahlart' => $data['zahlart'], 'erfasst_von' => Filament::auth()->id()])->save();
                                 $n++;
                             }

@@ -166,6 +166,28 @@ class BeitraegeTest extends TestCase
         $this->assertSame('Familienermäßigt – Stiftungseuro', Beitraege::artName(' Familienermäßigt - Stiftungseuro '));
     }
 
+    #[TestDox('Übernahme: kein Bundesbeitrag, ohne Stammesanteil „nichts zu zahlen“, nicht offen und nicht auf der Rechnung gezählt')]
+    public function test_uebernahme(): void
+    {
+        Beitraege::saetzeSetzen(['Voller Beitrag' => ['bund' => 1700, 'stamm' => 2500], Beitraege::UEBERNAHME => ['bund' => 1700, 'stamm' => 0]]);
+        $this->assertSame(['bund' => 0, 'stamm' => 0], Beitraege::saetze()[Beitraege::UEBERNAHME] ?? ['bund' => 0, 'stamm' => 0]);
+
+        $abruf = new BeitragsAbruf(new NamiVerzeichnis);
+        $abruf->abrufen('210601');
+        BeitragsMitglied::query()->where('nami_id', 102)->update(['beitragsart' => Beitraege::UEBERNAHME]);
+        $abruf->halbjahrAnlegen('2026-2');
+
+        $ben = Beitrag::query()->whereRelation('mitglied', 'nami_id', 102)->firstOrFail();
+        $this->assertSame([0, 0, 'frei'], [$ben->soll_cent, $ben->bundes_cent, $ben->status()]);
+        $this->assertSame(1, Beitrag::query()->offen()->count());
+
+        $this->actingAs($this->user('kasse'));
+        BeitragsAbrechnung::query()->create(['halbjahr' => '2026-2', 'mitglieder' => 1, 'rechnungsbetrag_cent' => 1700]);
+        Livewire::test(ManageBeitragsAbrechnungen::class)
+            ->assertSee('in Kluft: 1')->assertDontSee('abweichend');
+        Livewire::test(ListBeitraege::class)->assertSee('nichts zu zahlen');
+    }
+
     #[TestDox('Bezahlte Beiträge bleiben bei geänderter Beitragsart, wie sie sind; erlassen zählt als bezahlt')]
     public function test_bezahlt_bleibt(): void
     {

@@ -29,7 +29,11 @@ Diözesanverband und Bezirk erscheinen weder die Funktion noch die Rolle
    zwei Beträge für ein Halbjahr eintragen: den **Bundesbeitrag**, den der
    Bundesverband in Rechnung stellt (laut Rechnung bzw. Beitragsordnung), und
    den **Stammesanteil**, den der Stamm beschließt. Das Soll eines Mitglieds
-   ist die Summe; der Bundesanteil wird je Beitrag mitgespeichert.
+   ist die Summe; der Bundesanteil wird je Beitrag mitgespeichert. Bei
+   „Übernahme“ zahlt der Stamm keinen Bundesbeitrag (das Feld ist gesperrt);
+   ein Stammesanteil ist möglich. Beiträge mit Soll 0 stehen als „nichts zu
+   zahlen“ in der Liste, zählen nicht als offen und nicht bei der Anzahl für
+   die Rechnung des Bundesverbands.
 2. **Aus NaMi abrufen**: Halbjahr wählen, mit dem eigenen NaMi-Konto anmelden
    (oder dem im Profil gespeicherten Zugang). Kluft holt im Hintergrund die
    Mitglieder des Stamms mit Beitragsart, Ein- und Austritt und legt für alle,

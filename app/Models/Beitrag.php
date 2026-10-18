@@ -42,9 +42,12 @@ class Beitrag extends Model
         return $this->belongsTo(BeitragsMitglied::class, 'beitrags_mitglied_id');
     }
 
-    /** offen, teilweise oder bezahlt (erlassen zählt als bezahlt). */
+    /** offen, teilweise, bezahlt (erlassen zählt als bezahlt) oder frei (nichts zu zahlen). */
     public function status(): string
     {
+        if ($this->soll_cent === 0 && (int) $this->bezahlt_cent === 0 && $this->zahlart !== 'erlassen') {
+            return 'frei';
+        }
         if ($this->zahlart === 'erlassen' || ($this->bezahlt_am && (int) $this->bezahlt_cent >= $this->soll_cent)) {
             return 'bezahlt';
         }
@@ -58,7 +61,7 @@ class Beitrag extends Model
      */
     public function scopeOffen(Builder $query): Builder
     {
-        return $query->where(fn (Builder $q) => $q->whereNull('zahlart')->orWhere('zahlart', '!=', 'erlassen'))
+        return $query->where('soll_cent', '>', 0)->where(fn (Builder $q) => $q->whereNull('zahlart')->orWhere('zahlart', '!=', 'erlassen'))
             ->where(fn (Builder $q) => $q->whereNull('bezahlt_am')->orWhereColumn('bezahlt_cent', '<', 'soll_cent')->orWhereNull('bezahlt_cent'));
     }
 }

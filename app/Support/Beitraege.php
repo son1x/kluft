@@ -18,6 +18,9 @@ class Beitraege
 
     private const ABRUF = 'beitraege.abruf';
 
+    /** Beitragsart „Übernahme“: Den Bundesbeitrag zahlt nicht der Stamm. */
+    public const UEBERNAHME = 'Übernahme';
+
     /** Funktion an und Person mit Rolle „Kasse“ (oder Admin). */
     public static function zugriff(?User $user): bool
     {
@@ -87,6 +90,9 @@ class Beitraege
             $saetze[(string) $art] = is_array($satz)
                 ? ['bund' => max(0, (int) ($satz['bund'] ?? 0)), 'stamm' => max(0, (int) ($satz['stamm'] ?? 0))]
                 : ['bund' => 0, 'stamm' => max(0, (int) $satz)];
+            if ((string) $art === self::UEBERNAHME) {
+                $saetze[(string) $art]['bund'] = 0;
+            }
         }
 
         return $saetze;
@@ -97,6 +103,9 @@ class Beitraege
      */
     public static function saetzeSetzen(array $saetze, ?int $userId = null): void
     {
+        if (isset($saetze[self::UEBERNAHME])) {
+            $saetze[self::UEBERNAHME]['bund'] = 0;
+        }
         $saetze = array_filter(
             array_map(fn (array $s) => ['bund' => max(0, (int) ($s['bund'] ?? 0)), 'stamm' => max(0, (int) ($s['stamm'] ?? 0))], $saetze),
             fn (array $s) => $s['bund'] + $s['stamm'] > 0

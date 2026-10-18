@@ -130,7 +130,9 @@ class ListBeitraege extends ListRecords
                     $feld.'_stamm' => BeitragResource::alsEuro(Beitraege::saetze()[$art]['stamm'] ?? null),
                 ])->all())
                 ->schema(fn () => collect(self::arten())->map(fn (string $art, string $feld) => Fieldset::make($art)->columns(2)->schema([
-                    TextInput::make($feld.'_bund')->label('Bundesbeitrag')->suffix('€')->rules(BeitragResource::EURO)->inputMode('decimal'),
+                    TextInput::make($feld.'_bund')->label('Bundesbeitrag')->suffix('€')->rules(BeitragResource::EURO)->inputMode('decimal')
+                        ->disabled($art === Beitraege::UEBERNAHME)->placeholder($art === Beitraege::UEBERNAHME ? '0,00' : null)
+                        ->helperText($art === Beitraege::UEBERNAHME ? 'Zahlt nicht der Stamm, steht nicht auf seiner Rechnung.' : null),
                     TextInput::make($feld.'_stamm')->label('Stammesanteil')->suffix('€')->rules(BeitragResource::EURO)->inputMode('decimal'),
                 ]))->values()->all())
                 ->action(function (array $data) {

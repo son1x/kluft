@@ -82,7 +82,24 @@ Statt mit dem Einrichtungsassistenten auf eigenem Webspace kann eine Stammes-Web
 - Mail: Die Absenderadresse (`MAIL_FROM_ADDRESS`, z. B. `website@dpsg-roden.de`) muss in Brevo als Absender bzw. Domain bestätigt sein (DNS-Einträge beim Domain-Anbieter). Während der Testphase das Postfach des ersten Zugangs in `MAIL_TEST_ALLOWLIST` aufnehmen, sonst kommt der Anmeldecode nicht an.
 - Startinhalt beim ersten Deploy: `StammStartSeeder` legt Seiten, Stufen mit Gruppenstunden, Kontaktthemen und die vorbereiteten Seiten aus `angaben.json` an.
 - Erster Zugang: `zugang` in `angaben.json` (Roden: Rollen-Zugang „Stammesvorstand“ mit `kontakt@dpsg-roden.de`). Der Seeder legt ihn beim ersten Deploy als Admin mit Anmeldung per E-Mail-Code an, solange noch niemand eine Rolle hat. Anmelden unter `/redaktion/anmelden`; die Adresse muss in `MAIL_TEST_ALLOWLIST` stehen, solange `MAIL_TEST_REDIRECT_TO` gesetzt ist.
-- Erster Zugang: per SSH `php artisan cms:create-superadmin`, dann unter „Benutzer“ den Rollen-Zugang „Stammesvorstand“ mit dem Funktionspostfach anlegen (Anmeldung per E-Mail-Code).
+- Notfall: per SSH `php artisan cms:create-superadmin` (Notfall-Login mit Passwort und TOTP), falls der erste Zugang nicht klappt.
+- Microsoft 365 (wenn der Stamm einen eigenen Mandanten hat, wie Roden): siehe nächster Abschnitt.
+
+### Anmeldung mit Microsoft 365 für eine Stammes-Instanz
+
+Kluft meldet mit Microsoft 365 an, sobald `ENTRA_TENANT_ID`, `ENTRA_CLIENT_ID` und `ENTRA_CLIENT_SECRET` im Environment stehen (Redirect-URI `<APP_URL>/auth/entra/callback` setzt der Deploy selbst). Die App-Registrierung im Mandanten des Stamms legt ein Admin dieses Mandanten mit der Azure-CLI an:
+
+```
+az login --tenant dpsg-roden.de --allow-no-subscriptions
+scripts/entra-app-anlegen.sh roden ~/kluft-geheim/roden https://www.dpsg-roden.de
+scripts/environment-anlegen.sh roden ~/kluft-geheim/roden
+```
+
+- Single-Tenant, nur delegierte Rechte: `openid`, `profile`, `email`, `User.Read`, `User.ReadBasic.All` (Suche nach Personen beim Anlegen von Zugängen), mit Administratorzustimmung. Weitere Adressen (z. B. eine Testadresse) einfach hinten anhängen.
+- Das Client-Secret schreibt das Skript direkt in `secrets.env`, es erscheint nicht auf dem Bildschirm. Es gilt zwei Jahre; danach das Skript erneut ausführen und das Environment aktualisieren.
+- Mit `KLUFT_ZUWEISUNG=1` gilt „Zuweisung erforderlich“: Dann können sich nur freigegebene Personen oder Gruppen anmelden. Ohne landet jede Person des Mandanten bei der ersten Anmeldung auf „wartet auf Freischaltung“, bis ihr im Backend eine Rolle gegeben wird; die Admins bekommen eine Mail.
+- Rechte vergibt weiterhin Kluft (Benutzer → Rolle), nicht Microsoft. Vorab angelegte Zugänge werden bei der ersten Anmeldung über die E-Mail-Adresse verknüpft – auch der erste Zugang aus `angaben.json`, wenn es zu dieser Adresse ein Microsoft-365-Konto gibt.
+- Die Anmeldeseite zeigt dann zusätzlich „Mit Microsoft 365 anmelden“. Wer nur noch Microsoft 365 will: unter Verwaltung → Funktionen „Anmeldung per E-Mail-Code“ ausschalten; dann führt `/admin` direkt zu Microsoft.
 
 ## Erster Deploy einer neuen Instanz
 

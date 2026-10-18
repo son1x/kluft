@@ -11,7 +11,7 @@
         "email": "kontakt@dpsg-roden.de",
         "kind": "rolle"
     },
-    "vorstand": "Kimberly Lamprecht, Flavio Rusello",
+    "vorstand": "Kimberly Lamprecht, Flavio Russello",
     "strasse": "Donatusstraße 34a",
     "plz_ort": "66740 Saarlouis",
     "stufen": [
@@ -65,7 +65,7 @@
             "Kimberly Lamprecht"
         ],
         "woelflinge": [
-            "Julia Rusello",
+            "Julia Russello",
             "Hendrik Schuler"
         ],
         "jupfi": [
@@ -76,12 +76,12 @@
         "pfadi": [
             "Less Knoll",
             "Ruben Schmidt",
-            "Flavio Rusello"
+            "Flavio Russello"
         ],
         "rover": [
             "Gian-Luca Blasius",
             "Sebastian Hafner",
-            "Flavio Rusello"
+            "Flavio Russello"
         ]
     },
     "logo": "instanz/images/logo.png",
@@ -99,7 +99,7 @@
         {
             "slug": "stammesvorstand",
             "title": "Stammesvorstand",
-            "body": "<p>Den Stamm Graf Folke Bernadotte leiten als Stammesvorsitzende <strong>Kimberly Lamprecht</strong> und <strong>Flavio Rusello</strong>.</p><p>Sie sind Ansprechpartner*innen für Eltern, Leiter*innen und alle, die bei uns mitmachen möchten – und für Anfragen zu unserem Pfadfinderheim.</p><p>Am einfachsten erreicht ihr den Vorstand über das <a href=\"/kontakt\">Kontaktformular</a> oder per E-Mail an <a href=\"mailto:kontakt@dpsg-roden.de\">kontakt@dpsg-roden.de</a>.</p>"
+            "body": "<p>Den Stamm Graf Folke Bernadotte leiten als Stammesvorsitzende <strong>Kimberly Lamprecht</strong> und <strong>Flavio Russello</strong>.</p><p>Sie sind Ansprechpartner*innen für Eltern, Leiter*innen und alle, die bei uns mitmachen möchten – und für Anfragen zu unserem Pfadfinderheim.</p><p>Am einfachsten erreicht ihr den Vorstand über das <a href=\"/kontakt\">Kontaktformular</a> oder per E-Mail an <a href=\"mailto:kontakt@dpsg-roden.de\">kontakt@dpsg-roden.de</a>.</p>"
         },
         {
             "slug": "pfadfinderheim",

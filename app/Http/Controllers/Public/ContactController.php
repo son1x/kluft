@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
 use App\Mail\ContactMessageMail;
+use App\Models\ContactMessage;
 use App\Models\ContactTopic;
 use App\Models\Event;
 use App\Support\AuditLogger;
+use App\Support\Features;
 use App\Support\SpamGuard;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,8 +19,10 @@ use Throwable;
 
 /**
  * Kontaktformular und Fragen zu Veranstaltungen (F-CMS-09): Nachrichten
- * werden nur per Mail weitergeleitet, nicht gespeichert; Spamschutz per
- * Honeypot, Zeitfalle und Rate-Limit (s. Route).
+ * gehen per Mail an die zuständige Person; mit der Funktion
+ * „Nachrichten-Eingang“ zusätzlich in den Eingang im Backend (die
+ * Verwaltung sieht alle). Spamschutz per Honeypot, Zeitfalle und
+ * Rate-Limit (s. Route).
  */
 class ContactController extends Controller
 {
@@ -46,6 +50,11 @@ class ContactController extends Controller
             subjectLine: $data['betreff'] ?? null,
             body: $data['nachricht'],
         ));
+        // Im Eingang gespeichert gilt die Nachricht als angekommen, auch wenn die Mail hakt.
+        $ok = $this->speichern([
+            'art' => 'kontakt', 'contact_topic_id' => $topic?->id, 'thema' => $topic->label ?? 'Kontaktformular',
+            'betreff' => $data['betreff'] ?? null,
+        ], $data, $recipients, $ok) || $ok;
 
         AuditLogger::log('kontakt:'.($ok ? 'gesendet' : 'fehler').':'.($topic->slug ?? 'ohne-thema'), request: $request);
 
@@ -64,7 +73,8 @@ class ContactController extends Controller
         // Eigene Fehler-Bag, damit Fehler nicht im Anmeldeformular erscheinen.
         $data = $request->validateWithBag('frage', $this->messageRules(), $this->messages());
 
-        $ok = $this->deliver([filled($event->contact_email) ? $event->contact_email : ContactTopic::fallbackEmail()], new ContactMessageMail(
+        $recipients = [filled($event->contact_email) ? $event->contact_email : ContactTopic::fallbackEmail()];
+        $ok = $this->deliver($recipients, new ContactMessageMail(
             topic: 'Frage zur Veranstaltung',
             senderName: $data['name'],
             senderEmail: $data['email'],
@@ -72,6 +82,10 @@ class ContactController extends Controller
             body: $data['nachricht'],
             context: $event->title.' ('.$event->dateLabel().') – '.route('events.show', $event->slug),
         ));
+        $ok = $this->speichern([
+            'art' => 'veranstaltung', 'event_id' => $event->id, 'thema' => mb_substr($event->title.' ('.$event->dateLabel().')', 0, 200),
+            'betreff' => mb_substr($event->title, 0, 150),
+        ], $data, $recipients, $ok) || $ok;
 
         AuditLogger::log('veranstaltung.frage:'.($ok ? 'gesendet' : 'fehler'), subjectType: 'event', subjectId: $event->id, request: $request);
 
@@ -107,6 +121,32 @@ class ContactController extends Controller
             'nachricht.min' => 'Die Nachricht ist etwas kurz – magst du noch ein paar Worte ergänzen?',
             'nachricht.max' => 'Die Nachricht darf höchstens 5000 Zeichen lang sein.',
         ];
+    }
+
+    /**
+     * In den Nachrichten-Eingang (nur mit der Funktion). Liefert, ob gespeichert.
+     *
+     * @param  array<string, mixed>  $werte
+     * @param  array<string, mixed>  $data
+     * @param  list<string>  $recipients
+     */
+    private function speichern(array $werte, array $data, array $recipients, bool $zugestellt): bool
+    {
+        if (! Features::enabled(Features::NACHRICHTEN)) {
+            return false;
+        }
+        try {
+            ContactMessage::query()->create($werte + [
+                'name' => $data['name'], 'email' => mb_strtolower((string) $data['email']), 'nachricht' => $data['nachricht'],
+                'empfaenger' => array_values($recipients), 'zugestellt' => $zugestellt,
+            ]);
+
+            return true;
+        } catch (Throwable $e) {
+            Log::error('Kontaktnachricht konnte nicht gespeichert werden', ['error' => class_basename($e)]);
+
+            return false;
+        }
     }
 
     /** @param  list<string>  $recipients */

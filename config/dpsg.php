@@ -108,6 +108,12 @@ return array_replace([
     // CMS-Seite mit dem Kontaktformular (F-CMS-09).
     'contact_page' => 'kontakt',
 
+    // Nachrichten-Eingang (Funktion „Nachrichten-Eingang“): gespeicherte
+    // Kontaktnachrichten werden nach so vielen Monaten gelöscht.
+    'nachrichten' => [
+        'aufbewahrung_monate' => (int) env('NACHRICHTEN_AUFBEWAHRUNG_MONATE', 6),
+    ],
+
     /*
     | Formular-Baukasten für Veranstaltungsanmeldungen (F-EV-03). Name und
     | E-Mail sind immer Pflicht; alles hier wird je Veranstaltung als

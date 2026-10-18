@@ -42,13 +42,23 @@
             @endforelse
         </x-filament::section>
 
+        @if (\App\Support\Features::enabled(\App\Support\Features::NACHRICHTEN) || $found['messages']->isNotEmpty())
+            <x-filament::section heading="Nachrichten-Eingang ({{ $found['messages']->count() }})">
+                @forelse ($found['messages'] as $message)
+                    <p style="font-size: .875rem;">{{ $message->created_at->format('d.m.Y') }} – {{ $message->thema }}{{ $message->betreff ? ': '.$message->betreff : '' }} ({{ \App\Models\ContactMessage::STATUSES[$message->status] ?? $message->status }})</p>
+                @empty
+                    <p style="font-size: .875rem;">Keine.</p>
+                @endforelse
+            </x-filament::section>
+        @endif
+
         <x-filament::section heading="Weitere Stellen">
             <ul style="font-size: .875rem; list-style: disc; padding-left: 1.25rem;">
                 <li>Mails in der Warteschlange an diese Adresse: {{ $found['queued'] }}</li>
                 @if (\App\Support\Features::newsletter())
                     <li>{{ config('dpsg.newsletter.name') }} (Newsletter): Adressen liegen nur bei Brevo – dort unter „Kontakte“ suchen, Auskunft/Löschung dort.</li>
                 @endif
-                <li>Kontaktformular: Nachrichten werden nicht im CMS gespeichert, nur per Mail zugestellt (Postfächer prüfen).</li>
+                <li>Kontaktformular: Nachrichten gehen per Mail an die zuständigen Personen (Postfächer prüfen){{ \App\Support\Features::enabled(\App\Support\Features::NACHRICHTEN) ? '; gespeicherte stehen oben im Nachrichten-Eingang' : ' und werden nicht im CMS gespeichert' }}.</li>
                 <li>Sicherungen: Gelöschte Daten verschwinden aus den Backups, wenn diese rotiert sind (14 Tage).</li>
             </ul>
         </x-filament::section>

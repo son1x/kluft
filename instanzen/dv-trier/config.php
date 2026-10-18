@@ -94,6 +94,8 @@ return [
         'rechtstraeger' => true,
         'wp_import' => true,
         'downloads' => true,
+        // Datenschutzerklärung des DV: Kontaktanfragen werden gespeichert.
+        'nachrichten' => true,
     ],
 
     // Download-Seite unter „Diözesanverband“ (s. config/dpsg.php).

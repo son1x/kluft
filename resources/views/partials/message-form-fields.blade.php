@@ -41,6 +41,10 @@
     @error('nachricht', $bag)<p id="{{ $p }}-nachricht-error" class="mt-1 text-sm text-dpsg-rot">{{ $message }}</p>@enderror
 </div>
 <p class="text-xs text-text-secondary">
-    Deine Angaben werden nur per E-Mail an die zuständigen Ansprechpersonen weitergeleitet, damit sie dir antworten können, und nicht auf der Website gespeichert.
+    @if (\App\Support\Features::enabled(\App\Support\Features::NACHRICHTEN))
+        Deine Angaben gehen per E-Mail an die zuständigen Ansprechpersonen, damit sie dir antworten können. Zur Bearbeitung speichern wir die Nachricht höchstens {{ \App\Models\ContactMessage::aufbewahrungMonate() }} Monate; sehen können sie nur die Ansprechpersonen und unsere Verwaltung.
+    @else
+        Deine Angaben werden nur per E-Mail an die zuständigen Ansprechpersonen weitergeleitet, damit sie dir antworten können, und nicht auf der Website gespeichert.
+    @endif
     Mehr in der <a href="{{ url('/datenschutz') }}" class="text-dpsg-rot underline">Datenschutzerklärung</a>.
 </p>

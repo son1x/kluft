@@ -8,6 +8,7 @@ use App\Models\ContactTopic;
 use App\Models\Event;
 use App\Models\Page;
 use App\Models\Person;
+use App\Support\Features;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
@@ -21,6 +22,7 @@ use Tests\TestCase;
 /**
  * Kontaktformular und Frage zur Veranstaltung (F-CMS-09): nur Mailversand,
  * keine Speicherung, Spamschutz per Honeypot, Zeitfalle und Rate-Limit.
+ * Mit Nachrichten-Eingang: NachrichtenEingangTest.
  */
 class ContactFormTest extends TestCase
 {
@@ -30,6 +32,7 @@ class ContactFormTest extends TestCase
     {
         parent::setUp();
         Mail::fake();
+        Features::setzen(Features::NACHRICHTEN, false);
         Page::query()->create(['title' => 'Kontakt', 'slug' => 'kontakt', 'body' => '<p>Diözesanbüro, Weberbach 71</p>', 'status' => 'published', 'published_at' => now()->subDay()]);
         ContactTopic::query()->create(['label' => 'Allgemeine Frage', 'slug' => 'allgemein', 'sort' => 10]);
         ContactTopic::query()->create(['label' => 'Stufe: Wölflinge', 'slug' => 'woelflinge', 'stage' => 'woelflinge', 'sort' => 20]);

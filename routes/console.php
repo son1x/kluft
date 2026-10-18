@@ -50,6 +50,9 @@ Schedule::command('whatsapp:dispatch-scheduled')->everyMinute()->withoutOverlapp
 Schedule::command('whatsapp:check')->hourly()->when(fn () => app(WhatsAppSettings::class)->configured());
 Schedule::command('whatsapp:prune')->dailyAt('03:50');
 
+// Nachrichten-Eingang: gespeicherte Kontaktnachrichten nach der Frist löschen.
+Schedule::command('kontakt:prune')->dailyAt('03:55');
+
 // Kluft-Updates für eigenständige Installationen (docs/updates.md): im
 // Backend angestoßene Installation jede Minute abholen, täglich nach neuen
 // Versionen schauen und bei KLUFT_UPDATES=auto nachts installieren – nach

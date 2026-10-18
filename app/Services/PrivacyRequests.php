@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\ContactMessage;
 use App\Models\Event;
 use App\Models\EventRegistration;
 use App\Models\Person;
@@ -26,7 +27,7 @@ class PrivacyRequests
     public function __construct(private EventRegistrations $registrations) {}
 
     /**
-     * @return array{registrations: Collection<int, EventRegistration>, people: Collection<int, Person>, users: Collection<int, User>, queued: int}
+     * @return array{registrations: Collection<int, EventRegistration>, people: Collection<int, Person>, users: Collection<int, User>, messages: Collection<int, ContactMessage>, queued: int}
      */
     public function find(string $email): array
     {
@@ -36,6 +37,7 @@ class PrivacyRequests
             'registrations' => EventRegistration::query()->where('email', $email)->with(['event', 'documents'])->orderByDesc('id')->get(),
             'people' => Person::query()->whereRaw('LOWER(email) = ?', [$email])->get(),
             'users' => User::query()->whereRaw('LOWER(email) = ?', [$email])->with('roleAssignments')->get(),
+            'messages' => ContactMessage::query()->where('email', $email)->orderByDesc('id')->get(),
             'queued' => $this->queueEntries($email)->count(),
         ];
     }
@@ -93,10 +95,17 @@ class PrivacyRequests
                     'zuletzt_geprueft' => $u->nami_checked_at?->toIso8601String(),
                 ] : null,
             ])->values()->all(),
+            'nachrichten' => $found['messages']->map(fn (ContactMessage $m) => [
+                'eingang' => $m->created_at->toIso8601String(), 'thema' => $m->thema, 'name' => $m->name,
+                'betreff' => $m->betreff, 'nachricht' => $m->nachricht, 'zugestellt_an' => $m->empfaenger,
+                'status' => ContactMessage::STATUSES[$m->status] ?? $m->status,
+                'loeschung_spaetestens' => $m->created_at->copy()->addMonths(ContactMessage::aufbewahrungMonate())->toDateString(),
+            ])->values()->all(),
             'mails_in_warteschlange' => $found['queued'],
             'hinweise' => array_values(array_filter([
                 Features::newsletter() ? config('dpsg.newsletter.name').' (Newsletter): Die Adressen liegen nur beim Versanddienst Brevo, nicht im CMS. Auskunft/Löschung dort.' : null,
-                'Nachrichten aus dem Kontaktformular werden nur per Mail zugestellt und nicht im CMS gespeichert.',
+                'Nachrichten aus dem Kontaktformular gehen per Mail an die zuständigen Personen; Kopien in deren Postfächern sind hier nicht erfasst.'
+                    .(Features::enabled(Features::NACHRICHTEN) || $found['messages']->isNotEmpty() ? ' Im Nachrichten-Eingang gespeicherte Nachrichten stehen oben unter „nachrichten“.' : ' Im CMS werden sie nicht gespeichert.'),
             ])),
         ];
 
@@ -123,7 +132,7 @@ class PrivacyRequests
      * automatisch gelöscht (Rollen/Audit) – das geht unter „Benutzer“.
      * Frei werdende Plätze kommender Veranstaltungen rücken nach.
      *
-     * @return array{registrations: int, people: int, queued: int}
+     * @return array{registrations: int, people: int, messages: int, queued: int}
      */
     public function delete(string $email): array
     {
@@ -136,12 +145,13 @@ class PrivacyRequests
             ->each(fn (Event $event) => $this->registrations->fillFromWaitlist($event));
 
         $found['people']->each->delete();
+        $found['messages']->each->delete();
 
         $queued = $this->queueEntries($email);
         DB::table('jobs')->whereIn('id', $queued->where('table', 'jobs')->pluck('id'))->delete();
         DB::table('failed_jobs')->whereIn('id', $queued->where('table', 'failed_jobs')->pluck('id'))->delete();
 
-        return ['registrations' => $found['registrations']->count(), 'people' => $found['people']->count(), 'queued' => $queued->count()];
+        return ['registrations' => $found['registrations']->count(), 'people' => $found['people']->count(), 'messages' => $found['messages']->count(), 'queued' => $queued->count()];
     }
 
     /**

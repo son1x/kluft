@@ -35,6 +35,7 @@ class AdminSmokeTest extends TestCase
         // (die Kasse gibt es nur auf Stammes-Websites, s. BeitraegeTest).
         config(['whatsapp.mode' => 'api']);
         Features::setzen(Features::MITGLIEDSBEITRAEGE, true);
+        Features::setzen(Features::NACHRICHTEN, true);
         $kasse = Features::enabled(Features::MITGLIEDSBEITRAEGE);
         $this->get('/admin')->assertOk();
         $checked = 0;

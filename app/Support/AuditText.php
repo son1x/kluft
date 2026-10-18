@@ -26,6 +26,10 @@ class AuditText
 
     private const FEST = [
         'login.entra' => 'Anmeldung mit Microsoft 365',
+        'nachricht.neu' => 'Nachricht wieder geöffnet',
+        'nachricht.in_bearbeitung' => 'Nachricht in Bearbeitung',
+        'nachricht.erledigt' => 'Nachricht erledigt',
+        'nachricht.geloescht' => 'Nachricht gelöscht',
         'login.entra.blocked_breakglass_email' => 'Anmeldung mit Microsoft 365 abgelehnt (Adresse des Notfallzugangs)',
         'login.breakglass' => 'Anmeldung mit dem Notfallzugang',
         'login.breakglass.failed' => 'Notfallzugang: Anmeldung fehlgeschlagen',
@@ -95,7 +99,9 @@ class AuditText
             'feature.an' => 'Funktion eingeschaltet: '.(Features::KATALOG[$rest]['label'] ?? $rest),
             'feature.aus' => 'Funktion ausgeschaltet: '.(Features::KATALOG[$rest]['label'] ?? $rest),
             'registrations.purge' => 'Automatisch gelöscht: '.($teile[0] ?? 0).' unbestätigte und '.($teile[1] ?? 0).' abgelaufene Anmeldungen',
-            'privacy.delete' => 'Datenschutz: Daten gelöscht ('.($teile[0] ?? 0).' Anmeldungen, '.($teile[1] ?? 0).' Personen, '.($teile[2] ?? 0).' Mails)',
+            'privacy.delete' => count($teile) >= 4
+                ? 'Datenschutz: Daten gelöscht ('.$teile[0].' Anmeldungen, '.$teile[1].' Personen, '.$teile[2].' Nachrichten, '.$teile[3].' Mails)'
+                : 'Datenschutz: Daten gelöscht ('.($teile[0] ?? 0).' Anmeldungen, '.($teile[1] ?? 0).' Personen, '.($teile[2] ?? 0).' Mails)',
             'privacy.delete.whatsapp' => 'Datenschutz: WhatsApp-Daten gelöscht ('.($teile[0] ?? 0).' Abonnent*innen, '.($teile[1] ?? 0).' Sperreinträge)',
             'georgsbote.bulk_upload' => $rest.' Zeitschriften-Ausgaben hochgeladen',
             'kontakt' => 'Kontaktformular '.(str_starts_with($rest, 'gesendet') ? 'gesendet' : 'fehlgeschlagen').(str_contains($rest, ':') ? ' (Thema: '.Str::after($rest, ':').')' : ''),

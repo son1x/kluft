@@ -132,11 +132,11 @@ class PrivacyRequestsPage extends Page
                 ->action(function (PrivacyRequests $requests): void {
                     abort_unless(static::canAccess() && $this->searched, 403);
                     $result = $requests->delete($this->searched);
-                    AuditLogger::log("privacy.delete:{$result['registrations']}+{$result['people']}+{$result['queued']}", Filament::auth()->user(), request: request());
+                    AuditLogger::log("privacy.delete:{$result['registrations']}+{$result['people']}+{$result['messages']}+{$result['queued']}", Filament::auth()->user(), request: request());
 
                     Notification::make()
                         ->title('Gelöscht')
-                        ->body("{$result['registrations']} Anmeldung(en), {$result['people']} Personenvorstellung(en), {$result['queued']} Mail(s) aus der Warteschlange.")
+                        ->body("{$result['registrations']} Anmeldung(en), {$result['people']} Personenvorstellung(en), {$result['messages']} Nachricht(en), {$result['queued']} Mail(s) aus der Warteschlange.")
                         ->success()->send();
                 }),
         ];

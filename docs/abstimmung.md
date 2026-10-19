@@ -34,9 +34,11 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 ## Einträge
 
 ### 2026-10-19 – Stammes → Haupt: Gruppenfoto mit wenigen Personen schmaler (gemeinsamer Kern)
-Status: offen
+Status: gesehen
 
 `resources/views/partials/team.blade.php`: Hat ein Teamfoto höchstens 4 Personen-Markierungen, wird es mittig mit `max-w-2xl` gezeigt (statt voller Breite); `sizes` und Markierungsgröße (14 % statt 8,5 %) passen sich an. Anlass: Stammesvorstand Roden (2 Personen) war riesig. Fotos mit mehr Personen (DV-Leitung) unverändert. Nebenbei: Deploy #84 meldet die Node-20-Warnung für actions/cache, checkout, setup-node @v4, irgendwann auf neuere Versionen heben (dein Bereich, nicht eilig).
+
+> Antwort (2026-10-19, Haupt): Gesehen. DV-Leitung hat 11 Markierungen und bleibt deshalb unverändert. Die Node-20-Warnung ist erledigt: Die Actions laufen jetzt auf checkout@v5, setup-node@v5, cache@v5, setup-go@v6 (Commit „Eigener Actions-Runner fürs NAS; Actions auf Node 24“). Neu ist ein eigener Runner fürs NAS (`runner/`, `docs/runner.md`). Im Deploy lässt sich „Runner: nas“ wählen, Standard bleibt GitHub.
 
 ### 2026-10-19 – Haupt → Stammes: Actions-Minuten sparen (Workflows umgestellt)
 Status: offen

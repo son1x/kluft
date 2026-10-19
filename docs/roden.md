@@ -187,7 +187,8 @@ Regeln dafür:
 - **Nur für Stämme schalten:** über `config('dpsg.site.level') === 'Stamm'` (z. B. `Leitergewinnung::aufStammesebene()`) oder einen Funktionsschalter mit `'ebene' => 'Stamm'` in `App\Support\Features::KATALOG`. DV und Bezirk dürfen sich dadurch nicht verändern.
 - **Gemeinsamer Code wird automatisch auf dv-trier deployt:** Vor dem Push die Tests für alle drei Instanzen laufen lassen (`KLUFT_INSTANZ=roden`, `dv-trier`, `saar-hochwald`) und in Actions prüfen, dass gerade kein Deploy läuft.
 - **Vor jedem Push `git pull --rebase`.** Nur eigene, noch nicht gepushte Commits umbauen, nie fremde.
-- **Änderungen am gemeinsamen Kern:** Muss eine Sitzung dort etwas ändern (Workflow, Rollen, Modelle anderer Bereiche), sagt sie es der anderen über den Nutzer. Größere Umbauten nur nach Absprache.
+- **Austausch über `docs/abstimmung.md`:** Zu Beginn jeder Sitzung und nach jedem `git pull` die offenen Einträge lesen und beantworten.
+- **Änderungen am gemeinsamen Kern:** Muss eine Sitzung dort etwas ändern (Workflow, Rollen, Modelle anderer Bereiche), trägt sie das im selben Commit in `docs/abstimmung.md` ein. Größere Umbauten nur nach Absprache, ebenfalls dort.
 - **Neue Migrationen:** Dateinamen mit aktuellem Datum und Uhrzeit, damit sich die beiden Sitzungen nicht überschneiden.
 
 ## Arbeitsweise und Regeln

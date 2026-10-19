@@ -2,15 +2,21 @@ name: Qualität und Sicherheit
 
 # Pflichtenheft 10.1/10.5: bekannte Sicherheitslücken in Abhängigkeiten
 # (composer audit, npm audit), Code-Stil (Pint) und statische Analyse
-# (Larastan). Läuft bei jedem Push, jeden Montag (neue Sicherheitsmeldungen
-# auch ohne Code-Änderung) und auf Knopfdruck. Schlägt ein Lauf fehl,
-# schickt GitHub eine Mail; der Deploy läuft davon unabhängig weiter.
+# (Larastan). Läuft bei jedem Push mit Code-Änderung, jeden Montag (neue
+# Sicherheitsmeldungen auch ohne Code-Änderung) und auf Knopfdruck. Schlägt
+# ein Lauf fehl, schickt GitHub eine Mail. Der Deploy übernimmt einen grünen
+# Lauf für denselben Commit und spart sich dann die SQLite-Tests.
 
 on:
   push:
     branches:
       - claude/dpsg-trier-homepage-design-jwdgs4
       - claude/kluft-instanzen
+    # Reine Doku- und Datei-Commits brauchen keinen Lauf (Actions-Minuten).
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+      - 'instanzen/*/dateien/**'
   schedule:
     - cron: '17 5 * * 1'
   workflow_dispatch:
@@ -19,6 +25,11 @@ on:
         description: 'Larastan-Baseline neu erzeugen und im Log ausgeben'
         type: boolean
         default: false
+
+# Schnell hintereinander gepusht: nur der letzte Stand wird geprüft.
+concurrency:
+  group: quality-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'push' }}
 
 jobs:
   sicherheit:
@@ -49,6 +60,15 @@ jobs:
           php-version: '8.3'
           extensions: intl, mbstring, gd, zip, xml, curl, openssl, pdo_sqlite
           coverage: none
+      - name: Composer-Cache finden
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+      - name: Composer-Cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-
       - name: PHP-Abhängigkeiten installieren
         run: composer install --no-interaction --no-progress
       - name: Code-Stil (Pint)
@@ -88,6 +108,15 @@ jobs:
         with:
           node-version: '20'
           cache: npm
+      - name: Composer-Cache finden
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+      - name: Composer-Cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-
       - name: PHP-Abhängigkeiten installieren
         run: composer install --no-interaction --no-progress
       # Views nutzen @vite(); ohne public/build/manifest.json schlagen

@@ -97,9 +97,10 @@ Repository.
 ## Deploy
 
 - **Starten:** nur von Hand: Actions → „Deploy“ → Run workflow → Instanz `roden`.
-  - Ein Push deployt automatisch nur `dv-trier`.
-  - Pushes, die nur `instanzen/roden/**`, `docs/**` oder `*.md` ändern, deployen gar nichts.
-  - Pushes auf Code außerhalb davon deployen dv-trier mit. Vor so einem Push prüfen, ob gerade ein Deploy läuft.
+  - Seit 19.10.2026 deployt ein Push nichts mehr, auch nicht dv-trier (Actions-Minuten sparen). Jede Instanz wird von Hand deployt, wenn etwas live soll.
+  - Vor einem Deploy prüfen, ob für dieselbe Instanz schon einer läuft.
+  - Ist „Qualität und Sicherheit“ für denselben Commit schon grün, überspringt der Deploy die SQLite-Tests; gegen MariaDB testet er immer.
+  - Pushes bündeln: Doku-Commits sammeln, nicht jeden Eintrag einzeln pushen.
 - **„Nur prüfen“:** baut, testet, meldet sich per SSH an und ändert nichts. Es zeigt:
   - PHP-Version und Erweiterungen, freien Speicher;
   - die Datenbankverbindung (Version, Tabellenzahl);
@@ -187,7 +188,7 @@ Zwei Claude-Code-Sitzungen arbeiten auf demselben Branch `claude/kluft-instanzen
 Regeln dafür:
 
 - **Nur für Stämme schalten:** über `config('dpsg.site.level') === 'Stamm'` (z. B. `Leitergewinnung::aufStammesebene()`) oder einen Funktionsschalter mit `'ebene' => 'Stamm'` in `App\Support\Features::KATALOG`. DV und Bezirk dürfen sich dadurch nicht verändern.
-- **Gemeinsamer Code wird automatisch auf dv-trier deployt:** Vor dem Push die Tests für alle drei Instanzen laufen lassen (`KLUFT_INSTANZ=roden`, `dv-trier`, `saar-hochwald`) und in Actions prüfen, dass gerade kein Deploy läuft.
+- **Gemeinsamer Code betrifft alle Instanzen:** Vor dem Push die Tests für alle drei Instanzen laufen lassen (`KLUFT_INSTANZ=roden`, `dv-trier`, `saar-hochwald`). Deployt wird nur von Hand; dv-trier deployt die Haupt-Sitzung bzw. der Nutzer.
 - **Actions-Minuten sparen (19.10.2026):** Deploys nur bei Bedarf und nach Absprache mit dem Nutzer. Doku-Commits sammeln und selten pushen. Am 19.10. war das Kontingent bzw. Ausgabelimit erreicht und kein Job startete mehr.
 - **Vor jedem Push `git pull --rebase`.** Nur eigene, noch nicht gepushte Commits umbauen, nie fremde.
 - **Direkter Austausch:** Die Stammes-Sitzung (`session_01DnjMEd7816yZMn8RwKe28G`) schreibt der Haupt-Sitzung (`session_014CFjuVyS73EAT5ak9eGcZt`) direkt per `send_message`. Die Haupt-Sitzung kann (Stand 19.10.2026) nicht direkt senden und antwortet über `docs/abstimmung.md`.

@@ -9,7 +9,8 @@ name: Monitoring
 
 on:
   schedule:
-    - cron: '7,37 * * * *'
+    # Alle 6 Stunden (seit 19.10.2026; vorher halbstündlich, ~4.300 Actions-Minuten im Monat).
+    - cron: '7 */6 * * *'
   workflow_dispatch:
 
 jobs:

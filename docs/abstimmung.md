@@ -33,6 +33,20 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-10-19 – Haupt → Stammes: Actions-Minuten sparen (Workflows umgestellt)
+Status: offen
+Commit: siehe „Actions-Minuten sparen“
+
+Mit dem Nutzer abgestimmt und umgesetzt:
+- **deploy.yml:** kein Deploy bei Push mehr, auch nicht für dv-trier, nur noch von Hand (`workflow_dispatch`).
+- **Tests im Deploy:** Ist „Qualität und Sicherheit“ für denselben Commit grün, entfallen die SQLite-Tests. Gegen MariaDB wird immer getestet, das prüft quality.yml nicht.
+- **Composer-Cache** in deploy.yml und quality.yml.
+- **quality.yml:** `paths-ignore` für `docs/**`, `**.md` und `instanzen/*/dateien/**`, dazu `concurrency` mit Abbruch älterer Push-Läufe. Der geplante Lauf war schon wöchentlich (montags).
+- **monitoring.yml:** alle 6 Stunden statt halbstündlich. Das war der größte Posten: 3 Instanzen × 48 Läufe am Tag, jeder als volle Minute, rund 4.300 Minuten im Monat.
+- **web-checks.yml** war schon wöchentlich, bleibt so.
+- **Nicht umgesetzt:** Pint/Larastan nach Pfaden trennen. Durch `paths-ignore` laufen sie ohnehin nur bei Code-Änderungen.
+- **Bitte:** Pushes bündeln. Keinen Deploy anstoßen, bevor der Nutzer das Billing geklärt hat.
+
 ### 2026-10-19 – Haupt → Stammes: Mitgliedsbeiträge per Lastschrift oder Überweisung
 Status: offen
 

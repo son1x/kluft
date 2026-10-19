@@ -36,7 +36,7 @@ Diese Werte dürfen auch als Secret eingetragen sein; der Deploy nimmt die Varia
 | `APP_NAME` | nein | Standard: Name der Instanz |
 | `APP_ENV` | nein | Standard `local` (wie bisher beim DV) |
 | `PHP_BIN` | nein | Standard `/usr/bin/php`; auf Plesk z. B. `/opt/plesk/php/8.3/bin/php` |
-| `MONITOR_URL` | nein | Adresse für Monitoring und Web-Checks; ohne sie werden beide übersprungen |
+| `MONITOR_URL` | nein | Adresse für Monitoring (alle 6 Stunden) und Web-Checks (montags); ohne sie werden beide übersprungen |
 
 ### Secrets (Environment secrets)
 
@@ -123,5 +123,5 @@ Bis zur Umstellung deployt weiter das alte Repo son1x/dpsg-dv-trier, das unverä
 3. Deploy `dv-trier` ohne „Nur prüfen“. Ab jetzt läuft der DV mit dem Kluft-Code.
    - Die Migrationen melden nur die neue Migration des Mitgliederabgleichs (zusätzliche Spalten, Funktion bleibt aus).
    - Inhalte und Seiten bleiben, wie sie sind.
-4. Danach den automatischen Deploy bei Push für `dv-trier` einschalten (eigener Commit). **Erledigt am 5. Oktober 2026:** Jeder Push auf `claude/kluft-instanzen` deployt den DV; reine Doku-Änderungen und Dateien von Saar-Hochwald lösen keinen Deploy aus.
+4. Danach den automatischen Deploy bei Push für `dv-trier` einschalten (eigener Commit). **Erledigt am 5. Oktober 2026:** Jeder Push auf `claude/kluft-instanzen` deployt den DV; reine Doku-Änderungen und Dateien von Saar-Hochwald lösen keinen Deploy aus. **Seit 19. Oktober 2026 wieder abgeschaltet** (Actions-Minuten): Alle Instanzen, auch der DV, werden nur noch von Hand deployt.
 5. **Rückweg:** Im alten Repo den Workflow „Deploy auf Netcup-Webspace“ von Hand starten. Er spielt den bisherigen Code wieder auf, die Datenbank bleibt kompatibel. Die zusätzlichen Spalten stören den alten Code nicht.

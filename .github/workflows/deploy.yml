@@ -38,15 +38,8 @@ name: Deploy
 #   Liste mit Erklärung: docs/deploy.md
 
 on:
-  # Automatisch nur der DV Trier (seit der Umstellung am 5.10.2026); andere
-  # Instanzen werden von Hand gestartet.
-  push:
-    branches: [claude/kluft-instanzen]
-    paths-ignore:
-      - 'docs/**'
-      - '**.md'
-      - 'instanzen/saar-hochwald/**'
-      - 'instanzen/roden/**'
+  # Nur von Hand (seit 19.10.2026, Actions-Minuten sparen): Wer etwas live
+  # haben will, startet den Deploy für die Instanz.
   workflow_dispatch:
     inputs:
       instanz:
@@ -71,6 +64,11 @@ on:
 # sehr langsamer Lauf noch läuft, während ein neuer startet). Ein neuer
 # Lauf bricht einen noch laufenden älteren Lauf desselben Branches ab,
 # statt parallel dagegen zu laufen.
+# actions: read für „Qualität für diesen Stand schon grün?“.
+permissions:
+  contents: read
+  actions: read
+
 concurrency:
   group: deploy-${{ inputs.instanz || 'dv-trier' }}
   cancel-in-progress: true
@@ -115,6 +113,16 @@ jobs:
           node-version: '20'
           cache: npm
 
+      - name: Composer-Cache finden
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+      - name: Composer-Cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-
+
       # Volle Installation (inkl. Dev-Abhängigkeiten) für die Tests.
       - name: PHP-Abhängigkeiten installieren (für Tests)
         run: composer install --no-interaction --no-progress
@@ -135,7 +143,20 @@ jobs:
           php artisan key:generate --no-interaction --force
           php artisan kluft:assets
 
+      # Ist „Qualität und Sicherheit“ für genau diesen Commit schon grün
+      # (Tests aller Instanzen mit SQLite), entfällt der SQLite-Lauf hier.
+      # Gegen MariaDB wird immer getestet – das prüft die CI sonst nicht.
+      - name: Qualität für diesen Stand schon grün?
+        id: qualitaet
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          n=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow quality.yml --commit "$GITHUB_SHA" --status success --json databaseId --jq length 2>/dev/null || echo 0)
+          echo "gruen=$([ "${n:-0}" -gt 0 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          echo "Qualität für $GITHUB_SHA grün: $([ "${n:-0}" -gt 0 ] && echo ja || echo nein)"
+
       - name: Tests ausführen
+        if: steps.qualitaet.outputs.gruen != 'true'
         run: |
           cp .env.example .env
           php artisan key:generate --no-interaction

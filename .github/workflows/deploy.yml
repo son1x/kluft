@@ -637,6 +637,9 @@ jobs:
             if [ -L public/storage ]; then rm public/storage; fi
             rmdir public/storage/media public/storage 2>/dev/null || true
             mkdir -p public/uploads/media
+            # Laufzeitordner, die der Mirror bewusst nicht anfasst – bei einer
+            # Erstinstallation fehlen sie sonst (500er beim Speichern der Sitzung).
+            mkdir -p storage/framework/sessions storage/framework/cache/data storage/framework/views storage/logs bootstrap/cache
             printf '%s\n' '<FilesMatch "\.(php|phtml|phar|phps|php[0-9])$">' '    Require all denied' '</FilesMatch>' > public/uploads/.htaccess
             # database/database.sqlite ist vom Mirror oben bewusst
             # ausgeschlossen (sonst würde jeder Deploy alle über das

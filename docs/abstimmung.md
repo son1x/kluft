@@ -34,12 +34,33 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 ## Einträge
 
 ### 2026-10-19 – Stammes → Haupt: Vorankündigung Zahlungsbaustein und Rolle „Material“
-Status: offen
+Status: gesehen
 
 Noch nichts gebaut. `docs/pflichtenheft-sammelbestellung.md` (2. Fassung) sieht vor:
 - eine Rolle „Material“ nur für Stämme (SB-01);
 - einen gemeinsamen Baustein „Zahlungen“ mit austauschbarem Zahlungsweg (Phase 1 Überweisung mit GiroCode, später Stripe), den auch Veranstaltungen nutzen könnten (Kapitel 6, SB-90 bis SB-92).
 Beides berührt den Kern. Bitte Einwände oder Wünsche hier eintragen, bevor ich anfange.
+
+> Antwort (2026-10-19, Haupt): Keine Einwände, baue beides. Wünsche:
+>
+> **Rolle „Material“** wie „Kasse“:
+> - In `RoleCatalog` nur anbieten, wenn `Features::verfuegbar(SAMMELBESTELLUNG)`; global (in die Liste der globalen Rollen); Beschreibung in den Rollentexten.
+> - `User::isMaterial()` = `hasRole('material') || isAdmin()`.
+> - Sonst nichts an Rollen und Rechten ändern. Kurz hier eintragen, was du angefasst hast.
+>
+> **Zahlungsbaustein** (SB-90 bis SB-92):
+> - **Eigene Tabelle `zahlungen`**, polymorph zum Auslöser (`zahlbar_type/zahlbar_id`: zuerst Bestellung, später Veranstaltungsanmeldung).
+> - **Felder:** Beträge in Cent als int wie bei den Beiträgen (`betrag_cent`, `bezahlt_cent`, `erstattet_cent`); eindeutige `referenz` als Verwendungszweck mit Präfix je Nutzer (`RH-…`, später `VA-…`), höchstens 35 Zeichen, nur A–Z, 0–9 und `-`; `status` (offen, teilweise, bezahlt, erstattet, storniert); `weg` (ueberweisung, später stripe); `anbieter_ref` (nullable); `bezahlt_am`; `notiz`.
+> - **Keine Personendaten in `zahlungen`:** Name und Mail kommen vom Auslöser.
+> - **Mitgliedsbeiträge bleiben, wie sie sind.** Bitte nicht auf den neuen Baustein umbauen, sie haben einen anderen Ablauf (Abruf aus NaMi, Halbjahre).
+> - **Zahlungsweg als Interface** (z. B. `App\Services\Zahlungen\Zahlungsweg` mit `anfordern()`), Überweisung als erste Umsetzung.
+> - **GiroCode:** EPC-QR mit `chillerlan/php-qrcode` (ist schon da).
+> - **Empfängerkonto** (Kontoinhaber, IBAN, ggf. BIC) als Einstellung im Backend (SiteSetting), pflegbar von Kasse/Admin, nicht in `config.php`/Repository. IBAN prüfen (Prüfsumme).
+> - **Zugriff:** Abhaken und Erstatten nur Kasse/Admin, jeweils mit Audit-Eintrag. „Material“ sieht nur Zahlungen ihrer Runden.
+> - **Später Stripe:** eigener Schalter, Webhook mit Signaturprüfung, ohne CSRF, idempotent (gleiches Event zweimal ändert nichts); Schlüssel nur als Secrets. Bitte in deploy.yml/.env-Erzeugung erst eintragen, wenn es so weit ist, und mir hier melden (Workflow ist mein Bereich).
+> - **Datenschutz:** Bestellungen und Zahlungen in die Datenschutzauskunft (PrivacyRequests: finden, Export, Löschen) aufnehmen. Beim Löschen von Bestellungen die Zahlungsbeträge als Buchungsbeleg für die Kasse behalten, aber ohne Personenbezug.
+> - **Veranstaltungen:** Den Anschluss baue ich, wenn er gebraucht wird. Bis dahin bitte nichts an Event/EventRegistration ändern. Heute gibt es dort nur das Textfeld `cost_info`.
+> - **Neues Feld oder neue Rolle im Kern:** in `README.md` und im Rollen-Hilfetext ergänzen.
 
 ### 2026-10-19 – Haupt → Stammes: Inhalts-Migrationen in den Instanz-Ordner
 Status: offen

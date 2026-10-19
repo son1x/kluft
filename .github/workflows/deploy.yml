@@ -327,12 +327,18 @@ jobs:
       - name: Kartendaten-Schlüssel bestimmen
         id: mapkey
         run: |
-          MAP_PHP='if (! function_exists("env")) { function env($k, $d = null) { $v = getenv($k); return $v === false ? $d : $v; } } $m = (require "config/dpsg.php")["map"];'
+          MAP_PHP='require "vendor/autoload.php"; if (! function_exists("env")) { function env($k, $d = null) { $v = getenv($k); return $v === false ? $d : $v; } } $m = (require "config/dpsg.php")["map"];'
+          PMTILES="$(php -r "$MAP_PHP"' echo $m["pmtiles"] ?? "";')"
+          mkdir -p public/maps/data
+          # Stämme haben (noch) keine eigene Kartendatei – dann nichts bauen.
+          if [ -z "$PMTILES" ]; then echo "needed=false" >> "$GITHUB_OUTPUT"; exit 0; fi
+          echo "needed=true" >> "$GITHUB_OUTPUT"
           echo "key=map-data-${KLUFT_INSTANZ}-$(php -r "$MAP_PHP"' echo $m["build"], "-", substr(md5(json_encode($m)), 0, 12);')" >> "$GITHUB_OUTPUT"
-          echo "file=public/$(php -r "$MAP_PHP"' echo $m["pmtiles"];')" >> "$GITHUB_OUTPUT"
+          echo "file=public/$PMTILES" >> "$GITHUB_OUTPUT"
 
       - name: Kartendaten aus dem Cache holen
         id: mapcache
+        if: steps.mapkey.outputs.needed == 'true'
         uses: actions/cache@v4
         with:
           path: public/maps/data
@@ -344,6 +350,7 @@ jobs:
       - name: Kartendatei vorhanden?
         id: mapfile
         run: |
+          if [ "${{ steps.mapkey.outputs.needed }}" != "true" ]; then echo "exists=true" >> "$GITHUB_OUTPUT"; exit 0; fi
           # Nur die Karte dieser Instanz hochladen (ältere Builds aussortieren).
           find public/maps/data -type f ! -path "${{ steps.mapkey.outputs.file }}" -delete 2>/dev/null || true
           if [ -f "${{ steps.mapkey.outputs.file }}" ]; then echo "exists=true" >> "$GITHUB_OUTPUT"; else echo "exists=false" >> "$GITHUB_OUTPUT"; fi

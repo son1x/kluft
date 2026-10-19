@@ -155,12 +155,10 @@ oder in den Chat.
 
 ## Offene Punkte (Stand Übergabe)
 
-1. **Website prüfen:** Nach dem Deploy #75 (Korrektur `storage/framework/sessions`) sollte https://www.dpsg-roden.de laufen. Prüfen:
-   - Startseite;
-   - `/api/status` (JSON mit Checks);
-   - `/redaktion/anmelden`.
-
-   Bei 500: „Nur prüfen“ starten und den Log-Auszug lesen.
+1. ~~**Website prüfen**~~ (erledigt 19.10.2026): Startseite und `/redaktion/anmelden` liefern 200. `.env` und `composer.json` sind gesperrt (403).
+   `/api/status` liefert 503, weil der Cronjob fehlt (Punkt 2). Datenbank und Mails: ok. Backups: eingeschaltet, aber noch keins gelaufen.
+   Kalender und Instagram: aus.
+   Bei späteren 500ern: „Nur prüfen“ starten und den Log-Auszug lesen.
 2. **Cronjob in Plesk:** jede Minute `/usr/bin/php /dpsg-roden.de/httpdocs/artisan schedule:run`, den genauen Pfad wie bei test.dpsg-trier.de. Ohne Cronjob laufen keine Warteschlangen, Backups oder Mails.
 3. **Mail:**
    - Absender-Domain dpsg-roden.de in Brevo bestätigen (DNS);

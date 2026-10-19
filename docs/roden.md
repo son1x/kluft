@@ -171,6 +171,24 @@ oder in den Chat.
 8. **Inhalte mit dem Stamm durchgehen:** Texte, Fotos, Impressum/Datenschutz, Leitungsteams. Ansprechpartner ist Flavio Russello.
 9. **Demo:** Die Demo-Seite (Artifact) aus der Planungsphase zeigt noch die alten Gruppenstunden-Zeiten. Sie ist nicht mehr maßgeblich.
 
+## Aufteilung zwischen den Sitzungen
+
+Zwei Claude-Code-Sitzungen arbeiten auf demselben Branch `claude/kluft-instanzen`:
+
+| Stammes-Sitzung (diese) | Haupt-Sitzung |
+|---|---|
+| Inhalte, Konfiguration und Deploys von Roden | DV Trier (`dv-trier`) und Bezirk Saar-Hochwald (`saar-hochwald`) |
+| Alles nur für Stämme: `StammVorlage`, `StammStartSeeder`, Einrichtungsassistent | Gemeinsamer Kern: Deploy-Workflow, Monitoring, Backups, Rollen, Anmeldung, NaMi-Anbindung |
+| Stammes-Funktionen: Kasse/Mitgliedsbeiträge (`docs/beitraege.md`), Leitergewinnung (`App\Support\Leitergewinnung`, Seite „Leiter*in werden“), Stufenseiten auf Stammesebene | Funktionen für alle Ebenen, z. B. Veranstaltungen, Nachrichten-Eingang |
+
+Regeln dafür:
+
+- **Nur für Stämme schalten:** über `config('dpsg.site.level') === 'Stamm'` (z. B. `Leitergewinnung::aufStammesebene()`) oder einen Funktionsschalter mit `'ebene' => 'Stamm'` in `App\Support\Features::KATALOG`. DV und Bezirk dürfen sich dadurch nicht verändern.
+- **Gemeinsamer Code wird automatisch auf dv-trier deployt:** Vor dem Push die Tests für alle drei Instanzen laufen lassen (`KLUFT_INSTANZ=roden`, `dv-trier`, `saar-hochwald`) und in Actions prüfen, dass gerade kein Deploy läuft.
+- **Vor jedem Push `git pull --rebase`.** Nur eigene, noch nicht gepushte Commits umbauen, nie fremde.
+- **Änderungen am gemeinsamen Kern:** Muss eine Sitzung dort etwas ändern (Workflow, Rollen, Modelle anderer Bereiche), sagt sie es der anderen über den Nutzer. Größere Umbauten nur nach Absprache.
+- **Neue Migrationen:** Dateinamen mit aktuellem Datum und Uhrzeit, damit sich die beiden Sitzungen nicht überschneiden.
+
 ## Arbeitsweise und Regeln
 
 - **Geheimes:** Secrets nur in GitHub-Environments oder der Server-`.env`, nie im Repository, in Commits oder im Chat. Was im Chat stand, gilt als kompromittiert.

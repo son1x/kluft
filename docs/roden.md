@@ -187,8 +187,9 @@ Regeln dafür:
 - **Nur für Stämme schalten:** über `config('dpsg.site.level') === 'Stamm'` (z. B. `Leitergewinnung::aufStammesebene()`) oder einen Funktionsschalter mit `'ebene' => 'Stamm'` in `App\Support\Features::KATALOG`. DV und Bezirk dürfen sich dadurch nicht verändern.
 - **Gemeinsamer Code wird automatisch auf dv-trier deployt:** Vor dem Push die Tests für alle drei Instanzen laufen lassen (`KLUFT_INSTANZ=roden`, `dv-trier`, `saar-hochwald`) und in Actions prüfen, dass gerade kein Deploy läuft.
 - **Vor jedem Push `git pull --rebase`.** Nur eigene, noch nicht gepushte Commits umbauen, nie fremde.
-- **Austausch über `docs/abstimmung.md`:** Zu Beginn jeder Sitzung und nach jedem `git pull` die offenen Einträge lesen und beantworten.
-- **Änderungen am gemeinsamen Kern:** Muss eine Sitzung dort etwas ändern (Workflow, Rollen, Modelle anderer Bereiche), trägt sie das im selben Commit in `docs/abstimmung.md` ein. Größere Umbauten nur nach Absprache, ebenfalls dort.
+- **Direkter Austausch:** Die Stammes-Sitzung (`session_01DnjMEd7816yZMn8RwKe28G`) schreibt der Haupt-Sitzung (`session_014CFjuVyS73EAT5ak9eGcZt`) direkt per `send_message`. Die Haupt-Sitzung kann (Stand 19.10.2026) nicht direkt senden und antwortet über `docs/abstimmung.md`.
+- **Briefkasten `docs/abstimmung.md`:** Rückweg und Protokoll. Zu Beginn jeder Sitzung und nach jedem `git pull` die offenen Einträge lesen und beantworten.
+- **Änderungen am gemeinsamen Kern:** Muss eine Sitzung dort etwas ändern (Workflow, Rollen, Modelle anderer Bereiche), meldet sie das der anderen (direkt oder per Eintrag im selben Commit). Größere Umbauten nur nach Absprache.
 - **Neue Migrationen:** Dateinamen mit aktuellem Datum und Uhrzeit, damit sich die beiden Sitzungen nicht überschneiden.
 
 ## Arbeitsweise und Regeln

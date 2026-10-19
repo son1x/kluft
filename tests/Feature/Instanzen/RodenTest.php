@@ -5,6 +5,7 @@ namespace Tests\Feature\Instanzen;
 use App\Models\Page;
 use App\Models\Person;
 use App\Models\TeamPhoto;
+use App\Support\Features;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
@@ -33,7 +34,14 @@ class RodenTest extends TestCase
         $this->assertSame('gianluca@dpsg-roden.de', Person::query()->where('name', 'Gian-Luca Blasius')->firstOrFail()->publicEmail());
         $this->assertSame('michele@dpsg-roden.de', Person::query()->where('name', 'Michele Franke')->firstOrFail()->publicEmail());
 
-        $this->get('/stufe-woelflinge')->assertOk()->assertSee('mailto:hendrik@dpsg-roden.de', false);
+        $this->get('/stufe-woelflinge')->assertOk()->assertSee('hendrik@dpsg-roden.de', false);
+    }
+
+    #[TestDox('E-Mail-Adressen öffnen in Roden ein Formular statt des Mailprogramms')]
+    public function test_mailformular(): void
+    {
+        $this->assertTrue(Features::enabled(Features::MAILFORMULAR));
+        $this->get('/stufe-woelflinge')->assertOk()->assertSee('/nachricht?an=', false)->assertDontSee('mailto:hendrik@dpsg-roden.de', false);
     }
 
     #[TestDox('Migration: Stammesvorstand mit Foto und vorstand@, Ämter, Vorstandsadresse auf der Seite; zweiter Lauf ändert nichts')]
@@ -61,7 +69,7 @@ class RodenTest extends TestCase
             ->assertSee('Unser Stammesvorstand')
             ->assertSee('Foto: Julia Hafner')
             ->assertSee('mx-auto max-w-2xl', false)
-            ->assertSee('mailto:vorstand@dpsg-roden.de', false);
+            ->assertSee('vorstand@dpsg-roden.de', false);
         $this->assertStringNotContainsString('kontakt@dpsg-roden.de', $seite->fresh()->body);
 
         // Bild und Varianten wieder entfernen.

@@ -34,13 +34,15 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 ## Einträge
 
 ### 2026-10-19 – Haupt → Stammes: E-Mail-Adressen öffnen ein Formular (gemeinsamer Kern)
-Status: offen
+Status: erledigt
 
 Neue Funktion `Features::MAILFORMULAR` (Standard aus, Doku `docs/nachrichten.md`):
 - **Wirkung:** Ein Klick auf eine E-Mail-Adresse öffnet `/nachricht?an=<signierte Adresse>` statt mailto. Die Nachricht geht per Mail dorthin und liegt mit dem Nachrichten-Eingang als Art `direkt` im Backend.
 - **Neue Stellen mit E-Mail-Links:** bitte `App\Support\Mailformular::href($email)` statt `mailto:` nehmen. Ausnahme sind Fehler-Hinweise („schreib direkt an …“); die bleiben mailto.
 - **Geändert:** `partials/team`, `partials/mitmachen-ansprechpersonen`, Kontakt in `layouts/app` und `home`, `sections/show`. In `events/show` führt die Kontaktadresse zu `#frage`.
 - **Redaktionelles HTML:** an allen Stellen mit `->embeds()` hängt jetzt `->mailformular()`. Umgeleitet werden nur eigene Domains und veröffentlichte Personen-Adressen.
+
+> Antwort (2026-10-19, Stammes): Für Roden eingeschaltet. `StammVorlage` liest dafür `funktionen` aus `angaben.json` (überstimmt den Standard der Funktionen; Backend-Schalter gehen weiterhin vor). RodenTest prüft das Formular.
 
 ### 2026-10-19 – Stammes → Haupt: Gruppenfoto mit wenigen Personen schmaler (gemeinsamer Kern)
 Status: gesehen

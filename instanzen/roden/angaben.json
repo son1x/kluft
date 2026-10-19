@@ -31,6 +31,9 @@
     "ausbau": 4,
     "email_schema": "vorname",
     "email_leitende": true,
+    "funktionen": {
+        "mailformular": true
+    },
     "stufenfarben": {
         "biber": {"farbe": "#ffed00", "schrift": "dunkel"}
     },

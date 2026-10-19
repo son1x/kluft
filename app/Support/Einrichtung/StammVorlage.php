@@ -81,7 +81,9 @@ class StammVorlage
                 'gast' => 'Gast aus einem anderen Stamm oder Verband',
             ],
 
-            'features' => [
+            // Standard der Funktionen; „funktionen“ in angaben.json überstimmt ihn
+            // (z. B. Roden: mailformular). Im Backend bleibt alles schaltbar.
+            'features' => array_replace([
                 'georgsbote' => false,
                 'roadmap' => false,
                 'rechtstraeger' => false,
@@ -89,7 +91,7 @@ class StammVorlage
                 'downloads' => false,
                 'code_login' => true,
                 'mitgliedsbeitraege' => true,
-            ],
+            ], array_map('boolval', (array) ($a['funktionen'] ?? []))),
 
             'newsletter' => null,
             'home_highlights' => [],

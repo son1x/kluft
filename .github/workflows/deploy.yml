@@ -23,7 +23,8 @@ name: Deploy
 # MariaDB werden vorhandene SQLite-Inhalte einmalig übernommen.
 #
 # Je Environment (dv-trier, saar-hochwald, …):
-#   Variablen: APP_URL (Pflicht), MAIL_FROM_ADDRESS (Pflicht),
+#   Variablen (als Secret eingetragen gehen sie auch):
+#              APP_URL (Pflicht), MAIL_FROM_ADDRESS (Pflicht),
 #              MAIL_FROM_NAME, APP_NAME (Standard: Name der Instanz),
 #              APP_ENV (Standard local), PHP_BIN (Standard /usr/bin/php),
 #              MONITOR_URL (für Monitoring und Web-Checks)
@@ -80,7 +81,7 @@ jobs:
     environment: ${{ inputs.instanz || 'dv-trier' }}
     env:
       KLUFT_INSTANZ: ${{ inputs.instanz || 'dv-trier' }}
-      PHP_BIN: ${{ vars.PHP_BIN || '/usr/bin/php' }}
+      PHP_BIN: ${{ vars.PHP_BIN || secrets.PHP_BIN || '/usr/bin/php' }}
       NUR_PRUEFEN: ${{ inputs.nur_pruefen && 'true' || 'false' }}
     # Produktiv läuft MariaDB – die Tests laufen daher zusätzlich dagegen
     # (SQLite prüft z. B. keine Spaltenlängen).
@@ -162,11 +163,11 @@ jobs:
 
       - name: .env der Instanz erzeugen
         env:
-          APP_URL: ${{ vars.APP_URL }}
-          APP_ENV_VALUE: ${{ vars.APP_ENV || 'local' }}
-          APP_NAME_VAR: ${{ vars.APP_NAME }}
-          MAIL_FROM_ADDRESS: ${{ vars.MAIL_FROM_ADDRESS }}
-          MAIL_FROM_NAME_VAR: ${{ vars.MAIL_FROM_NAME }}
+          APP_URL: ${{ vars.APP_URL || secrets.APP_URL }}
+          APP_ENV_VALUE: ${{ vars.APP_ENV || secrets.APP_ENV || 'local' }}
+          APP_NAME_VAR: ${{ vars.APP_NAME || secrets.APP_NAME }}
+          MAIL_FROM_ADDRESS: ${{ vars.MAIL_FROM_ADDRESS || secrets.MAIL_FROM_ADDRESS }}
+          MAIL_FROM_NAME_VAR: ${{ vars.MAIL_FROM_NAME || secrets.MAIL_FROM_NAME }}
           MITGLIEDER_DRIVER: ${{ secrets.MITGLIEDER_DRIVER }}
           NAMI_AUTH: ${{ secrets.NAMI_AUTH }}
           NAMI_USER: ${{ secrets.NAMI_USER }}

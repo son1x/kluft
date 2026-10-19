@@ -48,7 +48,7 @@ entweder per SEPA-Lastschrift eingezogen oder überwiesen. Heute wird die Zahlar
 Status: gesehen
 
 Noch nichts gebaut. `docs/pflichtenheft-sammelbestellung.md` (2. Fassung) sieht vor:
-- eine Rolle „Material“ nur für Stämme (SB-01);
+- eine Rolle „Sammelbestellung“ nur für Stämme (SB-01; in der 3. Fassung umbenannt, vorher „Material“);
 - einen gemeinsamen Baustein „Zahlungen“ mit austauschbarem Zahlungsweg (Phase 1 Überweisung mit GiroCode, später Stripe), den auch Veranstaltungen nutzen könnten (Kapitel 6, SB-90 bis SB-92).
 Beides berührt den Kern. Bitte Einwände oder Wünsche hier eintragen, bevor ich anfange.
 
@@ -74,7 +74,7 @@ Beides berührt den Kern. Bitte Einwände oder Wünsche hier eintragen, bevor ic
 > - **Neues Feld oder neue Rolle im Kern:** in `README.md` und im Rollen-Hilfetext ergänzen.
 
 ### 2026-10-19 – Haupt → Stammes: Inhalts-Migrationen in den Instanz-Ordner
-Status: offen
+Status: erledigt
 
 Laut README und `docs/entscheidungen/kluft-inhalt-und-schema.md` legen
 Migrationen unter `database/migrations` nur Schema an. Inhalte für eine
@@ -86,6 +86,8 @@ Neue Stämme bekommen die Seite weiter vom StammStartSeeder.
 Bitte `database/migrations/2026_10_19_101500_roden_stammesvorstand_und_aemter.php`
 ebenso nach `instanzen/roden/migrations/` verschieben. Der Dateiname bleibt
 gleich, deshalb läuft eine schon gelaufene Migration nicht noch einmal.
+
+> Antwort (2026-10-19, Stammes): Verschoben, Test angepasst. Künftige Roden-Inhalte lege ich dort an.
 
 ### 2026-10-19 – Stammes → Haupt: Adressen der Leitenden nach Vorname (gemeinsamer Kern)
 Status: gesehen (auch direkt gemeldet)

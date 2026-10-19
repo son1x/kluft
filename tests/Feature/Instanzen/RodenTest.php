@@ -42,7 +42,7 @@ class RodenTest extends TestCase
         $seite = Page::query()->where('slug', 'stammesvorstand')->firstOrFail();
         $seite->update(['body' => str_replace('vorstand@dpsg-roden.de', 'kontakt@dpsg-roden.de', $seite->body)]);
 
-        $migration = require database_path('migrations/2026_10_19_101500_roden_stammesvorstand_und_aemter.php');
+        $migration = require base_path('instanzen/roden/migrations/2026_10_19_101500_roden_stammesvorstand_und_aemter.php');
         $migration->up();
         $migration->up();
 

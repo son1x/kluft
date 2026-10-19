@@ -242,7 +242,7 @@ class EinrichtungTest extends TestCase
         $this->seed(StammStartSeeder::class);
 
         $this->assertEqualsCanonicalizing(
-            ['start', 'stufen', 'stufe-woelflinge', 'stufe-pfadi', 'stammesvorstand', 'kontakt', 'impressum', 'datenschutz'],
+            ['start', 'stufen', 'stufe-woelflinge', 'stufe-pfadi', 'stammesvorstand', 'leiter-werden', 'kontakt', 'impressum', 'datenschutz'],
             Page::query()->pluck('slug')->all(),
         );
         $this->assertSame('Pfadfinden in Beispielstadt', Page::query()->where('slug', 'start')->value('title'));
@@ -257,7 +257,7 @@ class EinrichtungTest extends TestCase
         // Browser-Durchlauf geprüft (docs/einrichtung.md).
         $this->get('/stufe-woelflinge')->assertOk()->assertSee('donnerstags, 16:30–18:00 Uhr')->assertSee('Kirchplatz 1, 54290 Beispielstadt');
         $this->get('/stufe-pfadi')->assertOk()->assertSee('freitags, 18 Uhr')->assertSee('Pfarrheim St. Martin')->assertDontSee('Kirchplatz 1, 54290 Beispielstadt')
-            ->assertSee('Das Leitungsteam')->assertSee('Leitungsrunde')->assertSee('beim')
+            ->assertSee('Das Leitungsteam')->assertSee('Leitungsrunde')->assertDontSee('mitzuarbeiten')
             ->assertDontSee('Stufenreferent');
         $this->get('/')->assertOk()->assertSee('Pfadfinden in Beispielstadt');
     }

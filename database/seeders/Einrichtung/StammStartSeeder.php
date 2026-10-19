@@ -10,6 +10,7 @@ use App\Models\StageAge;
 use App\Models\User;
 use App\Support\Ausbau;
 use App\Support\Einrichtung\Installer;
+use App\Support\Leitergewinnung;
 use App\Support\StufenAlter;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -91,6 +92,13 @@ class StammStartSeeder extends Seeder
             'seo_description' => 'Wer den Stamm leitet und wie du uns erreichst',
             'body' => '<p>Der Stammesvorstand leitet den Stamm '.e($stamm).($vorstand !== '' ? ': '.e($vorstand) : '').'. Er ist Ansprechpartner für Eltern, Leiter*innen und alle, die mitmachen möchten.</p>'
                 .'<p>Schreib uns über das <a href="/kontakt">Kontaktformular</a> oder an <a href="mailto:'.e((string) config('dpsg.contact.email')).'">'.e((string) config('dpsg.contact.email')).'</a>.</p>',
+        ]);
+
+        $this->seite(Leitergewinnung::SLUG, Leitergewinnung::TITEL, [
+            'show_in_nav' => true,
+            'nav_sort' => 40,
+            'seo_description' => 'Ehrenamtlich Gruppen leiten im Stamm',
+            'body' => Leitergewinnung::text(),
         ]);
 
         $this->seite('kontakt', 'Kontakt', [

@@ -13,6 +13,7 @@ Admins. Kurz und aus Sicht der Redaktion schreiben.
 - Altersangaben der Stufen selbst festlegen, je Grenze bis zu einem Jahr um den DPSG-Standard (Verwaltung → Stufen); auf der Website auf Wunsch als eigener Text, z. B. „3. bis 5. Klasse“.
 - Veranstaltungen für Erwachsene: eigenverantwortliche Anmeldung ohne Abschnitt für Sorgeberechtigte, z. B. für Elternabende.
 - Stammes-Websites: „Leitungsteam“ und „Leitungsrunde“ auf den Stufenseiten.
+- Stammes-Websites: eigene Seite „Leiter*in werden“ im Menü (Text im Backend anpassbar, abschaltbar als Entwurf); der Aufruf zur Mitarbeit steht nicht mehr auf jeder Stufenseite.
 - Einrichtungsassistent: Gruppenstundenzeiten je Stufe, NaMi-Abgleich für Lageranmeldungen; Vorbelegung für einen bestimmten Stamm, auch mit fertigen Seiten.
 - Ausbaustufen von der Visitenkarte bis zum Vollausbau (Verwaltung → Ausbaustufe); im Assistenten Ort der Gruppenstunde je Gruppe.
 - Stammes-Websites auch per GitHub deployen (erste: Roden); Environment per Kommandozeile anlegen (scripts/environment-anlegen.sh).

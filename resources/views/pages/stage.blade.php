@@ -88,7 +88,7 @@
                 @endif
                 <span>
                     <span class="block font-serif text-lg font-bold leading-tight">{{ config('dpsg.site.ak') }}</span>
-                    <span class="text-sm text-text-secondary">{{ $dak->isNotEmpty() ? 'Wer die Stufe im '.config('dpsg.site.level').' gestaltet' : 'Mitmachen im '.\App\Support\Site::akShort() }}</span>
+                    <span class="text-sm text-text-secondary">{{ $dak->isNotEmpty() || \App\Support\Leitergewinnung::aufStammesebene() ? 'Wer die Stufe im '.config('dpsg.site.level').' gestaltet' : 'Mitmachen im '.\App\Support\Site::akShort() }}</span>
                 </span>
             </a>
 
@@ -137,12 +137,15 @@
                 @include('partials.team', ['people' => $dak, 'teamPhoto' => null])
             </div>
         @endif
+        {{-- Stämme werben nicht auf jeder Stufenseite, sondern auf der Seite „Leiter*in werden“. --}}
+        @unless (\App\Support\Leitergewinnung::aufStammesebene())
         <div class="mx-auto max-w-6xl px-4">
             <p class="mt-2 flex flex-wrap items-center gap-3 rounded-lg bg-surface-muted p-4 text-sm">
                 <x-heroicon-o-hand-raised class="h-5 w-5 shrink-0 text-(--stufe)" aria-hidden="true" />
                 <span>Lust, im {{ \App\Support\Site::akShort() }} {{ $stage['label'] }} mitzuarbeiten? @include('partials.mitmachen-ansprechpersonen', ['mail' => $dak->filter(fn ($p) => $p->publicEmail()), 'members' => $dak->filter(fn ($p) => $p->gremium === 'dak')])@if ($contactUrl = \App\Models\ContactTopic::urlFor('stage', $page->stage)) – oder schreib uns direkt über das <a href="{{ $contactUrl }}" class="font-bold text-dpsg-rot underline">Kontaktformular</a>@endif.</span>
             </p>
         </div>
+        @endunless
     </section>
 
     {{-- Weg durch die Stufen --}}

@@ -167,6 +167,9 @@
                 @else
                     {{-- Stammes-Website: direkt zum Schnuppern anfragen. --}}
                     <a href="{{ url('/kontakt') }}" class="inline-block bg-white px-5 py-2 font-bold text-dpsg-blau hover:bg-dpsg-hellbeige">Schnupperstunde anfragen</a>
+                    @if ($leiterUrl = \App\Support\Leitergewinnung::url())
+                        <a href="{{ $leiterUrl }}" class="inline-block border border-white px-5 py-2 font-bold text-white hover:bg-white hover:text-dpsg-blau">{{ \App\Support\Leitergewinnung::TITEL }}</a>
+                    @endif
                 @endif
             </div>
         </div>

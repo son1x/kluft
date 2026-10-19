@@ -390,6 +390,13 @@ jobs:
             echo "SSH_USERNAME=$(trim "$SSH_USERNAME")"
             echo "SSH_TARGET_DIR=$(trim "$SSH_TARGET_DIR")"
           } >> "$GITHUB_ENV"
+          # DB-Zugang aus der erzeugten .env.deploy für die Verbindungsprobe auf dem
+          # Server (base64, damit Sonderzeichen heil ankommen; maskiert).
+          DB_PRUEF=$(grep -E "^DB_(HOST|PORT|DATABASE|USERNAME|PASSWORD)=" .env.deploy | base64 -w0 || true)
+          if [ -n "$DB_PRUEF" ]; then
+            echo "::add-mask::$DB_PRUEF"
+            echo "DB_PRUEF=$DB_PRUEF" >> "$GITHUB_ENV"
+          fi
 
       # „Nur prüfen“ (und vor jedem echten Deploy): Zugang, PHP und Ziel.
       - name: Server prüfen (per SSH, ändert nichts)
@@ -399,6 +406,7 @@ jobs:
           port: ${{ env.SSH_PORT }}
           username: ${{ env.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          envs: DB_PRUEF
           script: |
             set -e
             echo "Instanz: ${{ env.KLUFT_INSTANZ }}"
@@ -421,6 +429,21 @@ jobs:
               fi
             else
               echo "Datenbank nach dem Deploy: $DB_NEU"
+            fi
+            # Verbindungsprobe vom Server aus (dort ist die DB meist nur lokal
+            # erreichbar). Zeigt Version und Tabellenzahl, nie die Zugangsdaten.
+            if [ -n "${DB_PRUEF:-}" ]; then
+              "${{ env.PHP_BIN }}" -r '
+                $e = [];
+                foreach (explode("\n", trim(base64_decode(getenv("DB_PRUEF")))) as $z) { [$k, $v] = explode("=", $z, 2); $e[$k] = trim($v, "\x27"); }
+                try {
+                    $pdo = new PDO("mysql:host={$e["DB_HOST"]};port={$e["DB_PORT"]};dbname={$e["DB_DATABASE"]};charset=utf8mb4", $e["DB_USERNAME"], $e["DB_PASSWORD"], [PDO::ATTR_TIMEOUT => 10, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+                    $tabellen = $pdo->query("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE()")->fetchColumn();
+                    echo "Datenbank-Verbindung: ok (", $pdo->query("SELECT VERSION()")->fetchColumn(), ", ", $tabellen, " Tabellen)", PHP_EOL;
+                } catch (Throwable $x) {
+                    echo "::error::Datenbank-Verbindung fehlgeschlagen: ", $x->getMessage(), PHP_EOL;
+                    exit(1);
+                }'
             fi
             if [ -f artisan ] && [ -f vendor/autoload.php ]; then
               echo "Installiert: $("${{ env.PHP_BIN }}" artisan --version 2>/dev/null)"

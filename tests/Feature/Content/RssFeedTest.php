@@ -30,7 +30,7 @@ class RssFeedTest extends TestCase
         $this->newPost('Neuer');
         $this->newPost('Entwurf', ['status' => 'draft']);
         $this->newPost('Geplant', ['published_at' => now()->addDay()]);
-        $this->newPost('Bolivien-Meldung', ['section' => 'bolivien']);
+        $this->newPost('Bolivien-Meldung', ['section' => 'bolivien', 'published_at' => now()->subDays(2)]);
 
         $response = $this->get('/feed')->assertOk();
         $this->assertStringStartsWith('application/rss+xml', $response->headers->get('content-type'));

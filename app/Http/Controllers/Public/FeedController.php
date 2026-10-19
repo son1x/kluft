@@ -32,7 +32,7 @@ class FeedController extends Controller
         $posts = Post::query()->published()
             ->when($section, fn ($q) => $q->where('section', $section))
             ->with('coverMedia')
-            ->orderByDesc('published_at')
+            ->orderByDesc('published_at')->orderByDesc('id')
             ->limit(self::LIMIT)
             ->get();
 

@@ -67,6 +67,8 @@ nur die Website des Stamms Roden betreut. Allgemeines zu Kluft steht in
   | Rover | Gian-Luca Blasius, Sebastian Hafner, Flavio Russello |
 
 - `seiten`: fertige Seiten.
+- `email_schema: "vorname"`, `email_leitende: true`: Alle Leitenden zeigen vorname@dpsg-roden.de (Bindestriche fallen weg, z. B. gianluca@). Der Vorstand ist unter vorstand@dpsg-roden.de erreichbar. Das wird erzeugt, steht also nicht als Liste im Repository.
+- Ämter (Migration `2026_10_19_101500_roden_stammesvorstand_und_aemter`, einmalig): Hendrik Schuler ist Kassenwart und Mitgliederbeauftragter, Michele Franke ist für Rüsthaus-Bestellungen zuständig. Dazu der Stammesvorstand als Personen mit Gruppenfoto (`instanzen/roden/dateien/stammesvorstand.jpg`, ohne EXIF; Foto: Julia Hafner).
 - `stufenfarben`: Die Biber tragen in Roden Gelb (`#ffed00`, DPSG-Gelb, mit dunkler Schrift). Wirkt sofort nach dem Deploy, ohne Datenbank.
 
 **Wichtig:** Zugang, Seiten, Gruppenstunden, Alter und Leitende legt der

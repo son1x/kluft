@@ -87,6 +87,7 @@ class PersonResource extends Resource
     public static function form(Schema $schema): Schema
     {
         $gremien = collect(config('dpsg.gremien'))->map(fn (array $g) => $g['label'])->all();
+        $adressMuster = config('dpsg.person_email_schema') === 'vorname' ? 'vorname' : 'initial.nachname';
 
         return $schema->components([
             Section::make()
@@ -126,9 +127,9 @@ class PersonResource extends Resource
                             ? 'Mitglieder im Facharbeitskreis erscheinen auf der Seite ihres Fachbereichs (ohne eigene Adresse).'
                             : 'Erscheint dann auf der Startseite des Fachbereichs als Ansprechperson.'),
                     TextInput::make('email')->label('E-Mail')->email()->maxLength(255)
-                        ->visible(fn (Get $get) => ! in_array($get('gremium'), ['dak', 'fak'], true))
-                        ->placeholder(fn (Get $get) => Person::suggestedEmail($get('name')) ?? 'initial.nachname@'.config('dpsg.person_email_domain'))
-                        ->helperText('Standard: Initial.Nachname@'.config('dpsg.person_email_domain').' – leer lassen, dann wird diese Adresse angezeigt. Mitglieder im '.Site::akShort().' haben keine eigene Adresse.'),
+                        ->visible(fn (Get $get) => ! Person::ohneEigeneAdresse($get('gremium')))
+                        ->placeholder(fn (Get $get) => Person::suggestedEmail($get('name')) ?? $adressMuster.'@'.config('dpsg.person_email_domain'))
+                        ->helperText('Standard: '.$adressMuster.'@'.config('dpsg.person_email_domain').' – leer lassen, dann wird diese Adresse angezeigt.'.(config('dpsg.person_email_leitende') ? '' : ' Mitglieder im '.Site::akShort().' haben keine eigene Adresse.')),
                     Textarea::make('bio')->label('Vorstellungstext')->rows(6)->maxLength(3000)->columnSpanFull()
                         ->helperText('Absätze mit einer Leerzeile trennen. Lange Texte werden mit „Mehr lesen“ eingeklappt.'),
                     TextInput::make('sort')->label('Reihenfolge')->numeric()->default(0),

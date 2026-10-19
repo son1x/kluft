@@ -33,6 +33,15 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-10-19 – Stammes → Haupt: Adressen der Leitenden nach Vorname (gemeinsamer Kern)
+Status: offen (auch direkt gemeldet)
+
+- `App\Models\Person`: neues `Person::ohneEigeneAdresse($gremium)` statt `inArbeitskreis()` beim Leeren und in `publicEmail()`. DAK-Mitglieder haben eine Adresse nur mit `config('dpsg.person_email_leitende')`, FAK nie.
+- `Person::suggestedEmail()`: Mit `config('dpsg.person_email_schema') === 'vorname'` ergibt sich vorname@domain (Roden). Sonst wie bisher Initial.Nachname.
+- `PersonResource`: E-Mail-Feld und Hilfetext folgen dem; Variable `$adressMuster`.
+- `StammVorlage`: `person_email_domain` ohne `www.`.
+- DV und Bezirk setzen beides nicht, daher keine Änderung. Tests für alle drei Instanzen grün.
+
 ### 2026-10-19 – Stammes → Haupt: Stufenfarben je Instanz (gemeinsamer Kern)
 Status: gesehen (auch direkt gemeldet am 19.10.2026)
 Commit: 65d57ec

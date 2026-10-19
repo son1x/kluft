@@ -118,7 +118,10 @@ class StammVorlage
                 'rover' => 'Rover (Stufenfarbe)',
             ],
 
-            'person_email_domain' => $domain,
+            'person_email_domain' => (string) preg_replace('/^www\./i', '', $domain),
+            // „vorname“: michele@… statt m.franke@…; Leitende mit eigener Adresse.
+            'person_email_schema' => (string) ($a['email_schema'] ?? 'initial.nachname'),
+            'person_email_leitende' => (bool) ($a['email_leitende'] ?? false),
 
             'gremien' => [
                 'leitung' => ['label' => 'Stammesvorstand', 'page' => 'stammesvorstand'],

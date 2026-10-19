@@ -59,7 +59,7 @@ class Person extends Model
         // Mitglieder von DAK und FAK haben keine eigene Adresse; Kontakt läuft
         // über die Referent*innen bzw. Ansprechpersonen.
         static::saving(function (Person $person) {
-            if ($person->inArbeitskreis()) {
+            if (self::ohneEigeneAdresse($person->gremium)) {
                 $person->email = null;
             }
         });
@@ -68,22 +68,42 @@ class Person extends Model
     /**
      * Adresse nach dem Schema Initial.Nachname@dpsg-trier.de, z. B.
      * „Silas Weiß“ → s.weiss@dpsg-trier.de. Null, wenn der Name nur aus
-     * einem Wort besteht.
+     * einem Wort besteht. Mit config dpsg.person_email_schema = 'vorname'
+     * (z. B. Roden): „Gian-Luca Blasius“ → gianluca@dpsg-roden.de.
      */
     public static function suggestedEmail(?string $name): ?string
     {
         $parts = preg_split('/\s+/', trim((string) $name), -1, PREG_SPLIT_NO_EMPTY);
+        if (config('dpsg.person_email_schema') === 'vorname') {
+            $first = $parts === [] ? '' : (string) preg_replace('/[^a-z0-9]/', '', self::ascii($parts[0]));
+
+            return $first !== '' ? $first.'@'.config('dpsg.person_email_domain') : null;
+        }
         if (count($parts) < 2) {
             return null;
         }
 
-        $ascii = fn (string $s) => Str::lower(Str::ascii(strtr($s, [
-            'ä' => 'ae', 'ö' => 'oe', 'ü' => 'ue', 'Ä' => 'Ae', 'Ö' => 'Oe', 'Ü' => 'Ue', 'ß' => 'ss',
-        ])));
-        $initial = mb_substr($ascii($parts[0]), 0, 1);
-        $last = preg_replace('/[^a-z0-9-]/', '', $ascii(end($parts)));
+        $initial = mb_substr(self::ascii($parts[0]), 0, 1);
+        $last = preg_replace('/[^a-z0-9-]/', '', self::ascii(end($parts)));
 
         return $initial !== '' && $last !== '' ? "{$initial}.{$last}@".config('dpsg.person_email_domain') : null;
+    }
+
+    private static function ascii(string $s): string
+    {
+        return Str::lower(Str::ascii(strtr($s, [
+            'ä' => 'ae', 'ö' => 'oe', 'ü' => 'ue', 'Ä' => 'Ae', 'Ö' => 'Oe', 'Ü' => 'Ue', 'ß' => 'ss',
+        ])));
+    }
+
+    /**
+     * Mitglieder von DAK und FAK haben keine eigene Adresse. Ausnahme: Stämme
+     * mit config dpsg.person_email_leitende, dort hat jede*r im Leitungsteam
+     * (Gremium „dak“) eine.
+     */
+    public static function ohneEigeneAdresse(?string $gremium): bool
+    {
+        return $gremium === 'fak' || ($gremium === 'dak' && ! config('dpsg.person_email_leitende'));
     }
 
     /**
@@ -98,7 +118,7 @@ class Person extends Model
 
     public function publicEmail(): ?string
     {
-        if ($this->inArbeitskreis()) {
+        if (self::ohneEigeneAdresse($this->gremium)) {
             return null;
         }
 

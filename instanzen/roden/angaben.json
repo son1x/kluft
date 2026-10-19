@@ -29,6 +29,8 @@
         "rover": "donnerstags, 18:00–19:30 Uhr"
     },
     "ausbau": 4,
+    "email_schema": "vorname",
+    "email_leitende": true,
     "stufenfarben": {
         "biber": {"farbe": "#ffed00", "schrift": "dunkel"}
     },
@@ -102,7 +104,7 @@
         {
             "slug": "stammesvorstand",
             "title": "Stammesvorstand",
-            "body": "<p>Den Stamm Graf Folke Bernadotte leiten als Stammesvorsitzende <strong>Kimberly Lamprecht</strong> und <strong>Flavio Russello</strong>.</p><p>Sie sind Ansprechpartner*innen für Eltern, Leiter*innen und alle, die bei uns mitmachen möchten – und für Anfragen zu unserem Pfadfinderheim.</p><p>Am einfachsten erreicht ihr den Vorstand über das <a href=\"/kontakt\">Kontaktformular</a> oder per E-Mail an <a href=\"mailto:kontakt@dpsg-roden.de\">kontakt@dpsg-roden.de</a>.</p>"
+            "body": "<p>Den Stamm Graf Folke Bernadotte leiten als Stammesvorsitzende <strong>Kimberly Lamprecht</strong> und <strong>Flavio Russello</strong>.</p><p>Sie sind Ansprechpartner*innen für Eltern, Leiter*innen und alle, die bei uns mitmachen möchten – und für Anfragen zu unserem Pfadfinderheim.</p><p>Am einfachsten erreicht ihr den Vorstand über das <a href=\"/kontakt\">Kontaktformular</a> oder per E-Mail an <a href=\"mailto:vorstand@dpsg-roden.de\">vorstand@dpsg-roden.de</a>.</p>"
         },
         {
             "slug": "pfadfinderheim",

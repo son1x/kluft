@@ -8,5 +8,6 @@
 
 /.github export-ignore
 /.claude export-ignore
+/runner export-ignore
 CHANGELOG.md export-ignore
 .styleci.yml export-ignore

@@ -6,6 +6,8 @@ GitHub baut und testet (Tests der Instanz, Frontend, `vendor/`, Bilder der Insta
 
 **„Nur prüfen“** baut und testet, meldet sich per SSH an und prüft PHP-Version, Erweiterungen, Zielordner und Speicher, dazu die Datenbankverbindung (Version, Tabellenzahl), die installierte Instanz, offene Migrationen und die letzten Fehler aus `storage/logs/laravel.log`. Fehlt der Zielordner, zeigt es, welche Ordner es gibt. Es lädt nichts hoch und ändert nichts. Vor dem ersten echten Deploy einer Instanz immer zuerst so starten; bei einem 500er auf dem Server ist es der schnellste Blick ins Log.
 
+**Runner:** `github` (Standard, kostet Actions-Minuten) oder `nas` (eigener Runner, [runner.md](runner.md)).
+
 **Schutzregeln** (auch beim echten Deploy): Läuft im Zielordner eine andere Instanz, bricht der Deploy ab. Bei einer Erstinstallation muss der Ordner leer sein (bis auf `.well-known` und `cgi-bin`), sonst würde der Abgleich eine vorhandene Website löschen. Hochgeladen wird nur der Ordner der eigenen Instanz unter `instanzen/`.
 
 ## Environment anlegen

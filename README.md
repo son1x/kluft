@@ -107,6 +107,7 @@ Tests: `php artisan test` für den DV, `KLUFT_INSTANZ=saar-hochwald php artisan 
 - [docs/deploy.md](docs/deploy.md): Deploy, Environments, Server, Umstellung des DV, Stammes-Instanzen im Repository
 - [docs/einrichtung.md](docs/einrichtung.md): Einrichtungsassistent für Stämme
 - [docs/updates.md](docs/updates.md): signierte Updates für eigenständige Installationen
+- [docs/runner.md](docs/runner.md): eigener Actions-Runner (z. B. auf dem NAS) für Deploys ohne Actions-Minuten
 - [docs/roden.md](docs/roden.md): Betreuung der Roden-Website, Aufteilung zwischen den Claude-Code-Sitzungen
 - [docs/beitraege.md](docs/beitraege.md): Kasse und Mitgliedsbeiträge (Stämme)
 - [docs/nachrichten.md](docs/nachrichten.md): Nachrichten-Eingang

@@ -41,7 +41,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Repository auschecken
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: PHP einrichten
         uses: shivammathur/setup-php@v2
@@ -51,7 +51,7 @@ jobs:
           coverage: none
 
       - name: Node einrichten
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '20'
           cache: npm
@@ -110,7 +110,7 @@ jobs:
           # Nur das Programm: keine Daten, Instanzen oder Entwicklungsdateien.
           rsync -a ./ dist/paket/ \
             --exclude .git/ --exclude .github/ --exclude .claude/ --exclude dist/ --exclude node_modules/ \
-            --exclude tests/ --exclude docs/ --exclude legacy-static-site/ --exclude instanzen/ \
+            --exclude tests/ --exclude docs/ --exclude legacy-static-site/ --exclude instanzen/ --exclude runner/ \
             --exclude storage/ --exclude .env --exclude 'database/*.sqlite' \
             --exclude public/uploads/ --exclude public/instanz/ \
             --exclude phpunit.xml --exclude 'phpstan*.neon' --exclude .editorconfig --exclude .gitattributes

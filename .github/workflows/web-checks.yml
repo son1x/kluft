@@ -27,9 +27,9 @@ jobs:
       - name: Nicht eingerichtet
         if: env.SITE == ''
         run: echo "Keine MONITOR_URL im Environment ${{ matrix.instanz }} – übersprungen."
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         if: env.SITE != ''
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         if: env.SITE != ''
         with:
           node-version: '22'

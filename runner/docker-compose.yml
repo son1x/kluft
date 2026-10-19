@@ -1,0 +1,27 @@
+# GitHub-Actions-Runner für Kluft auf dem NAS (docs/runner.md).
+#
+#   cp .env.example .env    # Token eintragen, chmod 600 .env
+#   docker compose up -d --build
+#
+# Danach im Deploy „Runner: nas“ wählen. Der Runner nimmt immer nur einen
+# Job gleichzeitig an.
+services:
+  runner:
+    build: .
+    image: kluft-runner
+    restart: unless-stopped
+    # Die Workflows starten MariaDB als Service-Container über den Docker
+    # des NAS. Mit dem Host-Netz ist dessen Port unter 127.0.0.1 erreichbar.
+    network_mode: host
+    env_file: .env
+    # Gruppe des Docker-Sockets auf dem NAS: `stat -c %g /var/run/docker.sock`
+    group_add:
+      - "${DOCKER_GID:-999}"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Arbeitsordner und Werkzeug-Cache (Node, Go) bleiben über Neustarts erhalten.
+      - work:/home/runner/_work
+    stop_grace_period: 1m
+
+volumes:
+  work:

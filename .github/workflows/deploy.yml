@@ -58,6 +58,13 @@ on:
         description: 'db:seed auch bei bereits bestehender DB erzwingen (z. B. nach einem neuen Seeder wie RequiredPagesSeeder)'
         type: boolean
         default: false
+      runner:
+        description: 'Wo der Job läuft: github (Actions-Minuten) oder nas (eigener Runner, docs/runner.md)'
+        type: choice
+        options:
+          - github
+          - nas
+        default: github
 
 # Verhindert, dass zwei Deploys gleichzeitig auf denselben Server-Ordner
 # schreiben (z. B. wenn kurz hintereinander gepusht wird, oder ein alter,
@@ -75,12 +82,18 @@ concurrency:
 
 jobs:
   deploy:
-    runs-on: ubuntu-24.04  # bewusst festgeschrieben; Wechsel auf 26.04 erst nach einem Probelauf
+    # GitHub: ubuntu-24.04 bewusst festgeschrieben (Wechsel auf 26.04 erst nach
+    # einem Probelauf). NAS: eigener Runner mit Label „nas“ (docs/runner.md).
+    runs-on: ${{ inputs.runner == 'nas' && fromJSON('["self-hosted","nas"]') || 'ubuntu-24.04' }}
     environment: ${{ inputs.instanz || 'dv-trier' }}
     env:
       KLUFT_INSTANZ: ${{ inputs.instanz || 'dv-trier' }}
       PHP_BIN: ${{ vars.PHP_BIN || secrets.PHP_BIN || '/usr/bin/php' }}
       NUR_PRUEFEN: ${{ inputs.nur_pruefen && 'true' || 'false' }}
+      # setup-php auf einem eigenen Runner (installiert PHP dann per apt).
+      runner: ${{ inputs.runner == 'nas' && 'self-hosted' || '' }}
+      # MariaDB für die Tests; auf dem NAS ein anderer Port, falls dort schon eine läuft.
+      TEST_DB_PORT: ${{ inputs.runner == 'nas' && '33306' || '3306' }}
     # Produktiv läuft MariaDB – die Tests laufen daher zusätzlich dagegen
     # (SQLite prüft z. B. keine Spaltenlängen).
     services:
@@ -92,13 +105,13 @@ jobs:
           MARIADB_PASSWORD: dpsg
           MARIADB_ROOT_PASSWORD: root
         ports:
-          - 3306:3306
+          - ${{ inputs.runner == 'nas' && '33306' || '3306' }}:3306
         options: >-
           --health-cmd="healthcheck.sh --connect --innodb_initialized"
           --health-interval=5s --health-timeout=5s --health-retries=20
     steps:
       - name: Repository auschecken
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: PHP einrichten
         uses: shivammathur/setup-php@v2
@@ -108,7 +121,7 @@ jobs:
           coverage: none
 
       - name: Node einrichten
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '20'
           cache: npm
@@ -117,7 +130,7 @@ jobs:
         id: composer-cache
         run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
       - name: Composer-Cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
@@ -151,7 +164,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          n=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow quality.yml --commit "$GITHUB_SHA" --status success --json databaseId --jq length 2>/dev/null || echo 0)
+          # curl statt gh: läuft auch auf dem eigenen Runner ohne gh.
+          n=$(curl -fsS -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/workflows/quality.yml/runs?head_sha=$GITHUB_SHA&status=success&per_page=1" \
+            | jq -r '.total_count' 2>/dev/null || echo 0)
           echo "gruen=$([ "${n:-0}" -gt 0 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
           echo "Qualität für $GITHUB_SHA grün: $([ "${n:-0}" -gt 0 ] && echo ja || echo nein)"
 
@@ -168,7 +184,7 @@ jobs:
         env:
           DB_CONNECTION: mariadb
           DB_HOST: 127.0.0.1
-          DB_PORT: 3306
+          DB_PORT: ${{ env.TEST_DB_PORT }}
           DB_DATABASE: dpsg_test
           DB_USERNAME: dpsg
           DB_PASSWORD: dpsg
@@ -361,7 +377,7 @@ jobs:
       - name: Kartendaten aus dem Cache holen
         id: mapcache
         if: steps.mapkey.outputs.needed == 'true'
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: public/maps/data
           key: ${{ steps.mapkey.outputs.key }}
@@ -379,7 +395,7 @@ jobs:
 
       - name: Go einrichten (für go-pmtiles)
         if: steps.mapfile.outputs.exists != 'true'
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: '1.24'
           cache: false
@@ -391,7 +407,7 @@ jobs:
           scripts/build-map-data.sh "$(go env GOPATH)/bin/go-pmtiles"
 
       - name: lftp installieren
-        run: sudo apt-get update && sudo apt-get install -y lftp
+        run: command -v lftp >/dev/null || { sudo apt-get update && sudo apt-get install -y lftp; }
 
       # lftp meldet "hostname contains invalid characters", wenn im Secret
       # unsichtbare Zeichen stecken (typischerweise ein Windows-Zeilenende
@@ -587,6 +603,7 @@ jobs:
             --exclude-glob tests/ \
             --exclude-glob docs/ \
             --exclude-glob legacy-static-site/ \
+            --exclude-glob runner/ \
             --exclude-glob .env.example \
             --exclude-glob .env \
             --exclude-glob .gitattributes \

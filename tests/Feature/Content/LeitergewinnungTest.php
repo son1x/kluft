@@ -63,7 +63,7 @@ class LeitergewinnungTest extends TestCase
     #[TestDox('Migration legt die Seite bei bestehenden Stammes-Websites einmal an, sonst nicht')]
     public function test_migration(): void
     {
-        $migration = require database_path('migrations/2026_10_19_100000_leiter_werden_seite_fuer_staemme.php');
+        $migration = require base_path('instanzen/roden/migrations/2026_10_19_100000_leiter_werden_seite_fuer_staemme.php');
         Page::query()->where('slug', Leitergewinnung::SLUG)->delete();
 
         config(['dpsg.site.level' => 'Diözesanverband']);

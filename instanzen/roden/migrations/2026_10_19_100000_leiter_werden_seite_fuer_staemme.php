@@ -5,9 +5,10 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Stammes-Websites: Seite „Leiter*in werden“ im Menü (statt des Aufrufs auf
- * jeder Stufenseite). Nur für bestehende Installationen – auf einer frischen
- * Datenbank legt der StammStartSeeder sie an. Vorhandenes bleibt unberührt.
+ * Seite „Leiter*in werden“ im Menü (statt des Aufrufs auf jeder Stufenseite)
+ * für die schon laufende Roden-Website. Inhalt gehört nicht nach
+ * database/migrations (docs/entscheidungen/kluft-inhalt-und-schema.md); neue
+ * Stämme bekommen die Seite vom StammStartSeeder. Vorhandenes bleibt unberührt.
  */
 return new class extends Migration
 {

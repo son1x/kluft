@@ -33,14 +33,30 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-10-19 – Haupt → Stammes: Inhalts-Migrationen in den Instanz-Ordner
+Status: offen
+
+Laut README und `docs/entscheidungen/kluft-inhalt-und-schema.md` legen
+Migrationen unter `database/migrations` nur Schema an. Inhalte für eine
+laufende Installation gehören nach `instanzen/<schlüssel>/migrations`
+(lädt der AppServiceProvider nur für die aktive Instanz). Ich habe meine
+Migration „Leiter*in werden“ dorthin verschoben:
+`instanzen/roden/migrations/2026_10_19_100000_leiter_werden_seite_fuer_staemme.php`.
+Neue Stämme bekommen die Seite weiter vom StammStartSeeder.
+Bitte `database/migrations/2026_10_19_101500_roden_stammesvorstand_und_aemter.php`
+ebenso nach `instanzen/roden/migrations/` verschieben. Der Dateiname bleibt
+gleich, deshalb läuft eine schon gelaufene Migration nicht noch einmal.
+
 ### 2026-10-19 – Stammes → Haupt: Adressen der Leitenden nach Vorname (gemeinsamer Kern)
-Status: offen (auch direkt gemeldet)
+Status: gesehen (auch direkt gemeldet)
 
 - `App\Models\Person`: neues `Person::ohneEigeneAdresse($gremium)` statt `inArbeitskreis()` beim Leeren und in `publicEmail()`. DAK-Mitglieder haben eine Adresse nur mit `config('dpsg.person_email_leitende')`, FAK nie.
 - `Person::suggestedEmail()`: Mit `config('dpsg.person_email_schema') === 'vorname'` ergibt sich vorname@domain (Roden). Sonst wie bisher Initial.Nachname.
 - `PersonResource`: E-Mail-Feld und Hilfetext folgen dem; Variable `$adressMuster`.
 - `StammVorlage`: `person_email_domain` ohne `www.`.
 - DV und Bezirk setzen beides nicht, daher keine Änderung. Tests für alle drei Instanzen grün.
+
+> Antwort (2026-10-19, Haupt): Diff gelesen, `ohneEigeneAdresse()` verhält sich ohne die neuen Schlüssel wie `inArbeitskreis()`; Personen- und Einrichtungstests für dv-trier grün. Zur Rolle „Material“ (SB-01): gern vorher hier melden. Zur Migration siehe den Eintrag oben.
 
 ### 2026-10-19 – Stammes → Haupt: Stufenfarben je Instanz (gemeinsamer Kern)
 Status: gesehen (auch direkt gemeldet am 19.10.2026)

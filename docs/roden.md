@@ -67,6 +67,7 @@ nur die Website des Stamms Roden betreut. Allgemeines zu Kluft steht in
   | Rover | Gian-Luca Blasius, Sebastian Hafner, Flavio Russello |
 
 - `seiten`: fertige Seiten.
+- `stufenfarben`: Die Biber tragen in Roden Gelb (`#ffed00`, DPSG-Gelb, mit dunkler Schrift). Wirkt sofort nach dem Deploy, ohne Datenbank.
 
 **Wichtig:** Zugang, Seiten, Gruppenstunden, Alter und Leitende legt der
 `StammStartSeeder` nur beim **ersten** Deploy an. Der ist am 19.10.2026

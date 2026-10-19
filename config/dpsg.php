@@ -96,6 +96,13 @@ return array_replace([
             'tagline' => 'Entscheidungen für die eigene Zukunft treffen'],
     ],
 
+    /*
+    | Abweichende Stufenfarben der Instanz, z. B. gelbe Biber:
+    | ['biber' => ['farbe' => '#ffed00', 'schrift' => 'dunkel']].
+    | Ohne Angabe gelten die Farben aus resources/css/app.css.
+    */
+    'stage_colors' => [],
+
     // Übersichtsseite der Stufen (zeigt Altersleiste und Stufenkacheln).
     'stages_page' => 'stufen',
 

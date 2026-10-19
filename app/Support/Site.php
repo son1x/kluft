@@ -67,4 +67,25 @@ class Site
 
         return $artikel.' '.(string) config('dpsg.site.ak');
     }
+
+    /**
+     * CSS-Variablen für abweichende Stufenfarben der Instanz (config
+     * dpsg.stage_colors, z. B. gelbe Biber), leer ohne Abweichung. „schrift“:
+     * „dunkel“ oder „hell“ für die Schrift auf der Farbe. Nur Hex-Werte und
+     * bekannte Stufen, damit nichts anderes ins Stylesheet gelangt.
+     */
+    public static function stufenfarbenCss(): string
+    {
+        $css = '';
+        foreach ((array) config('dpsg.stage_colors', []) as $stufe => $angabe) {
+            $farbe = (string) (is_array($angabe) ? ($angabe['farbe'] ?? '') : $angabe);
+            if (! config('dpsg.stages.'.$stufe) || ! preg_match('/^#[0-9a-fA-F]{6}$/', $farbe)) {
+                continue;
+            }
+            $schrift = (is_array($angabe) ? ($angabe['schrift'] ?? 'hell') : 'hell') === 'dunkel' ? 'var(--color-text)' : '#fff';
+            $css .= "--color-stufe-{$stufe}: {$farbe}; --stufe-ink-{$stufe}: {$schrift}; ";
+        }
+
+        return $css === '' ? '' : ':root { '.trim($css).' }';
+    }
 }

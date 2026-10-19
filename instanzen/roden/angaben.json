@@ -29,6 +29,9 @@
         "rover": "donnerstags, 18:00–19:30 Uhr"
     },
     "ausbau": 4,
+    "stufenfarben": {
+        "biber": {"farbe": "#ffed00", "schrift": "dunkel"}
+    },
     "telefon": "",
     "bezirk_url": "https://www.dpsg-saar-hochwald.de",
     "gruppenstunden_orte": {},

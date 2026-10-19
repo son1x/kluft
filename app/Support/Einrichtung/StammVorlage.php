@@ -107,6 +107,9 @@ class StammVorlage
                 'email' => $email,
             ],
 
+            // Abweichende Stufenfarben, z. B. gelbe Biber (config/dpsg.php).
+            'stage_colors' => (array) ($a['stufenfarben'] ?? []),
+
             'person_badges' => [
                 'biber' => 'Biber (Stufenfarbe)',
                 'woelflinge' => 'Wölflinge (Stufenfarbe)',

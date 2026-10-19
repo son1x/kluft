@@ -17,6 +17,9 @@
         <link rel="alternate" type="application/rss+xml" title="{{ config('dpsg.site.name') }} – Aktuelles" href="{{ route('feed') }}" />
     @endif
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @if ($stufenfarben = \App\Support\Site::stufenfarbenCss())
+        <style>{!! $stufenfarben !!}</style>
+    @endif
     @stack('head')
 </head>
 {{-- Strukturprinzip nach bistum-trier.de (Pflichtenheft 7.1): schmale

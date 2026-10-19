@@ -103,11 +103,20 @@ html {
  * --stufe-ink (lesbare Schrift darauf; Wölflinge-Orange braucht dunkle
  * Schrift, s. Kontrastregel 7.2). Nutzung z. B. bg-(--stufe).
  */
-.stufe-biber { --stufe: var(--color-stufe-biber); --stufe-ink: #fff; }
-.stufe-woelflinge { --stufe: var(--color-stufe-woelflinge); --stufe-ink: var(--color-text); }
-.stufe-jupfi { --stufe: var(--color-stufe-jupfi); --stufe-ink: #fff; }
-.stufe-pfadi { --stufe: var(--color-stufe-pfadi); --stufe-ink: #fff; }
-.stufe-rover { --stufe: var(--color-stufe-rover); --stufe-ink: #fff; }
+:root {
+    /* Schrift auf der Stufenfarbe; eine Instanz kann Farbe und Schrift
+       überschreiben (config dpsg.stage_colors, layouts/app). */
+    --stufe-ink-biber: #fff;
+    --stufe-ink-woelflinge: var(--color-text);
+    --stufe-ink-jupfi: #fff;
+    --stufe-ink-pfadi: #fff;
+    --stufe-ink-rover: #fff;
+}
+.stufe-biber { --stufe: var(--color-stufe-biber); --stufe-ink: var(--stufe-ink-biber); }
+.stufe-woelflinge { --stufe: var(--color-stufe-woelflinge); --stufe-ink: var(--stufe-ink-woelflinge); }
+.stufe-jupfi { --stufe: var(--color-stufe-jupfi); --stufe-ink: var(--stufe-ink-jupfi); }
+.stufe-pfadi { --stufe: var(--color-stufe-pfadi); --stufe-ink: var(--stufe-ink-pfadi); }
+.stufe-rover { --stufe: var(--color-stufe-rover); --stufe-ink: var(--stufe-ink-rover); }
 
 /* Dezentes Punktraster auf farbigen Kopfbändern. */
 .stufe-pattern {

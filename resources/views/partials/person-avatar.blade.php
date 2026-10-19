@@ -8,11 +8,11 @@
     <span aria-hidden="true" @class([
         $size, 'flex shrink-0 select-none items-center justify-center rounded-full font-serif font-bold tracking-wide',
         'bg-dpsg-blau text-white' => ! $badge,
-        'bg-stufe-biber text-white' => $badge === 'biber',
-        'bg-stufe-woelflinge text-text' => $badge === 'woelflinge',
-        'bg-stufe-jupfi text-white' => $badge === 'jupfi',
-        'bg-stufe-pfadi text-white' => $badge === 'pfadi',
-        'bg-stufe-rover text-white' => $badge === 'rover',
+        'bg-stufe-biber text-(--stufe-ink-biber)' => $badge === 'biber',
+        'bg-stufe-woelflinge text-(--stufe-ink-woelflinge)' => $badge === 'woelflinge',
+        'bg-stufe-jupfi text-(--stufe-ink-jupfi)' => $badge === 'jupfi',
+        'bg-stufe-pfadi text-(--stufe-ink-pfadi)' => $badge === 'pfadi',
+        'bg-stufe-rover text-(--stufe-ink-rover)' => $badge === 'rover',
         'avatar-inklusion' => $badge === 'inklusion',
         'avatar-bolivien' => $badge === 'bolivien',
     ])>

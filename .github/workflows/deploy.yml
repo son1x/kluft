@@ -427,7 +427,32 @@ jobs:
             echo "Instanz: ${{ env.KLUFT_INSTANZ }}"
             "${{ env.PHP_BIN }}" -r 'echo "PHP ", PHP_VERSION, PHP_EOL; foreach (["intl","mbstring","gd","zip","xml","curl","pdo_mysql","pdo_sqlite","openssl","sodium"] as $e) { echo str_pad($e, 11), extension_loaded($e) ? "ja" : "FEHLT", PHP_EOL; }'
             "${{ env.PHP_BIN }}" -r 'exit(version_compare(PHP_VERSION, "8.3.0", ">=") ? 0 : 1);' || { echo "::error::PHP 8.3 oder neuer nötig"; exit 1; }
-            test -d "${{ env.SSH_TARGET_DIR }}" || { echo "::error::Zielordner fehlt: ${{ env.SSH_TARGET_DIR }}"; exit 1; }
+            # Verbindungsprobe vom Server aus (dort ist die DB meist nur lokal
+            # erreichbar). Zeigt Version und Tabellenzahl, nie die Zugangsdaten.
+            db_probe() {
+              [ -n "${DB_PRUEF:-}" ] || return 0
+              "${{ env.PHP_BIN }}" -r '
+                $e = [];
+                foreach (explode("\n", trim(base64_decode(getenv("DB_PRUEF")))) as $z) { [$k, $v] = explode("=", $z, 2); $e[$k] = trim($v, "\x27"); }
+                try {
+                    $pdo = new PDO("mysql:host={$e["DB_HOST"]};port={$e["DB_PORT"]};dbname={$e["DB_DATABASE"]};charset=utf8mb4", $e["DB_USERNAME"], $e["DB_PASSWORD"], [PDO::ATTR_TIMEOUT => 10, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+                    $tabellen = $pdo->query("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE()")->fetchColumn();
+                    echo "Datenbank-Verbindung: ok (", $pdo->query("SELECT VERSION()")->fetchColumn(), ", ", $tabellen, " Tabellen)", PHP_EOL;
+                } catch (Throwable $x) {
+                    echo "::error::Datenbank-Verbindung fehlgeschlagen: ", $x->getMessage(), PHP_EOL;
+                    exit(1);
+                }'
+            }
+            if [ ! -d "${{ env.SSH_TARGET_DIR }}" ]; then
+              # Hilfe beim Eintragen: was es unter dem Anmeldeordner gibt.
+              echo "::error::Zielordner fehlt (Secret SSH_TARGET_DIR)."
+              echo "Anmeldeordner: $HOME – darin:"
+              ls -1p "$HOME" 2>/dev/null | head -n 40 || true
+              eltern=$(dirname "${{ env.SSH_TARGET_DIR }}")
+              if [ -d "$eltern" ]; then echo "Übergeordneter Ordner vorhanden, darin:"; ls -1p "$eltern" | head -n 40; fi
+              db_probe || true
+              exit 1
+            fi
             test -w "${{ env.SSH_TARGET_DIR }}" || { echo "::error::Zielordner nicht beschreibbar"; exit 1; }
             cd "${{ env.SSH_TARGET_DIR }}"
             echo "Freier Speicher: $("${{ env.PHP_BIN }}" -r 'echo round(disk_free_space(".") / 1024 / 1024 / 1024, 1), " GB";')"
@@ -445,21 +470,7 @@ jobs:
             else
               echo "Datenbank nach dem Deploy: $DB_NEU"
             fi
-            # Verbindungsprobe vom Server aus (dort ist die DB meist nur lokal
-            # erreichbar). Zeigt Version und Tabellenzahl, nie die Zugangsdaten.
-            if [ -n "${DB_PRUEF:-}" ]; then
-              "${{ env.PHP_BIN }}" -r '
-                $e = [];
-                foreach (explode("\n", trim(base64_decode(getenv("DB_PRUEF")))) as $z) { [$k, $v] = explode("=", $z, 2); $e[$k] = trim($v, "\x27"); }
-                try {
-                    $pdo = new PDO("mysql:host={$e["DB_HOST"]};port={$e["DB_PORT"]};dbname={$e["DB_DATABASE"]};charset=utf8mb4", $e["DB_USERNAME"], $e["DB_PASSWORD"], [PDO::ATTR_TIMEOUT => 10, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
-                    $tabellen = $pdo->query("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE()")->fetchColumn();
-                    echo "Datenbank-Verbindung: ok (", $pdo->query("SELECT VERSION()")->fetchColumn(), ", ", $tabellen, " Tabellen)", PHP_EOL;
-                } catch (Throwable $x) {
-                    echo "::error::Datenbank-Verbindung fehlgeschlagen: ", $x->getMessage(), PHP_EOL;
-                    exit(1);
-                }'
-            fi
+            db_probe
             if [ -f artisan ] && [ -f vendor/autoload.php ]; then
               echo "Installiert: $("${{ env.PHP_BIN }}" artisan --version 2>/dev/null)"
               grep -m1 '^KLUFT_INSTANZ=' .env 2>/dev/null || echo "KLUFT_INSTANZ in .env: (noch nicht gesetzt – bisheriger Stand vor Kluft)"

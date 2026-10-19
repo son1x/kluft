@@ -2,17 +2,18 @@
 
 # Kluft
 
-**Das Verbands-CMS für Gliederungen der DPSG.** Eine Codebasis für Diözesanverbände und Bezirke: Jede Gliederung bekommt ihre eigene Website mit Redaktion, Veranstaltungen und Anmeldungen, betrieben auf ihrem eigenen Webspace.
+**Das Verbands-CMS für Gliederungen der DPSG.** Eine Codebasis für Diözesanverbände, Bezirke und Stämme: Jede Gliederung bekommt ihre eigene Website mit Redaktion, Veranstaltungen und Anmeldungen, betrieben auf ihrem eigenen Webspace.
 
 Der Name: Die Kluft tragen alle gleich, das Halstuch zeigt, wo man herkommt. Genauso hier: Der Code ist für alle derselbe, Name, Logo, Inhalte und eingeschaltete Funktionen gehören der jeweiligen Gliederung.
 
 ## Was Kluft kann
 
-- **Redaktion:** Seiten und Beiträge, Mediathek mit Bildvarianten, Menüs, Glossar (Begriffe wie DAK oder FAK mit Erklärung), Weiterleitungen
+- **Redaktion:** Seiten und Beiträge, Mediathek mit Bildvarianten, Menü aus den Seiten (Reihenfolge und Unterpunkte je Seite), Glossar (Begriffe wie DAK oder FAK mit Erklärung), Weiterleitungen
 - **Gliederung zeigen:** Verzeichnis der Bezirke und Stämme mit selbst gehosteter Karte, Personen und Gremien mit Porträts, Stufen und Fachbereiche mit eigenen Seiten
 - **Veranstaltungen:** Anmeldung mit Double-Opt-In, „Meine Anmeldungen“ per E-Mail-Code, Teilnehmendenliste und Export, Dokumente, Löschfristen, optional Mitgliederabgleich mit der NaMi
 - **Downloads:** Methoden, Formulare und Arbeitshilfen mit Suche und Filter; Typ, Größe, Seiten und Stand ermittelt das CMS
-- **Kontakt und Newsletter:** Kontaktformular mit Themen, Newsletter über Brevo, optional WhatsApp-Kanal und Push-Nachrichten
+- **Kontakt und Newsletter:** Kontaktformular mit Themen, optional Nachrichten-Eingang im Backend ([docs/nachrichten.md](docs/nachrichten.md)), Newsletter über Brevo, WhatsApp-Kanal und Push-Nachrichten
+- **Für Stämme:** Ausbaustufen von der Visitenkarte bis zum Vollausbau, Gruppenstunden und Leitungsteams je Stufe, Seite „Leiter*in werden“, Kasse für Mitgliedsbeiträge mit NaMi-Abruf ([docs/beitraege.md](docs/beitraege.md))
 - **Betrieb:** Anmeldung mit Microsoft 365 oder per E-Mail-Code, Notfall-Zugang, Rollen und Audit-Log, verschlüsselte Backups, Monitoring, Datenschutzauskunft (KDG), signierte Updates für eigenständige Installationen ([docs/updates.md](docs/updates.md))
 
 Technik: Laravel 12, Filament 4, Livewire, Tailwind 4, MariaDB oder SQLite. Auf dem Server reichen PHP 8.3 und ein Cronjob. Ein normaler Webspace genügt.
@@ -23,14 +24,19 @@ Technik: Laravel 12, Filament 4, Livewire, Tailwind 4, MariaDB oder SQLite. Auf 
 |---|---|---|
 | `dv-trier` | DPSG Diözesanverband Trier | in Betrieb (test.dpsg-trier.de) |
 | `saar-hochwald` | DPSG Bezirk Saar-Hochwald | im Aufbau |
+| `roden` | DPSG Stamm Graf Folke Bernadotte, Saarlouis-Roden | in Betrieb (www.dpsg-roden.de), siehe [docs/roden.md](docs/roden.md) |
 
-Stämme bekommen je eine eigene Installation ohne GitHub: Release-Paket hochladen, Domain aufrufen, Einrichtungsassistent ausfüllen ([docs/einrichtung.md](docs/einrichtung.md)). Ihre Instanz entsteht dabei auf dem Webspace (`instanzen/stamm-<name>/`), Updates kommen signiert über Kluft selbst ([docs/updates.md](docs/updates.md)).
+Stämme haben zwei Wege:
+
+- **Eigene Installation ohne GitHub:** Release-Paket hochladen, Domain aufrufen, Einrichtungsassistent ausfüllen ([docs/einrichtung.md](docs/einrichtung.md)). Die Instanz entsteht dabei auf dem Webspace (`instanzen/stamm-<name>/`), Updates kommen signiert über Kluft selbst ([docs/updates.md](docs/updates.md)).
+- **Im Repository wie Roden:** `instanzen/<schlüssel>/config.php` baut die Konfiguration mit `StammVorlage` aus `angaben.json`, Deploy per GitHub-Environment ([docs/deploy.md](docs/deploy.md), Abschnitt „Stammes-Instanz im Repository“).
 
 Die Umgebungsvariable `KLUFT_INSTANZ` wählt die Instanz, Standard ist `dv-trier`. Alles, was eine Gliederung ausmacht, liegt in ihrem Ordner:
 
 ```
 instanzen/<schlüssel>/
 ├── config.php      Name und Wortformen, Kontakt, Karte, Gremien, Funktionen, Newsletter, Einwilligung
+├── angaben.json    nur Stämme: Angaben wie aus dem Einrichtungsassistenten (StammVorlage)
 ├── seeders/        Startinhalt (Start-Seeder) und Grundbestand für Tests (Basis-Seeder)
 ├── migrations/     Inhalte, die eine laufende Installation später noch bekommen soll (optional)
 ├── public/         Logo und Favicon; landen beim Deploy unter public/instanz/
@@ -51,7 +57,7 @@ php artisan migrate --seed      # Schema und Startinhalt
 php artisan serve
 ```
 
-Tests: `php artisan test` für den DV, `KLUFT_INSTANZ=saar-hochwald php artisan test` für den Bezirk. Tests, die nur für eine Instanz gelten, tragen `#[Group('<schlüssel>')]` und werden bei den anderen übersprungen. Die CI prüft jede Instanz einzeln, dazu Pint und Larastan.
+Tests: `php artisan test` für den DV, `KLUFT_INSTANZ=saar-hochwald php artisan test` für den Bezirk, `KLUFT_INSTANZ=roden php artisan test` für den Stamm. Tests, die nur für eine Instanz gelten, tragen `#[Group('<schlüssel>')]` und werden bei den anderen übersprungen. Die CI prüft jede Instanz einzeln, dazu Pint und Larastan.
 
 ## Neue Gliederung einrichten
 
@@ -93,11 +99,18 @@ Tests: `php artisan test` für den DV, `KLUFT_INSTANZ=saar-hochwald php artisan 
   - Die Werte kommen als `ENTRA_CLIENT_ID`, `ENTRA_CLIENT_SECRET` und `ENTRA_TENANT_ID` ins Environment.
 
   Konten legt die Verwaltung vorab an, per E-Mail oder UPN. Wer sich ohne Konto anmeldet, wartet auf Freischaltung.
-- **Ohne eigenen M365-Mandanten:** noch nicht gebaut. Vorschlag: [docs/entscheidungen/anmeldung-ohne-m365.md](docs/entscheidungen/anmeldung-ohne-m365.md).
+- **Ohne eigenen M365-Mandanten:** Funktion „Anmeldung per E-Mail-Code“ einschalten (Verwaltung → Funktionen). Zugänge gibt es für Personen oder Rollen, z. B. ein Funktionspostfach „Stammesvorstand“; angemeldet wird mit einem Einmalcode per E-Mail. Hintergrund: [docs/entscheidungen/anmeldung-ohne-m365.md](docs/entscheidungen/anmeldung-ohne-m365.md).
 
 ## Weitere Dokumentation
 
-- [docs/deploy.md](docs/deploy.md): Deploy, Environments, Server, Umstellung des DV
+- [CHANGELOG.md](CHANGELOG.md): Änderungen je Version
+- [docs/deploy.md](docs/deploy.md): Deploy, Environments, Server, Umstellung des DV, Stammes-Instanzen im Repository
+- [docs/einrichtung.md](docs/einrichtung.md): Einrichtungsassistent für Stämme
+- [docs/updates.md](docs/updates.md): signierte Updates für eigenständige Installationen
+- [docs/roden.md](docs/roden.md): Betreuung der Roden-Website, Aufteilung zwischen den Claude-Code-Sitzungen
+- [docs/beitraege.md](docs/beitraege.md): Kasse und Mitgliedsbeiträge (Stämme)
+- [docs/nachrichten.md](docs/nachrichten.md): Nachrichten-Eingang
+- [docs/whatsapp_newsletter.md](docs/whatsapp_newsletter.md): WhatsApp-Kanal
 - [docs/mitgliederabgleich.md](docs/mitgliederabgleich.md): NaMi und hitobito
 - [docs/pflichtenheft.md](docs/pflichtenheft.md): Anforderungen (ursprünglich für den DV Trier)
 - [docs/entscheidungen/](docs/entscheidungen/): Architekturentscheidungen

@@ -4,7 +4,9 @@ Ein Workflow für alle Gliederungen: **Actions → „Deploy“ → „Run workf
 
 GitHub baut und testet (Tests der Instanz, Frontend, `vendor/`, Bilder der Instanz, Kartendaten) und lädt das Ergebnis per SFTP hoch. Auf dem Server laufen per SSH nur Entpacken, `migrate`, beim ersten Mal `db:seed`, und das Aufräumen der Caches. Auf dem Server sind kein `composer` und kein `npm` nötig. Das funktioniert auf einem Webspace (z. B. Netcup/Plesk) genauso wie auf einem vServer.
 
-**„Nur prüfen“** baut und testet, meldet sich per SSH an und prüft PHP-Version, Erweiterungen, Zielordner und Speicher. Es lädt nichts hoch und ändert nichts. Vor dem ersten echten Deploy einer Instanz immer zuerst so starten.
+**„Nur prüfen“** baut und testet, meldet sich per SSH an und prüft PHP-Version, Erweiterungen, Zielordner und Speicher, dazu die Datenbankverbindung (Version, Tabellenzahl), die installierte Instanz, offene Migrationen und die letzten Fehler aus `storage/logs/laravel.log`. Fehlt der Zielordner, zeigt es, welche Ordner es gibt. Es lädt nichts hoch und ändert nichts. Vor dem ersten echten Deploy einer Instanz immer zuerst so starten; bei einem 500er auf dem Server ist es der schnellste Blick ins Log.
+
+**Schutzregeln** (auch beim echten Deploy): Läuft im Zielordner eine andere Instanz, bricht der Deploy ab. Bei einer Erstinstallation muss der Ordner leer sein (bis auf `.well-known` und `cgi-bin`), sonst würde der Abgleich eine vorhandene Website löschen. Hochgeladen wird nur der Ordner der eigenen Instanz unter `instanzen/`.
 
 ## Environment anlegen
 
@@ -23,6 +25,8 @@ Statt jedes Secret einzeln auf github.com einzutippen, legt `scripts/environment
 Das Skript zeigt am Ende die Variablen und die Namen der Secrets. Ein zweiter Aufruf überschreibt nur, was in den Dateien steht. Den Ordner danach sicher aufbewahren oder löschen; die Werte lassen sich aus GitHub nicht zurücklesen. Einzelne Werte gehen auch direkt: `gh secret set DB_PASSWORD --env roden` (fragt den Wert verdeckt ab) bzw. `gh variable set APP_URL --env roden --body https://www.dpsg-roden.de`.
 
 ### Variablen (Environment variables)
+
+Diese Werte dürfen auch als Secret eingetragen sein; der Deploy nimmt die Variable, sonst das Secret. Ausnahme: `MONITOR_URL` liest das Monitoring nur als Variable.
 
 | Name | Pflicht | Beispiel / Bedeutung |
 |---|---|---|

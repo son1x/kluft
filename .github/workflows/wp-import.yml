@@ -16,6 +16,7 @@ on:
         options:
           - dv-trier
           - saar-hochwald
+          - roden
         required: true
       dry_run:
         description: 'Testlauf (nichts speichern oder herunterladen)'

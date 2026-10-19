@@ -12,6 +12,7 @@ use App\Services\Mitglieder\NamiVerzeichnis;
 use App\Support\Ausbau;
 use App\Support\Embeds;
 use App\Support\Galerie;
+use App\Support\Mailformular;
 use App\Support\StufenAlter;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -77,6 +78,12 @@ class AppServiceProvider extends ServiceProvider
         Stringable::macro('embeds', function () {
             /** @var Stringable $this */
             return new Stringable(Embeds::render((string) $this));
+        });
+
+        // mailto-Links auf das Formular (Funktion „mailformular“): …->embeds()->mailformular()
+        Stringable::macro('mailformular', function () {
+            /** @var Stringable $this */
+            return new Stringable(Mailformular::html((string) $this));
         });
 
         // Bilderreihen als Galerie: str($html)->sanitizeHtml()->galerie()

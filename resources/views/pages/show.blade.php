@@ -28,7 +28,7 @@
             @include('partials.rechtstraeger-struktur')
         @endif
         <div class="prose max-w-none">
-            {!! str($page->body)->sanitizeHtml()->glossar()->embeds()->galerie() !!}
+            {!! str($page->body)->sanitizeHtml()->glossar()->embeds()->mailformular()->galerie() !!}
         </div>
     </article>
 

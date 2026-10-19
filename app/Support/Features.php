@@ -48,6 +48,8 @@ class Features
 
     public const NACHRICHTEN = 'nachrichten';
 
+    public const MAILFORMULAR = 'mailformular';
+
     private const CACHE_KEY = 'features.schalter';
 
     /**
@@ -73,6 +75,7 @@ class Features
         self::NAMI_PROFIL => ['ab' => 4, 'bereich' => 'Mitgliederabgleich (NaMi)', 'label' => 'NaMi-Zugang im Profil speichern', 'text' => '„Mein Konto → Mein NaMi-Zugang“: Zugang verschlüsselt speichern, Ampel, Verbindungstest.', 'standard' => true, 'braucht' => 'Mitgliederabgleich'],
         self::NUR_MITGLIEDER => ['ab' => 4, 'bereich' => 'Mitgliederabgleich (NaMi)', 'label' => 'Veranstaltungen nur für Mitglieder einer Gruppierung', 'text' => 'Einstellung „Nur für Mitglieder von …“ (Stamm/Bezirk), Markierung eigene/andere Gruppierung.', 'standard' => true],
         self::NACHRICHTEN => ['bereich' => 'Kontakt', 'label' => 'Nachrichten-Eingang', 'text' => 'Nachrichten aus dem Kontaktformular und Fragen zu Veranstaltungen zusätzlich im Backend speichern („Verband & Kontakt → Nachrichten“, für Verwaltung und Admins), mit Status und Notiz. Die zuständige Person bekommt sie weiter per Mail. Gelöscht wird nach einer festen Frist (Standard 6 Monate). Vor dem Einschalten die Datenschutzerklärung anpassen: Nachrichten werden dann gespeichert.', 'standard' => false],
+        self::MAILFORMULAR => ['bereich' => 'Kontakt', 'label' => 'E-Mail-Adressen öffnen ein Formular', 'text' => 'Ein Klick auf eine E-Mail-Adresse der Website (Personen, Kontakt, eigene Domain im Seitentext) öffnet ein Formular an genau diese Adresse statt des Mailprogramms; die Adresse bleibt daneben sichtbar. Die Nachricht geht per Mail an die Person und liegt mit dem Nachrichten-Eingang zusätzlich im Backend.', 'standard' => false, 'braucht' => 'Nachrichten-Eingang (für die Kopie)'],
         self::MITGLIEDSBEITRAEGE => ['ebene' => 'Stamm', 'bereich' => 'Kasse', 'label' => 'Mitgliedsbeiträge', 'text' => 'Kasse → Mitgliedsbeiträge: Mitglieder je Halbjahr aus NaMi, offene und bezahlte Beiträge, Abgleich mit der Rechnung des Bundesverbands. Sichtbar nur mit der Rolle „Kasse“ (oder Admin).', 'standard' => false, 'braucht' => 'MITGLIEDER_DRIVER=nami'],
         self::PUSH => ['ab' => 5, 'bereich' => 'Backend', 'label' => 'Push-Nachrichten (ntfy)', 'text' => '„Mein Konto → Meine Push-Nachrichten“ und Versand aufs Handy.', 'standard' => true],
         self::CODE_LOGIN => ['bereich' => 'Backend', 'label' => 'Anmeldung per E-Mail-Code', 'text' => 'Redaktion ohne Microsoft 365: Zugänge für Personen oder Rollen (Funktionspostfach, z. B. „Stammesvorstand“), Anmeldung mit Einmalcode per E-Mail. Microsoft 365 bleibt daneben möglich.', 'standard' => false],

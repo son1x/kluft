@@ -25,7 +25,7 @@
 @section('content')
     <div class="mx-auto max-w-6xl px-4 py-12">
         <div class="prose prose-lg max-w-3xl">
-            {!! str($page->body)->sanitizeHtml()->glossar()->embeds() !!}
+            {!! str($page->body)->sanitizeHtml()->glossar()->embeds()->mailformular() !!}
         </div>
 
         <div class="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">

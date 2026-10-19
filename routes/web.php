@@ -188,6 +188,11 @@ foreach (config('dpsg.redirects') as $from => $to) {
 Route::post('/kontakt', [ContactController::class, 'send'])
     ->middleware('throttle:5,10')
     ->name('contact.send');
+// Formular an eine einzelne Adresse statt mailto (Funktion „mailformular“).
+Route::get('/nachricht', [ContactController::class, 'schreiben'])->name('mailformular.zeigen');
+Route::post('/nachricht', [ContactController::class, 'sendDirekt'])
+    ->middleware('throttle:5,10')
+    ->name('mailformular.senden');
 
 // Sektionen (F-BOL, Pflichtenheft 6.2), z. B. /bolivien. Nur mit
 // konfigurierten Sektionen: whereIn mit leerer Liste fängt sonst jeden Pfad.

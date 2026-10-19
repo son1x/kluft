@@ -61,7 +61,7 @@
                         <img src="{{ asset($config['logo'].'.png') }}" alt="{{ $config['logo_alt'] ?? '' }}" width="{{ $config['logo_size'][0] ?? 744 }}" height="{{ $config['logo_size'][1] ?? 335 }}" class="mx-auto h-auto w-full max-w-sm" />
                     </picture>
                 @endif
-                <div @class(['prose max-w-none prose-headings:font-serif prose-a:text-dpsg-rot', 'md:col-span-3' => $cardLogo, 'md:col-span-5' => ! $cardLogo])>{!! str($landing->body)->sanitizeHtml()->glossar()->embeds()->galerie() !!}</div>
+                <div @class(['prose max-w-none prose-headings:font-serif prose-a:text-dpsg-rot', 'md:col-span-3' => $cardLogo, 'md:col-span-5' => ! $cardLogo])>{!! str($landing->body)->sanitizeHtml()->glossar()->embeds()->mailformular()->galerie() !!}</div>
             </section>
         @endif
 
@@ -76,7 +76,7 @@
                                 <p class="font-serif text-lg font-bold leading-tight">{{ $person->name }}</p>
                                 @if ($person->role)<p class="text-sm text-text-secondary">{{ $person->role }}</p>@endif
                                 <p class="mt-1 text-sm">
-                                    <a href="mailto:{{ $person->publicEmail() ?: config('dpsg.contact.email') }}" class="break-all text-dpsg-rot underline">{{ $person->publicEmail() ?: config('dpsg.contact.email') }}</a>
+                                    <a href="{{ \App\Support\Mailformular::href($person->publicEmail() ?: config('dpsg.contact.email')) }}" class="break-all text-dpsg-rot underline">{{ $person->publicEmail() ?: config('dpsg.contact.email') }}</a>
                                 </p>
                                 <a href="{{ $person->pageUrl() }}" class="mt-1 inline-block text-sm underline hover:text-dpsg-rot">Mehr über {{ \Illuminate\Support\Str::before($person->name, ' ') }}</a>
                             </div>

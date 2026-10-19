@@ -61,7 +61,7 @@
     <section class="mx-auto mt-12 max-w-6xl px-4">
         <div class="grid bg-white shadow-lg lg:grid-cols-3">
             <div class="prose max-w-none p-8 lg:col-span-2 prose-headings:font-serif prose-a:text-dpsg-rot">
-                {!! str($page->body)->sanitizeHtml()->embeds() !!}
+                {!! str($page->body)->sanitizeHtml()->embeds()->mailformular() !!}
             </div>
             <aside class="flex flex-col justify-between gap-6 bg-dpsg-hellbeige p-8">
                 <div>
@@ -71,7 +71,7 @@
                         @if (filled($contact['phone'] ?? null))
                             <a href="tel:{{ $contact['phone_href'] }}" class="hover:underline">{{ $contact['phone'] }}</a><br />
                         @endif
-                        <a href="mailto:{{ $contact['email'] }}" class="hover:underline">{{ $contact['email'] }}</a>
+                        <a href="{{ \App\Support\Mailformular::href($contact['email']) }}" class="hover:underline">{{ $contact['email'] }}</a>
                     </p>
                 </div>
                 {{-- Visitenkarte (Ausbaustufe 1): zum Kontaktformular statt zur Seite des Vorstands. --}}

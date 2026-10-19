@@ -43,7 +43,7 @@
                     {{-- Für Screenreader: Zwischenüberschriften der Beschreibung (oft h3) folgen so nicht direkt auf h1. --}}
                     <h2 class="sr-only">Beschreibung</h2>
                 @endif
-                <div class="prose mt-4 max-w-none">{!! str($event->description ?? '')->sanitizeHtml()->glossar()->embeds() !!}</div>
+                <div class="prose mt-4 max-w-none">{!! str($event->description ?? '')->sanitizeHtml()->glossar()->embeds()->mailformular() !!}</div>
             </div>
 
             <aside class="self-start bg-dpsg-hellbeige p-6" aria-labelledby="eckdaten">
@@ -59,7 +59,7 @@
                         bis {{ $event->registrationClosesAt()->locale('de')->isoFormat('D. MMMM YYYY, HH:mm') }} Uhr
                     </dd></div>
                     @if ($event->contact_name || $event->contact_email)
-                        <div><dt class="font-bold">Kontakt</dt><dd>{{ $event->contact_name }}@if ($event->contact_email)<br /><a href="mailto:{{ $event->contact_email }}" class="text-dpsg-rot underline">{{ $event->contact_email }}</a>@endif</dd></div>
+                        <div><dt class="font-bold">Kontakt</dt><dd>{{ $event->contact_name }}@if ($event->contact_email)<br /><a href="{{ \App\Support\Mailformular::aktiv() ? '#frage' : 'mailto:'.$event->contact_email }}" class="text-dpsg-rot underline">{{ $event->contact_email }}</a>@endif</dd></div>
                     @endif
                 </dl>
             </aside>
@@ -85,7 +85,7 @@
                 <p class="mt-4 text-text-secondary">
                     Eine Online-Anmeldung gibt es hier nicht.
                     @if ($event->contact_email)
-                        Melde dich bitte direkt bei <a href="mailto:{{ $event->contact_email }}" class="text-dpsg-rot underline">{{ $event->contact_name ?: $event->contact_email }}</a> an.
+                        Melde dich bitte direkt bei <a href="{{ \App\Support\Mailformular::aktiv() ? '#frage' : 'mailto:'.$event->contact_email }}" class="text-dpsg-rot underline">{{ $event->contact_name ?: $event->contact_email }}</a> an.
                     @else
                         Melde dich bitte über das <a href="{{ url('/'.config('dpsg.contact_page')) }}" class="text-dpsg-rot underline">Kontaktformular</a> an.
                     @endif
@@ -93,7 +93,7 @@
             @elseif ($state === 'bald')
                 <p class="mt-4 text-text-secondary">Die Anmeldung öffnet am {{ $event->reg_opens_at->locale('de')->isoFormat('D. MMMM YYYY [um] HH:mm') }} Uhr.</p>
             @elseif ($state === 'geschlossen')
-                <p class="mt-4 text-text-secondary">Die Anmeldung ist geschlossen.@if ($event->contact_email) Bei Fragen melde dich bei <a href="mailto:{{ $event->contact_email }}" class="text-dpsg-rot underline">{{ $event->contact_email }}</a>.@endif</p>
+                <p class="mt-4 text-text-secondary">Die Anmeldung ist geschlossen.@if ($event->contact_email) Bei Fragen melde dich bei <a href="{{ \App\Support\Mailformular::aktiv() ? '#frage' : 'mailto:'.$event->contact_email }}" class="text-dpsg-rot underline">{{ $event->contact_email }}</a>.@endif</p>
             @elseif ($state === 'ausgebucht')
                 <p class="mt-4 text-text-secondary">Leider sind alle Plätze vergeben.</p>
             @else

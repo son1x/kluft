@@ -37,6 +37,17 @@ unter den Formularen passt sich von selbst an.
 - Ist die Mail an die zuständige Person fehlgeschlagen, kommt die Nachricht
   trotzdem an (Kreuz in der Spalte „Mail“) – dann bitte selbst weitergeben.
 
+## E-Mail-Adressen öffnen ein Formular
+
+Funktion **„E-Mail-Adressen öffnen ein Formular“** (Verwaltung → Funktionen, Standard aus):
+
+- **Was es ändert:** Ein Klick auf eine E-Mail-Adresse der Website öffnet ein Formular „Nachricht an …“ statt des Mailprogramms. Das gilt für Personenkarten, „Melde dich bei …“, die Kontaktadresse in Kopf und Fuß und Adressen im Seitentext.
+- **Was bleibt:** Die Adresse steht weiter sichtbar daneben. Wer lieber das eigene Mailprogramm nimmt, klickt unten im Formular auf die Adresse.
+- **Wohin die Nachricht geht:** per Mail an genau diese Adresse. Mit eingeschaltetem Nachrichten-Eingang liegt sie zusätzlich im Eingang, Art „Nachricht an eine Adresse“, Thema „An <Name>“. Ohne Nachrichten-Eingang gibt es keine Kopie.
+- **Seitentext:** Umgeleitet werden nur Adressen der eigenen Domain(s) und veröffentlichte Adressen von Personen. Fremde Adressen, etwa die eines Ausrüsters, bleiben normale mailto-Links.
+- **Veranstaltungen:** Die Kontaktadresse einer Veranstaltung führt zum Formular „Fragen zur Veranstaltung“ auf derselben Seite. So bleibt die Frage der Veranstaltung zugeordnet.
+- **Schutz vor Missbrauch:** Die Adresse steckt signiert im Link (mit dem `APP_KEY`). Das Formular schreibt deshalb nur an Adressen, die die Website selbst zeigt, nicht an beliebige. Dazu gelten derselbe Spamschutz und dieselbe Begrenzung wie beim Kontaktformular (5 Nachrichten in 10 Minuten).
+
 ## Datenschutz
 
 - Der Nachrichtentext wird verschlüsselt gespeichert.

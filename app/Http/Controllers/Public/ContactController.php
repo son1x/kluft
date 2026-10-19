@@ -9,12 +9,14 @@ use App\Models\ContactTopic;
 use App\Models\Event;
 use App\Support\AuditLogger;
 use App\Support\Features;
+use App\Support\Mailformular;
 use App\Support\SpamGuard;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
+use Illuminate\View\View;
 use Throwable;
 
 /**
@@ -90,6 +92,50 @@ class ContactController extends Controller
         AuditLogger::log('veranstaltung.frage:'.($ok ? 'gesendet' : 'fehler'), subjectType: 'event', subjectId: $event->id, request: $request);
 
         return $ok ? $back('gesendet') : back()->withInput()->with('frage_status', 'fehler')->withFragment('frage');
+    }
+
+    /** Formular an eine einzelne Adresse (Funktion „E-Mail-Adressen öffnen ein Formular“). */
+    public function schreiben(Request $request): View
+    {
+        $email = Mailformular::adresse($request->query('an'));
+        abort_unless(Mailformular::aktiv() && $email !== null, 404);
+
+        return view('pages.mailformular', [
+            'an' => (string) $request->query('an'),
+            'email' => $email,
+            'empfaenger' => Mailformular::empfaenger($email),
+        ]);
+    }
+
+    public function sendDirekt(Request $request): RedirectResponse
+    {
+        $schluessel = (string) $request->input('an');
+        $email = Mailformular::adresse($schluessel);
+        abort_unless(Mailformular::aktiv() && $email !== null, 404);
+        $back = fn (string $status) => redirect()->route('mailformular.zeigen', ['an' => $schluessel])->with('kontakt_status', $status);
+
+        if (($spam = SpamGuard::check($request)) !== null) {
+            return $spam === 'bot' ? $back('gesendet') : back()->withInput()->with('kontakt_status', 'abgelaufen');
+        }
+
+        $data = $request->validate($this->messageRules(), $this->messages());
+        $an = Mailformular::empfaenger($email);
+        $recipients = [$email];
+
+        $ok = $this->deliver($recipients, new ContactMessageMail(
+            topic: 'Nachricht über die Website',
+            senderName: $data['name'],
+            senderEmail: $data['email'],
+            subjectLine: $data['betreff'] ?? null,
+            body: $data['nachricht'],
+        ));
+        $ok = $this->speichern([
+            'art' => 'direkt', 'thema' => mb_substr('An '.$an['name'], 0, 200), 'betreff' => $data['betreff'] ?? null,
+        ], $data, $recipients, $ok) || $ok;
+
+        AuditLogger::log('kontakt.direkt:'.($ok ? 'gesendet' : 'fehler'), request: $request);
+
+        return $ok ? $back('gesendet') : back()->withInput()->with('kontakt_status', 'fehler');
     }
 
     /** @return array<string, list<string>> */

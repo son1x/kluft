@@ -233,7 +233,7 @@
                     @if (filled($contact['phone'] ?? null))
                         <li class="flex items-center gap-2"><x-heroicon-o-phone class="h-4 w-4 shrink-0" aria-hidden="true" /><a href="tel:{{ $contact['phone_href'] }}" class="hover:underline">{{ $contact['phone'] }}</a></li>
                     @endif
-                    <li class="flex items-center gap-2"><x-heroicon-o-envelope class="h-4 w-4 shrink-0" aria-hidden="true" /><a href="mailto:{{ $contact['email'] }}" class="hover:underline">{{ $contact['email'] }}</a></li>
+                    <li class="flex items-center gap-2"><x-heroicon-o-envelope class="h-4 w-4 shrink-0" aria-hidden="true" /><a href="{{ \App\Support\Mailformular::href($contact['email']) }}" class="hover:underline">{{ $contact['email'] }}</a></li>
                 </ul>
             </div>
             <div>

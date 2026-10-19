@@ -14,6 +14,7 @@ Admins. Kurz und aus Sicht der Redaktion schreiben.
 - Veranstaltungen für Erwachsene: eigenverantwortliche Anmeldung ohne Abschnitt für Sorgeberechtigte, z. B. für Elternabende.
 - Stammes-Websites: „Leitungsteam“ und „Leitungsrunde“ auf den Stufenseiten.
 - Stammes-Websites: eigene Seite „Leiter*in werden“ im Menü (Text im Backend anpassbar, abschaltbar als Entwurf); der Aufruf zur Mitarbeit steht nicht mehr auf jeder Stufenseite.
+- E-Mail-Adressen auf der Website öffnen auf Wunsch ein Formular an genau diese Person statt des Mailprogramms; mit dem Nachrichten-Eingang bleibt eine Kopie im Backend (Verwaltung → Funktionen).
 - Stammes-Websites: Adressen der Leitenden auf Wunsch nach Vorname (vorname@…), auch für die Leitungsteams.
 - Stufenfarben je Website anpassbar, z. B. gelbe Biber (Einrichtung, „stufenfarben“ in angaben.json).
 - Einrichtungsassistent: Gruppenstundenzeiten je Stufe, NaMi-Abgleich für Lageranmeldungen; Vorbelegung für einen bestimmten Stamm, auch mit fertigen Seiten.

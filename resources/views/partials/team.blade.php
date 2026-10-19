@@ -72,7 +72,7 @@
                             <div>
                                 <h3 class="font-serif text-lg font-bold leading-tight">{{ $person->name }}</h3>
                                 @if ($person->role)<p class="text-sm text-text-secondary">{{ $person->role }}</p>@endif
-                                @if ($person->publicEmail())<a href="mailto:{{ $person->publicEmail() }}" class="text-sm break-all text-dpsg-rot underline">{{ $person->publicEmail() }}</a>@endif
+                                @if ($person->publicEmail())<a href="{{ \App\Support\Mailformular::href($person->publicEmail()) }}" class="text-sm break-all text-dpsg-rot underline">{{ $person->publicEmail() }}</a>@endif
                             </div>
                         </div>
                         @if ($person->bio)

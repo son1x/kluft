@@ -188,6 +188,7 @@ Regeln dafür:
 
 - **Nur für Stämme schalten:** über `config('dpsg.site.level') === 'Stamm'` (z. B. `Leitergewinnung::aufStammesebene()`) oder einen Funktionsschalter mit `'ebene' => 'Stamm'` in `App\Support\Features::KATALOG`. DV und Bezirk dürfen sich dadurch nicht verändern.
 - **Gemeinsamer Code wird automatisch auf dv-trier deployt:** Vor dem Push die Tests für alle drei Instanzen laufen lassen (`KLUFT_INSTANZ=roden`, `dv-trier`, `saar-hochwald`) und in Actions prüfen, dass gerade kein Deploy läuft.
+- **Actions-Minuten sparen (19.10.2026):** Deploys nur bei Bedarf und nach Absprache mit dem Nutzer. Doku-Commits sammeln und selten pushen. Am 19.10. war das Kontingent bzw. Ausgabelimit erreicht und kein Job startete mehr.
 - **Vor jedem Push `git pull --rebase`.** Nur eigene, noch nicht gepushte Commits umbauen, nie fremde.
 - **Direkter Austausch:** Die Stammes-Sitzung (`session_01DnjMEd7816yZMn8RwKe28G`) schreibt der Haupt-Sitzung (`session_014CFjuVyS73EAT5ak9eGcZt`) direkt per `send_message`. Die Haupt-Sitzung kann (Stand 19.10.2026) nicht direkt senden und antwortet über `docs/abstimmung.md`.
 - **Briefkasten `docs/abstimmung.md`:** Rückweg und Protokoll. Zu Beginn jeder Sitzung und nach jedem `git pull` die offenen Einträge lesen und beantworten.

@@ -1,32 +1,45 @@
 # Pflichtenheft: Sammelbestellung beim Rüsthaus („Schattenshop“)
 
-**Stand:** 19. Oktober 2026 · **Status:** Entwurf zur Abstimmung mit dem Stamm Roden · **Bezug:** Kluft (`docs/pflichtenheft.md`, `docs/beitraege.md`, `docs/nachrichten.md`)
+**Stand:** 19. Oktober 2026 · **Status:** Entwurf, 2. Fassung (Antworten des Stamms Roden eingearbeitet) · **Bezug:** Kluft (`docs/pflichtenheft.md`, `docs/beitraege.md`, `docs/mitgliederabgleich.md`)
 
-Mitglieder bzw. ihre Eltern bestellen Kluft, Halstuch, Aufnäher und andere
-Ausrüstung über die Stammes-Website beim Stamm. Die zuständige Person
-(in Roden: Michele Franke, Rüsthaus-Bestellungen) sammelt die Wünsche in
-Bestellrunden, bestellt gesammelt beim Rüsthaus, verteilt die Ware und
-behält den Überblick, wer was bekommen und bezahlt hat.
+Mitglieder des Stamms bzw. ihre Erziehungsberechtigten bestellen Kluft,
+Halstuch, Aufnäher und andere Artikel aus dem Rüsthaus über die
+Stammes-Website. Die zuständige Person (in Roden: Michele Franke,
+Rüsthaus-Bestellungen) öffnet und schließt die Bestellrunden von Hand,
+prüft die Bestellungen, fordert die Bezahlung an und bestellt gesammelt
+beim Rüsthaus, sobald bezahlt ist. Danach verteilt sie die Ware.
 
 Anforderungen tragen IDs der Form `SB-<Nr>`. **MUSS** = Pflicht, **SOLL** =
 Pflicht außer mit begründeter Ausnahme, **KANN** = optional.
 
 ---
 
-## 1. Ziel und Abgrenzung
+## 1. Ziel, Abgrenzung, Entscheidungen
 
 ### 1.1 Ziel
 
-1. **Weg mit Zetteln, WhatsApp und Excel:** Bestellungen kommen strukturiert an (Artikel, Größe, Anzahl, für wen, Kontakt).
-2. **Eine Sammelbestellung je Runde:** Michele sieht auf einen Blick, was beim Rüsthaus zu bestellen ist, nach Artikel und Größe summiert.
-3. **Ausgabe und Bezahlung nachvollziehbar:** Wer hat was bekommen, wer muss noch zahlen. Die Kasse (Hendrik Schuler) sieht offene Beträge.
-4. **Wenig Pflegeaufwand:** Der Katalog umfasst nur das, was der Stamm wirklich anbietet. Kein Nachbau des Rüsthaus-Shops.
+1. **Weg mit Zetteln, WhatsApp und Excel:** Bestellungen kommen strukturiert an (Artikel, Rüsthaus-Artikelnummer, Größe, Anzahl, für welches Mitglied).
+2. **Vorkasse:** Beim Rüsthaus wird nur bestellt, was bezahlt ist. Der Stamm geht kein Risiko ein.
+3. **Eine Sammelbestellung je Runde:** Michele sieht auf einen Blick, was zu bestellen ist, nach Artikelnummer und Größe summiert.
+4. **Überblick für die Kasse:** Zahlungseingänge, offene Beträge und die Provision des Stamms sieht Hendrik Schuler (Kasse).
+5. **Wenig Pflegeaufwand:** Grundausstattung fest im Katalog, alles andere frei über die Rüsthaus-Artikelnummer.
 
-### 1.2 Was es nicht ist
+### 1.2 Entscheidungen des Stamms (19.10.2026)
 
-- **Kein Online-Shop mit Bezahlung:** keine Zahlungsanbieter, keine Kreditkarten, kein PayPal. Bezahlt wird per Überweisung oder bar (SB-50).
-- **Keine Schnittstelle zum Rüsthaus:** Das Rüsthaus bietet keine öffentliche Bestell-API. Michele bestellt dort wie bisher selbst; Kluft liefert die Liste dazu (SB-41).
-- **Kein Lager:** Restbestände des Stamms KANN eine spätere Ausbaustufe abbilden (Kapitel 10).
+| Frage | Entscheidung |
+|---|---|
+| Wer darf bestellen? | Nur Mitglieder des Stamms bzw. ihre Erziehungsberechtigten. |
+| Bezahlung | Vorab. |
+| Zuschüsse | Keine. Der Stamm bekommt eine Provision vom Rüsthaus. |
+| Katalog | Grundausstattung: Klufthemd bzw. -bluse, Halstuch, Basisaufnäher. Zusätzlich frei bestellbar per Rüsthaus-Artikelnummer. |
+| Bestellrunden | Werden von Hand geöffnet und geschlossen. |
+| Zahlungsdienstleister | Noch offen, Bewertung in Kapitel 6. |
+
+### 1.3 Was es nicht ist
+
+- **Kein Nachbau des Rüsthaus-Shops:** Der Katalog enthält die Grundausstattung; der Rest läuft über die Artikelnummer (SB-14).
+- **Keine Bestellung beim Rüsthaus aus Kluft heraus:** Das Rüsthaus hat keine öffentliche Bestell-Schnittstelle. Michele bestellt dort selbst; Kluft liefert die fertige Liste (SB-41).
+- **Kein Lager:** Restbestände des Stamms KANN eine spätere Ausbaustufe abbilden (Kapitel 11).
 
 ---
 
@@ -34,12 +47,14 @@ Pflicht außer mit begründeter Ausnahme, **KANN** = optional.
 
 | Begriff | Bedeutung |
 |---|---|
-| **Artikel** | Etwas, das der Stamm anbietet, z. B. „Kluft-Hemd Langarm“, mit Varianten (Größen) und Preis. |
-| **Bestellrunde** | Zeitraum, in dem bestellt werden kann, mit Bestellschluss. Danach bestellt der Stamm gesammelt beim Rüsthaus. |
-| **Bestellung** | Was eine Person in einer Runde bestellt: eine oder mehrere Positionen. |
-| **Position** | Artikel + Variante + Anzahl, optional für ein bestimmtes Kind („für wen“). |
-| **Sammelliste** | Alle Positionen einer Runde, nach Artikel und Variante summiert: das, was beim Rüsthaus bestellt wird. |
-| **Zuschuss** | Anteil, den der Stamm übernimmt, z. B. Halstuch für neue Mitglieder kostenlos. |
+| **Katalogartikel** | Fest angebotener Artikel (Grundausstattung) mit Rüsthaus-Artikelnummer, Varianten und Preis. |
+| **Freier Artikel** | Beliebiger Rüsthaus-Artikel, den jemand über Artikelnummer oder Link bestellt. Der Preis gilt erst, wenn Michele ihn bestätigt hat. |
+| **Variante** | Größe oder Ausführung, beim Rüsthaus mit eigener Artikelnummer (z. B. `0100003.30` = Halbarm-Klufthemd, Kragenweite 30). |
+| **Bestellrunde** | Zeitraum zwischen manuellem Öffnen und Schließen. |
+| **Bestellung** | Was eine Person in einer Runde für ein oder mehrere Mitglieder bestellt: eine oder mehrere Positionen. |
+| **Zahlungsaufforderung** | Mail mit Betrag, Zahlungsfrist und Zahlungsweg, nachdem Michele die Bestellung geprüft hat. |
+| **Sammelliste** | Alle bezahlten Positionen einer Runde, nach Artikelnummer summiert: das, was beim Rüsthaus bestellt wird. |
+| **Provision** | Betrag, den der Stamm vom Rüsthaus für die Bestellungen erhält. |
 
 ---
 
@@ -47,141 +62,200 @@ Pflicht außer mit begründeter Ausnahme, **KANN** = optional.
 
 | Rolle | Wer (Roden) | Darf |
 |---|---|---|
-| **Besteller*in** (öffentlich, ohne Konto) | Mitglieder, Eltern, Leitende | Katalog ansehen, bestellen, eigene Bestellung über den Link in der Mail ansehen, ändern oder stornieren, solange die Runde offen ist. |
-| **Material** (neue Rolle) | Michele Franke | Katalog pflegen, Runden öffnen und schließen, Bestellungen bearbeiten, Sammelliste und Ausgabe, Bezahlung abhaken. |
-| **Kasse** (vorhanden) | Hendrik Schuler | Offene und bezahlte Beträge sehen, Bezahlung abhaken; nicht den Katalog ändern. |
+| **Besteller*in** (öffentlich, ohne Konto) | Mitglieder, Erziehungsberechtigte | Bestellen, eigene Bestellung über den Link in der Mail ansehen, ändern oder stornieren, solange die Runde offen ist; bezahlen. |
+| **Material** (neue Rolle) | Michele Franke | Katalog pflegen, Runden öffnen und schließen, Bestellungen prüfen, freie Artikel bestätigen, Zahlungsaufforderungen auslösen, Sammel- und Ausgabeliste, Ausgabe abhaken. |
+| **Kasse** (vorhanden) | Hendrik Schuler | Zahlungseingänge abhaken, offene Beträge, Erstattungen, Provision; nicht den Katalog ändern. |
 | **Admin** | Stammesvorstand | alles, Funktion ein- und ausschalten. |
 
-- **SB-01** MUSS: Die Rolle „Material“ wird wie „Kasse“ unter „Benutzer“ vergeben und gilt nur auf Stammes-Websites.
+- **SB-01** MUSS: Die Rolle „Material“ wird wie „Kasse“ unter „Benutzer“ vergeben und gilt nur auf Stammes-Websites. Rollen gehören zum gemeinsamen Kern; die Rolle wird mit der Haupt-Sitzung abgestimmt (`docs/abstimmung.md`).
 - **SB-02** MUSS: Ohne Rolle „Material“, „Kasse“ oder Admin ist im Backend nichts davon sichtbar.
 
 ---
 
 ## 4. Ablauf einer Bestellrunde
 
-1. **Katalog prüfen:** Michele prüft Artikel und Preise (Rüsthaus-Preise ändern sich).
-2. **Runde öffnen:** z. B. „Herbst 2026“, Bestellschluss 15.11. Optional Mail an die Leitenden mit dem Link.
-3. **Bestellen:** Mitglieder bzw. Eltern bestellen über die Website und bestätigen per Mail-Link.
-4. **Bestellschluss:** Die Runde schließt automatisch. Michele sieht die Sammelliste und bestellt beim Rüsthaus.
-5. **Lieferung:** Michele markiert die Runde als „geliefert“. Die Besteller*innen bekommen eine Mail: Ware ist da, Abholung z. B. in der Gruppenstunde, Betrag und Bankverbindung.
-6. **Ausgabe:** Bei der Übergabe hakt die Leitung bzw. Michele die Position als „ausgegeben“ ab.
-7. **Bezahlung:** Kasse bzw. Michele hakt „bezahlt“ ab. Offene Beträge bleiben sichtbar.
-8. **Abschluss:** Die Runde ist erledigt, wenn alles ausgegeben und bezahlt ist. Danach läuft die Löschfrist (SB-71).
+1. **Öffnen (von Hand):** Michele öffnet eine Runde, z. B. „Herbst 2026“, optional mit einem angepeilten Termin („wir bestellen voraussichtlich Mitte November“). Auf Wunsch geht eine Mail an die Leitenden mit dem Link.
+2. **Bestellen:** Mitglieder bzw. Erziehungsberechtigte bestellen auf der Website für ein oder mehrere Mitglieder und bestätigen per Mail-Link.
+3. **Schließen (von Hand):** Michele schließt die Runde. Danach sind keine neuen Bestellungen und keine Änderungen durch Besteller*innen mehr möglich.
+4. **Prüfen:** Michele prüft je Bestellung:
+   - Ist das Mitglied Mitglied im Stamm? (NaMi-Abgleich, SB-37)
+   - Freie Artikel: Artikelnummer, Größe und Preis stimmen, der Artikel ist lieferbar.
+   - Positionen streichen oder korrigieren; die Person bekommt eine Mail.
+5. **Zahlungsaufforderung:** Mit einem Klick erhalten alle geprüften Bestellungen ihre Zahlungsaufforderung (Betrag, Frist, Zahlungsweg nach Kapitel 6).
+6. **Zahlungseingang:** Bezahlt wird online (automatisch erkannt) oder per Überweisung (Kasse hakt ab). Nach Ablauf der Frist unbezahlte Bestellungen: Erinnerung oder Storno (Michele entscheidet).
+7. **Rüsthaus-Bestellung:** Die Sammelliste enthält nur bezahlte Positionen. Michele bestellt beim Rüsthaus und markiert die Runde als „bestellt“.
+8. **Lieferung und Ausgabe:** Michele markiert „geliefert“. Die Besteller*innen bekommen eine Mail („Ware ist da, Abholung …“). Bei der Übergabe wird „ausgegeben“ abgehakt.
+9. **Abschluss:** Provision eintragen, Runde erledigt. Danach läuft die Löschfrist (SB-71).
+
+Statusfolge einer Runde: `offen` → `geschlossen` → `zahlung` → `bestellt` → `geliefert` → `erledigt`.
 
 ---
 
 ## 5. Funktionale Anforderungen
 
-### 5.1 Katalog
+### 5.1 Katalog und Rüsthaus-Daten
 
-- **SB-10** MUSS: Artikel mit Name, kurzer Beschreibung, Rüsthaus-Artikelnummer, Link zur Rüsthaus-Seite, Preis je Variante, aktiv/inaktiv, Reihenfolge.
-- **SB-11** MUSS: Varianten, meist Größen (z. B. 128, 140, S, M, L), mit eigenem Preis, falls abweichend.
-- **SB-12** SOLL: Kategorien, z. B. Kluft, Halstuch und Knoten, Aufnäher und Abzeichen, Sonstiges.
-- **SB-13** SOLL: Eigenes Foto je Artikel aus der Mediathek. Fotos aus dem Rüsthaus-Shop werden **nicht** kopiert (Urheberrecht); stattdessen der Link (SB-10).
-- **SB-14** KANN: Hinweis je Artikel, z. B. „Stufenhalstuch nur nach Absprache mit der Leitung“ oder „Größentabelle beim Rüsthaus“.
-- **SB-15** KANN: Artikel nur für bestimmte Stufen anzeigen (z. B. Stufenaufnäher).
-- **SB-16** MUSS: Preisänderungen gelten nur für neue Bestellungen. Bestehende Positionen behalten ihren Preis (Preis wird bei der Bestellung festgehalten), außer Michele passt ihn bewusst an (SB-33).
+- **SB-10** MUSS: Katalogartikel mit Name, kurzer Beschreibung, Rüsthaus-Link, Kategorie, aktiv/inaktiv, Reihenfolge. Je Variante eine Rüsthaus-Artikelnummer und ein Preis.
+- **SB-11** MUSS: Grundausstattung als Startinhalt für Roden: Klufthemd, Kluftbluse (jeweils lang/halbarm nach Wahl des Stamms), Halstuch, Basisaufnäher. Michele kann weitere Artikel aufnehmen.
+- **SB-12** SOLL: **Daten aus dem Rüsthaus übernehmen:** Michele gibt eine Artikelnummer oder einen Rüsthaus-Link ein. Kluft ruft **diese eine** Produktseite ab und füllt Name, Preis und Varianten (Größen mit Artikelnummer) vor. Michele prüft und speichert. Grundlage: Die Produktseiten des Rüsthaus-Shops (Shopware) enthalten Artikelnummer (`data-ordernumber`), Preis (`itemprop="price"`) und Größenauswahl; Produktseiten sind laut `robots.txt` nicht gesperrt. Siehe Grenzen in SB-15.
+- **SB-13** SOLL: „Preise prüfen“: Für alle aktiven Katalogartikel die Preise beim Rüsthaus abrufen und Abweichungen anzeigen, nur auf Knopfdruck (z. B. beim Öffnen einer Runde), nicht automatisch im Hintergrund.
+- **SB-14** MUSS: **Freie Artikel** im Bestellformular: Artikelnummer oder Rüsthaus-Link eingeben, Kluft zeigt Name, Preis und Größen wie in SB-12 an. Klappt der Abruf nicht, gibt die Person Bezeichnung und Größe selbst ein. Freie Positionen sind mit „Preis wird von Michele bestätigt“ gekennzeichnet; bezahlt wird erst nach der Bestätigung (Ablauf, Schritt 4–5).
+- **SB-15** MUSS: **Grenzen des Abrufs beim Rüsthaus:**
+  - nur Einzelabrufe auf Anlass (Eingabe, Knopfdruck), kein Durchsuchen des Shops; höchstens eine Anfrage pro Sekunde, Ergebnis 24 Stunden zwischengespeichert;
+  - eigene Kennung im User-Agent (`Kluft/… (+https://www.dpsg-roden.de)`);
+  - **keine Produktfotos kopieren** (Urheberrecht); höchstens ein Link zur Produktseite. Eigene Fotos des Stamms sind möglich;
+  - fällt der Abruf aus oder ändert sich die Seite, geht alles weiter mit Handeingabe. Der Abruf ist eine Hilfe, keine Voraussetzung;
+  - vor dem Einschalten beim Rüsthaus nachfragen, ob das in Ordnung ist bzw. ob es für Stämme eine Artikelliste (CSV) gibt; das wäre die bessere Quelle (Kapitel 10, Frage 3).
+- **SB-16** MUSS: Der Preis wird bei der Bestellung festgehalten. Ändert sich der Rüsthaus-Preis vor der Zahlungsaufforderung, passt Michele ihn an; die Person bekommt den neuen Betrag in der Zahlungsaufforderung. Nach der Zahlung ändert sich der Preis nicht mehr.
 
 ### 5.2 Bestellrunden
 
-- **SB-20** MUSS: Runde mit Name, Beginn, Bestellschluss, Status (geplant, offen, geschlossen, bestellt, geliefert, erledigt).
-- **SB-21** MUSS: Höchstens eine Runde ist gleichzeitig offen. Ist keine offen, zeigt die Seite den Katalog mit dem Hinweis, wann die nächste Runde startet (Text pflegbar).
-- **SB-22** SOLL: Automatisches Schließen zum Bestellschluss (Cronjob/Scheduler) und Mail an „Material“ mit der Sammelliste.
-- **SB-23** KANN: Mindestmengen oder „nur bei genug Bestellungen“ je Artikel (z. B. Sonderanfertigungen).
+- **SB-20** MUSS: Runde mit Name, optionalem angepeiltem Bestelltermin (nur Anzeige), Status (Kapitel 4), Zahlungsfrist in Tagen (Standard 10).
+- **SB-21** MUSS: Öffnen und Schließen nur von Hand durch „Material“. Höchstens eine Runde ist offen. Ist keine offen, zeigt `/bestellen` den Katalog und einen pflegbaren Hinweis („Die nächste Sammelbestellung startet …“).
+- **SB-22** KANN: Erinnerung an „Material“, wenn eine Runde länger als X Wochen offen ist (Standard aus).
 
 ### 5.3 Bestellen (öffentlich)
 
-- **SB-30** MUSS: Seite „Ausrüstung bestellen“ (Adresse z. B. `/bestellen`), im Menü abschaltbar wie jede Seite. Einleitungstext pflegbar.
-- **SB-31** MUSS: Formular mit Name, E-Mail, optional Telefon. Positionen: Artikel, Variante, Anzahl und „für wen“ (Vorname des Kindes, Stufe). Dazu Bemerkung, Abholung (Gruppenstunde der Stufe, nach Absprache) und Bezahlart (Überweisung, bar).
-- **SB-32** MUSS: Bestätigung per Mail-Link (Double-Opt-in wie bei Veranstaltungsanmeldungen). Unbestätigte Bestellungen verfallen nach 48 Stunden und zählen nicht in die Sammelliste.
-- **SB-33** MUSS: Über den Link in der Bestätigungsmail kann die Person ihre Bestellung bis zum Bestellschluss ansehen, ändern und stornieren. Danach nur noch ansehen. Änderungen nach Bestellschluss macht Michele im Backend; die Person bekommt eine Mail.
-- **SB-34** MUSS: Einwilligungstext (Datenverarbeitung, Löschfrist) und bei Bestellungen für Kinder die Bestätigung, sorgeberechtigt zu sein oder im Auftrag zu bestellen. Texte wie bei Veranstaltungen (`event_consent`).
-- **SB-35** MUSS: Summe der Bestellung mit Hinweis „vorläufig, Endpreis nach Lieferung“, falls das Rüsthaus die Preise ändert.
+- **SB-30** MUSS: Seite „Ausrüstung bestellen“ (`/bestellen`), im Menü abschaltbar wie jede Seite, Einleitungstext pflegbar.
+- **SB-31** MUSS: Formular:
+  - besteller*in: Name, E-Mail, optional Telefon; Angabe „Ich bin selbst Mitglied“ oder „Ich bin erziehungsberechtigt für das Mitglied“;
+  - je Mitglied: Vor- und Nachname, Stufe; Positionen aus dem Katalog (Variante, Anzahl) oder frei (SB-14);
+  - Bemerkung, gewünschte Abholung (Gruppenstunde der Stufe, nach Absprache).
+- **SB-32** MUSS: Bestätigung per Mail-Link (Double-Opt-in wie bei Veranstaltungsanmeldungen). Unbestätigte Bestellungen verfallen nach 48 Stunden.
+- **SB-33** MUSS: Über den Link in der Mail kann die Person ihre Bestellung ansehen, solange die Runde offen ist ändern und stornieren, und später bezahlen und den Status sehen (geprüft, Zahlung offen, bezahlt, bestellt, abholbereit, ausgegeben).
+- **SB-34** MUSS: Einwilligung (Datenverarbeitung, Löschfrist) und Bestätigung, Mitglied bzw. erziehungsberechtigt zu sein. Texte wie bei Veranstaltungen (`event_consent`).
+- **SB-35** MUSS: Vorläufige Summe mit dem Hinweis: Bezahlt wird nach Prüfung auf Zahlungsaufforderung; freie Artikel zum bestätigten Preis.
 - **SB-36** SOLL: Spamschutz wie beim Kontaktformular (Honeypot, Zeitprüfung, Drosselung).
-- **SB-37** KANN: Nur für Mitglieder: Abgleich mit NaMi über die vorhandene Mitgliederprüfung (`docs/mitgliederabgleich.md`), bevor eine Bestellung angenommen wird. Standard: aus (Eltern kennen die Mitgliedsnummer oft nicht).
+- **SB-37** MUSS: **Nur Mitglieder:** Im Backend bei jeder Bestellung „Mitgliedschaft prüfen“ über den vorhandenen NaMi-Abgleich (`docs/mitgliederabgleich.md`, Name und Stamm). Ergebnis als Ampel. Ohne Treffer entscheidet Michele (z. B. Neumitglied noch nicht in NaMi). Eltern müssen keine Mitgliedsnummer kennen.
 
 ### 5.4 Backend für „Material“
 
-- **SB-40** MUSS: Liste der Bestellungen einer Runde mit Filter nach Status (unbestätigt, bestätigt, storniert), Stufe und Artikel. Die Bestellung lässt sich öffnen und bearbeiten, ebenso eine Bestellung von Hand eintragen (z. B. für jemanden ohne E-Mail).
-- **SB-41** MUSS: Sammelliste: je Artikel und Variante die Summe, mit Rüsthaus-Artikelnummer. Export als CSV/Excel und als Druckansicht. Das ist die Vorlage für den Rüsthaus-Warenkorb.
-- **SB-42** MUSS: Ausgabeliste je Stufe bzw. Abholort: Wer bekommt was? Druckbar fürs Mitnehmen in die Gruppenstunde.
-- **SB-43** MUSS: Je Position „ausgegeben“ abhaken, je Bestellung „bezahlt“ (Betrag, Datum, Art). Teilweise Lieferung möglich: Position „nachgeliefert“ oder in die nächste Runde verschieben.
-- **SB-44** SOLL: Rundenmails an alle Besteller*innen der Runde, z. B. „Ware ist da“ (Vorlage pflegbar), mit Einzelbetrag und Verwendungszweck.
-- **SB-45** SOLL: Kosten der Rüsthaus-Bestellung eintragen (Rechnungsbetrag, Versand), damit die Differenz zur Summe der Bestellungen sichtbar wird.
-- **SB-46** KANN: Versandkosten anteilig umlegen oder vom Stamm tragen (Einstellung je Runde).
+- **SB-40** MUSS: Bestellungen einer Runde mit Filter (Status, Stufe, Artikel, Prüfung offen), bearbeiten, Positionen streichen oder ändern, Bestellung von Hand eintragen.
+- **SB-41** MUSS: Sammelliste der **bezahlten** Positionen: je Rüsthaus-Artikelnummer Bezeichnung, Größe und Summe. Export als CSV/Excel und Druckansicht. Damit legt Michele den Warenkorb beim Rüsthaus an.
+- **SB-42** MUSS: Ausgabeliste je Stufe bzw. Abholort: wer bekommt was. Druckbar.
+- **SB-43** MUSS: Je Position „ausgegeben“ abhaken. Teillieferung: Position als „nachgeliefert“ markieren oder in die nächste Runde übernehmen (bereits bezahlt).
+- **SB-44** MUSS: Rundenmails aus Vorlagen: Zahlungsaufforderung, Erinnerung, „Ware ist da“.
+- **SB-45** SOLL: Rüsthaus-Rechnung eintragen (Betrag, Versand, Provision), damit Abweichungen zur Summe der Bestellungen sichtbar werden.
 
-### 5.5 Bezahlung und Kasse
+### 5.5 Bezahlung, Erstattung, Provision
 
-- **SB-50** MUSS: Bezahlung außerhalb von Kluft: Überweisung auf das Stammeskonto mit eindeutigem Verwendungszweck (z. B. `RH-2026-2-0123 Name`) oder bar bei Ausgabe. Bankverbindung als Einstellung.
-- **SB-51** MUSS: Offene Beträge je Runde und gesamt, sichtbar für „Material“ und „Kasse“.
-- **SB-52** SOLL: Zuschüsse: Je Artikel ein Stammesanteil, z. B. Halstuch zum Eintritt 100 %. Ob der Zuschuss gilt, entscheidet Michele je Position (Häkchen). Ausgewiesen wird der Zuschuss als Summe je Runde für die Kasse.
-- **SB-53** KANN: Erinnerungsmail bei offenem Betrag nach X Tagen (einstellbar, Standard aus).
-- **SB-54** KANN: Kontoauszug-Abgleich (CSV-Import, Verwendungszweck erkennen). Nur, wenn es bei den Mitgliedsbeiträgen auch kommt (`docs/beitraege.md`, „Später“).
+- **SB-50** MUSS: Vorkasse. In die Sammelliste kommt nur, was vollständig bezahlt ist.
+- **SB-51** MUSS: Zahlungswege nach Kapitel 6: mindestens Überweisung mit GiroCode, optional online.
+- **SB-52** MUSS: Offene Beträge, Zahlungseingänge und Erstattungen je Runde und gesamt, sichtbar für „Material“ und „Kasse“.
+- **SB-53** MUSS: **Erstattung**, wenn ein bezahlter Artikel nicht lieferbar ist oder storniert wird: Kasse erfasst die Erstattung (Überweisung oder beim Online-Zahlungsweg über den Dienstleister) mit Betrag und Datum.
+- **SB-54** MUSS: Provision: je Runde ein Feld „Provision vom Rüsthaus“ (Betrag, Datum des Eingangs), Summe je Jahr für die Kasse. Die Verkaufspreise entsprechen den Rüsthaus-Preisen; Kluft schlägt nichts auf.
+- **SB-55** SOLL: Versandkosten des Rüsthaus trägt der Stamm (aus der Provision) oder sie werden umgelegt. Einstellung je Runde, Standard „trägt der Stamm“.
+- **SB-56** KANN: Erinnerung bei offenem Betrag einen Tag vor Fristende (Standard an).
 
 ### 5.6 Benachrichtigungen
 
-- **SB-60** MUSS: Mails an Besteller*innen: Bestätigungslink, „Bestellung bestätigt“ (mit Übersicht und Änderungslink), Änderung durch den Stamm, Storno, „Ware ist da“.
-- **SB-61** MUSS: Mail an „Material“ bei jeder bestätigten Bestellung (abschaltbar; dann nur Tageszusammenfassung) und beim Bestellschluss.
-- **SB-62** MUSS: Absender ist die Website (`MAIL_FROM_*`), Antwort-an ist die zuständige Adresse. In Roden ist das eine Einstellung, z. B. michele@dpsg-roden.de oder eine Funktionsadresse.
+- **SB-60** MUSS: Mails an Besteller*innen: Bestätigungslink, „Bestellung eingegangen“, Änderung durch den Stamm, Zahlungsaufforderung, Zahlungseingang, Storno/Erstattung, „Ware ist da“.
+- **SB-61** MUSS: Mail an „Material“ bei jeder bestätigten Bestellung (abschaltbar zugunsten einer Tageszusammenfassung).
+- **SB-62** MUSS: Absender ist die Website (`MAIL_FROM_*`), Antwort-an ist die eingestellte Adresse (in Roden z. B. michele@dpsg-roden.de).
 
 ---
 
-## 6. Einbindung in Kluft
+## 6. Zahlungswege: Lohnt sich ein Zahlungsdienstleister?
 
-- **SB-80** MUSS: Funktionsschalter `sammelbestellung` in `App\Support\Features::KATALOG` mit `'ebene' => 'Stamm'`, Bereich „Kasse“ bzw. „Material“, Standard **aus**. Abgeschaltet: keine Route, kein Menüpunkt, kein Backend-Bereich. DV und Bezirk sehen die Funktion nicht.
-- **SB-81** SOLL: Ab Ausbaustufe 4 (wie Mitgliedsbeiträge und Veranstaltungen).
-- **SB-82** MUSS: Eigene Tabellen (`shop_artikel`, `shop_varianten`, `shop_runden`, `shop_bestellungen`, `shop_positionen`); keine Änderungen an Tabellen anderer Bereiche. Migrationen mit aktuellem Datum und Uhrzeit (`docs/roden.md`, Aufteilung).
-- **SB-83** SOLL: Wiederverwenden statt neu bauen: Double-Opt-in, Einwilligung und Löschfristen von den Veranstaltungsanmeldungen, Spamschutz vom Kontaktformular, Rollen und Rechte wie bei „Kasse“, Mailversand über die vorhandene Warteschlange.
-- **SB-84** MUSS: Funktioniert ohne Cronjob nur eingeschränkt (kein automatisches Schließen, keine Mails aus der Warteschlange). Der Statuscheck `/api/status` zeigt das bereits.
-- **SB-85** MUSS: Tests für Bestellen, Bestätigen, Ändern, Bestellschluss, Sammelliste, Rechte und den Schalter (aus = 404), für alle drei Instanzen grün.
+### 6.1 Die Möglichkeiten
+
+| | **Überweisung mit GiroCode** | **Stripe** | **PayPal** |
+|---|---|---|---|
+| **Wie** | Zahlungsaufforderung mit Betrag, Verwendungszweck und QR-Code (EPC-QR); Banking-App scannt ihn. | Bezahlseite von Stripe (Checkout): Karte, SEPA-Lastschrift, Apple/Google Pay; PayPal lässt sich dort als Zahlart zuschalten (Verfügbarkeit für den Stamm prüfen). | PayPal-Checkout. |
+| **Kosten** | keine | je Zahlung Gebühr, für EU-Karten etwa 1,5 % + 0,25 €; SEPA-Lastschrift geringer, aber mit Wartezeit. Aktuelle Preise beim Anbieter prüfen. | je Zahlung Gebühr, im üblichen Händlertarif deutlich über 2 % plus Festbetrag. Für Vereine gibt es zum Teil Sonderkonditionen, aber meist nur für Spenden. |
+| **Beispiel Halstuch 10 €** | 0 € | etwa 0,40 € | etwa 0,60 € |
+| **Zahlungseingang erkennen** | Kasse hakt ab (oder später CSV-Import vom Konto) | automatisch (Webhook) | automatisch (Webhook) |
+| **Erstattung** | Überweisung durch die Kasse | per Klick, Gebühr wird meist nicht erstattet | per Klick |
+| **Voraussetzungen** | Stammeskonto | Konto bei Stripe auf den Rechtsträger mit Identitätsprüfung (KYC), Bankkonto, Ansprechperson. Ob ein nicht eingetragener Stamm das kann oder ob es über den Förderverein (e. V.) laufen muss, ist zu klären. | wie Stripe (PayPal-Geschäftskonto) |
+| **Aufwand in Kluft** | gering | mittel: Checkout, Webhook, Erstattung, Secrets im Environment | mittel, wie Stripe |
+| **Datenschutz** | nur Kontoauszug | Stripe ist Auftragsverarbeiter, Datenschutzerklärung erweitern | PayPal ist eigener Verantwortlicher, Datenschutzerklärung erweitern |
+
+### 6.2 Empfehlung
+
+1. **Phase 1: Überweisung mit GiroCode.**
+   - Kostet nichts und ist schnell gebaut.
+   - Passt zur Vorkasse, weil bis zur Rüsthaus-Bestellung ohnehin Zeit ist.
+   - Die Kasse hakt Zahlungseingänge ab. Der Verwendungszweck ist eindeutig, z. B. `RH-2026-2-0123`.
+2. **Phase 2 bei Bedarf: Stripe als zusätzlicher Weg.**
+   - **Für Stripe:** Eltern zahlen sofort, der Eingang wird automatisch erkannt, Erstattungen gehen per Klick.
+   - **Lieber Stripe als PayPal:** niedrigere Gebühren, eine Anbindung für mehrere Zahlarten (PayPal dort zuschaltbar), saubere Webhooks.
+   - **Gebühren:**
+     - Der Stamm trägt sie aus der Provision, oder es gibt einen kleinen Aufschlag nur bei Online-Zahlung.
+     - Ein Aufschlag für einzelne Zahlarten ist rechtlich heikel und muss vorher geprüft werden.
+3. **Ein Zahlungsmodul für Rüsthaus und Veranstaltungen:**
+   - **Aufbau:** Kluft bekommt einen Baustein „Zahlungen“. Er hat einen Betrag, einen Zweck, einen Status und einen austauschbaren Zahlungsweg (Überweisung, Stripe, später weitere).
+   - **Nutzer:** Sammelbestellung und Teilnahmebeiträge von Veranstaltungen nutzen ihn gemeinsam.
+   - **Absprache nötig:** Veranstaltungen gehören zu allen Ebenen und damit zum gemeinsamen Kern. Das Modul wird mit der Haupt-Sitzung abgestimmt, bevor es gebaut wird.
+
+- **SB-90** MUSS: Zahlungen als eigener Baustein mit austauschbarem Zahlungsweg. Phase 1: Überweisung mit GiroCode (EPC-QR, SEPA).
+- **SB-91** KANN: Stripe Checkout mit Webhook-Prüfung (Signatur). Schlüssel nur als Secrets im GitHub-Environment, nie im Repository. Der Online-Zahlungsweg ist je Instanz einschaltbar.
+- **SB-92** MUSS: Keine Karten- oder Kontodaten in Kluft speichern. Online-Zahlung läuft ausschließlich über die Bezahlseite des Dienstleisters.
 
 ---
 
-## 7. Datenschutz (KDG)
+## 7. Einbindung in Kluft
 
-- **SB-70** MUSS: Gespeichert wird nur: Name, E-Mail, optional Telefon, Vorname und Stufe des Kindes, Bestellpositionen, Bezahlstatus. Keine Adressen, keine Geburtsdaten, keine Größenangaben über den bestellten Artikel hinaus.
-- **SB-71** MUSS: Löschfrist: Personenbezogene Daten einer Runde werden **6 Monate nach Abschluss** gelöscht bzw. anonymisiert (Einstellung). Für die Kasse bleiben nur Summen. Unbestätigte Bestellungen werden nach 48 Stunden gelöscht.
-- **SB-72** MUSS: Hinweis in der Datenschutzerklärung (Textbaustein wird mitgeliefert und beim Einschalten angezeigt, wie beim Nachrichten-Eingang).
-- **SB-73** MUSS: Diagnose-Ausgaben und Exporte für die Technik ohne Personendaten. Der Export der Sammelliste (SB-41) enthält keine Namen; die Ausgabeliste (SB-42) schon und ist nur für „Material“ und Admin.
-- **SB-74** MUSS: Alle Änderungen im Backend landen im Änderungsprotokoll (Audit-Log), wie bei den Mitgliedsbeiträgen.
+- **SB-80** MUSS: Funktionsschalter `sammelbestellung` in `App\Support\Features::KATALOG` mit `'ebene' => 'Stamm'`, Standard **aus**. Abgeschaltet heißt: keine Route, kein Menüpunkt, kein Backend-Bereich. DV und Bezirk sehen die Funktion nicht.
+- **SB-81** SOLL: Ab Ausbaustufe 4.
+- **SB-82** MUSS: Eigene Tabellen (Artikel, Varianten, Runden, Bestellungen, Positionen, Zahlungen). Keine Änderungen an Tabellen anderer Bereiche. Migrationen mit aktuellem Datum und Uhrzeit.
+- **SB-83** SOLL: Vorhandenes wiederverwenden: Double-Opt-in, Einwilligung und Löschfristen der Veranstaltungsanmeldungen, Spamschutz des Kontaktformulars, NaMi-Abgleich, Rollen wie „Kasse“, Mailversand über die Warteschlange.
+- **SB-84** MUSS: Braucht den Cronjob (Warteschlange für Mails, Löschfristen); `/api/status` zeigt das.
+- **SB-85** MUSS: Tests für Bestellen, Bestätigen, Ändern, Schließen, Prüfen, Zahlungsaufforderung, Zahlungseingang, Sammelliste, Rechte und Schalter (aus = 404). Der Rüsthaus-Abruf wird mit gespeicherten Beispielseiten getestet, nicht live. Grün für alle drei Instanzen.
 
 ---
 
-## 8. Abnahme
+## 8. Datenschutz (KDG)
+
+- **SB-70** MUSS: Gespeichert wird nur: Name, E-Mail, optional Telefon der bestellenden Person; Vor- und Nachname und Stufe des Mitglieds; Positionen; Ergebnis der Mitgliedsprüfung (ja/nein, keine NaMi-Daten); Zahlungsstatus und Verwendungszweck. Keine Adressen, keine Geburtsdaten, keine Kontodaten.
+- **SB-71** MUSS: Löschfrist: Personenbezogene Daten einer Runde werden **6 Monate nach Abschluss** gelöscht bzw. anonymisiert (Einstellung). Für die Kasse bleiben Summen, Zahlungen ohne Namen und die Provision. Unbestätigte Bestellungen: 48 Stunden. Steuerliche Aufbewahrungspflichten für Belege liegen bei der Kasse (Kontoauszug, Rüsthaus-Rechnung), nicht in Kluft.
+- **SB-72** MUSS: Textbaustein für die Datenschutzerklärung wird mitgeliefert und beim Einschalten angezeigt, mit Zusatz für Stripe, falls eingeschaltet.
+- **SB-73** MUSS: Die Sammelliste (SB-41) enthält keine Namen. Die Ausgabeliste (SB-42) enthält Namen und ist nur für „Material“ und Admin sichtbar.
+- **SB-74** MUSS: Alle Änderungen im Backend stehen im Änderungsprotokoll (Audit-Log).
+
+---
+
+## 9. Abnahme
 
 Abgenommen ist die Funktion, wenn in Roden auf einer Testrunde:
 
-1. Michele drei Artikel mit Größen anlegt und eine Runde öffnet.
-2. Zwei Testbestellungen über die Website (eine für ein Kind) bestätigt, eine geändert und eine storniert werden.
-3. Nach Bestellschluss die Sammelliste stimmt und als Excel herunterladbar ist.
-4. „Ware ist da“ verschickt, ausgegeben und bezahlt abgehakt wird und Hendrik die offenen Beträge sieht.
-5. Abgeschaltet: `/bestellen` liefert 404, im Backend ist nichts mehr zu sehen; auf dv-trier und saar-hochwald gibt es die Funktion nicht.
-6. Nach (testweise verkürzter) Löschfrist sind die Personendaten weg und die Summen noch da.
+1. Michele die Grundausstattung prüft, einen Artikel per Artikelnummer übernimmt (SB-12) und eine Runde öffnet.
+2. Zwei Testbestellungen eingehen, eine davon mit einem freien Artikel, und bestätigt werden; eine wird geändert, eine dritte storniert.
+3. Michele die Runde schließt, die Mitgliedschaft prüft, den freien Artikel bestätigt und die Zahlungsaufforderungen verschickt.
+4. Eine Zahlung per Überweisung von der Kasse abgehakt wird, die andere nach Fristende eine Erinnerung bekommt.
+5. Die Sammelliste nur die bezahlte Bestellung enthält und als Excel herunterladbar ist.
+6. „Ware ist da“ verschickt, „ausgegeben“ abgehakt und die Provision eingetragen wird.
+7. Abgeschaltet `/bestellen` 404 liefert und im Backend nichts zu sehen ist; auf dv-trier und saar-hochwald gibt es die Funktion nicht.
+8. Nach testweise verkürzter Löschfrist die Personendaten weg und die Summen noch da sind.
 
 ---
 
-## 9. Offene Fragen an den Stamm
+## 10. Offene Fragen
 
-1. **Wer darf bestellen?** Nur Mitglieder und Eltern, oder auch Freund*innen und Förderverein? Prüfen gegen NaMi (SB-37) ja oder nein?
-2. **Bezahlen:** vorab (Bestellung erst nach Zahlungseingang) oder nach Ausgabe? Vorab senkt das Risiko, auf Ware sitzenzubleiben, ist aber mehr Aufwand.
-3. **Zuschüsse:** Was übernimmt der Stamm (z. B. Halstuch und Aufnäher bei Aufnahme)? Auch Zuschüsse nach Bedarf, die diskret laufen müssen?
-4. **Katalog:** Welche Artikel konkret (Kluft-Hemden, Halstücher Stamm/Stufe, Knoten, Aufnäher, Bücher)? Gibt es ein eigenes Stammeshalstuch bzw. eigene Aufnäher, die nicht vom Rüsthaus kommen?
-5. **Rhythmus:** feste Runden (z. B. Frühjahr/Herbst, vor dem Sommerlager) oder laufend mit monatlichem Bestellschluss?
-6. **Rüsthaus:** Bestellt Michele über ein Stammeskonto beim Rüsthaus, gibt es Mengenrabatt oder Versandkostenfreiheit ab einem Betrag? Lieferadresse ist das Pfadfinderheim oder Michele privat? (Steht nicht in Kluft, nur zur Planung.)
-7. **Zuständige Adresse** für Antworten (SB-62): michele@dpsg-roden.de oder eine Funktionsadresse wie material@dpsg-roden.de?
-8. **Rollen:** Darf die Stufenleitung bei der Ausgabe abhaken (SB-43), oder nur Michele?
-9. **Name auf der Website:** „Ausrüstung bestellen“, „Kluft-Bestellung“, „Rüsthaus-Sammelbestellung“?
+1. **Rechtsträger und Konto:** Auf welches Konto fließt das Geld: Stammeskonto oder Förderverein? Das entscheidet auch, wer einen Stripe-Vertrag schließen könnte.
+2. **Provision und Steuer:** Wie ist die Provision steuerlich zu behandeln (Stamm bzw. Förderverein, Gemeinnützigkeit)? Bitte mit der Kasse bzw. der Diözese klären. Kluft erfasst nur die Beträge.
+3. **Rüsthaus fragen:**
+   - Ist der Abruf einzelner Produktseiten in Ordnung (SB-15)?
+   - Gibt es eine Artikelliste für Stämme?
+   - Wie genau läuft die Provision (Kundennummer des Stamms)?
+4. **Grundausstattung genau:**
+   - Klufthemd und -bluse: nur langarm oder auch halbarm?
+   - Welches Halstuch: das Stammeshalstuch (falls es das gibt, nicht vom Rüsthaus)?
+   - Welche Basisaufnäher?
+5. **Zahlungsfrist:** 10 Tage als Standard in Ordnung?
+6. **Versandkosten:** Trägt sie der Stamm?
+7. **Ausgabe:** Dürfen die Stufenleitungen „ausgegeben“ abhaken oder nur Michele?
+8. **Name auf der Website:** „Ausrüstung bestellen“, „Kluft-Bestellung“ oder „Rüsthaus-Sammelbestellung“?
 
 ---
 
-## 10. Umsetzung in Phasen (Vorschlag, nicht bindend)
+## 11. Umsetzung in Phasen (Vorschlag, nicht bindend)
 
 | Phase | Inhalt | Ergebnis |
 |---|---|---|
-| **1** | Katalog, eine Runde, Bestellformular mit Double-Opt-in, Backend-Liste, Sammelliste mit Export, Rolle „Material“, Schalter | Michele kann die erste Runde fahren. |
-| **2** | Ausgabe- und Bezahlstatus, Kasse-Ansicht, „Ware ist da“-Mail, Löschfrist | Ablauf vollständig, Kasse eingebunden. |
-| **3** | Zuschüsse, Erinnerungen, Versandkosten-Umlage, Stufenfilter im Katalog | Komfort. |
-| später | Lagerbestand des Stamms, Kontoauszug-Abgleich, Übernahme in den Einrichtungsassistenten für andere Stämme | nach Bedarf |
+| **1** | Katalog mit Grundausstattung, manuelle Runden, Bestellformular mit freien Artikeln (Handeingabe), Double-Opt-in, Prüfung inkl. NaMi, Zahlungsaufforderung mit GiroCode, Kasse hakt ab, Sammelliste mit Export, Rolle „Material“, Schalter | Michele kann die erste Runde fahren. |
+| **2** | Rüsthaus-Abruf (SB-12 bis SB-14), Ausgabe- und Lieferstatus, Erinnerungen, Provision, Löschfrist | Ablauf vollständig, weniger Tipparbeit. |
+| **3** | Zahlungsbaustein mit Stripe (SB-91), gemeinsam mit Veranstaltungen nach Absprache mit der Haupt-Sitzung | Online-Zahlung. |
+| später | Lagerbestand des Stamms, Kontoauszug-Import, Übernahme in den Einrichtungsassistenten für andere Stämme | nach Bedarf |
 
 Für andere Stämme gilt die Funktion genauso. Sie ist standardmäßig aus und
 wird je Stamm unter „Verwaltung → Funktionen“ eingeschaltet.

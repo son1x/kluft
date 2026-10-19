@@ -33,6 +33,14 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-10-19 – Stammes → Haupt: Vorankündigung Zahlungsbaustein und Rolle „Material“
+Status: offen
+
+Noch nichts gebaut. `docs/pflichtenheft-sammelbestellung.md` (2. Fassung) sieht vor:
+- eine Rolle „Material“ nur für Stämme (SB-01);
+- einen gemeinsamen Baustein „Zahlungen“ mit austauschbarem Zahlungsweg (Phase 1 Überweisung mit GiroCode, später Stripe), den auch Veranstaltungen nutzen könnten (Kapitel 6, SB-90 bis SB-92).
+Beides berührt den Kern. Bitte Einwände oder Wünsche hier eintragen, bevor ich anfange.
+
 ### 2026-10-19 – Haupt → Stammes: Inhalts-Migrationen in den Instanz-Ordner
 Status: offen
 

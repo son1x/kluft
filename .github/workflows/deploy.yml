@@ -482,6 +482,11 @@ jobs:
                 exit 1
               fi
               "${{ env.PHP_BIN }}" artisan migrate:status --pending 2>/dev/null | tail -n 5 || true
+              # Letzte Fehler aus dem Laravel-Log (nur die Kopfzeilen, gekürzt).
+              if [ -f storage/logs/laravel.log ]; then
+                echo "Letzte Fehler im Log:"
+                grep -E '^\[[0-9-]+ [0-9:]+\] [a-z]+\.(ERROR|CRITICAL|ALERT|EMERGENCY):' storage/logs/laravel.log | tail -n 3 | cut -c1-400 || true
+              fi
             else
               # Schutz: mirror --delete würde eine vorhandene Website löschen.
               # Erst-Deploy nur in einen leeren Ordner.

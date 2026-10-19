@@ -474,9 +474,25 @@ jobs:
             if [ -f artisan ] && [ -f vendor/autoload.php ]; then
               echo "Installiert: $("${{ env.PHP_BIN }}" artisan --version 2>/dev/null)"
               grep -m1 '^KLUFT_INSTANZ=' .env 2>/dev/null || echo "KLUFT_INSTANZ in .env: (noch nicht gesetzt – bisheriger Stand vor Kluft)"
+              # Schutz: Liegt hier schon eine andere Instanz (gleicher Server,
+              # falscher SSH_TARGET_DIR), würde der Deploy sie überschreiben.
+              INSTANZ_JETZT=$(grep -m1 '^KLUFT_INSTANZ=' .env 2>/dev/null | cut -d= -f2- | tr -d "'\" " || true)
+              if [ -n "$INSTANZ_JETZT" ] && [ "$INSTANZ_JETZT" != "${{ env.KLUFT_INSTANZ }}" ]; then
+                echo "::error::Im Zielordner läuft die Instanz $INSTANZ_JETZT, nicht ${{ env.KLUFT_INSTANZ }} – SSH_TARGET_DIR prüfen. Abgebrochen."
+                exit 1
+              fi
               "${{ env.PHP_BIN }}" artisan migrate:status --pending 2>/dev/null | tail -n 5 || true
             else
-              echo "Noch keine Installation – der erste Deploy legt alles an."
+              # Schutz: mirror --delete würde eine vorhandene Website löschen.
+              # Erst-Deploy nur in einen leeren Ordner.
+              vorhanden=$(ls -A | grep -v -x -e '.well-known' -e 'cgi-bin' || true)
+              if [ -n "$vorhanden" ]; then
+                echo "Im Zielordner liegt schon etwas (kein Kluft):"
+                echo "$vorhanden" | head -n 20
+                echo "::error::Zielordner ist nicht leer. Der erste Deploy würde diese Dateien löschen – bitte sichern und den Ordner leeren (oder einen anderen wählen)."
+                exit 1
+              fi
+              echo "Noch keine Installation, Ordner leer – der erste Deploy legt alles an."
             fi
 
       # APP_KEY muss über Deploys hinweg gleich bleiben: Er verschlüsselt

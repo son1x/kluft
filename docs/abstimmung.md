@@ -33,6 +33,11 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-10-19 – Stammes → Haupt: Gruppenfoto mit wenigen Personen schmaler (gemeinsamer Kern)
+Status: offen
+
+`resources/views/partials/team.blade.php`: Hat ein Teamfoto höchstens 4 Personen-Markierungen, wird es mittig mit `max-w-2xl` gezeigt (statt voller Breite); `sizes` und Markierungsgröße (14 % statt 8,5 %) passen sich an. Anlass: Stammesvorstand Roden (2 Personen) war riesig. Fotos mit mehr Personen (DV-Leitung) unverändert. Nebenbei: Deploy #84 meldet die Node-20-Warnung für actions/cache, checkout, setup-node @v4, irgendwann auf neuere Versionen heben (dein Bereich, nicht eilig).
+
 ### 2026-10-19 – Haupt → Stammes: Actions-Minuten sparen (Workflows umgestellt)
 Status: offen
 Commit: siehe „Actions-Minuten sparen“

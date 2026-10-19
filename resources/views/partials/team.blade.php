@@ -5,20 +5,22 @@
     // Foto der Diözesanleitung) verlinken auf deren Seite.
     $onThisPage = $people->pluck('id')->all();
     $href = fn ($person) => in_array($person->id, $onThisPage, true) ? '#'.$person->anchor() : $person->pageUrl();
+    // Fotos mit wenigen Personen (z. B. Stammesvorstand zu zweit) nicht über die volle Breite.
+    $klein = $spots->isNotEmpty() && $spots->count() <= 4;
 @endphp
 <section class="mx-auto max-w-6xl px-4" x-data="{ active: null, names: false }" aria-label="Personen">
     @if ($teamPhoto && $teamPhoto->media)
-        <figure class="mb-12">
+        <figure @class(['mb-12', 'mx-auto max-w-2xl' => $klein])>
             @if ($teamPhoto->title)
                 <h2 class="mb-4 font-serif text-2xl font-bold">{{ $teamPhoto->title }}</h2>
             @endif
             <div class="relative overflow-hidden rounded-lg bg-surface-muted shadow-md">
-                <x-picture :media="$teamPhoto->media" sizes="(min-width: 1152px) 1120px, 100vw" loading="eager" class="block h-auto w-full" />
+                <x-picture :media="$teamPhoto->media" sizes="{{ $klein ? '(min-width: 704px) 672px, 100vw' : '(min-width: 1152px) 1120px, 100vw' }}" loading="eager" class="block h-auto w-full" />
                 @foreach ($spots as $spot)
                     @php($a = $spot->person->anchor())
                     <a href="{{ $href($spot->person) }}"
                         class="group absolute block -translate-x-1/2 -translate-y-1/2 focus:outline-none"
-                        style="left: {{ $spot->x }}%; top: {{ $spot->y }}%; width: 8.5%; aspect-ratio: 1;"
+                        style="left: {{ $spot->x }}%; top: {{ $spot->y }}%; width: {{ $klein ? 14 : 8.5 }}%; aspect-ratio: 1;"
                         aria-label="{{ $spot->person->name }}{{ $spot->person->role ? ' – '.$spot->person->role : '' }}{{ in_array($spot->person->id, $onThisPage, true) ? '' : ' ('.$spot->person->gremiumLabel().')' }}"
                         x-on:mouseenter="active = '{{ $a }}'" x-on:mouseleave="active = null"
                         x-on:focus="active = '{{ $a }}'" x-on:blur="active = null">

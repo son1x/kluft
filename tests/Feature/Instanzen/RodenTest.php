@@ -60,6 +60,7 @@ class RodenTest extends TestCase
         $this->get('/stammesvorstand')->assertOk()
             ->assertSee('Unser Stammesvorstand')
             ->assertSee('Foto: Julia Hafner')
+            ->assertSee('mx-auto max-w-2xl', false)
             ->assertSee('mailto:vorstand@dpsg-roden.de', false);
         $this->assertStringNotContainsString('kontakt@dpsg-roden.de', $seite->fresh()->body);
 

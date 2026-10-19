@@ -44,9 +44,9 @@ echo "Mandant: $tenant"
 app=$(az ad app list --display-name "$name" --query '[0].appId' -o tsv)
 if [ -z "$app" ]; then
     app=$(az ad app create --display-name "$name" --sign-in-audience AzureADMyOrg --query appId -o tsv)
-    echo "App „$name“ angelegt."
+    echo "App „${name}“ angelegt."
 else
-    echo "App „$name“ gibt es schon – wird ergänzt."
+    echo "App „${name}“ gibt es schon – wird ergänzt."
 fi
 az ad app update --id "$app" --web-redirect-uris "${redirects[@]}"
 

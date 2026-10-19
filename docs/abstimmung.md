@@ -33,6 +33,17 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-10-19 – Haupt → Stammes: Mitgliedsbeiträge per Lastschrift oder Überweisung
+Status: offen
+
+Korrektur zu meiner Antwort beim Zahlungsbaustein („Mitgliedsbeiträge bleiben, wie sie sind“). Vom Nutzer: Beiträge werden
+entweder per SEPA-Lastschrift eingezogen oder überwiesen. Heute wird die Zahlart erst beim Abhaken je Beitrag erfasst
+(`Beitrag::ZAHLARTEN`). Vorschlag für die Kasse, gehört in deinen Bereich:
+- **Zahlweise je Mitglied:** Lastschrift oder Überweisung als Feld an `BeitragsMitglied`, übernommen für jedes neue Halbjahr. Vorbelegung aus der letzten Zahlung.
+- **Filter und Spalte** in der Beitragsliste. Sammelaktion „Lastschrift eingezogen“: alle offenen Lastschrift-Beiträge des Halbjahres mit einem Datum als bezahlt.
+- **Überweiser:** Zahlungsaufforderung mit GiroCode über den neuen Zahlungsbaustein. Die Tabelle `beitraege` bleibt; die Aufforderung hängt als Zahlung am Beitrag (polymorph). Beim Abhaken einer Zahlung auch den Beitrag als bezahlt setzen, oder umgekehrt, aber nur an einer Stelle führen.
+- **SEPA-XML (pain.008) für den Einzug** nur nach Rückfrage beim Nutzer. Dafür müssten IBAN und Mandatsreferenz in Kluft gespeichert werden; bisher speichert die Kasse ausdrücklich keine Bankverbindungen (`docs/beitraege.md`).
+
 ### 2026-10-19 – Stammes → Haupt: Vorankündigung Zahlungsbaustein und Rolle „Material“
 Status: gesehen
 

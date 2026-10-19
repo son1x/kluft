@@ -214,8 +214,15 @@ jobs:
           APP_URL="$(trim "$APP_URL")"; APP_URL="${APP_URL%/}"
           MAIL_FROM_ADDRESS="$(trim "$MAIL_FROM_ADDRESS")"
           if [ -z "$APP_URL" ] || [ -z "$MAIL_FROM_ADDRESS" ]; then
-            echo "::error::Im Environment ${KLUFT_INSTANZ} fehlen die Variablen APP_URL und/oder MAIL_FROM_ADDRESS (Settings → Environments)."
-            exit 1
+            # Beim reinen Prüfen trotzdem SSH und Datenbank testen.
+            if [ "$NUR_PRUEFEN" = "true" ]; then
+              echo "::warning::Im Environment ${KLUFT_INSTANZ} fehlen die Variablen APP_URL und/oder MAIL_FROM_ADDRESS (Settings → Environments) – vor dem Deploy eintragen."
+              APP_URL="${APP_URL:-https://example.invalid}"
+              MAIL_FROM_ADDRESS="${MAIL_FROM_ADDRESS:-noreply@example.invalid}"
+            else
+              echo "::error::Im Environment ${KLUFT_INSTANZ} fehlen die Variablen APP_URL und/oder MAIL_FROM_ADDRESS (Settings → Environments)."
+              exit 1
+            fi
           fi
           # Name und Newsletter-Adresse aus der Instanz-Konfiguration.
           # Mit Autoloader: Stammes-Instanzen bauen ihre Konfiguration mit StammVorlage.

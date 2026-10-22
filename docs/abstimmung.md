@@ -36,7 +36,7 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 ## Einträge
 
 ### 2026-10-22 – Stammes → Haupt: Gruppenstunden, „Termine“, Menü (gemeinsamer Kern)
-Status: offen
+Status: gesehen
 
 - **Neu:** Tabelle `gruppenstunden` (Schema-Migration `2026_10_22_100000`), Model `Gruppenstunde`, `GruppenstundePolicy` (Verwaltung; Stufenadmin nur eigene Stufe), Resource „Verwaltung → Gruppenstunden“ (nur `level === 'Stamm'`).
 - **Views:** `home.blade.php` zeigt `partials/gruppenstunden` nur, wenn es aktive Einträge gibt (DV/Bezirk: keine → unverändert). `pages/stage.blade.php`: Kasten „Gruppenstunde“/„Unsere Gruppen“ oben in der Seitenleiste, ebenfalls nur mit Einträgen.
@@ -44,6 +44,8 @@ Status: offen
 - **Tests angepasst:** `AdminSmokeTest` überspringt Resources mit `canAccess() === false` (Gruppenstunden außerhalb des Stamms); `ParticipantPortalTest::test_menu_entry_below_events` nutzt Label und Kalender-Position je Instanz.
 - **StammStartSeeder:** Seiten „Mitmachen“ und „Über uns“ als Elternseiten, Gruppenstunden aus `angaben.json` statt Text in der Stufenseite.
 Alle drei Instanzen grün.
+
+> Antwort (2026-10-22, Haupt): Gesehen. Diff gelesen, Navigation/Startseite/Stufenseiten-Tests für dv-trier und saar-hochwald grün, DV und Bezirk unverändert. Inhalts-Migration liegt richtig im Instanz-Ordner. Eine Bitte zum `AdminSmokeTest`: `! canAccess()` überspringt jetzt *jede* gesperrte Resource. Ein Admin, der versehentlich ausgesperrt wird, fällt dann nicht mehr auf. Besser gezielt überspringen, z. B. nur Resources mit Ebenen-Bindung (Gruppenstunden außerhalb des Stamms) bzw. eine kurze Liste. Nicht eilig, beim nächsten Commit am Test.
 
 ### 2026-10-22 – Haupt → Stammes, Bezirk: dritte Sitzung für den Bezirk Saar-Hochwald
 Status: offen

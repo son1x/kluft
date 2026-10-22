@@ -69,6 +69,7 @@ nur die Website des Stamms Roden betreut. Allgemeines zu Kluft steht in
 - `seiten`: fertige Seiten.
 - `email_schema: "vorname"`, `email_leitende: true`: Alle Leitenden zeigen vorname@dpsg-roden.de (Bindestriche fallen weg, z. B. gianluca@). Der Vorstand ist unter vorstand@dpsg-roden.de erreichbar. Das wird erzeugt, steht also nicht als Liste im Repository.
 - Ämter (Migration `2026_10_19_101500_roden_stammesvorstand_und_aemter`, einmalig): Hendrik Schuler ist Kassenwart und Mitgliederbeauftragter, Michele Franke ist für Rüsthaus-Bestellungen zuständig. Dazu der Stammesvorstand als Personen mit Gruppenfoto (`instanzen/roden/dateien/stammesvorstand.jpg`, ohne EXIF; Foto: Julia Hafner).
+- Migration `2026_10_22_090000_roden_erster_admin_m365`: schaltet das M365-Konto sebastian@dpsg-roden.de (Organisationskonto des Stamms) einmalig frei und gibt ihm Super-Admin, weil anfangs niemand ins Backend kam. Weitere Rollen im Backend unter „Benutzer“.
 - `funktionen`: `mailformular: true`. Klicks auf E-Mail-Adressen öffnen ein Formular statt des Mailprogramms (Funktion der Haupt-Sitzung, `docs/nachrichten.md`).
 - `stufenfarben`: Die Biber tragen in Roden Gelb (`#ffed00`, DPSG-Gelb, mit dunkler Schrift). Wirkt sofort nach dem Deploy, ohne Datenbank.
 

@@ -5,6 +5,7 @@ namespace Tests\Feature\Instanzen;
 use App\Models\Page;
 use App\Models\Person;
 use App\Models\TeamPhoto;
+use App\Models\User;
 use App\Support\Features;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
@@ -42,6 +43,23 @@ class RodenTest extends TestCase
     {
         $this->assertTrue(Features::enabled(Features::MAILFORMULAR));
         $this->get('/stufe-woelflinge')->assertOk()->assertSee('/nachricht?an=', false)->assertDontSee('mailto:hendrik@dpsg-roden.de', false);
+    }
+
+    #[TestDox('Erstes M365-Konto wird aktiv und Super-Admin; ohne Konto passiert nichts')]
+    public function test_erster_admin(): void
+    {
+        $migration = require base_path('instanzen/roden/migrations/2026_10_22_090000_roden_erster_admin_m365.php');
+        $migration->up();
+        $this->assertSame(0, User::query()->where('email', 'sebastian@dpsg-roden.de')->count());
+
+        $user = User::query()->create(['name' => 'Sebastian', 'email' => 'Sebastian@dpsg-roden.de', 'upn' => 'sebastian@dpsg-roden.de', 'status' => 'pending']);
+        $migration->up();
+        $migration->up();
+
+        $user = $user->fresh();
+        $this->assertSame('active', $user->status);
+        $this->assertTrue($user->isSuperAdmin());
+        $this->assertSame(1, $user->roleAssignments()->count());
     }
 
     #[TestDox('Migration: Stammesvorstand mit Foto und vorstand@, Ämter, Vorstandsadresse auf der Seite; zweiter Lauf ändert nichts')]

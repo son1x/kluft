@@ -179,11 +179,11 @@ oder in den Chat.
 
 ## Aufteilung zwischen den Sitzungen
 
-Zwei Claude-Code-Sitzungen arbeiten auf demselben Branch `claude/kluft-instanzen`:
+Claude-Code-Sitzungen auf demselben Branch `claude/kluft-instanzen` (seit 22.10.2026 dazu eine Bezirks-Sitzung für Saar-Hochwald, `docs/saar-hochwald.md`):
 
 | Stammes-Sitzung (diese) | Haupt-Sitzung |
 |---|---|
-| Inhalte, Konfiguration und Deploys von Roden | DV Trier (`dv-trier`) und Bezirk Saar-Hochwald (`saar-hochwald`) |
+| Inhalte, Konfiguration und Deploys von Roden | DV Trier (`dv-trier`); Saar-Hochwald betreut die Bezirks-Sitzung |
 | Alles nur für Stämme: `StammVorlage`, `StammStartSeeder`, Einrichtungsassistent | Gemeinsamer Kern: Deploy-Workflow, Monitoring, Backups, Rollen, Anmeldung, NaMi-Anbindung |
 | Stammes-Funktionen: Kasse/Mitgliedsbeiträge (`docs/beitraege.md`), Leitergewinnung (`App\Support\Leitergewinnung`, Seite „Leiter*in werden“), Stufenseiten auf Stammesebene | Funktionen für alle Ebenen, z. B. Veranstaltungen, Nachrichten-Eingang |
 

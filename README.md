@@ -109,6 +109,8 @@ Tests: `php artisan test` für den DV, `KLUFT_INSTANZ=saar-hochwald php artisan 
 - [docs/updates.md](docs/updates.md): signierte Updates für eigenständige Installationen
 - [docs/runner.md](docs/runner.md): eigener Actions-Runner (z. B. auf dem NAS) für Deploys ohne Actions-Minuten
 - [docs/roden.md](docs/roden.md): Betreuung der Roden-Website, Aufteilung zwischen den Claude-Code-Sitzungen
+- [docs/saar-hochwald.md](docs/saar-hochwald.md): Betreuung der Bezirks-Website Saar-Hochwald
+- [docs/abstimmung.md](docs/abstimmung.md): Briefkasten der Claude-Code-Sitzungen
 - [docs/beitraege.md](docs/beitraege.md): Kasse und Mitgliedsbeiträge (Stämme)
 - [docs/nachrichten.md](docs/nachrichten.md): Nachrichten-Eingang
 - [docs/whatsapp_newsletter.md](docs/whatsapp_newsletter.md): WhatsApp-Kanal

@@ -37,6 +37,7 @@ class AdminSmokeTest extends TestCase
         config(['whatsapp.mode' => 'api']);
         Features::setzen(Features::MITGLIEDSBEITRAEGE, true);
         Features::setzen(Features::NACHRICHTEN, true);
+        Features::setzen(Features::ZAHLUNGEN, true);
         $kasse = Features::enabled(Features::MITGLIEDSBEITRAEGE);
         $this->get('/admin')->assertOk();
         $checked = 0;

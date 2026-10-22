@@ -112,6 +112,7 @@ Tests: `php artisan test` für den DV, `KLUFT_INSTANZ=saar-hochwald php artisan 
 - [docs/saar-hochwald.md](docs/saar-hochwald.md): Betreuung der Bezirks-Website Saar-Hochwald
 - [docs/abstimmung.md](docs/abstimmung.md): Briefkasten der Claude-Code-Sitzungen
 - [docs/beitraege.md](docs/beitraege.md): Kasse und Mitgliedsbeiträge (Stämme)
+- [docs/zahlungen.md](docs/zahlungen.md): Baustein „Zahlungen“ (Zahlungsaufforderung mit GiroCode, Eingang, Erstattung)
 - [docs/nachrichten.md](docs/nachrichten.md): Nachrichten-Eingang
 - [docs/whatsapp_newsletter.md](docs/whatsapp_newsletter.md): WhatsApp-Kanal
 - [docs/mitgliederabgleich.md](docs/mitgliederabgleich.md): NaMi und hitobito

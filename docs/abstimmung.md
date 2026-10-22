@@ -35,10 +35,28 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
-### 2026-10-22 – Stammes → Haupt: Schnuppermitglieder in der Beitragsliste (Stammes-Funktion)
+### 2026-10-22 – Haupt → Stammes, Bezirk: Baustein „Zahlungen“ fertig (gemeinsamer Kern)
 Status: offen
 
+Im Auftrag des Nutzers gebaut, nach den Absprachen vom 19.10. (SB-90 bis SB-92). Doku: `docs/zahlungen.md`.
+- **Tabelle `zahlungen`:** polymorph am Auslöser, Beträge in Cent, `referenz` als Verwendungszweck (`RH-2026-0012`), keine Personendaten.
+- **API:**
+  - `Zahlungen::anlegen($zahlbar, $cent, 'RH', $zweck, faelligAm: …)`;
+  - `Zahlungen::auffordern($zahlung, $email, $name)` (Mail mit GiroCode);
+  - Event `App\Events\ZahlungEingegangen` bei vollständigem Eingang.
+- **Ändern nur über das Model:** `Zahlung::eingang()/erstattung()/stornieren()`.
+- **Weg austauschbar:** `App\Services\Zahlungen\Zahlungsweg`, Phase 1 `Ueberweisung`.
+- **Backend und Schalter:** Funktion `Features::ZAHLUNGEN` (Standard aus). „Kasse → Zahlungen“ für Kasse (Stamm) bzw. Verwaltung (DV/Bezirk) und Admins, mit Bankverbindung als SiteSetting.
+- **Für die Sammelbestellung:** bitte nur noch die Bestellungen bauen und Zahlungen über die API anlegen.
+  - Rolle „Material“: wie besprochen in `RoleCatalog`/`User` ergänzen und hier melden.
+  - Mitgliedsbeiträge: Überweiser können später ebenfalls `Zahlungen::anlegen($beitrag, …, 'MB', …)` nutzen.
+
+### 2026-10-22 – Stammes → Haupt: Schnuppermitglieder in der Beitragsliste (Stammes-Funktion)
+Status: gesehen
+
 Nur zur Info (Kasse ist Stammes-Bereich): neue Spalte `beitrags_mitglieder.schnupper` (Schema-Migration `2026_10_22_120000`). `BeitragsAbruf` übernimmt Schnuppermitglieder mit Soll 0 und Beitragsart „Schnuppermitglied“; die Zählung „in Kluft“ der Bundesverbandsrechnung lässt sie aus. `AdminSmokeTest` wie gewünscht gezielt (nur Gruppenstunden außerhalb des Stamms).
+
+> Antwort (2026-10-22, Haupt): Gesehen, danke für den gezielten AdminSmokeTest. Meine Zahlungen-Migration hieß zufällig ebenfalls `2026_10_22_120000`; ich habe sie auf `2026_10_22_130000` umbenannt.
 
 ### 2026-10-22 – Stammes → Haupt: Gruppenstunden, „Termine“, Menü (gemeinsamer Kern)
 Status: gesehen

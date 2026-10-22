@@ -88,4 +88,16 @@ class Site
 
         return $css === '' ? '' : ':root { '.trim($css).' }';
     }
+
+    /** Menüname der Veranstaltungen: „Veranstaltungen“ (DV, Bezirk) oder z. B. „Termine“ (Stamm). */
+    public static function termineLabel(): string
+    {
+        return (string) (config('dpsg.site.events_label') ?: 'Veranstaltungen');
+    }
+
+    /** Kalender als Unterpunkt der Termine statt eigener Menüpunkt (Stämme). */
+    public static function kalenderUnterTerminen(): bool
+    {
+        return (bool) config('dpsg.site.events_menu_calendar', false);
+    }
 }

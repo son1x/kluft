@@ -35,7 +35,10 @@
         "mailformular": true
     },
     "stufenfarben": {
-        "biber": {"farbe": "#ffed00", "schrift": "dunkel"}
+        "biber": {
+            "farbe": "#ffed00",
+            "schrift": "dunkel"
+        }
     },
     "telefon": "",
     "bezirk_url": "https://www.dpsg-saar-hochwald.de",
@@ -112,12 +115,14 @@
         {
             "slug": "pfadfinderheim",
             "title": "Pfadfinderheim",
-            "body": "<p>Unser Pfadfinderheim liegt im Saarlouiser Stadtteil Roden, in der Nähe der Pfarrkirche Maria Himmelfahrt: im alten Kindergarten der Pfarrei, zwischen Sozialstation und der Kreisgeschäftsstelle der Malteser.</p><h2>Was es bei uns gibt</h2><ul><li>einen großen Gruppenraum</li><li>den „Rittersaal“ mit offenem Kamin – Pfadfinder*innen aller Altersstufen brauchen eben ein Lagerfeuer</li><li>einen dritten Gruppen- und Lagerraum unter dem Dach</li><li>eine Küche, Toiletten, Dusch- und Waschräume</li></ul><p>Umgebaut und ausgebaut haben das Heim Altpfadfinder*innen und Leitende in vielen freiwilligen Arbeitsstunden, unterstützt von Stadt und Kreis Saarlouis und vielen Spenderinnen und Spendern. Gepachtet hat es unser <a href=\"/foerderverein\">Förderverein</a> von der Pfarrgemeinde.</p><h2>Adresse</h2><p>Pfadfinderheim Roden<br>Donatusstraße 34a<br>66740 Saarlouis-Roden</p><p><a href=\"https://www.openstreetmap.org/?mlat=49.339962&amp;mlon=6.751531#map=18/49.339962/6.751531\">Auf der Karte ansehen (OpenStreetMap)</a></p>"
+            "body": "<p>Unser Pfadfinderheim liegt im Saarlouiser Stadtteil Roden, in der Nähe der Pfarrkirche Maria Himmelfahrt: im alten Kindergarten der Pfarrei, zwischen Sozialstation und der Kreisgeschäftsstelle der Malteser.</p><h2>Was es bei uns gibt</h2><ul><li>einen großen Gruppenraum</li><li>den „Rittersaal“ mit offenem Kamin – Pfadfinder*innen aller Altersstufen brauchen eben ein Lagerfeuer</li><li>einen dritten Gruppen- und Lagerraum unter dem Dach</li><li>eine Küche, Toiletten, Dusch- und Waschräume</li></ul><p>Umgebaut und ausgebaut haben das Heim Altpfadfinder*innen und Leitende in vielen freiwilligen Arbeitsstunden, unterstützt von Stadt und Kreis Saarlouis und vielen Spenderinnen und Spendern. Gepachtet hat es unser <a href=\"/foerderverein\">Förderverein</a> von der Pfarrgemeinde.</p><h2>Adresse</h2><p>Pfadfinderheim Roden<br>Donatusstraße 34a<br>66740 Saarlouis-Roden</p><p><a href=\"https://www.openstreetmap.org/?mlat=49.339962&amp;mlon=6.751531#map=18/49.339962/6.751531\">Auf der Karte ansehen (OpenStreetMap)</a></p>",
+            "parent": "ueber-uns"
         },
         {
             "slug": "foerderverein",
             "title": "Förderverein",
-            "body": "<p>Der Förderverein St. Georg wurde 1992 von Altpfadfinder*innen gegründet, um die Pfadfinderarbeit in Roden zu fördern und zu stärken. Er hat von der Pfarrgemeinde den alten Kindergarten gepachtet und dem Stamm damit ein festes Zuhause gegeben – unser <a href=\"/pfadfinderheim\">Pfadfinderheim</a>.</p><h2>Mitglied werden</h2><p>Wer den Stamm unterstützen möchte – ob ehemalige Pfadfinder*innen, Eltern oder Freund*innen – ist im Förderverein herzlich willkommen. Schreibt uns über das <a href=\"/kontakt\">Kontaktformular</a>.</p><p>[Bitte ergänzen: Vorsitz, Beitrag, Mitgliedsantrag und ggf. Spendenkonto]</p>"
+            "body": "<p>Der Förderverein St. Georg wurde 1992 von Altpfadfinder*innen gegründet, um die Pfadfinderarbeit in Roden zu fördern und zu stärken. Er hat von der Pfarrgemeinde den alten Kindergarten gepachtet und dem Stamm damit ein festes Zuhause gegeben – unser <a href=\"/pfadfinderheim\">Pfadfinderheim</a>.</p><h2>Mitglied werden</h2><p>Wer den Stamm unterstützen möchte – ob ehemalige Pfadfinder*innen, Eltern oder Freund*innen – ist im Förderverein herzlich willkommen. Schreibt uns über das <a href=\"/kontakt\">Kontaktformular</a>.</p><p>[Bitte ergänzen: Vorsitz, Beitrag, Mitgliedsantrag und ggf. Spendenkonto]</p>",
+            "parent": "ueber-uns"
         }
     ]
 }

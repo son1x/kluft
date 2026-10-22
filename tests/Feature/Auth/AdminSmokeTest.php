@@ -42,7 +42,8 @@ class AdminSmokeTest extends TestCase
 
         foreach ($panel->getResources() as $resource) {
             foreach (['index', 'create'] as $page) {
-                if (! $resource::hasPage($page) || (! $kasse && $resource::getNavigationGroup() === 'Kasse')) {
+                // Bereiche nur für eine andere Ebene (z. B. Gruppenstunden nur im Stamm) überspringen.
+                if (! $resource::hasPage($page) || (! $kasse && $resource::getNavigationGroup() === 'Kasse') || ! $resource::canAccess()) {
                     continue;
                 }
                 $url = $resource::getUrl($page);

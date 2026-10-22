@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Instanzen;
 
+use App\Models\Gruppenstunde;
 use App\Models\Gruppierung;
 use App\Models\Page;
 use App\Models\Person;
@@ -207,7 +208,7 @@ class EinrichtungTest extends TestCase
         $this->assertSame('Pfadfinden in Saarlouis-Roden', Page::query()->where('slug', 'start')->value('title'));
         $this->assertStringContainsString('Kimberly Lamprecht', (string) Page::query()->where('slug', 'stammesvorstand')->value('body'));
         $this->assertTrue(Page::query()->where('slug', 'foerderverein')->where('show_in_nav', true)->exists());
-        $this->assertStringContainsString('dienstags, 16:00–17:00 Uhr', (string) Page::query()->where('slug', 'stufe-biber')->value('body'));
+        $this->assertSame('dienstags, 16:00–17:00 Uhr', Gruppenstunde::query()->where('stage', 'biber')->firstOrFail()->zeitText());
 
         // Erster Zugang aus angaben.json: Rollen-Zugang „Stammesvorstand“ als Admin mit E-Mail-Code.
         $zugang = User::query()->where('email', 'kontakt@dpsg-roden.de')->firstOrFail();
@@ -222,7 +223,7 @@ class EinrichtungTest extends TestCase
         // Altersangaben als Klassenstufen, Leitungsteams je Stufe – auch beim zweiten Lauf nur einmal.
         $this->assertSame('3. bis 5. Klasse', config('dpsg.stages.woelflinge.age'));
         $this->assertSame([7, 11], [config('dpsg.stages.woelflinge.from'), config('dpsg.stages.woelflinge.to')]);
-        $this->assertStringContainsString('dienstags, 17:15–18:45 Uhr', (string) Page::query()->where('slug', 'stufe-jupfi')->value('body'));
+        $this->assertSame('dienstags, 17:15–18:45 Uhr', Gruppenstunde::query()->where('stage', 'jupfi')->firstOrFail()->zeitText());
         $this->assertSame(['Michele Franke', 'Eva Schmidt', 'Less Knoll'], Person::query()->where('stage', 'jupfi')->orderBy('sort')->pluck('name')->all());
         $this->assertSame(13, Person::query()->where('gremium', 'dak')->count());
         $this->get('/stufe-woelflinge')->assertOk()->assertSee('3. bis 5. Klasse')->assertSee('Hendrik Schuler')->assertSee('Im Leitungsteam');
@@ -242,7 +243,7 @@ class EinrichtungTest extends TestCase
         $this->seed(StammStartSeeder::class);
 
         $this->assertEqualsCanonicalizing(
-            ['start', 'stufen', 'stufe-woelflinge', 'stufe-pfadi', 'stammesvorstand', 'leiter-werden', 'kontakt', 'impressum', 'datenschutz'],
+            ['start', 'stufen', 'stufe-woelflinge', 'stufe-pfadi', 'mitmachen', 'ueber-uns', 'stammesvorstand', 'leiter-werden', 'kontakt', 'impressum', 'datenschutz'],
             Page::query()->pluck('slug')->all(),
         );
         $this->assertSame('Pfadfinden in Beispielstadt', Page::query()->where('slug', 'start')->value('title'));
@@ -256,7 +257,7 @@ class EinrichtungTest extends TestCase
         // „Schnupperstunde anfragen“ statt „Stamm in der Nähe finden“ ist im
         // Browser-Durchlauf geprüft (docs/einrichtung.md).
         $this->get('/stufe-woelflinge')->assertOk()->assertSee('donnerstags, 16:30–18:00 Uhr')->assertSee('Kirchplatz 1, 54290 Beispielstadt');
-        $this->get('/stufe-pfadi')->assertOk()->assertSee('freitags, 18 Uhr')->assertSee('Pfarrheim St. Martin')->assertDontSee('Kirchplatz 1, 54290 Beispielstadt')
+        $this->get('/stufe-pfadi')->assertOk()->assertSee('freitags, 18:00 Uhr')->assertSee('Pfarrheim St. Martin')->assertDontSee('Kirchplatz 1, 54290 Beispielstadt')
             ->assertSee('Das Leitungsteam')->assertSee('Leitungsrunde')->assertDontSee('mitzuarbeiten')
             ->assertDontSee('Stufenreferent');
         $this->get('/')->assertOk()->assertSee('Pfadfinden in Beispielstadt');

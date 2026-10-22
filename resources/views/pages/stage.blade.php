@@ -52,6 +52,24 @@
         </article>
 
         <aside class="space-y-6" aria-label="Mitmachen und Kontakt">
+            {{-- Gruppenstunden der Stufe (Verwaltung → Gruppenstunden), auch mehrere Gruppen --}}
+            @php($gruppen = \App\Models\Gruppenstunde::angezeigt($page->stage))
+            @if ($gruppen->isNotEmpty())
+                <div class="rounded-lg border-t-4 border-(--stufe) bg-white p-5 shadow-md">
+                    <h2 class="font-serif text-lg font-bold">{{ $gruppen->count() > 1 ? 'Unsere Gruppen' : 'Gruppenstunde' }}</h2>
+                    <ul class="mt-3 space-y-3">
+                        @foreach ($gruppen as $gruppe)
+                            <li>
+                                @if ($gruppe->name)<span class="block text-sm font-bold uppercase tracking-wide text-text-secondary">{{ $gruppe->name }}</span>@endif
+                                <span class="block font-bold">{{ $gruppe->zeitText() ?: $gruppe->hinweis }}</span>
+                                @if ($gruppe->zeitText() && $gruppe->hinweis)<span class="block text-sm text-text-secondary">{{ $gruppe->hinweis }}</span>@endif
+                                <span class="block text-sm text-text-secondary">{{ $gruppe->ortText() }}</span>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <div class="rounded-lg border-t-4 border-(--stufe) bg-white p-5 shadow-md">
                 <h2 class="font-serif text-lg font-bold">Mitmachen</h2>
                 <p class="mt-2 text-sm text-text-secondary">

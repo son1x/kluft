@@ -2,11 +2,14 @@
 
 namespace Tests\Feature\Instanzen;
 
+use App\Filament\Resources\Gruppenstunden\GruppenstundeResource;
+use App\Models\Gruppenstunde;
 use App\Models\Page;
 use App\Models\Person;
 use App\Models\TeamPhoto;
 use App\Models\User;
 use App\Support\Features;
+use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
@@ -60,6 +63,61 @@ class RodenTest extends TestCase
         $this->assertSame('active', $user->status);
         $this->assertTrue($user->isSuperAdmin());
         $this->assertSame(1, $user->roleAssignments()->count());
+    }
+
+    #[TestDox('Menü, Termine und Gruppenstunden: Startinhalt und einmalige Umstellung der laufenden Website')]
+    public function test_menue_und_gruppenstunden(): void
+    {
+        // Startinhalt (frische Installation): neue Gliederung und Gruppenstunden aus angaben.json
+        $this->assertSame(5, Gruppenstunde::query()->count());
+        $this->assertSame(['dienstags, 16:00–17:00 Uhr'], Gruppenstunde::query()->where('stage', 'biber')->get()->map->zeitText()->all());
+        $ueberUns = Page::query()->where('slug', 'ueber-uns')->value('id');
+        $this->assertSame($ueberUns, Page::query()->where('slug', 'stammesvorstand')->value('parent_id'));
+        $this->assertSame($ueberUns, Page::query()->where('slug', 'pfadfinderheim')->value('parent_id'));
+        $this->assertSame(Page::query()->where('slug', 'mitmachen')->value('id'), Page::query()->where('slug', 'leiter-werden')->value('parent_id'));
+
+        $this->get('/')->assertOk()->assertSee('Unsere Gruppenstunden')->assertSee('>Termine</a>', false)->assertSee('Unterpunkte von Termine');
+        $this->get('/stufe-biber')->assertOk()->assertSee('dienstags, 16:00–17:00 Uhr')->assertDontSee('<h2>Gruppenstunde</h2>', false);
+
+        // Laufende Website (Stand vor der Umstellung) wird umgebaut
+        Gruppenstunde::query()->delete();
+        Page::query()->whereIn('slug', ['mitmachen', 'ueber-uns'])->delete();
+        Page::query()->whereIn('slug', ['stammesvorstand', 'pfadfinderheim', 'foerderverein', 'leiter-werden'])->update(['parent_id' => null]);
+        Page::query()->where('slug', 'stufe-biber')->update(['body' => '<p>Biber.</p><h2>Gruppenstunde</h2><p><strong>dienstags, 16:00–17:00 Uhr</strong><br>Donatusstraße 34a</p>']);
+
+        $migration = require base_path('instanzen/roden/migrations/2026_10_22_100100_roden_menue_und_gruppenstunden.php');
+        $migration->up();
+        $migration->up();
+
+        $this->assertSame(5, Gruppenstunde::query()->count());
+        $this->assertSame('<p>Biber.</p>', Page::query()->where('slug', 'stufe-biber')->value('body'));
+        $this->assertSame(Page::query()->where('slug', 'ueber-uns')->value('id'), Page::query()->where('slug', 'foerderverein')->value('parent_id'));
+        $this->assertSame(1, Page::query()->where('slug', 'mitmachen')->count());
+    }
+
+    #[TestDox('Gruppenstunden im Backend: Verwaltung alle, Stufenadmin nur seine Stufe, Autor nichts')]
+    public function test_gruppenstunden_backend(): void
+    {
+        $login = function (string $role, string $type = 'global', ?string $key = null): User {
+            $user = User::query()->create(['name' => 'Test '.$role, 'email' => $role.'@example.org', 'status' => 'active']);
+            $user->roleAssignments()->create(['role' => $role, 'scope_type' => $type, 'scope_key' => $key]);
+            Filament::setCurrentPanel('admin');
+            $this->actingAs($user->fresh());
+
+            return $user;
+        };
+
+        $login('autor', 'own', 'biber');
+        $this->get(GruppenstundeResource::getUrl())->assertForbidden();
+
+        $login('stufenadmin', 'stage', 'woelflinge');
+        $this->get(GruppenstundeResource::getUrl())->assertOk()->assertSee('donnerstags, 16:30–18:00 Uhr')->assertDontSee('dienstags, 16:00–17:00 Uhr');
+        $biber = Gruppenstunde::query()->where('stage', 'biber')->firstOrFail();
+        $this->get(GruppenstundeResource::getUrl('edit', ['record' => $biber]))->assertNotFound();
+
+        $login('verwaltung');
+        $this->get(GruppenstundeResource::getUrl())->assertOk()->assertSee('dienstags, 16:00–17:00 Uhr');
+        $this->get(GruppenstundeResource::getUrl('create'))->assertOk();
     }
 
     #[TestDox('Migration: Stammesvorstand mit Foto und vorstand@, Ämter, Vorstandsadresse auf der Seite; zweiter Lauf ändert nichts')]

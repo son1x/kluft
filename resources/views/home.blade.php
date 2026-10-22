@@ -154,6 +154,12 @@
         </section>
     @endif
 
+    {{-- Gruppenstunden (Stammes-Websites, Verwaltung → Gruppenstunden) --}}
+    @php($gruppenstunden = \App\Models\Gruppenstunde::angezeigt())
+    @if ($gruppenstunden->isNotEmpty())
+        @include('partials.gruppenstunden', ['gruppen' => $gruppenstunden])
+    @endif
+
     <section class="mt-20 bg-dpsg-blau text-white">
         <div class="mx-auto max-w-6xl px-4 py-16">
             <h2 class="inline-block bg-dpsg-rot px-3 py-1 font-serif text-2xl font-bold">Mitmachen</h2>

@@ -16,6 +16,8 @@ Admins. Kurz und aus Sicht der Redaktion schreiben.
 - Stammes-Websites: eigene Seite „Leiter*in werden“ im Menü (Text im Backend anpassbar, abschaltbar als Entwurf); der Aufruf zur Mitarbeit steht nicht mehr auf jeder Stufenseite.
 - E-Mail-Adressen auf der Website öffnen auf Wunsch ein Formular an genau diese Person statt des Mailprogramms; mit dem Nachrichten-Eingang bleibt eine Kopie im Backend (Verwaltung → Funktionen).
 - Stammes-Websites: Adressen der Leitenden auf Wunsch nach Vorname (vorname@…), auch für die Leitungsteams.
+- Stammes-Websites: Gruppenstunden unter „Verwaltung → Gruppenstunden“, auch mehrere Gruppen einer Stufe; sie erscheinen auf der Startseite („Unsere Gruppenstunden“) und auf der Stufenseite.
+- Stammes-Websites: Menü „Unsere Gruppen · Mitmachen · Über uns · Termine · Aktuelles“; „Termine“ heißt bei Diözese und Bezirk weiter „Veranstaltungen“, der Kalender steht im Stamm darunter.
 - Stufenfarben je Website anpassbar, z. B. gelbe Biber (Einrichtung, „stufenfarben“ in angaben.json).
 - Einrichtungsassistent: Gruppenstundenzeiten je Stufe, NaMi-Abgleich für Lageranmeldungen; Vorbelegung für einen bestimmten Stamm, auch mit fertigen Seiten.
 - Ausbaustufen von der Visitenkarte bis zum Vollausbau (Verwaltung → Ausbaustufe); im Assistenten Ort der Gruppenstunde je Gruppe.

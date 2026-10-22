@@ -2,6 +2,7 @@
 
 namespace Database\Seeders\Einrichtung;
 
+use App\Models\Gruppenstunde;
 use App\Models\Gruppierung;
 use App\Models\Page;
 use App\Models\Person;
@@ -63,40 +64,48 @@ class StammStartSeeder extends Seeder
             'seo_description' => 'Gruppenstunden für Kinder und Jugendliche',
             'body' => '<p>Die DPSG begleitet Kinder und Jugendliche in altersgerechten Stufen. Hier findest du unsere Gruppen und wann sie sich treffen.</p>',
         ]);
-        $zeiten = (array) ($a['gruppenstunden'] ?? []);
-        $orte = (array) ($a['gruppenstunden_orte'] ?? []);
-        $adresse = implode(', ', array_filter([trim((string) ($a['strasse'] ?? '')), trim((string) ($a['plz_ort'] ?? ''))]));
         foreach ($stufen as $i => $key) {
             $stage = (array) config("dpsg.stages.{$key}");
-            // Eigener Ort der Gruppe (z. B. Pfarrheim), sonst die Adresse des Stamms.
-            $ortZeile = filled($orte[$key] ?? null) ? (string) $orte[$key] : $adresse;
             $this->seite('stufe-'.$key, (string) $stage['label'], [
                 'parent' => 'stufen',
                 'stage' => $key,
                 'show_in_nav' => true,
                 'nav_sort' => ($i + 1) * 10,
                 // Kein eigener SEO-Titel: Der Standard enthält das Alter, das der Stamm anpassen kann.
-                'body' => '<p>'.e(self::STUFEN_TEXTE[$key] ?? '').'</p>'
-                    .'<h2>Gruppenstunde</h2>'
-                    .(filled($zeiten[$key] ?? null)
-                        ? '<p><strong>'.e($zeiten[$key]).'</strong>'.($ortZeile !== '' ? '<br>'.e($ortZeile) : '').'</p>'
-                            .'<p>Komm einfach mal vorbei – sag uns vorher über das <a href="/kontakt">Kontaktformular</a> kurz Bescheid.</p>'
-                        : '<p>Die Zeiten und den Ort der Gruppenstunde tragen wir hier bald ein. Bis dahin frag einfach über das <a href="/kontakt">Kontaktformular</a> nach – wir melden uns.</p>'),
+                // Zeiten und Ort zeigt die Seite aus „Verwaltung → Gruppenstunden“.
+                'body' => '<p>'.e(self::STUFEN_TEXTE[$key] ?? '').'</p>',
             ]);
         }
+        $this->gruppenstunden((array) ($a['gruppenstunden'] ?? []), (array) ($a['gruppenstunden_orte'] ?? []), $stufen);
+
+        // Menü: Unsere Gruppen · Mitmachen · Über uns (dann Termine, Aktuelles).
+        $this->seite('mitmachen', 'Mitmachen', [
+            'show_in_nav' => true,
+            'nav_sort' => 20,
+            'seo_description' => 'Schnupperstunde und Mitmachen im Stamm',
+            'body' => self::mitmachenText(),
+        ]);
+        $this->seite('ueber-uns', 'Über uns', [
+            'show_in_nav' => true,
+            'nav_sort' => 30,
+            'seo_description' => 'Wer wir sind: Stammesvorstand, Heim und Unterstützer',
+            'body' => '<p>Wir sind der Stamm '.e($stamm).' der Deutschen Pfadfinderschaft Sankt Georg (DPSG)'.($ort !== '' ? ' in '.e($ort) : '').'. Hier erfährst du, wer den Stamm leitet und wie du uns erreichst: <a href="/stammesvorstand">Stammesvorstand</a>.</p>',
+        ]);
 
         $vorstand = trim((string) ($a['vorstand'] ?? ''));
         $this->seite('stammesvorstand', 'Stammesvorstand', [
+            'parent' => 'ueber-uns',
             'show_in_nav' => true,
-            'nav_sort' => 30,
+            'nav_sort' => 10,
             'seo_description' => 'Wer den Stamm leitet und wie du uns erreichst',
             'body' => '<p>Der Stammesvorstand leitet den Stamm '.e($stamm).($vorstand !== '' ? ': '.e($vorstand) : '').'. Er ist Ansprechpartner für Eltern, Leiter*innen und alle, die mitmachen möchten.</p>'
                 .'<p>Schreib uns über das <a href="/kontakt">Kontaktformular</a> oder an <a href="mailto:'.e((string) config('dpsg.contact.email')).'">'.e((string) config('dpsg.contact.email')).'</a>.</p>',
         ]);
 
         $this->seite(Leitergewinnung::SLUG, Leitergewinnung::TITEL, [
+            'parent' => 'mitmachen',
             'show_in_nav' => true,
-            'nav_sort' => 40,
+            'nav_sort' => 10,
             'seo_description' => 'Ehrenamtlich Gruppen leiten im Stamm',
             'body' => Leitergewinnung::text(),
         ]);
@@ -295,6 +304,40 @@ class StammStartSeeder extends Seeder
             if (StufenAlter::gueltig((string) $stage, $from, $to)) {
                 StufenAlter::setzen((string) $stage, $from, $to, null, isset($a['text']) ? (string) $a['text'] : null);
             }
+        }
+    }
+
+    /** Text der Seite „Mitmachen“ (auch für bestehende Stämme per Inhalts-Migration). */
+    public static function mitmachenText(): string
+    {
+        return '<p>Du möchtest bei uns mitmachen? Komm einfach zu einer Gruppenstunde vorbei – wann sich welche Gruppe trifft, steht bei <a href="/stufen">Unsere Gruppen</a>. Sag uns vorher über das <a href="/kontakt?thema=mitmachen">Kontaktformular</a> kurz Bescheid, dann wissen die Leiter*innen, dass du kommst.</p>'
+            .'<h2>Als Leiter*in</h2>'
+            .'<p>Du hast Lust, Kinder und Jugendliche zu begleiten, Gruppenstunden zu gestalten und mit ins Lager zu fahren? Alles dazu unter <a href="/'.Leitergewinnung::SLUG.'">'.e(Leitergewinnung::TITEL).'</a>.</p>';
+    }
+
+    /**
+     * Gruppenstunden je Stufe (angaben.json „gruppenstunden“: Freitext wie
+     * „dienstags, 16:00–17:00 Uhr“, „gruppenstunden_orte“: eigener Ort), nur
+     * solange es noch keine gibt. Gepflegt unter Verwaltung → Gruppenstunden.
+     *
+     * @param  array<string, mixed>  $zeiten
+     * @param  array<string, mixed>  $orte
+     * @param  list<string>  $stufen
+     */
+    private function gruppenstunden(array $zeiten, array $orte, array $stufen): void
+    {
+        if (Gruppenstunde::query()->exists()) {
+            return;
+        }
+        foreach ($stufen as $i => $key) {
+            if (! filled($zeiten[$key] ?? null)) {
+                continue;
+            }
+            Gruppenstunde::query()->create(Gruppenstunde::ausText((string) $zeiten[$key]) + [
+                'stage' => $key,
+                'ort' => filled($orte[$key] ?? null) ? mb_substr((string) $orte[$key], 0, 160) : null,
+                'sort' => ($i + 1) * 10,
+            ]);
         }
     }
 

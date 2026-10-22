@@ -11,6 +11,7 @@ use App\Models\Event;
 use App\Models\EventRegistration;
 use App\Models\RegistrationDocument;
 use App\Models\User;
+use App\Support\Site;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -108,10 +109,14 @@ class ParticipantPortalTest extends TestCase
         $html = $this->get('/kalender')->assertOk()->getContent();
 
         $desktop = substr($html, strpos($html, 'aria-label="Hauptnavigation"'));
-        $this->assertMatchesRegularExpression('#>Veranstaltungen</a>.*id="subnav-veranstaltungen".*Übersicht Veranstaltungen.*>Meine Anmeldungen</a>.*>Kalender</a>#s', $desktop);
+        // „Veranstaltungen“ (DV, Bezirk) bzw. „Termine“ mit Kalender als Unterpunkt (Stamm).
+        $label = Site::termineLabel();
+        $this->assertMatchesRegularExpression(Site::kalenderUnterTerminen()
+            ? '#>'.$label.'</a>.*id="subnav-veranstaltungen".*Übersicht '.$label.'.*>Kalender</a>.*>Meine Anmeldungen</a>#s'
+            : '#>'.$label.'</a>.*id="subnav-veranstaltungen".*Übersicht '.$label.'.*>Meine Anmeldungen</a>.*>Kalender</a>#s', $desktop);
 
         $mobile = substr($html, strpos($html, 'id="mobile-nav"'), 6000);
-        $this->assertMatchesRegularExpression('#>Veranstaltungen</a>\s*<ul[^>]*>\s*<li><a href="[^"]*/meine-anmeldungen"#', $mobile);
+        $this->assertMatchesRegularExpression('#>'.$label.'</a>\s*<ul[^>]*>.*?<li><a href="[^"]*/meine-anmeldungen"#s', $mobile);
 
         $this->assertMatchesRegularExpression('#aria-current="page"\s*>Meine Anmeldungen#', $this->get('/meine-anmeldungen')->assertOk()->getContent());
     }

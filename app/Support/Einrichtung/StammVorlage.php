@@ -57,6 +57,9 @@ class StammVorlage
                 'leitung_page' => 'stammesvorstand',
                 'leitung_label' => 'Stammesvorstand',
                 'office' => ['label' => 'Stammesvorstand', 'page' => 'stammesvorstand', 'article' => 'der'],
+                // Menü: „Termine“ mit Kalender als Unterpunkt (DV/Bezirk: „Veranstaltungen“).
+                'events_label' => trim((string) ($a['termine_bezeichnung'] ?? '')) ?: 'Termine',
+                'events_menu_calendar' => true,
                 'join_text' => 'Du möchtest Pfadfinder*in werden oder als Leiter*in mitmachen? Komm zu einer Gruppenstunde vorbei – sag uns vorher kurz Bescheid.',
                 'parent' => $eltern,
                 'links' => [],

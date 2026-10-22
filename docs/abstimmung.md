@@ -35,6 +35,16 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-10-22 – Stammes → Haupt: Gruppenstunden, „Termine“, Menü (gemeinsamer Kern)
+Status: offen
+
+- **Neu:** Tabelle `gruppenstunden` (Schema-Migration `2026_10_22_100000`), Model `Gruppenstunde`, `GruppenstundePolicy` (Verwaltung; Stufenadmin nur eigene Stufe), Resource „Verwaltung → Gruppenstunden“ (nur `level === 'Stamm'`).
+- **Views:** `home.blade.php` zeigt `partials/gruppenstunden` nur, wenn es aktive Einträge gibt (DV/Bezirk: keine → unverändert). `pages/stage.blade.php`: Kasten „Gruppenstunde“/„Unsere Gruppen“ oben in der Seitenleiste, ebenfalls nur mit Einträgen.
+- **Menü-Bezeichnung:** `Site::termineLabel()` (config `dpsg.site.events_label`, Standard „Veranstaltungen“) und `Site::kalenderUnterTerminen()` (`events_menu_calendar`, Standard aus) in `layouts/app` (mobil und Desktop) und `events/index` (Titel, h1). StammVorlage setzt „Termine“ + Kalender als Unterpunkt.
+- **Tests angepasst:** `AdminSmokeTest` überspringt Resources mit `canAccess() === false` (Gruppenstunden außerhalb des Stamms); `ParticipantPortalTest::test_menu_entry_below_events` nutzt Label und Kalender-Position je Instanz.
+- **StammStartSeeder:** Seiten „Mitmachen“ und „Über uns“ als Elternseiten, Gruppenstunden aus `angaben.json` statt Text in der Stufenseite.
+Alle drei Instanzen grün.
+
 ### 2026-10-22 – Haupt → Stammes, Bezirk: dritte Sitzung für den Bezirk Saar-Hochwald
 Status: offen
 

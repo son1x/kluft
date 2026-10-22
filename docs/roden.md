@@ -71,6 +71,7 @@ nur die Website des Stamms Roden betreut. Allgemeines zu Kluft steht in
 - Ämter (Migration `2026_10_19_101500_roden_stammesvorstand_und_aemter`, einmalig): Hendrik Schuler ist Kassenwart und Mitgliederbeauftragter, Michele Franke ist für Rüsthaus-Bestellungen zuständig. Dazu der Stammesvorstand als Personen mit Gruppenfoto (`instanzen/roden/dateien/stammesvorstand.jpg`, ohne EXIF; Foto: Julia Hafner).
 - Migration `2026_10_22_090000_roden_erster_admin_m365`: schaltet das M365-Konto sebastian@dpsg-roden.de (Organisationskonto des Stamms) einmalig frei und gibt ihm Super-Admin, weil anfangs niemand ins Backend kam. Weitere Rollen im Backend unter „Benutzer“.
 - Menü und Gruppenstunden (Migration `2026_10_22_100100_roden_menue_und_gruppenstunden`, einmalig): „Mitmachen“ (darunter Leiter*in werden) und „Über uns“ (Stammesvorstand, Pfadfinderheim, Förderverein); Gruppenstunden aus `gruppenstunden` in „Verwaltung → Gruppenstunden“, der Zeitenabschnitt aus den Stufenseiten-Texten entfernt. Ab jetzt Zeiten nur noch im Backend pflegen.
+- `beitrag_halbjahr`: 24 (€ je Halbjahr, einheitlich für alle Mitglieder). Für die laufende Website setzt die Migration `2026_10_22_130000_roden_beitrag_pauschale` den Wert, sofern die Kasse noch nichts eingetragen hat.
 - `funktionen`: `mailformular: true`. Klicks auf E-Mail-Adressen öffnen ein Formular statt des Mailprogramms (Funktion der Haupt-Sitzung, `docs/nachrichten.md`).
 - `stufenfarben`: Die Biber tragen in Roden Gelb (`#ffed00`, DPSG-Gelb, mit dunkler Schrift). Wirkt sofort nach dem Deploy, ohne Datenbank.
 

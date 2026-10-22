@@ -176,6 +176,27 @@ class BeitraegeTest extends TestCase
         $this->assertSame([4200, 'Voller Beitrag'], [$beitrag->fresh()->soll_cent, $beitrag->fresh()->beitragsart]);
     }
 
+    #[TestDox('Einheitlicher Beitrag je Halbjahr: gilt für alle Mitglieder, Bundesanteil nur, wenn eingetragen; Schnupper zahlen nichts')]
+    public function test_pauschale(): void
+    {
+        Beitraege::saetzeSetzen(['Voller Beitrag' => ['bund' => 1700]]);
+        Beitraege::pauschaleSetzen(2400);
+        $abruf = new BeitragsAbruf(new NamiVerzeichnis);
+        $abruf->abrufen('210601');
+        $abruf->halbjahrAnlegen('2026-2');
+
+        $soll = fn (int $namiId) => Beitrag::query()->whereRelation('mitglied', 'nami_id', $namiId)->first(['soll_cent', 'bundes_cent'])?->only(['soll_cent', 'bundes_cent']);
+        $this->assertSame(['soll_cent' => 2400, 'bundes_cent' => 1700], $soll(101));
+        $this->assertSame(['soll_cent' => 2400, 'bundes_cent' => null], $soll(102), 'Familienermäßigt ohne Bundesbeitrag: nur Pauschale');
+        $this->assertSame(['soll_cent' => 0, 'bundes_cent' => 0], $soll(103));
+
+        // Pauschale aufheben: offene Beiträge folgen wieder den Sätzen je Art.
+        Beitraege::pauschaleSetzen(null);
+        Beitraege::saetzeSetzen(['Voller Beitrag' => ['bund' => 1700, 'stamm' => 2500]]);
+        $abruf->halbjahrAnlegen('2026-2');
+        $this->assertSame(4200, $soll(101)['soll_cent']);
+    }
+
     #[TestDox('Beitragsarten wie NaMi 2 sie liefert: Text in der Klammer, Halbgeviertstrich, ohne Antwort die bekannten IDs')]
     public function test_beitragsarten(): void
     {

@@ -10,6 +10,7 @@ use App\Models\RoleAssignment;
 use App\Models\StageAge;
 use App\Models\User;
 use App\Support\Ausbau;
+use App\Support\Beitraege;
 use App\Support\Einrichtung\Installer;
 use App\Support\Leitergewinnung;
 use App\Support\StufenAlter;
@@ -46,6 +47,10 @@ class StammStartSeeder extends Seeder
         $this->ersterZugang((array) ($a['zugang'] ?? []));
         $this->altersangaben((array) ($a['alter'] ?? []), $stufen);
         $this->leitende((array) ($a['leitende'] ?? []), $stufen);
+        // Einheitlicher Beitrag je Halbjahr (angaben.json „beitrag_halbjahr“ in Euro), nur wenn noch keiner gesetzt ist.
+        if (is_numeric($a['beitrag_halbjahr'] ?? null) && Beitraege::pauschale() === null && Beitraege::saetze() === []) {
+            Beitraege::pauschaleSetzen((int) round((float) $a['beitrag_halbjahr'] * 100));
+        }
 
         $this->seite('start', 'Pfadfinden'.($ort !== '' ? ' in '.$ort : ' beim Stamm '.$stamm), [
             'seo_title' => (string) config('dpsg.site.name'),

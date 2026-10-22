@@ -23,7 +23,12 @@ Diözesanverband und Bezirk erscheinen weder die Funktion noch die Rolle
 
 ## Ablauf je Halbjahr
 
-1. **Kasse → Mitgliedsbeiträge → Beitragssätze**: je Beitragsart, wie NaMi
+1. **Kasse → Mitgliedsbeiträge → Beitragssätze**: Viele Stämme beschließen
+   einfach einen **einheitlichen Beitrag je Halbjahr** (Roden: 24 €). Dann
+   nur dieses Feld ausfüllen: Er gilt für alle Mitglieder unabhängig von der
+   Beitragsart (Schnuppermitglieder zahlen nichts). Die Bundesbeiträge je Art
+   sind dann freiwillig und dienen nur dem Abgleich mit der Rechnung des
+   Bundesverbands. Ohne einheitlichen Beitrag: je Beitragsart, wie NaMi
    sie führt (voller Beitrag, familienermäßigt, ermäßigt, jeweils mit und
    ohne Stiftungseuro, dazu „Übernahme“)
    zwei Beträge für ein Halbjahr eintragen: den **Bundesbeitrag**, den der

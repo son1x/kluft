@@ -29,6 +29,7 @@
         "rover": "donnerstags, 18:00–19:30 Uhr"
     },
     "ausbau": 4,
+    "beitrag_halbjahr": 24,
     "email_schema": "vorname",
     "email_leitende": true,
     "funktionen": {

@@ -22,6 +22,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Fieldset;
+use Filament\Schemas\Components\Utilities\Get;
 use Illuminate\Support\HtmlString;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -39,7 +40,7 @@ class ListBeitraege extends ListRecords
             default => 'Noch kein NaMi-Abruf.',
         };
 
-        return $stand.(Beitraege::saetze() === [] ? ' Bitte zuerst die Beitragssätze eintragen.' : '');
+        return $stand.(Beitraege::saetze() === [] && Beitraege::pauschale() === null ? ' Bitte zuerst die Beitragssätze eintragen.' : '');
     }
 
     /** Im Filter gewähltes Halbjahr (sonst das laufende). */
@@ -123,24 +124,30 @@ class ListBeitraege extends ListRecords
                 ->label('Beitragssätze')
                 ->icon('heroicon-o-currency-euro')
                 ->color('gray')
-                ->modalHeading('Beitrag je Halbjahr nach Beitragsart')
-                ->modalDescription('Der Beitrag ist Bundesbeitrag plus Stammesanteil, jeweils für ein Halbjahr. Den Bundesbeitrag stellt der Bundesverband in Rechnung (Betrag laut Rechnung bzw. Beitragsordnung), den Stammesanteil beschließt der Stamm. Offene Beiträge ab dem laufenden Halbjahr werden angepasst, bezahlte und ältere nicht.')
-                ->fillForm(fn () => collect(self::arten())->flatMap(fn (string $art, string $feld) => [
+                ->modalHeading('Beitrag je Halbjahr')
+                ->modalDescription('Entweder ein einheitlicher Beitrag für alle Mitglieder, oder je Beitragsart Bundesbeitrag plus Stammesanteil. Den Bundesbeitrag stellt der Bundesverband in Rechnung; mit Pauschale ist er nur für den Abgleich mit der Rechnung nötig. Offene Beiträge ab dem laufenden Halbjahr werden angepasst, bezahlte und ältere nicht.')
+                ->fillForm(fn () => ['pauschale' => BeitragResource::alsEuro(Beitraege::pauschale())] + collect(self::arten())->flatMap(fn (string $art, string $feld) => [
                     $feld.'_bund' => BeitragResource::alsEuro(Beitraege::saetze()[$art]['bund'] ?? null),
                     $feld.'_stamm' => BeitragResource::alsEuro(Beitraege::saetze()[$art]['stamm'] ?? null),
                 ])->all())
-                ->schema(fn () => collect(self::arten())->map(fn (string $art, string $feld) => Fieldset::make($art)->columns(2)->schema([
-                    TextInput::make($feld.'_bund')->label('Bundesbeitrag')->suffix('€')->rules(BeitragResource::EURO)->inputMode('decimal')
-                        ->disabled($art === Beitraege::UEBERNAHME)->placeholder($art === Beitraege::UEBERNAHME ? '0,00' : null)
-                        ->helperText($art === Beitraege::UEBERNAHME ? 'Zahlt nicht der Stamm, steht nicht auf seiner Rechnung.' : null),
-                    TextInput::make($feld.'_stamm')->label('Stammesanteil')->suffix('€')->rules(BeitragResource::EURO)->inputMode('decimal'),
-                ]))->values()->all())
+                ->schema(fn () => [
+                    TextInput::make('pauschale')->label('Einheitlicher Beitrag je Halbjahr')->suffix('€')->rules(BeitragResource::EURO)->inputMode('decimal')->live(onBlur: true)
+                        ->helperText('Gilt für alle Mitglieder unabhängig von der Beitragsart (Schnuppermitglieder zahlen nichts). Leer lassen, um nach Beitragsart abzurechnen.'),
+                    ...collect(self::arten())->map(fn (string $art, string $feld) => Fieldset::make($art)->columns(2)->schema([
+                        TextInput::make($feld.'_bund')->label('Bundesbeitrag')->suffix('€')->rules(BeitragResource::EURO)->inputMode('decimal')
+                            ->disabled($art === Beitraege::UEBERNAHME)->placeholder($art === Beitraege::UEBERNAHME ? '0,00' : null)
+                            ->helperText($art === Beitraege::UEBERNAHME ? 'Zahlt nicht der Stamm, steht nicht auf seiner Rechnung.' : null),
+                        TextInput::make($feld.'_stamm')->label('Stammesanteil')->suffix('€')->rules(BeitragResource::EURO)->inputMode('decimal')
+                            ->hidden(fn (Get $get) => filled($get('pauschale'))),
+                    ]))->values()->all(),
+                ])
                 ->action(function (array $data) {
                     abort_unless(BeitragResource::canViewAny(), 403);
                     $saetze = [];
                     foreach (self::arten() as $feld => $art) {
                         $saetze[$art] = ['bund' => (int) BeitragResource::alsCent($data[$feld.'_bund'] ?? null), 'stamm' => (int) BeitragResource::alsCent($data[$feld.'_stamm'] ?? null)];
                     }
+                    Beitraege::pauschaleSetzen(BeitragResource::alsCent($data['pauschale'] ?? null), Filament::auth()->id());
                     Beitraege::saetzeSetzen($saetze, Filament::auth()->id());
                     $angepasst = 0;
                     foreach (Beitrag::query()->offen()->where('halbjahr', '>=', Beitraege::aktuell())->distinct()->pluck('halbjahr') as $halbjahr) {

@@ -18,6 +18,8 @@ class Beitraege
 
     private const ABRUF = 'beitraege.abruf';
 
+    private const PAUSCHALE = 'beitraege.pauschale';
+
     /** Beitragsart „Übernahme“: Den Bundesbeitrag zahlt nicht der Stamm. */
     public const UEBERNAHME = 'Übernahme';
 
@@ -111,6 +113,48 @@ class Beitraege
             fn (array $s) => $s['bund'] + $s['stamm'] > 0
         );
         SiteSetting::query()->updateOrCreate(['key' => self::SAETZE], ['value' => (string) json_encode($saetze, JSON_UNESCAPED_UNICODE), 'updated_by' => $userId]);
+    }
+
+    /**
+     * Einheitlicher Beitrag je Halbjahr in Cent, den viele Stämme beschließen,
+     * statt ihn nach Beitragsart aufzuteilen (z. B. Roden: 24 €). Ist er
+     * gesetzt, gilt er für alle Mitglieder; die Bundesbeiträge je Art dienen
+     * dann nur dem Abgleich mit der Rechnung. Null = nach Beitragsart.
+     */
+    public static function pauschale(): ?int
+    {
+        $wert = SiteSetting::query()->whereKey(self::PAUSCHALE)->value('value');
+
+        return is_numeric($wert) && (int) $wert > 0 ? (int) $wert : null;
+    }
+
+    public static function pauschaleSetzen(?int $cent, ?int $userId = null): void
+    {
+        if ($cent === null || $cent <= 0) {
+            SiteSetting::query()->whereKey(self::PAUSCHALE)->delete();
+
+            return;
+        }
+        SiteSetting::query()->updateOrCreate(['key' => self::PAUSCHALE], ['value' => (string) $cent, 'updated_by' => $userId]);
+    }
+
+    /**
+     * Soll und Bundesanteil für eine Beitragsart: Pauschale, sonst Bundesbeitrag
+     * plus Stammesanteil. Bei der Pauschale ist der Bundesanteil nur bekannt,
+     * wenn er je Art eingetragen ist.
+     *
+     * @return array{soll: int, bund: ?int}
+     */
+    public static function soll(?string $beitragsart): array
+    {
+        $satz = self::saetze()[(string) $beitragsart] ?? null;
+        $pauschale = self::pauschale();
+        if ($pauschale !== null) {
+            return ['soll' => $pauschale, 'bund' => $satz && $satz['bund'] > 0 ? $satz['bund'] : null];
+        }
+        $satz ??= ['bund' => 0, 'stamm' => 0];
+
+        return ['soll' => $satz['bund'] + $satz['stamm'], 'bund' => $satz['bund']];
     }
 
     /** Stand des letzten NaMi-Abrufs: laeuft, fertig oder fehler. */

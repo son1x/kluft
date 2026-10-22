@@ -88,7 +88,8 @@ class BeitragsAbruf
 
     /**
      * Beiträge des Halbjahres für alle, die darin Mitglied waren. Neue
-     * bekommen das Soll ihrer Beitragsart (Bundesbeitrag plus Stammesanteil); offene Beiträge folgen einer
+     * bekommen den einheitlichen Beitrag des Stamms bzw. das Soll ihrer
+     * Beitragsart (Bundesbeitrag plus Stammesanteil); offene Beiträge folgen einer
      * geänderten Beitragsart, bezahlte bleiben unverändert.
      *
      * @return array{neu: int, angepasst: int}
@@ -96,7 +97,6 @@ class BeitragsAbruf
     public function halbjahrAnlegen(string $halbjahr): array
     {
         [$beginn, $ende] = Beitraege::zeitraum($halbjahr);
-        $saetze = Beitraege::saetze();
         $ergebnis = ['neu' => 0, 'angepasst' => 0];
 
         $mitglieder = BeitragsMitglied::query()
@@ -107,8 +107,8 @@ class BeitragsAbruf
         foreach ($mitglieder as $mitglied) {
             $beitrag = Beitrag::query()->firstOrNew(['beitrags_mitglied_id' => $mitglied->id, 'halbjahr' => $halbjahr]);
             // Schnuppermitglieder: in der Liste, aber nichts zu zahlen; nach dem Wechsel zum Mitglied folgt der offene Beitrag dem Satz.
-            $satz = $mitglied->schnupper ? ['bund' => 0, 'stamm' => 0] : ($saetze[(string) $mitglied->beitragsart] ?? ['bund' => 0, 'stamm' => 0]);
-            $werte = ['beitragsart' => $mitglied->schnupper ? self::SCHNUPPER : $mitglied->beitragsart, 'soll_cent' => $satz['bund'] + $satz['stamm'], 'bundes_cent' => $satz['bund']];
+            $soll = $mitglied->schnupper ? ['soll' => 0, 'bund' => 0] : Beitraege::soll($mitglied->beitragsart);
+            $werte = ['beitragsart' => $mitglied->schnupper ? self::SCHNUPPER : $mitglied->beitragsart, 'soll_cent' => $soll['soll'], 'bundes_cent' => $soll['bund']];
             if (! $beitrag->exists) {
                 $beitrag->fill($werte)->save();
                 $ergebnis['neu']++;

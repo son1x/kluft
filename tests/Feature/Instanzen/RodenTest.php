@@ -8,6 +8,7 @@ use App\Models\Page;
 use App\Models\Person;
 use App\Models\TeamPhoto;
 use App\Models\User;
+use App\Support\Beitraege;
 use App\Support\Features;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -118,6 +119,16 @@ class RodenTest extends TestCase
         $login('verwaltung');
         $this->get(GruppenstundeResource::getUrl())->assertOk()->assertSee('dienstags, 16:00–17:00 Uhr');
         $this->get(GruppenstundeResource::getUrl('create'))->assertOk();
+    }
+
+    #[TestDox('Kasse Roden: einheitlich 24 € je Halbjahr (Startinhalt und Migration)')]
+    public function test_beitrag_pauschale(): void
+    {
+        $this->assertSame(2400, Beitraege::pauschale(), 'Startinhalt aus angaben.json');
+        Beitraege::pauschaleSetzen(null);
+        $migration = require base_path('instanzen/roden/migrations/2026_10_22_130000_roden_beitrag_pauschale.php');
+        $migration->up();
+        $this->assertSame(2400, Beitraege::pauschale());
     }
 
     #[TestDox('Migration: Stammesvorstand mit Foto und vorstand@, Ämter, Vorstandsadresse auf der Seite; zweiter Lauf ändert nichts')]

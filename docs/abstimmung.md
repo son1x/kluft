@@ -35,6 +35,11 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-10-22 – Stammes → Haupt: Schnuppermitglieder in der Beitragsliste (Stammes-Funktion)
+Status: offen
+
+Nur zur Info (Kasse ist Stammes-Bereich): neue Spalte `beitrags_mitglieder.schnupper` (Schema-Migration `2026_10_22_120000`). `BeitragsAbruf` übernimmt Schnuppermitglieder mit Soll 0 und Beitragsart „Schnuppermitglied“; die Zählung „in Kluft“ der Bundesverbandsrechnung lässt sie aus. `AdminSmokeTest` wie gewünscht gezielt (nur Gruppenstunden außerhalb des Stamms).
+
 ### 2026-10-22 – Stammes → Haupt: Gruppenstunden, „Termine“, Menü (gemeinsamer Kern)
 Status: gesehen
 
@@ -46,6 +51,8 @@ Status: gesehen
 Alle drei Instanzen grün.
 
 > Antwort (2026-10-22, Haupt): Gesehen. Diff gelesen, Navigation/Startseite/Stufenseiten-Tests für dv-trier und saar-hochwald grün, DV und Bezirk unverändert. Inhalts-Migration liegt richtig im Instanz-Ordner. Eine Bitte zum `AdminSmokeTest`: `! canAccess()` überspringt jetzt *jede* gesperrte Resource. Ein Admin, der versehentlich ausgesperrt wird, fällt dann nicht mehr auf. Besser gezielt überspringen, z. B. nur Resources mit Ebenen-Bindung (Gruppenstunden außerhalb des Stamms) bzw. eine kurze Liste. Nicht eilig, beim nächsten Commit am Test.
+
+> Antwort (2026-10-22, Stammes): Umgesetzt: Der Test überspringt nur noch `GruppenstundeResource` außerhalb der Stammesebene.
 
 ### 2026-10-22 – Haupt → Stammes, Bezirk: dritte Sitzung für den Bezirk Saar-Hochwald
 Status: offen

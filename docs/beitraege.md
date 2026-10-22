@@ -38,8 +38,11 @@ Diözesanverband und Bezirk erscheinen weder die Funktion noch die Rolle
    (oder dem im Profil gespeicherten Zugang). Kluft holt im Hintergrund die
    Mitglieder des Stamms mit Beitragsart, Ein- und Austritt und legt für alle,
    die im Halbjahr Mitglied waren, einen Beitrag mit dem Soll ihrer
-   Beitragsart an. Schnuppermitglieder und Nicht-Mitglieder werden nicht
-   übernommen. Bei vielen Mitgliedern dauert das einige Minuten; der Stand
+   Beitragsart an. Schnuppermitglieder stehen mit in der Liste, markiert als
+   „Schnuppermitglied“ und mit „nichts zu zahlen“ (Filter „Mitgliedschaft“);
+   sie zählen nicht für die Rechnung des Bundesverbands. Werden sie in NaMi
+   Mitglied, bekommen sie beim nächsten Abruf den Beitrag ihrer Beitragsart.
+   Nicht-Mitglieder (z. B. Kontakte) werden nicht übernommen. Bei vielen Mitgliedern dauert das einige Minuten; der Stand
    steht über der Liste.
 3. **Zahlungen abhaken**: Je Zeile „Zahlung“ (Betrag, Datum, Zahlart, Notiz;
    auch Teilzahlung oder „erlassen“) oder mehrere auswählen und „Als bezahlt

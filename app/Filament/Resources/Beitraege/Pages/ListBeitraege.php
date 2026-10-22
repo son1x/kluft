@@ -72,7 +72,7 @@ class ListBeitraege extends ListRecords
                 ->modalHeading('Mitglieder aus NaMi abrufen')
                 ->modalDescription(fn () => new HtmlString(e('Kluft holt die Mitglieder des Stamms '.(Beitraege::stammNummer() ?? '(DPSG-Nummer fehlt)')
                     .' mit Beitragsart, Ein- und Austritt und legt die Beiträge des Halbjahres an – im Hintergrund, bei vielen Mitgliedern einige Minuten. '
-                    .'Bezahlte Beiträge bleiben, wie sie sind. Schnuppermitglieder und Nicht-Mitglieder zahlen keinen Beitrag und werden nicht übernommen.')
+                    .'Bezahlte Beiträge bleiben, wie sie sind. Schnuppermitglieder stehen markiert und ohne Beitrag in der Liste; Nicht-Mitglieder werden nicht übernommen.')
                     .(NamiVerzeichnis::persoenlich() ? ' '.e(self::gespeicherterZugang(self::nutzer())
                         ? 'Die Anmeldung bei NaMi läuft über deinen im Profil gespeicherten Zugang.'
                         : 'Du meldest dich mit deinem eigenen NaMi-Konto an; das Passwort wird nur gespeichert, wenn du es unten ankreuzst.') : '')

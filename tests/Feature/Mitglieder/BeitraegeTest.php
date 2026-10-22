@@ -120,20 +120,20 @@ class BeitraegeTest extends TestCase
         $this->assertFalse(Beitraege::gueltig('2026-3'));
     }
 
-    #[TestDox('Abruf aus NaMi: nur Mitglieder (keine Schnupper- und Nicht-Mitglieder), Beitragsart aus den Details, Beiträge je Halbjahr nach Beitragssatz')]
+    #[TestDox('Abruf aus NaMi: Mitglieder und Schnuppermitglieder (keine Nicht-Mitglieder), Beitragsart aus den Details, Beiträge je Halbjahr nach Beitragssatz')]
     public function test_abruf_und_halbjahr(): void
     {
         $abruf = new BeitragsAbruf(new NamiVerzeichnis);
         $ergebnis = $abruf->abrufen('21 06 01');
 
-        $this->assertSame(['mitglieder' => 3, 'neu' => 3, 'details' => 3, 'offen' => 0, 'ausgetreten' => 0], $ergebnis);
-        $this->assertSame(['Muster, Ben', 'Muster, Mia', 'Neu, Neo'], BeitragsMitglied::query()->orderBy('nachname')->orderBy('vorname')->get()->map->name()->all());
+        $this->assertSame(['mitglieder' => 4, 'neu' => 4, 'details' => 4, 'offen' => 0, 'ausgetreten' => 0], $ergebnis);
+        $this->assertSame(['Muster, Ben', 'Muster, Mia', 'Neu, Neo', 'Schnupper, Sam'], BeitragsMitglied::query()->orderBy('nachname')->orderBy('vorname')->get()->map->name()->all());
         $mia = BeitragsMitglied::query()->where('nami_id', 101)->firstOrFail();
         $this->assertSame(['Voller Beitrag', '4711', '2019-04-01'], [$mia->beitragsart, $mia->mitgliedsnummer, $mia->eintritt?->toDateString()]);
         $this->assertSame('Familienermäßigt', BeitragsMitglied::query()->where('nami_id', 102)->value('beitragsart'));
 
-        // Neo tritt erst 2027 ein: im 2. Halbjahr 2026 kein Beitrag.
-        $this->assertSame(['neu' => 2, 'angepasst' => 0], $abruf->halbjahrAnlegen('2026-2'));
+        // Neo tritt erst 2027 ein: im 2. Halbjahr 2026 kein Beitrag; Sam (Schnupper) ohne Soll.
+        $this->assertSame(['neu' => 3, 'angepasst' => 0], $abruf->halbjahrAnlegen('2026-2'));
         $this->assertSame(7000, (int) Beitrag::query()->where('halbjahr', '2026-2')->sum('soll_cent'));
         $this->assertSame(2800, (int) Beitrag::query()->where('halbjahr', '2026-2')->sum('bundes_cent'));
 
@@ -151,7 +151,29 @@ class BeitraegeTest extends TestCase
         // Offener Beitrag folgt der neuen Beitragsart; Bens Beitrag bleibt (er war im Halbjahr Mitglied).
         $this->assertSame(['neu' => 0, 'angepasst' => 1], $abruf->halbjahrAnlegen('2026-2'));
         $this->assertSame(2800, Beitrag::query()->whereRelation('mitglied', 'nami_id', 101)->value('soll_cent'));
-        $this->assertSame(2, Beitrag::query()->where('halbjahr', '2026-2')->count());
+        $this->assertSame(3, Beitrag::query()->where('halbjahr', '2026-2')->count());
+    }
+
+    #[TestDox('Schnuppermitglieder stehen markiert und ohne Beitrag in der Liste, zählen nicht für den Bundesverband und zahlen nach dem Wechsel zum Mitglied')]
+    public function test_schnupper(): void
+    {
+        $abruf = new BeitragsAbruf(new NamiVerzeichnis);
+        $abruf->abrufen('210601');
+        $sam = BeitragsMitglied::query()->where('nami_id', 103)->firstOrFail();
+        $this->assertTrue($sam->schnupper);
+        $this->assertFalse(BeitragsMitglied::query()->where('nami_id', 104)->exists(), 'Nicht-Mitglieder bleiben draußen');
+
+        $abruf->halbjahrAnlegen('2026-2');
+        $beitrag = Beitrag::query()->where('beitrags_mitglied_id', $sam->id)->firstOrFail();
+        $this->assertSame([0, 0, 'frei', BeitragsAbruf::SCHNUPPER], [$beitrag->soll_cent, $beitrag->bundes_cent, $beitrag->status(), $beitrag->beitragsart]);
+
+        // In NaMi Mitglied geworden: offener Beitrag folgt dem Satz.
+        $this->liste[2]['entries_mglType'] = 'Mitglied';
+        $this->liste[2]['entries_version'] = 2;
+        $this->details[103] = ['beitragsartId' => 1, 'beitragsart' => 'Voller Beitrag'];
+        $abruf->abrufen('210601');
+        $abruf->halbjahrAnlegen('2026-2');
+        $this->assertSame([4200, 'Voller Beitrag'], [$beitrag->fresh()->soll_cent, $beitrag->fresh()->beitragsart]);
     }
 
     #[TestDox('Beitragsarten wie NaMi 2 sie liefert: Text in der Klammer, Halbgeviertstrich, ohne Antwort die bekannten IDs')]
@@ -218,9 +240,9 @@ class BeitraegeTest extends TestCase
         BeitraegeAbrufen::dispatchSync('210601', '2026-2');
 
         $this->assertSame(3, BeitragsMitglied::query()->whereNotNull('beitragsart')->count());
-        $this->assertSame(2, Beitrag::query()->where('halbjahr', '2026-2')->count());
+        $this->assertSame(3, Beitrag::query()->where('halbjahr', '2026-2')->count());
         $this->assertSame('fertig', Beitraege::letzterAbruf()['status'] ?? null);
-        $this->assertStringContainsString('3 Mitglieder aus NaMi', Beitraege::letzterAbruf()['text'] ?? '');
+        $this->assertStringContainsString('4 Mitglieder aus NaMi', Beitraege::letzterAbruf()['text'] ?? '');
     }
 
     #[TestDox('Kasse → Mitgliedsbeiträge nur mit Funktion und Rolle „Kasse“ (oder Admin)')]
@@ -308,7 +330,7 @@ class BeitraegeTest extends TestCase
         $this->assertSame('11,00', $felder[str_replace('_stamm', '_bund', $feld)]);
         Livewire::test(ListBeitraege::class)->callAction('saetze', [...$felder, $feld => '19'])->assertHasNoActionErrors();
         $this->assertSame(['bund' => 1100, 'stamm' => 1900], Beitraege::saetze()['Familienermäßigt']);
-        $this->assertSame([3000, 4200], Beitrag::query()->orderBy('soll_cent')->pluck('soll_cent')->all());
+        $this->assertSame([0, 3000, 4200], Beitrag::query()->orderBy('soll_cent')->pluck('soll_cent')->all());
 
         Livewire::test(ManageBeitragsAbrechnungen::class)
             ->callAction('create', ['halbjahr' => '2026-2', 'mitglieder' => 3, 'rechnungsbetrag_cent' => '30,50', 'rechnungsdatum' => '2026-07-15'])

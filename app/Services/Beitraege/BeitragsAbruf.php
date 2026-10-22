@@ -13,12 +13,16 @@ use Illuminate\Support\Carbon;
 /**
  * Mitglieder des Stamms aus NaMi für die Beitragskasse holen und die
  * Beiträge eines Halbjahres anlegen. Gespeichert wird nur, was die Kasse
- * braucht: Name, Mitgliedsnummer, Beitragsart, Ein- und Austritt. Nur
- * Mitglieder zahlen Beitrag – keine Schnuppermitglieder und Nicht-Mitglieder.
+ * braucht: Name, Mitgliedsnummer, Beitragsart, Ein- und Austritt. Mitglieder
+ * zahlen Beitrag; Schnuppermitglieder stehen markiert und ohne Beitrag in der
+ * Liste, Nicht-Mitglieder (z. B. Kontakte) gar nicht.
  * Details werden nur für neue oder in NaMi geänderte Personen geladen.
  */
 class BeitragsAbruf
 {
+    /** Beitragsart in der Liste für Schnuppermitglieder. */
+    public const SCHNUPPER = 'Schnuppermitglied';
+
     public function __construct(private NamiVerzeichnis $nami) {}
 
     /**
@@ -39,7 +43,7 @@ class BeitragsAbruf
         foreach ($this->nami->mitgliederListe($gruppierung) as $zeile) {
             $namiId = (int) ($zeile['id'] ?? 0);
             $typ = mb_strtolower((string) ($zeile['entries_mglType'] ?? ''));
-            if ($namiId === 0 || ! str_contains($typ, 'mitglied') || str_contains($typ, 'nicht') || str_contains($typ, 'schnupper')) {
+            if ($namiId === 0 || ! str_contains($typ, 'mitglied') || str_contains($typ, 'nicht')) {
                 continue;
             }
             $gesehen[] = $namiId;
@@ -51,13 +55,14 @@ class BeitragsAbruf
                 'nachname' => mb_substr((string) ($zeile['entries_nachname'] ?? ''), 0, 100),
                 'mitgliedsnummer' => filled($zeile['entries_mitgliedsNummer'] ?? null) ? (string) $zeile['entries_mitgliedsNummer'] : null,
                 'aktiv' => mb_strtolower((string) ($zeile['entries_status'] ?? 'aktiv')) === 'aktiv',
+                'schnupper' => str_contains($typ, 'schnupper'),
                 'abgerufen_am' => now(),
             ]);
             // Ein- und Austritt stehen schon in der Liste (NaMi 2), die Beitragsart nur in den Details.
             if (array_key_exists('entries_eintrittsdatum', $zeile)) {
                 $mitglied->fill(['eintritt' => self::datum($zeile['entries_eintrittsdatum']), 'austritt' => self::datum($zeile['entries_austrittsDatum'] ?? null)]);
             }
-            $brauchtDetails = ! $mitglied->exists || $version === null || $mitglied->nami_version !== $version || $mitglied->beitragsart === null;
+            $brauchtDetails = ! $mitglied->exists || $version === null || $mitglied->nami_version !== $version || ($mitglied->beitragsart === null && ! $mitglied->schnupper);
             if ($brauchtDetails && $maxDetails !== null && $ergebnis['details'] >= $maxDetails) {
                 // Ohne Details speichern; nami_version bleibt alt, damit der nächste Lauf sie holt.
                 $ergebnis['offen']++;
@@ -101,8 +106,9 @@ class BeitragsAbruf
 
         foreach ($mitglieder as $mitglied) {
             $beitrag = Beitrag::query()->firstOrNew(['beitrags_mitglied_id' => $mitglied->id, 'halbjahr' => $halbjahr]);
-            $satz = $saetze[(string) $mitglied->beitragsart] ?? ['bund' => 0, 'stamm' => 0];
-            $werte = ['beitragsart' => $mitglied->beitragsart, 'soll_cent' => $satz['bund'] + $satz['stamm'], 'bundes_cent' => $satz['bund']];
+            // Schnuppermitglieder: in der Liste, aber nichts zu zahlen; nach dem Wechsel zum Mitglied folgt der offene Beitrag dem Satz.
+            $satz = $mitglied->schnupper ? ['bund' => 0, 'stamm' => 0] : ($saetze[(string) $mitglied->beitragsart] ?? ['bund' => 0, 'stamm' => 0]);
+            $werte = ['beitragsart' => $mitglied->schnupper ? self::SCHNUPPER : $mitglied->beitragsart, 'soll_cent' => $satz['bund'] + $satz['stamm'], 'bundes_cent' => $satz['bund']];
             if (! $beitrag->exists) {
                 $beitrag->fill($werte)->save();
                 $ergebnis['neu']++;

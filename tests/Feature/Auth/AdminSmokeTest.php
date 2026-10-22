@@ -5,6 +5,7 @@ namespace Tests\Feature\Auth;
 use App\Filament\Resources\GlossaryTerms\GlossaryTermResource;
 use App\Filament\Resources\GlossaryTerms\Pages\CreateGlossaryTerm;
 use App\Filament\Resources\GlossaryTerms\Pages\EditGlossaryTerm;
+use App\Filament\Resources\Gruppenstunden\GruppenstundeResource;
 use App\Models\GlossaryTerm;
 use App\Models\User;
 use App\Support\Features;
@@ -42,8 +43,9 @@ class AdminSmokeTest extends TestCase
 
         foreach ($panel->getResources() as $resource) {
             foreach (['index', 'create'] as $page) {
-                // Bereiche nur für eine andere Ebene (z. B. Gruppenstunden nur im Stamm) überspringen.
-                if (! $resource::hasPage($page) || (! $kasse && $resource::getNavigationGroup() === 'Kasse') || ! $resource::canAccess()) {
+                // Gruppenstunden gibt es nur auf Stammes-Websites; alles andere muss für Super-Admins erreichbar sein.
+                $nurStamm = $resource === GruppenstundeResource::class && config('dpsg.site.level') !== 'Stamm';
+                if (! $resource::hasPage($page) || (! $kasse && $resource::getNavigationGroup() === 'Kasse') || $nurStamm) {
                     continue;
                 }
                 $url = $resource::getUrl($page);

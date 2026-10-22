@@ -6,6 +6,7 @@ use App\Filament\Resources\Beitraege\BeitragResource;
 use App\Filament\Resources\BeitragsAbrechnungen\Pages\ManageBeitragsAbrechnungen;
 use App\Models\Beitrag;
 use App\Models\BeitragsAbrechnung;
+use App\Services\Beitraege\BeitragsAbruf;
 use App\Support\Beitraege;
 use BackedEnum;
 use Filament\Actions\DeleteAction;
@@ -92,7 +93,7 @@ class BeitragsAbrechnungResource extends Resource
                 TextColumn::make('mitglieder')->label('Mitglieder (Rechnung)')->placeholder('–')
                     ->description(function (BeitragsAbrechnung $record) {
                         $kluft = Beitrag::query()->where('halbjahr', $record->halbjahr)
-                            ->where(fn ($q) => $q->whereNull('beitragsart')->orWhere('beitragsart', '!=', Beitraege::UEBERNAHME))->count();
+                            ->where(fn ($q) => $q->whereNull('beitragsart')->orWhereNotIn('beitragsart', [Beitraege::UEBERNAHME, BeitragsAbruf::SCHNUPPER]))->count();
 
                         return "in Kluft: {$kluft}".($record->mitglieder !== null && $record->mitglieder !== $kluft ? ' – abweichend' : '');
                     }),

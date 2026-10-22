@@ -25,11 +25,11 @@ class BeitragsMitglied extends Model
 {
     protected $table = 'beitrags_mitglieder';
 
-    protected $fillable = ['nami_id', 'mitgliedsnummer', 'vorname', 'nachname', 'beitragsart', 'eintritt', 'austritt', 'aktiv', 'nami_version', 'abgerufen_am'];
+    protected $fillable = ['nami_id', 'mitgliedsnummer', 'vorname', 'nachname', 'beitragsart', 'schnupper', 'eintritt', 'austritt', 'aktiv', 'nami_version', 'abgerufen_am'];
 
     protected function casts(): array
     {
-        return ['eintritt' => 'date', 'austritt' => 'date', 'aktiv' => 'boolean', 'abgerufen_am' => 'datetime', 'nami_id' => 'integer', 'nami_version' => 'integer'];
+        return ['eintritt' => 'date', 'austritt' => 'date', 'aktiv' => 'boolean', 'schnupper' => 'boolean', 'abgerufen_am' => 'datetime', 'nami_id' => 'integer', 'nami_version' => 'integer'];
     }
 
     /**

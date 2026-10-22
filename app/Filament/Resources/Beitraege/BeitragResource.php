@@ -91,6 +91,7 @@ class BeitragResource extends Resource
                 TextColumn::make('name')->label('Name')
                     ->state(fn (Beitrag $record) => $record->mitglied?->name())
                     ->description(fn (Beitrag $record) => trim(($record->mitglied?->mitgliedsnummer ? 'Nr. '.$record->mitglied->mitgliedsnummer : '')
+                        .($record->mitglied?->schnupper ? ' · Schnuppermitglied' : '')
                         .($record->mitglied && ! $record->mitglied->aktiv ? ' · nicht mehr in NaMi' : '')
                         .($record->mitglied?->austritt ? ' · Austritt '.$record->mitglied->austritt->format('d.m.Y') : ''), ' ·'))
                     ->sortable(query: fn (Builder $query, string $direction) => $query->orderBy($nachname(), $direction))
@@ -135,6 +136,13 @@ class BeitragResource extends Resource
                     ->query(fn (Builder $query, array $data) => match ($data['value'] ?? null) {
                         'offen' => $query->whereIn('beitraege.id', Beitrag::query()->offen()->select('id')),
                         'bezahlt' => $query->whereNotIn('beitraege.id', Beitrag::query()->offen()->select('id')),
+                        default => $query,
+                    }),
+                SelectFilter::make('art')->label('Mitgliedschaft')
+                    ->options(['mitglied' => 'Mitglieder', 'schnupper' => 'Schnuppermitglieder'])
+                    ->query(fn (Builder $query, array $data) => match ($data['value'] ?? null) {
+                        'mitglied' => $query->whereRelation('mitglied', 'schnupper', false),
+                        'schnupper' => $query->whereRelation('mitglied', 'schnupper', true),
                         default => $query,
                     }),
                 SelectFilter::make('beitragsart')->label('Beitragsart')

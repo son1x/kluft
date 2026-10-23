@@ -86,7 +86,13 @@ class BeitragResource extends Resource
             ->paginated([50, 100, 'all'])
             ->defaultPaginationPageOption(100)
             ->emptyStateHeading('Noch keine Beiträge für dieses Halbjahr')
-            ->emptyStateDescription('Oben „Aus NaMi abrufen“ holt die Mitglieder und legt die Beiträge des Halbjahres an.')
+            ->emptyStateDescription(function () {
+                $vorhanden = Beitrag::query()->distinct()->orderByDesc('halbjahr')->pluck('halbjahr')->map(fn ($h) => Beitraege::label((string) $h))->all();
+
+                return $vorhanden === []
+                    ? 'Oben „Aus NaMi abrufen“ holt die Mitglieder und legt die Beiträge des Halbjahres an.'
+                    : 'Beiträge gibt es für: '.implode(', ', $vorhanden).' (Filter „Halbjahr“). Oben „Halbjahr anlegen“ legt dieses Halbjahr ohne NaMi-Anmeldung an.';
+            })
             ->columns([
                 TextColumn::make('name')->label('Name')
                     ->state(fn (Beitrag $record) => $record->mitglied?->name())
@@ -97,7 +103,13 @@ class BeitragResource extends Resource
                     ->sortable(query: fn (Builder $query, string $direction) => $query->orderBy($nachname(), $direction))
                     ->searchable(query: fn (Builder $query, string $search) => $query->whereHas('mitglied', fn (Builder $q) => $q
                         ->where('nachname', 'like', "%{$search}%")->orWhere('vorname', 'like', "%{$search}%")->orWhere('mitgliedsnummer', 'like', "%{$search}%"))),
-                TextColumn::make('beitragsart')->label('Beitragsart')->placeholder('unbekannt')->wrap(),
+                TextColumn::make('beitragsart')->label('Beitragsart')->placeholder('fehlt')->wrap()
+                    ->color(fn (Beitrag $record) => $record->beitragsart === null ? 'danger' : null)
+                    ->description(fn (Beitrag $record) => match (true) {
+                        (bool) $record->mitglied?->beitragsart_manuell => 'von Hand gesetzt',
+                        $record->beitragsart === null && $record->mitglied?->details_verweigert => 'NaMi verweigert die Details',
+                        default => null,
+                    }),
                 TextColumn::make('soll_cent')->label('Soll')->formatStateUsing($euro)->alignEnd()
                     ->description(fn (Beitrag $record) => $record->bundes_cent !== null ? 'Bund '.Beitraege::euro($record->bundes_cent) : null)
                     ->summarize(Sum::make()->label('Soll')->formatStateUsing(fn ($state) => Beitraege::euro((int) $state))),
@@ -146,7 +158,12 @@ class BeitragResource extends Resource
                         default => $query,
                     }),
                 SelectFilter::make('beitragsart')->label('Beitragsart')
-                    ->options(fn () => Beitrag::query()->whereNotNull('beitragsart')->distinct()->orderBy('beitragsart')->pluck('beitragsart', 'beitragsart')->all()),
+                    ->options(fn () => ['__fehlt' => 'Beitragsart fehlt'] + Beitrag::query()->whereNotNull('beitragsart')->distinct()->orderBy('beitragsart')->pluck('beitragsart', 'beitragsart')->all())
+                    ->query(fn (Builder $query, array $data) => match ($data['value'] ?? null) {
+                        null, '' => $query,
+                        '__fehlt' => $query->whereNull('beitraege.beitragsart'),
+                        default => $query->where('beitraege.beitragsart', $data['value']),
+                    }),
             ])
             ->recordActions([
                 Action::make('zahlung')
@@ -181,6 +198,26 @@ class BeitragResource extends Resource
                         ])->save();
                         AuditLogger::log('beitrag.zahlung', Filament::auth()->user(), Beitrag::class, $record->id, request());
                         Notification::make()->title('Gespeichert: '.$record->status())->success()->send();
+                    }),
+                Action::make('beitragsart')
+                    ->label('Beitragsart')
+                    ->icon('heroicon-o-tag')
+                    ->color('warning')
+                    ->visible(fn (Beitrag $record) => $record->mitglied !== null && ! $record->mitglied->schnupper
+                        && ($record->mitglied->beitragsart === null || $record->mitglied->beitragsart_manuell))
+                    ->modalHeading(fn (Beitrag $record) => 'Beitragsart – '.$record->mitglied?->name())
+                    ->modalDescription('Für Personen, deren Details NaMi nicht herausgibt. Gilt für die Person und ihre offenen Beiträge; liefert NaMi später selbst eine Beitragsart, gilt wieder die aus NaMi.')
+                    ->fillForm(fn (Beitrag $record) => ['art' => $record->mitglied?->beitragsart])
+                    ->schema([
+                        Select::make('art')->label('Beitragsart')->required()
+                            ->options(fn () => array_combine(Beitraege::arten(), Beitraege::arten())),
+                    ])
+                    ->action(function (Beitrag $record, array $data) {
+                        abort_unless(static::canViewAny(), 403);
+                        abort_unless(in_array($data['art'], Beitraege::arten(), true), 422);
+                        $angepasst = $record->mitglied?->beitragsartSetzen((string) $data['art']) ?? 0;
+                        AuditLogger::log('beitrag.beitragsart', Filament::auth()->user(), BeitragsMitglied::class, $record->beitrags_mitglied_id, request());
+                        Notification::make()->title("Beitragsart gesetzt, {$angepasst} offene Beiträge angepasst.")->success()->send();
                     }),
                 Action::make('zuruecksetzen')
                     ->label('Zurücksetzen')

@@ -51,6 +51,14 @@ class ListBeitraege extends ListRecords
         return Beitraege::gueltig($wert) ? $wert : Beitraege::aktuell();
     }
 
+    /** Liste auf ein Halbjahr umstellen (z. B. nach dem Anlegen). */
+    private function zeigeHalbjahr(string $halbjahr): void
+    {
+        $this->tableFilters['halbjahr']['value'] = $halbjahr;
+        $this->updatedTableFilters();
+        $this->resetPage();
+    }
+
     private static function nutzer(): ?User
     {
         $user = Filament::auth()->user();
@@ -118,7 +126,29 @@ class ListBeitraege extends ListRecords
                     Beitraege::abrufStand('laeuft', 'gestartet …');
                     BeitraegeAbrufen::dispatch((string) $nummer, $halbjahr, $session, self::gespeicherterZugang($nutzer) ? $nutzer?->getKey() : null);
                     AuditLogger::log('beitraege.abruf:'.$halbjahr, $nutzer, request: request());
-                    Notification::make()->title('Abruf gestartet – die Liste füllt sich in den nächsten Minuten.')->success()->send();
+                    $this->zeigeHalbjahr($halbjahr);
+                    Notification::make()->title('Abruf gestartet – die Liste für '.Beitraege::label($halbjahr).' füllt sich in den nächsten Minuten.')->success()->send();
+                }),
+            Action::make('halbjahr')
+                ->label('Halbjahr anlegen')
+                ->icon('heroicon-o-calendar-days')
+                ->color('gray')
+                ->visible(fn () => BeitragsMitglied::query()->exists())
+                ->modalHeading('Beiträge eines Halbjahres anlegen')
+                ->modalDescription('Ohne NaMi-Anmeldung, mit den Mitgliedern aus dem letzten Abruf. Wer im Halbjahr Mitglied war, bekommt einen Beitrag; offene Beiträge folgen Beitragsart und Satz, bezahlte bleiben. Für neue Mitglieder oder Austritte vorher „Aus NaMi abrufen“.')
+                ->fillForm(fn () => ['halbjahr' => $this->halbjahr()])
+                ->schema(fn () => [
+                    Select::make('halbjahr')->label('Halbjahr')->required()
+                        ->options(Beitraege::auswahl(Beitrag::query()->distinct()->pluck('halbjahr')->all())),
+                ])
+                ->action(function (array $data) {
+                    abort_unless(BeitragResource::canViewAny(), 403);
+                    $halbjahr = (string) $data['halbjahr'];
+                    abort_unless(Beitraege::gueltig($halbjahr), 422);
+                    $ergebnis = app(BeitragsAbruf::class)->halbjahrAnlegen($halbjahr);
+                    AuditLogger::log('beitraege.halbjahr:'.$halbjahr, self::nutzer(), request: request());
+                    $this->zeigeHalbjahr($halbjahr);
+                    Notification::make()->title(Beitraege::label($halbjahr).": {$ergebnis['neu']} Beiträge neu, {$ergebnis['angepasst']} angepasst.")->success()->send();
                 }),
             Action::make('saetze')
                 ->label('Beitragssätze')
@@ -190,9 +220,7 @@ class ListBeitraege extends ListRecords
      */
     private static function arten(): array
     {
-        $arten = ['Voller Beitrag', 'Voller Beitrag – Stiftungseuro', 'Familienermäßigt', 'Familienermäßigt – Stiftungseuro', 'Ermäßigt', 'Ermäßigt – Stiftungseuro', 'Übernahme'];
-        $arten = array_values(array_unique([...$arten, ...array_keys(Beitraege::saetze()),
-            ...BeitragsMitglied::query()->whereNotNull('beitragsart')->distinct()->pluck('beitragsart')->all()]));
+        $arten = Beitraege::arten();
 
         return array_combine(array_map(fn (int $i) => 'art_'.$i, array_keys($arten)), $arten);
     }

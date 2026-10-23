@@ -33,8 +33,9 @@ class BeitragsAbruf
      * Höchstens $maxDetails Detailabfragen je Lauf; wer danach noch fehlt,
      * zählt in „offen“ und kommt beim nächsten Lauf dran. Verweigert NaMi
      * die Details einzelner Personen, zählen sie in „ohne_details“ und werden
-     * beim nächsten Abruf erneut versucht; erst wenn die ersten Abfragen alle
-     * scheitern, bricht der Abruf ab.
+     * erst wieder abgefragt, wenn sich ihre NaMi-Version ändert (bis dahin
+     * kann die Kasse die Beitragsart von Hand setzen); erst wenn die ersten
+     * Abfragen alle scheitern, bricht der Abruf ab.
      *
      * @return array{mitglieder: int, neu: int, details: int, offen: int, ausgetreten: int, ohne_details: int}
      *
@@ -70,13 +71,21 @@ class BeitragsAbruf
             if (array_key_exists('entries_eintrittsdatum', $zeile)) {
                 $mitglied->fill(['eintritt' => self::datum($zeile['entries_eintrittsdatum']), 'austritt' => self::datum($zeile['entries_austrittsDatum'] ?? null)]);
             }
-            $brauchtDetails = ! $mitglied->exists || $version === null || $mitglied->nami_version !== $version || ($mitglied->beitragsart === null && ! $mitglied->schnupper);
+            // Hat NaMi die Details verweigert, erst bei geänderter Version wieder fragen.
+            $brauchtDetails = ! $mitglied->exists || $version === null || $mitglied->nami_version !== $version
+                || ($mitglied->beitragsart === null && ! $mitglied->schnupper && ! $mitglied->details_verweigert);
             if ($brauchtDetails && $maxDetails !== null && $ergebnis['details'] >= $maxDetails) {
                 // Ohne Details speichern; nami_version bleibt alt, damit der nächste Lauf sie holt.
                 $ergebnis['offen']++;
-            } elseif ($brauchtDetails && ($details = $this->details($gruppierung, $namiId, $ergebnis)) !== null) {
+            } elseif ($brauchtDetails && ($details = $this->details($gruppierung, $namiId, $ergebnis)) === null) {
+                $mitglied->fill(['details_verweigert' => true, 'nami_version' => $version]);
+            } elseif ($brauchtDetails) {
                 $art = filled($details['beitragsart'] ?? null) ? Beitraege::artName((string) $details['beitragsart']) : ($arten[(int) ($details['beitragsartId'] ?? 0)] ?? null);
-                $mitglied->fill(['beitragsart' => $art, 'nami_version' => $version]);
+                $mitglied->fill(['nami_version' => $version, 'details_verweigert' => false]);
+                // Eine von Hand gesetzte Art bleibt, bis NaMi selbst eine liefert.
+                if ($art !== null || ! $mitglied->beitragsart_manuell) {
+                    $mitglied->fill(['beitragsart' => $art, 'beitragsart_manuell' => false]);
+                }
                 if (! array_key_exists('entries_eintrittsdatum', $zeile)) {
                     $mitglied->fill(['eintritt' => self::datum($details['eintrittsdatum'] ?? null), 'austritt' => self::datum($details['austrittsDatum'] ?? null)]);
                 }
@@ -150,6 +159,12 @@ class BeitragsAbruf
 
             return null;
         }
+    }
+
+    /** Mitglieder (keine Schnuppermitglieder), deren Beitragsart fehlt. */
+    public static function ohneBeitragsart(): int
+    {
+        return BeitragsMitglied::query()->where('aktiv', true)->where('schnupper', false)->whereNull('beitragsart')->count();
     }
 
     private static function datum(mixed $wert): ?Carbon

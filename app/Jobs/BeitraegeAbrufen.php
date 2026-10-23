@@ -62,7 +62,8 @@ class BeitraegeAbrufen implements ShouldBeEncrypted, ShouldQueue
         Beitraege::abrufStand('fertig', "{$ergebnis['mitglieder']} Mitglieder aus NaMi"
             .($ergebnis['ausgetreten'] ? ", {$ergebnis['ausgetreten']} nicht mehr gelistet" : '')
             .'; '.Beitraege::label($this->halbjahr).": {$beitraege['neu']} Beiträge neu, {$beitraege['angepasst']} angepasst."
-            // Zuletzt, weil der Text bei Bedarf hinten gekürzt wird; der nächste Abruf versucht es erneut.
-            .($ergebnis['ohne_details'] ? " {$ergebnis['ohne_details']} ohne Beitragsart – {$abruf->detailFehler}" : ''));
+            // Zuletzt, weil der Text bei Bedarf hinten gekürzt wird.
+            .(($fehlt = BeitragsAbruf::ohneBeitragsart()) ? " {$fehlt} ohne Beitragsart (Filter „Beitragsart fehlt“, in der Zeile von Hand setzen)" : '')
+            .($abruf->detailFehler ? ' – '.$abruf->detailFehler : ''));
     }
 }

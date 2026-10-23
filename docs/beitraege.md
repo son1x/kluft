@@ -73,9 +73,21 @@ laufenden Halbjahr sofort an; ältere Halbjahre bleiben bei ihren Sätzen.
 NaMi (ohne Nummern und Mailadressen). Liefert NaMi statt Daten die
 Anmeldeseite („keine JSON-Antwort“), meldet sich Kluft einmal neu an; bei
 persönlicher Anmeldung ohne gespeicherten Zugang bitte den Abruf neu starten.
-Verweigert NaMi nur die Details einzelner Personen, läuft der Abruf weiter;
-sie stehen dann ohne Beitragsart in der Liste, und der nächste Abruf
-versucht es erneut. Mehr zeigt die NaMi-Testabfrage (unten).
+Verweigert NaMi nur die Details einzelner Personen (z. B. „Sicherheitsverletzung:
+Zugriff auf Rechte …“, wenn das Konto ihre Daten nicht sehen darf), läuft der
+Abruf weiter. Sie stehen mit „Beitragsart fehlt“ in der Liste (gleichnamiger
+Filter unter „Beitragsart“); in der Zeile setzt **Beitragsart** sie von Hand,
+offene Beiträge folgen. NaMi wird für sie erst wieder gefragt, wenn sich ihr
+Eintrag dort ändert; liefert NaMi dann eine Beitragsart, gilt wieder diese.
+Mit einheitlichem Beitrag stimmt das Soll auch ohne Beitragsart, es fehlt nur
+der Bundesbeitrag für den Abgleich mit der Rechnung. Mehr zeigt die
+NaMi-Testabfrage (unten).
+
+**Halbjahr anlegen** legt die Beiträge eines weiteren Halbjahres ohne
+NaMi-Anmeldung an, mit den Mitgliedern aus dem letzten Abruf (für neue
+Mitglieder oder Austritte vorher „Aus NaMi abrufen“). Nach Abruf oder Anlegen
+zeigt die Liste das gewählte Halbjahr; ist sie leer, nennt sie die Halbjahre,
+für die es Beiträge gibt.
 
 ## NaMi-Testabfrage
 

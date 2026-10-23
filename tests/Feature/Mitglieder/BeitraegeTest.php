@@ -291,12 +291,72 @@ class BeitraegeTest extends TestCase
         $this->assertStringContainsString('1 ohne Beitragsart', $text);
         $this->assertStringContainsString('Mitgliedsdetails, HTTP 200: Zugriff verweigert für Mitglied …', $text);
         $this->assertStringNotContainsString('4712', $text);
-        // Die Einstellung hat 255 Zeichen (MariaDB lehnt Längeres ab): lange Meldungen werden gekürzt.
-        Beitraege::abrufStand('fehler', str_repeat('Zugriff „verweigert“ ', 30));
-        $this->assertLessThanOrEqual(255, mb_strlen((string) SiteSetting::query()->whereKey('beitraege.abruf')->value('value')));
+        // Lange Meldungen werden auf 1000 Zeichen gekürzt.
+        Beitraege::abrufStand('fehler', str_repeat('Zugriff „verweigert“ ', 80));
+        $this->assertLessThanOrEqual(1000, mb_strlen((string) SiteSetting::query()->whereKey('beitraege.abruf')->value('value')));
         $this->assertStringEndsWith('…', Beitraege::letzterAbruf()['text'] ?? '');
         $this->assertNull(BeitragsMitglied::query()->where('nami_id', 102)->value('beitragsart'));
         $this->assertSame('Voller Beitrag', BeitragsMitglied::query()->where('nami_id', 101)->value('beitragsart'));
+    }
+
+    #[TestDox('Verweigerte Details: erst bei neuer NaMi-Version erneut abfragen; Beitragsart von Hand setzen, bis NaMi selbst eine liefert')]
+    public function test_beitragsart_von_hand(): void
+    {
+        $verweigert = true;
+        $this->vorher = function (Request $request) use (&$verweigert) {
+            return $verweigert && str_ends_with($request->url(), '/gruppierung/gruppierung/30/102')
+                ? Http::response(['success' => false, 'message' => 'Sicherheitsverletzung: Zugriff auf Rechte verweigert']) : null;
+        };
+        $abruf = new BeitragsAbruf(new NamiVerzeichnis);
+        $abruf->abrufen('210601');
+        $abruf->halbjahrAnlegen('2026-2');
+        $ben = BeitragsMitglied::query()->where('nami_id', 102)->firstOrFail();
+        $this->assertTrue($ben->details_verweigert);
+        $this->assertSame(1, BeitragsAbruf::ohneBeitragsart());
+
+        // Zweiter Abruf ohne neue Version: keine erneute Detailabfrage.
+        $this->detailAbfragen = [];
+        $abruf->abrufen('210601');
+        $this->assertSame([], $this->detailAbfragen);
+
+        // Kasse setzt die Art im Backend; der offene Beitrag folgt.
+        $kasse = $this->user('kasse');
+        $beitrag = Beitrag::query()->where('beitrags_mitglied_id', $ben->id)->firstOrFail();
+        Livewire::actingAs($kasse)->test(ListBeitraege::class)
+            ->filterTable('beitragsart', '__fehlt')->assertCanSeeTableRecords([$beitrag])
+            ->callTableAction('beitragsart', $beitrag, ['art' => 'Familienermäßigt'])->assertHasNoTableActionErrors();
+        $this->assertSame(['Familienermäßigt', 2800, 1100], [$beitrag->fresh()->beitragsart, $beitrag->fresh()->soll_cent, $beitrag->fresh()->bundes_cent]);
+        $this->assertTrue($ben->fresh()->beitragsart_manuell);
+        $this->assertSame(0, BeitragsAbruf::ohneBeitragsart());
+
+        // Neue Version, NaMi verweigert weiter: von Hand gesetzte Art bleibt.
+        $this->liste[1]['entries_version'] = 2;
+        $abruf->abrufen('210601');
+        $this->assertSame('Familienermäßigt', $ben->fresh()->beitragsart);
+
+        // NaMi liefert wieder Details: die Art aus NaMi gilt.
+        $verweigert = false;
+        $this->liste[1]['entries_version'] = 3;
+        $this->details[102] = ['beitragsartId' => 1, 'beitragsart' => 'Voller Beitrag'];
+        $abruf->abrufen('210601');
+        $this->assertSame(['Voller Beitrag', false, false], [$ben->fresh()->beitragsart, $ben->fresh()->beitragsart_manuell, $ben->fresh()->details_verweigert]);
+    }
+
+    #[TestDox('„Halbjahr anlegen“ ohne NaMi aus den gespeicherten Mitgliedern; die Liste springt auf das Halbjahr, der leere Zustand nennt vorhandene Halbjahre')]
+    public function test_halbjahr_anlegen(): void
+    {
+        $this->travelTo(Carbon::parse('2026-10-23 10:00'));
+        (new BeitragsAbruf(new NamiVerzeichnis))->abrufen('210601');
+        Http::fake(fn () => $this->fail('Ohne NaMi'));
+        $kasse = $this->user('kasse');
+
+        $seite = Livewire::actingAs($kasse)->test(ListBeitraege::class)
+            ->assertSee('Noch keine Beiträge für dieses Halbjahr')
+            ->callAction('halbjahr', ['halbjahr' => '2026-1'])->assertHasNoActionErrors();
+        $this->assertSame(3, Beitrag::query()->where('halbjahr', '2026-1')->count());
+        $this->assertSame('2026-1', $seite->get('tableFilters')['halbjahr']['value'] ?? null);
+
+        $seite->filterTable('halbjahr', '2026-2')->assertSee('Beiträge gibt es für: 1. Halbjahr 2026');
     }
 
     #[TestDox('NaMi liefert die Anmeldeseite statt JSON: einmal neu anmelden; bleibt es so, nennt die Meldung den Schritt')]

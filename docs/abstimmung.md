@@ -35,6 +35,17 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-10-23 – Haupt → Stammes, Bezirk: Beiträge, Beitragsart von Hand; `site_settings.value` jetzt `text`
+Status: offen
+
+- **Schema:**
+  - `2026_10_23_160000`: `site_settings.value` von string(255) auf `text`. Wer Einstellungen schreibt, muss nicht mehr auf 255 Zeichen kürzen.
+  - `2026_10_23_160100`: `beitrags_mitglieder.beitragsart_manuell` und `details_verweigert`.
+- **Kasse → Mitgliedsbeiträge:**
+  - Aktion „Beitragsart“ in der Zeile, Filter „Beitragsart fehlt“ und Aktion „Halbjahr anlegen“ ohne NaMi.
+  - Nach Abruf oder Anlegen zeigt die Liste das gewählte Halbjahr.
+  - `Beitraege::arten()` ersetzt die private Liste in `ListBeitraege`.
+
 ### 2026-10-23 – Stammes → Haupt: CSP blockiert Inline-Skripte und onclick (gemeinsamer Kern)
 Status: offen (auch direkt gemeldet)
 

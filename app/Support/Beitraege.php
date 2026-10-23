@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\BeitragsMitglied;
 use App\Models\Gruppierung;
 use App\Models\SiteSetting;
 use App\Models\User;
@@ -157,13 +158,27 @@ class Beitraege
         return ['soll' => $satz['bund'] + $satz['stamm'], 'bund' => $satz['bund']];
     }
 
-    /** Stand des letzten NaMi-Abrufs: laeuft, fertig oder fehler. Gekürzt auf die 255 Zeichen der Einstellung. */
+    /**
+     * Beitragsarten zur Auswahl: die bekannten aus NaMi, die mit Beitragssatz
+     * und alle bei Mitgliedern vorkommenden.
+     *
+     * @return list<string>
+     */
+    public static function arten(): array
+    {
+        $arten = ['Voller Beitrag', 'Voller Beitrag – Stiftungseuro', 'Familienermäßigt', 'Familienermäßigt – Stiftungseuro', 'Ermäßigt', 'Ermäßigt – Stiftungseuro', self::UEBERNAHME];
+
+        return array_values(array_unique([...$arten, ...array_keys(self::saetze()),
+            ...BeitragsMitglied::query()->whereNotNull('beitragsart')->distinct()->pluck('beitragsart')->all()]));
+    }
+
+    /** Stand des letzten NaMi-Abrufs: laeuft, fertig oder fehler (höchstens 1000 Zeichen). */
     public static function abrufStand(string $status, string $text): void
     {
         $am = now()->toIso8601String();
         $json = fn (string $t) => (string) json_encode(['status' => $status, 'text' => $t, 'am' => $am], JSON_UNESCAPED_UNICODE);
-        while (mb_strlen($json($text)) > 255) {
-            $text = mb_substr($text, 0, mb_strlen($text) - max(1, mb_strlen($json($text)) - 255) - 1).'…';
+        while (mb_strlen($json($text)) > 1000) {
+            $text = mb_substr($text, 0, mb_strlen($text) - max(1, mb_strlen($json($text)) - 1000) - 1).'…';
         }
         SiteSetting::query()->updateOrCreate(['key' => self::ABRUF], ['value' => $json($text)]);
     }

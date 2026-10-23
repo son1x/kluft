@@ -31,6 +31,7 @@ return [
         ['WhatsApp', 'WhatsApp-Newsletter (vorbereitet, aus)', 'partial'],
         ['Bezirke', 'Eigene Websites für Bezirke', 'partial'],
         ['Stämme', 'Eigenständige Websites für Stämme', 'partial'],
+        ['Umfragen', 'Umfragen mit Vorlagen und Auswertung', 'open'],
     ],
 
     'sections' => [
@@ -214,6 +215,14 @@ return [
             ['status' => 'done', 'title' => 'Beide Varianten vorbereitet, keine online', 'note' => 'Schalter WHATSAPP_MODE (GitHub-Secret): off (aktuell), channel oder api. Kanal-Variante: /whatsapp lädt zum Kanal ein (WHATSAPP_CHANNEL_URL), an veröffentlichten Beiträgen und Veranstaltungen „Für WhatsApp-Kanal“ mit fertigem Text zum Kopieren. Business-Variante: Cloud-API-Modul wie oben. Ausgeschaltet sind Seite, Webhook, Backend-Menü, Rolle, Statusprüfung und Zeitpläne unsichtbar bzw. inaktiv.'],
             ['status' => 'open', 'title' => 'Entscheidung: kostenloser Kanal oder bezahlte Cloud API', 'note' => 'docs/entscheidungen/whatsapp-kostenlos-oder-bezahlt.md: Cloud API bei 50 Empfänger:innen ca. 13–26 € im Monat, bei 100 ca. 26–52 € (2–4 Aussendungen); WhatsApp-Kanal kostenlos und ohne Nummern beim Verband, aber Versand von Hand und standardmäßig stummgeschaltet. Empfehlung: mit dem Kanal starten. WhatsApp Web automatisiert oder CLI-Werkzeuge scheiden aus (Sperre der Nummer, kein Webspace, Datenschutz).'],
             ['status' => 'open', 'title' => 'Budget und Meta-Business-Konto', 'note' => 'Jede Newsletter-Nachricht kostet bei Meta grob 0,10–0,15 €. Unternehmensverifizierung mit Vereinsregisterauszug und Zahlungsmittel des Rechtsträgers nötig; danach Einrichtung nach Setup-Anleitung.'],
+        ],
+        'Umfragen' => [
+            ['status' => 'decide', 'title' => 'Beispielumfragen sichten, Fragetypen festlegen', 'note' => 'Anhand echter Umfragen des Verbands (z. B. Rückmeldung zum Lager, Terminabfrage, Mitgliederbefragung) klären, welche Fragetypen und Einstellungen nötig sind; danach Pflichtenheft docs/pflichtenheft-umfragen.md.'],
+            ['status' => 'open', 'title' => 'Umfragen im Backend anlegen und organisieren', 'note' => 'Fragen mit Typen wie Einfach- und Mehrfachauswahl, Skala, Ja/Nein, Freitext und Datum; Pflichtfragen, Zeitraum (von–bis), Ergebnis nur intern. Teilnahme über einen Link auf der Website, auf Wunsch nur für Angemeldete oder mit Zugangscode. Rechte wie bei Veranstaltungen (wer anlegt, sieht die Ergebnisse).'],
+            ['status' => 'open', 'title' => 'Umfragen kopieren', 'note' => 'Eine bestehende Umfrage samt Fragen als neue Umfrage übernehmen (ohne Antworten), z. B. die Lagerumfrage vom letzten Jahr.'],
+            ['status' => 'open', 'title' => 'Vorlagen', 'note' => 'Umfragen als Vorlage speichern und daraus neue anlegen; mitgelieferte Vorlagen für häufige Fälle (Feedback zur Veranstaltung, Terminfindung, Interessenabfrage).'],
+            ['status' => 'open', 'title' => 'Grafische Auswertung', 'note' => 'Je Frage Balken- bzw. Kreisdiagramm mit Anzahl und Prozent, Skalen mit Mittelwert, Freitexte als Liste; Teilnahme im Zeitverlauf; Export als Excel/CSV und Druckansicht.'],
+            ['status' => 'open', 'title' => 'Datenschutz', 'note' => 'Standard anonym: keine Namen, keine IP-Adressen; Schutz vor Mehrfachteilnahme ohne Personenbezug. Personenbezogene Umfragen nur mit Hinweis und Löschfrist, wie bei Anmeldungen.'],
         ],
     ],
 

@@ -52,6 +52,14 @@
             </x-filament::section>
         @endif
 
+        @if ($found['bestellungen']->isNotEmpty())
+            <x-filament::section heading="Sammelbestellungen ({{ $found['bestellungen']->count() }})" description="Löschen anonymisiert sie: Namen und Adressen weg, Summen und Zahlungen bleiben für die Kasse.">
+                @foreach ($found['bestellungen'] as $bestellung)
+                    <p style="font-size: .875rem;">{{ $bestellung->created_at->format('d.m.Y') }} – {{ $bestellung->runde->name }}, {{ $bestellung->positionen->count() }} Position(en) ({{ \App\Models\Shop\Bestellung::STAENDE[$bestellung->stand()] ?? '' }})</p>
+                @endforeach
+            </x-filament::section>
+        @endif
+
         <x-filament::section heading="Weitere Stellen">
             <ul style="font-size: .875rem; list-style: disc; padding-left: 1.25rem;">
                 <li>Mails in der Warteschlange an diese Adresse: {{ $found['queued'] }}</li>

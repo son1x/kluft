@@ -33,10 +33,10 @@
                     @foreach ($bestellung->positionen as $p)
                         <tr>
                             <td class="px-4 py-2">{{ $p->mitglied }}</td>
-                            <td class="px-4 py-2">{{ $p->bezeichnung }}@if ($p->groesse)<span class="text-text-secondary"> ({{ $p->groesse }})</span>@endif @if ($p->nummer)<span class="block text-xs text-text-secondary">Rüsthaus-Nr. {{ $p->nummer }}</span>@endif</td>
+                            <td class="px-4 py-2">@if ($p->set)<span class="block text-xs font-bold text-dpsg-rot">{{ $p->set->name }}</span>@endif{{ $p->bezeichnung }}@if ($p->groesse)<span class="text-text-secondary"> ({{ $p->groesse }})</span>@endif @if ($p->nummer)<span class="block text-xs text-text-secondary">Rüsthaus-Nr. {{ $p->nummer }}</span>@endif</td>
                             <td class="px-4 py-2 text-center">{{ $p->menge }}</td>
                             <td class="px-4 py-2 text-right">{{ $p->preis_cent ? \App\Support\Sammelbestellung::euro($p->summeCent()) : '–' }}</td>
-                            <td class="px-4 py-2">{{ ! $p->bestaetigt ? 'wird geprüft' : ($p->bezahlt() ? 'bezahlt' : 'Zahlung offen') }}</td>
+                            <td class="px-4 py-2">{{ $p->ausgegeben_am ? 'ausgegeben am '.$p->ausgegeben_am->format('d.m.Y') : (! $p->bestaetigt ? 'wird geprüft' : ($p->bezahlt() ? 'bezahlt' : 'Zahlung offen')) }}</td>
                         </tr>
                     @endforeach
                 </tbody>

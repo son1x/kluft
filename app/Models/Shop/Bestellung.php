@@ -19,13 +19,14 @@ class Bestellung extends Model
 
     public const ROLLEN = ['mitglied' => 'Ich bin selbst Mitglied', 'erziehungsberechtigt' => 'Ich bin erziehungsberechtigt'];
 
-    protected $fillable = ['runde_id', 'token', 'name', 'email', 'telefon', 'rolle', 'abholung', 'bemerkung', 'bestaetigt_am', 'storniert_am', 'test'];
+    protected $fillable = ['runde_id', 'token', 'name', 'email', 'telefon', 'rolle', 'abholung', 'bemerkung', 'bestaetigt_am', 'storniert_am', 'test', 'mitgliedschaft', 'mitgliedschaft_am', 'gehalten', 'erinnert_am', 'anonymisiert_am'];
 
     protected $hidden = ['token'];
 
     protected function casts(): array
     {
-        return ['bestaetigt_am' => 'datetime', 'storniert_am' => 'datetime', 'test' => 'boolean'];
+        return ['bestaetigt_am' => 'datetime', 'storniert_am' => 'datetime', 'test' => 'boolean', 'mitgliedschaft_am' => 'datetime', 'gehalten' => 'boolean',
+            'erinnert_am' => 'datetime', 'anonymisiert_am' => 'datetime'];
     }
 
     /** @return BelongsTo<Runde, $this> */
@@ -49,7 +50,7 @@ class Bestellung extends Model
     /**
      * Stand für Liste und Statusseite.
      *
-     * @return 'unbestaetigt'|'storniert'|'pruefung'|'zahlung'|'bezahlt'
+     * @return 'unbestaetigt'|'storniert'|'pruefung'|'zahlung'|'bezahlt'|'bestellt'|'abholbereit'|'ausgegeben'
      */
     public function stand(): string
     {
@@ -64,7 +65,12 @@ class Bestellung extends Model
             return 'pruefung';
         }
         if ($positionen->isNotEmpty() && $positionen->every(fn (Position $p) => $p->bezahlt())) {
-            return 'bezahlt';
+            return match (true) {
+                $positionen->every(fn (Position $p) => $p->ausgegeben_am !== null) => 'ausgegeben',
+                in_array($this->runde?->status, ['geliefert', 'erledigt'], true) => 'abholbereit',
+                $this->runde?->status === 'bestellt' => 'bestellt',
+                default => 'bezahlt',
+            };
         }
 
         return 'zahlung';
@@ -75,7 +81,18 @@ class Bestellung extends Model
         'pruefung' => 'wird geprüft',
         'zahlung' => 'Zahlung offen',
         'bezahlt' => 'bezahlt',
+        'bestellt' => 'beim Rüsthaus bestellt',
+        'abholbereit' => 'abholbereit',
+        'ausgegeben' => 'ausgegeben',
         'storniert' => 'storniert',
+    ];
+
+    /** Ergebnis der Mitgliedsprüfung (SB-37). */
+    public const MITGLIEDSCHAFT = [
+        'ja' => 'Mitglied',
+        'unklar' => 'unklar',
+        'nein' => 'nicht gefunden',
+        'bestaetigt' => 'von Hand bestätigt',
     ];
 
     public function summeCent(): int

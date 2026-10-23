@@ -7,12 +7,16 @@ use App\Models\Event;
 use App\Models\EventRegistration;
 use App\Models\Person;
 use App\Models\RegistrationDocument;
+use App\Models\Shop\Bestellung;
 use App\Models\User;
 use App\Services\Mitglieder\MitgliederAbgleich;
 use App\Support\Features;
 use App\Support\MailQueueEntry;
+use App\Support\SammelbestellungAblauf;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use ZipArchive;
 
@@ -27,7 +31,7 @@ class PrivacyRequests
     public function __construct(private EventRegistrations $registrations) {}
 
     /**
-     * @return array{registrations: Collection<int, EventRegistration>, people: Collection<int, Person>, users: Collection<int, User>, messages: Collection<int, ContactMessage>, queued: int}
+     * @return array{registrations: Collection<int, EventRegistration>, people: Collection<int, Person>, users: Collection<int, User>, messages: Collection<int, ContactMessage>, bestellungen: Collection<int, Bestellung>, queued: int}
      */
     public function find(string $email): array
     {
@@ -38,6 +42,9 @@ class PrivacyRequests
             'people' => Person::query()->whereRaw('LOWER(email) = ?', [$email])->get(),
             'users' => User::query()->whereRaw('LOWER(email) = ?', [$email])->with('roleAssignments')->get(),
             'messages' => ContactMessage::query()->where('email', $email)->orderByDesc('id')->get(),
+            'bestellungen' => Schema::hasTable('shop_bestellungen')
+                ? Bestellung::query()->whereRaw('LOWER(email) = ?', [$email])->whereNull('anonymisiert_am')->with('runde', 'positionen', 'zahlungen')->orderByDesc('id')->get()
+                : new EloquentCollection,
             'queued' => $this->queueEntries($email)->count(),
         ];
     }
@@ -101,6 +108,15 @@ class PrivacyRequests
                 'status' => ContactMessage::STATUSES[$m->status] ?? $m->status,
                 'loeschung_spaetestens' => $m->created_at->copy()->addMonths(ContactMessage::aufbewahrungMonate())->toDateString(),
             ])->values()->all(),
+            'sammelbestellungen' => $found['bestellungen']->map(fn (Bestellung $b) => [
+                'runde' => $b->runde->name, 'eingang' => $b->created_at->toIso8601String(), 'name' => $b->name, 'telefon' => $b->telefon,
+                'rolle' => Bestellung::ROLLEN[$b->rolle] ?? $b->rolle, 'abholung' => $b->abholung, 'bemerkung' => $b->bemerkung,
+                'stand' => Bestellung::STAENDE[$b->stand()] ?? $b->stand(),
+                'mitgliedschaft_geprueft' => $b->mitgliedschaft ? (Bestellung::MITGLIEDSCHAFT[$b->mitgliedschaft] ?? $b->mitgliedschaft) : null,
+                'positionen' => $b->positionen->map(fn ($p) => ['fuer' => $p->mitglied, 'stufe' => $p->stufe, 'artikel' => $p->bezeichnung, 'groesse' => $p->groesse,
+                    'anzahl' => $p->menge, 'preis_cent' => $p->preis_cent, 'ausgegeben_am' => $p->ausgegeben_am?->toDateString()])->all(),
+                'zahlungen' => $b->zahlungen->map(fn ($z) => ['verwendungszweck' => $z->referenz, 'betrag_cent' => $z->betrag_cent, 'status' => $z->status])->all(),
+            ])->values()->all(),
             'mails_in_warteschlange' => $found['queued'],
             'hinweise' => array_values(array_filter([
                 Features::newsletter() ? config('dpsg.newsletter.name').' (Newsletter): Die Adressen liegen nur beim Versanddienst Brevo, nicht im CMS. Auskunft/Löschung dort.' : null,
@@ -132,7 +148,7 @@ class PrivacyRequests
      * automatisch gelöscht (Rollen/Audit) – das geht unter „Benutzer“.
      * Frei werdende Plätze kommender Veranstaltungen rücken nach.
      *
-     * @return array{registrations: int, people: int, messages: int, queued: int}
+     * @return array{registrations: int, people: int, messages: int, bestellungen: int, queued: int}
      */
     public function delete(string $email): array
     {
@@ -146,12 +162,15 @@ class PrivacyRequests
 
         $found['people']->each->delete();
         $found['messages']->each->delete();
+        // Sammelbestellungen: Namen und Adressen weg, Summen und Zahlungen bleiben für die Kasse.
+        $found['bestellungen']->each(fn (Bestellung $b) => SammelbestellungAblauf::anonymisieren($b));
 
         $queued = $this->queueEntries($email);
         DB::table('jobs')->whereIn('id', $queued->where('table', 'jobs')->pluck('id'))->delete();
         DB::table('failed_jobs')->whereIn('id', $queued->where('table', 'failed_jobs')->pluck('id'))->delete();
 
-        return ['registrations' => $found['registrations']->count(), 'people' => $found['people']->count(), 'messages' => $found['messages']->count(), 'queued' => $queued->count()];
+        return ['registrations' => $found['registrations']->count(), 'people' => $found['people']->count(), 'messages' => $found['messages']->count(),
+            'bestellungen' => $found['bestellungen']->count(), 'queued' => $queued->count()];
     }
 
     /**

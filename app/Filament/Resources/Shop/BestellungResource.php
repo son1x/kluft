@@ -8,8 +8,11 @@ use App\Filament\Resources\Shop\RelationManagers\PositionenRelationManager;
 use App\Models\Shop\Bestellung;
 use App\Models\Shop\Runde;
 use App\Support\Sammelbestellung;
+use App\Support\SammelbestellungAblauf;
 use BackedEnum;
 use Filament\Actions\EditAction;
+use Filament\Facades\Filament;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
@@ -29,6 +32,12 @@ use UnitEnum;
 class BestellungResource extends Resource
 {
     use Zugriff;
+
+    /** Auch die Verwaltung: Ausgabe abhaken, Ausgabelisten (SB-43, SB-73). */
+    public static function canAccess(): bool
+    {
+        return SammelbestellungAblauf::darfAusgeben(Filament::auth()->user());
+    }
 
     protected static ?string $model = Bestellung::class;
 
@@ -66,6 +75,12 @@ class BestellungResource extends Resource
                 TextInput::make('email')->label('E-Mail')->disabled(),
                 TextInput::make('telefon')->label('Telefon')->disabled(),
                 TextInput::make('abholung')->label('Abholung')->disabled(),
+                Placeholder::make('mitgliedschaft_text')->label('Mitgliedschaft')
+                    ->content(fn (?Bestellung $record) => $record?->mitgliedschaft
+                        ? (Bestellung::MITGLIEDSCHAFT[$record->mitgliedschaft] ?? $record->mitgliedschaft).' ('.$record->mitgliedschaft_am?->format('d.m.Y').')'
+                        : 'nicht geprüft'),
+                Placeholder::make('gehalten_text')->label('Beim Schließen')
+                    ->content(fn (?Bestellung $record) => $record?->gehalten ? 'gehalten (wird trotz offener Zahlung nicht storniert)' : 'Unbezahltes wird storniert'),
                 Textarea::make('bemerkung')->label('Bemerkung')->disabled()->columnSpanFull(),
             ]),
         ]);
@@ -86,6 +101,11 @@ class BestellungResource extends Resource
                     ->formatStateUsing(fn (string $state) => Bestellung::STAENDE[$state] ?? $state)
                     ->color(fn (string $state) => match ($state) {
                         'bezahlt' => 'success', 'pruefung' => 'warning', 'zahlung' => 'info', default => 'gray',
+                    }),
+                TextColumn::make('mitgliedschaft')->label('Mitglied?')->badge()->placeholder('–')
+                    ->formatStateUsing(fn (string $state) => Bestellung::MITGLIEDSCHAFT[$state] ?? $state)
+                    ->color(fn (string $state) => match ($state) {
+                        'ja', 'bestaetigt' => 'success', 'nein' => 'danger', default => 'warning'
                     }),
                 TextColumn::make('created_at')->label('Eingang')->dateTime('d.m.Y H:i'),
             ])

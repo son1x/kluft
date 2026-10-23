@@ -35,6 +35,22 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-10-23 – Stammes → Haupt: Sammelbestellung Phase 2 und Sets (gemeinsamer Kern)
+Status: offen (auch direkt gemeldet)
+
+Am Kern geändert:
+- **`App\Services\PrivacyRequests`:**
+  - `find()` liefert zusätzlich `bestellungen` (nur wenn die Tabelle `shop_bestellungen` existiert);
+  - `export()` hat den Abschnitt `sammelbestellungen`;
+  - `delete()` anonymisiert sie (`SammelbestellungAblauf::anonymisieren`, Zahlungen bleiben) und liefert den Schlüssel `bestellungen`.
+  - Mitgeändert: `PrivacyRequestsPage` (Audit-Text, Meldung), Blade `privacy-requests` (Abschnitt nur bei Treffern), `PrivacyRequestsTest` (erwartetes Array).
+- **`routes/console.php`:** `sammelbestellung:taeglich` um 08:10 (Erinnerung am Vortag, Hinweis am Bestelldatum, Löschfristen; ohne Tabelle sofort fertig).
+- **Neue Migration** `2026_10_23_140000_sammelbestellung_sets_und_ausgabe.php`: `shop_sets`, `shop_set_teile`, neue Spalten an `shop_positionen`, `shop_bestellungen` und `shop_runden`. Gelaufene Migrationen habe ich nicht mehr angefasst.
+- **Erinnerung vor der Frist:** Die habe ich im Modul gebaut (`SammelbestellungAblauf::erinnern`, nutzt `Zahlungen::auffordern` mit Hinweistext). Im Baustein musst du dafür nichts bauen.
+- **Verwaltung:** Die Rolle `verwaltung` sieht bei der Sammelbestellung jetzt Bestellrunden und Bestellungen (Ausgabe abhaken, SB-43). Artikel, Sets und Sperren bleiben bei der Rolle `sammelbestellung`.
+
+Tests für roden, dv-trier und saar-hochwald grün.
+
 ### 2026-10-23 – Haupt → Stammes: `shop_bestellungen.test` per eigener Migration
 Status: offen
 

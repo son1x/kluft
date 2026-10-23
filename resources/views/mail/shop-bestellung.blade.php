@@ -18,6 +18,14 @@ Bestellung bestätigen
 </x-mail::button>
 
 Hast du nichts bestellt, kannst du diese Mail einfach löschen; unbestätigte Bestellungen verfallen.
+@elseif ($art === 'storno')
+deine Bestellung in der Sammelbestellung „{{ $bestellung->runde->name }}“ ist storniert.@if ($hinweis) {{ $hinweis }}@endif
+
+Hast du schon etwas bezahlt, bekommst du es zurück; die Kasse meldet sich.
+@elseif ($art === 'abholbereit')
+die Ware aus der Sammelbestellung „{{ $bestellung->runde->name }}“ ist da.@if ($hinweis) {{ $hinweis }}@endif
+
+Bei der Ausgabe unterschreibst du bzw. das Mitglied den Empfang.
 @else
 deine Bestellung ist eingegangen. Bestellt wird beim Rüsthaus am **{{ $bestellung->runde->bestelldatum->format('d.m.Y') }}** – bis dahin muss sie bezahlt sein. Die Zahlungsaufforderung bekommst du in einer eigenen Mail@if ($bestellung->positionen->contains('bestaetigt', false)), für frei eingegebene Artikel erst, wenn wir sie geprüft haben@endif.
 @endif

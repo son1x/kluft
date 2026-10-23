@@ -26,9 +26,11 @@ class ShopBestellungMail extends Mailable implements ShouldBeEncrypted, ShouldQu
         'doi' => 'Bitte bestätige deine Bestellung',
         'bestaetigt' => 'Deine Bestellung ist eingegangen',
         'pruefen' => 'Sammelbestellung: freie Artikel prüfen',
+        'storno' => 'Deine Bestellung ist storniert',
+        'abholbereit' => 'Deine Bestellung ist da',
     ];
 
-    public function __construct(public Bestellung $bestellung, public string $art, public ?string $token = null) {}
+    public function __construct(public Bestellung $bestellung, public string $art, public ?string $token = null, public ?string $hinweis = null) {}
 
     public function envelope(): Envelope
     {
@@ -40,6 +42,7 @@ class ShopBestellungMail extends Mailable implements ShouldBeEncrypted, ShouldQu
         return new Content(markdown: 'mail.shop-bestellung', with: [
             'bestellung' => $this->bestellung->loadMissing('positionen', 'runde'),
             'art' => $this->art,
+            'hinweis' => $this->hinweis,
             'link' => $this->token ? route('shop.show', $this->token) : null,
         ]);
     }

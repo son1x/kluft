@@ -8,19 +8,24 @@ use App\Models\Page;
 use App\Models\Shop\Artikel;
 use App\Models\Shop\Bestellung;
 use App\Models\Shop\Runde;
+use App\Models\Shop\Set;
 use App\Models\Shop\Variante;
 use App\Models\User;
 use App\Support\Sammelbestellung;
+use App\Support\SammelbestellungAblauf;
 use App\Support\SpamGuard;
 use Filament\Facades\Filament;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use InvalidArgumentException;
+use Throwable;
 
 /**
  * Öffentliche Seite der Sammelbestellung (/bestellen): Shop der freigegebenen
@@ -39,6 +44,8 @@ class ShopController extends Controller
             'runde' => Runde::offene(),
             'bestellbar' => Sammelbestellung::bestellbar(auth()->user()),
             'fehlt' => auth()->user()?->canAccessPanel(Filament::getPanel('admin')) ? Sammelbestellung::fehlt() : [],
+            'sets' => Set::query()->freigegeben()->with(['teile.artikel.varianten' => fn ($q) => $q->where('aktiv', true), 'bildArtikel.bild'])->orderBy('sort')->orderBy('name')->get()
+                ->filter(fn (Set $s) => $s->bestellbar())->values(),
             'artikel' => Artikel::query()->freigegeben()->with(['varianten' => fn ($q) => $q->where('aktiv', true), 'bild'])->orderBy('sort')->orderBy('name')->get(),
         ]);
     }
@@ -74,6 +81,10 @@ class ShopController extends Controller
             'pos.*.stufe' => ['nullable', 'in:'.implode(',', array_keys((array) config('dpsg.stages')))],
             'pos.*.menge' => ['required', 'integer', 'min:1', 'max:10'],
             'pos.*.variante' => ['nullable', 'integer'],
+            'pos.*.set' => ['nullable', 'integer'],
+            'pos.*.teile' => ['nullable', 'array', 'max:20'],
+            'pos.*.teile.*.variante' => ['nullable', 'integer'],
+            'pos.*.teile.*.dabei' => ['nullable', 'boolean'],
             'pos.*.frei_nummer' => ['nullable', 'string', 'max:300'],
             'pos.*.frei_text' => ['nullable', 'string', 'max:160'],
         ], [
@@ -85,6 +96,16 @@ class ShopController extends Controller
         $positionen = [];
         foreach ($data['pos'] as $i => $pos) {
             $basis = ['mitglied' => trim($pos['mitglied']), 'stufe' => $pos['stufe'] ?? null, 'menge' => (int) $pos['menge']];
+            if (filled($pos['set'] ?? null)) {
+                $set = Set::query()->whereKey($pos['set'])->with('teile.artikel.varianten')->first();
+                try {
+                    array_push($positionen, ...Sammelbestellung::setPositionen($set ?? new Set, (int) $pos['menge'], (array) ($pos['teile'] ?? []), Arr::except($basis, 'menge')));
+                } catch (InvalidArgumentException $e) {
+                    throw ValidationException::withMessages(["pos.{$i}.set" => $e->getMessage()]);
+                }
+
+                continue;
+            }
             if (filled($pos['variante'] ?? null)) {
                 $variante = Variante::query()->whereKey($pos['variante'])->where('aktiv', true)
                     ->whereHas('artikel', fn ($q) => $q->where('freigegeben', true))->with('artikel')->first();
@@ -154,6 +175,11 @@ class ShopController extends Controller
             abort_unless($bestellung->runde->istOffen(), 410);
             $bestellung->update(['bestaetigt_am' => now()]);
             Sammelbestellung::zahlungAnfordern($bestellung);
+            try {
+                SammelbestellungAblauf::mitgliedschaftPruefen($bestellung);
+            } catch (Throwable $e) {
+                report($e); // Die Prüfung lässt sich im Backend wiederholen.
+            }
             Mail::to($bestellung->email, $bestellung->name)->send(new ShopBestellungMail($bestellung->fresh(), 'bestaetigt', $token));
             if ($bestellung->positionen()->where('frei', true)->exists()) {
                 $empfaenger = User::query()->where('status', 'active')

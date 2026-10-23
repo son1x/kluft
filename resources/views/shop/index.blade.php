@@ -1,11 +1,15 @@
 @extends('layouts.app')
 
 {{-- Sammelbestellung beim Rüsthaus: Shop der freigegebenen Artikel und
-     Bestellformular. Erwartet: $page (optional, Einleitung), $testbetrieb, $runde, $bestellbar, $fehlt, $artikel --}}
+     Bestellformular. Erwartet: $page (optional, Einleitung), $testbetrieb, $runde, $bestellbar, $fehlt, $sets, $artikel --}}
 
 @section('seo_title', ($page->title ?? 'Ausrüstung bestellen').' – '.config('dpsg.site.name'))
 
 @php($katalog = $artikel->map(fn ($a) => ['id' => $a->id, 'name' => $a->name, 'varianten' => $a->varianten->map(fn ($v) => ['id' => $v->id, 'bezeichnung' => $v->bezeichnung, 'preis' => $v->preis_cent])->values()])->values())
+@php($setKatalog = $sets->map(fn ($s) => ['id' => 's'.$s->id, 'name' => $s->name, 'teile' => $s->teile->filter(fn ($t) => $t->artikel?->freigegeben && $t->artikel->varianten->isNotEmpty())->map(fn ($t) => [
+    'id' => $t->id, 'name' => $t->artikel->name, 'menge' => $t->menge, 'optional' => $t->optional, 'vorgewaehlt' => $t->vorgewaehlt,
+    'varianten' => $t->artikel->varianten->map(fn ($v) => ['id' => $v->id, 'bezeichnung' => $v->bezeichnung, 'preis' => $v->preis_cent])->values(),
+])->values()])->values())
 @php($stufen = collect(config('dpsg.stages'))->map(fn ($s) => $s['label']))
 
 @section('content')
@@ -30,10 +34,35 @@
             <p class="mt-6 border-l-4 border-dpsg-mittelbeige bg-white px-4 py-3 shadow-sm">Gerade läuft keine Sammelbestellung. Die nächste kündigen wir hier und in den Gruppenstunden an.</p>
         @endif
 
-        @if ($artikel->isNotEmpty())
+        @if ($artikel->isNotEmpty() || $sets->isNotEmpty())
             <section class="mt-10" aria-labelledby="shop-heading">
                 <h2 id="shop-heading" class="font-serif text-2xl font-bold">Unser Angebot</h2>
                 <div class="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                    @foreach ($sets as $s)
+                        <article class="flex flex-col border-t-4 border-dpsg-rot bg-white shadow-md">
+                            @if ($s->bildArtikel?->bild)
+                                <x-picture :media="$s->bildArtikel->bild" sizes="(min-width: 1024px) 360px, 100vw" class="aspect-square w-full bg-white object-contain p-4" loading="lazy" />
+                            @endif
+                            <div class="flex flex-1 flex-col p-4">
+                                <p class="text-xs font-bold uppercase tracking-wide text-dpsg-rot">Set</p>
+                                <h3 class="font-serif text-lg font-bold">{{ $s->name }}</h3>
+                                <p class="text-sm text-text-secondary">ab {{ \App\Support\Sammelbestellung::euro(\App\Support\Sammelbestellung::setPreisAb($s)) }}</p>
+                                @if ($s->beschreibung)
+                                    <p class="mt-2 whitespace-pre-line text-sm">{{ $s->beschreibung }}</p>
+                                @endif
+                                <ul class="mt-2 list-disc pl-5 text-sm">
+                                    @foreach ($s->teile as $t)
+                                        @if ($t->artikel?->freigegeben)
+                                            <li>{{ $t->menge > 1 ? $t->menge.' × ' : '' }}{{ $t->artikel->name }}@if ($t->optional) <span class="text-text-secondary">(optional)</span>@endif</li>
+                                        @endif
+                                    @endforeach
+                                </ul>
+                                @if ($bestellbar)
+                                    <a href="#bestellformular" x-data @click="$dispatch('shop-waehlen', { wahl: @js('s'.$s->id) })" class="mt-auto self-start pt-4 font-bold text-dpsg-rot underline">Bestellen</a>
+                                @endif
+                            </div>
+                        </article>
+                    @endforeach
                     @foreach ($artikel as $a)
                         <article class="flex flex-col bg-white shadow-md">
                             @if ($a->bild)
@@ -52,7 +81,7 @@
                                     <p class="mt-2 text-xs text-text-secondary">Größen: {{ $a->varianten->pluck('bezeichnung')->filter()->implode(' · ') }}</p>
                                 @endif
                                 @if ($bestellbar)
-                                    <a href="#bestellformular" class="mt-auto self-start pt-4 font-bold text-dpsg-rot underline">Bestellen</a>
+                                    <a href="#bestellformular" x-data @click="$dispatch('shop-waehlen', { wahl: @js((string) $a->id) })" class="mt-auto self-start pt-4 font-bold text-dpsg-rot underline">Bestellen</a>
                                 @endif
                             </div>
                         </article>
@@ -70,7 +99,7 @@
 
         @if ($bestellbar)
             <section id="bestellformular" class="mt-12 scroll-mt-24 bg-white p-6 shadow-md md:p-8" aria-labelledby="bestellen-heading"
-                x-data="shopBestellung(@js($katalog), @js(old('pos', [[]])))">
+                x-data="shopBestellung(@js($katalog), @js($setKatalog), @js(old('pos', [[]])))" @shop-waehlen.window="waehlen($event.detail.wahl)">
                 <h2 id="bestellen-heading" class="font-serif text-2xl font-bold">Bestellen</h2>
                 <p class="mt-2 text-sm text-text-secondary">Bestellen dürfen Mitglieder des Stamms bzw. ihre Erziehungsberechtigten. Etwas, das oben fehlt? Trag die Rüsthaus-Artikelnummer ein – wir prüfen es und melden uns mit dem Preis.</p>
 
@@ -102,9 +131,10 @@
                                 </div>
                                 <div class="md:col-span-2">
                                     <label class="block text-sm font-bold" :for="'pos-artikel-' + i">Artikel</label>
-                                    <select :id="'pos-artikel-' + i" x-model="pos.artikel" @change="pos.variante = ''" class="mt-1 w-full border border-dpsg-mittelbeige bg-white px-3 py-2">
+                                    <select :id="'pos-artikel-' + i" x-model="pos.artikel" @change="gewaehlt(pos)" class="mt-1 w-full border border-dpsg-mittelbeige bg-white px-3 py-2">
                                         <option value="">bitte wählen</option>
-                                        <template x-for="a in katalog" :key="a.id"><option :value="a.id" x-text="a.name"></option></template>
+                                        <template x-for="s in sets" :key="s.id"><option :value="s.id" x-text="'Set: ' + s.name"></option></template>
+                                        <template x-for="a in katalog" :key="a.id"><option :value="String(a.id)" x-text="a.name"></option></template>
                                         <option value="frei">Anderer Rüsthaus-Artikel (Artikelnummer)</option>
                                     </select>
                                 </div>
@@ -113,9 +143,32 @@
                                     <input :id="'pos-menge-' + i" type="number" min="1" max="10" :name="'pos[' + i + '][menge]'" x-model="pos.menge" class="mt-1 w-full border border-dpsg-mittelbeige px-3 py-2" />
                                 </div>
 
-                                <div class="md:col-span-4" x-show="pos.artikel && pos.artikel !== 'frei'">
+                                <div class="space-y-3 md:col-span-6" x-show="set(pos)">
+                                    <input type="hidden" :name="set(pos) ? 'pos[' + i + '][set]' : ''" :value="set(pos) ? set(pos).id.slice(1) : ''" />
+                                    <template x-for="t in setTeile(pos)" :key="t.id">
+                                        <div class="grid items-end gap-2 border-l-4 border-dpsg-mittelbeige pl-3 sm:grid-cols-2">
+                                            <div>
+                                                <label class="inline-flex items-center gap-2 text-sm font-bold" x-show="t.optional">
+                                                    <input type="checkbox" value="1" :name="'pos[' + i + '][teile][' + t.id + '][dabei]'" x-model="pos.teile[t.id].dabei" />
+                                                    <span x-text="(t.menge > 1 ? t.menge + ' × ' : '') + t.name + ' (optional)'"></span>
+                                                </label>
+                                                <p class="text-sm font-bold" x-show="!t.optional" x-text="(t.menge > 1 ? t.menge + ' × ' : '') + t.name"></p>
+                                                <p class="text-xs text-text-secondary" x-show="t.varianten.length === 1" x-text="euro(t.varianten[0].preis)"></p>
+                                            </div>
+                                            <div x-show="t.varianten.length > 1 && (!t.optional || pos.teile[t.id].dabei)">
+                                                <label class="sr-only" :for="'pos-teil-' + i + '-' + t.id" x-text="'Größe ' + t.name"></label>
+                                                <select :id="'pos-teil-' + i + '-' + t.id" :name="t.varianten.length > 1 ? 'pos[' + i + '][teile][' + t.id + '][variante]' : ''" x-model="pos.teile[t.id].variante" class="w-full border border-dpsg-mittelbeige bg-white px-3 py-2">
+                                                    <option value="">Größe wählen</option>
+                                                    <template x-for="v in t.varianten" :key="v.id"><option :value="v.id" x-text="(v.bezeichnung || 'Standard') + ' – ' + euro(v.preis)"></option></template>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+
+                                <div class="md:col-span-4" x-show="pos.artikel && pos.artikel !== 'frei' && !set(pos)">
                                     <label class="block text-sm font-bold" :for="'pos-variante-' + i">Größe / Ausführung</label>
-                                    <select :id="'pos-variante-' + i" :name="pos.artikel !== 'frei' ? 'pos[' + i + '][variante]' : ''" x-model="pos.variante" class="mt-1 w-full border border-dpsg-mittelbeige bg-white px-3 py-2">
+                                    <select :id="'pos-variante-' + i" :name="pos.artikel && pos.artikel !== 'frei' && !set(pos) ? 'pos[' + i + '][variante]' : ''" x-model="pos.variante" class="mt-1 w-full border border-dpsg-mittelbeige bg-white px-3 py-2">
                                         <option value="">bitte wählen</option>
                                         <template x-for="v in varianten(pos)" :key="v.id"><option :value="v.id" x-text="(v.bezeichnung || 'Standard') + ' – ' + euro(v.preis)"></option></template>
                                     </select>
@@ -183,11 +236,21 @@
             </section>
 
             <script>
-                function shopBestellung(katalog, alt) {
+                function shopBestellung(katalog, sets, alt) {
                     let zaehler = 0;
-                    const leer = (p = {}) => ({ key: ++zaehler, mitglied: p.mitglied || '', stufe: p.stufe || '', menge: p.menge || 1, artikel: p.frei_nummer ? 'frei' : '', variante: p.variante || '', nummer: p.frei_nummer || '', text: p.frei_text || '', info: '', gesperrt: false });
+                    const teileFuer = (wahl, alteTeile = {}) => {
+                        const s = sets.find(s => s.id === wahl);
+                        const teile = {};
+                        (s ? s.teile : []).forEach(t => {
+                            const a = alteTeile[t.id] || {};
+                            teile[t.id] = { variante: a.variante || (t.varianten.length === 1 ? String(t.varianten[0].id) : ''), dabei: a.dabei !== undefined ? a.dabei === '1' || a.dabei === true : t.vorgewaehlt };
+                        });
+                        return teile;
+                    };
+                    const leer = (p = {}) => ({ key: ++zaehler, mitglied: p.mitglied || '', stufe: p.stufe || '', menge: p.menge || 1, artikel: p.frei_nummer ? 'frei' : (p.set ? 's' + p.set : ''), variante: p.variante || '', nummer: p.frei_nummer || '', text: p.frei_text || '', info: '', gesperrt: false, teile: p.set ? teileFuer('s' + p.set, p.teile || {}) : {} });
                     return {
                         katalog,
+                        sets,
                         positionen: (alt && alt.length ? alt : [{}]).map(p => {
                             const pos = leer(p);
                             if (p.variante) {
@@ -197,10 +260,27 @@
                             return pos;
                         }),
                         neu() { this.positionen.push(leer()); },
+                        set(pos) { return this.sets.find(s => s.id === pos.artikel) || null; },
+                        setTeile(pos) { const s = this.set(pos); return s ? s.teile.filter(t => pos.teile[t.id]) : []; },
+                        gewaehlt(pos) { pos.variante = ''; pos.teile = teileFuer(pos.artikel); },
+                        waehlen(wahl) {
+                            let pos = this.positionen.find(p => !p.artikel);
+                            if (!pos) { pos = leer(); const vorher = this.positionen[this.positionen.length - 1]; pos.mitglied = vorher.mitglied; pos.stufe = vorher.stufe; this.positionen.push(pos); }
+                            pos.artikel = wahl;
+                            this.gewaehlt(pos);
+                        },
                         varianten(pos) { const a = this.katalog.find(a => String(a.id) === String(pos.artikel)); return a ? a.varianten : []; },
                         euro(cent) { return (cent / 100).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' }); },
                         summe() {
                             return this.positionen.reduce((s, p) => {
+                                const set = this.set(p);
+                                if (set) {
+                                    return s + set.teile.reduce((t, teil) => {
+                                        const w = p.teile[teil.id] || {};
+                                        const v = teil.varianten.find(v => String(v.id) === String(w.variante));
+                                        return t + ((!teil.optional || w.dabei) && v ? v.preis * teil.menge * (parseInt(p.menge) || 1) : 0);
+                                    }, 0);
+                                }
                                 const v = this.varianten(p).find(v => String(v.id) === String(p.variante));
                                 return s + (v ? v.preis * (parseInt(p.menge) || 1) : 0);
                             }, 0);

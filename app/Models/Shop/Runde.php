@@ -15,11 +15,12 @@ class Runde extends Model
 
     public const STATUS = ['offen' => 'offen', 'geschlossen' => 'geschlossen', 'bestellt' => 'beim Rüsthaus bestellt', 'geliefert' => 'geliefert', 'erledigt' => 'erledigt'];
 
-    protected $fillable = ['name', 'bestelldatum', 'status', 'geschlossen_am'];
+    protected $fillable = ['name', 'bestelldatum', 'status', 'geschlossen_am', 'rechnung_cent', 'versand_cent', 'rechnung_am', 'bestellt_am', 'geliefert_am', 'erledigt_am', 'erinnert_am'];
 
     protected function casts(): array
     {
-        return ['bestelldatum' => 'date', 'geschlossen_am' => 'datetime'];
+        return ['bestelldatum' => 'date', 'geschlossen_am' => 'datetime', 'rechnung_cent' => 'integer', 'versand_cent' => 'integer', 'rechnung_am' => 'date',
+            'bestellt_am' => 'datetime', 'geliefert_am' => 'datetime', 'erledigt_am' => 'datetime', 'erinnert_am' => 'datetime'];
     }
 
     /** @return HasMany<Bestellung, $this> */

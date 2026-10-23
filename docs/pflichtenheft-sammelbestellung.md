@@ -261,8 +261,8 @@ Abgenommen ist die Funktion, wenn in Roden auf einer Testrunde:
 
 | Phase | Inhalt | Ergebnis |
 |---|---|---|
-| **1** | Freigabe per Artikelnummer mit Cache (Bild, Beschreibung, Varianten, Preis), Sperrliste, lokaler Shop, manuelle Runden mit Bestelldatum, Bestellformular inkl. freier Artikel, Double-Opt-in, Zahlungsaufforderung mit GiroCode, Kasse hakt ab, Sammelliste mit Export, Rolle „Sammelbestellung“, Schalter | Michele kann die erste Runde fahren. |
-| **2** | Artikelsets (SB-38), NaMi-Prüfung, Erinnerung und Storno zum Bestelldatum, Ausgabeliste und -scheine als PDF mit Unterschrift, Abhaken durch Verwaltung, Rüsthaus-Rechnung, Löschfrist | Ablauf vollständig. |
+| **1** (gebaut) | Freigabe per Artikelnummer mit Cache (Bild, Beschreibung, Varianten, Preis), Sperrliste, lokaler Shop, manuelle Runden mit Bestelldatum, Bestellformular inkl. freier Artikel, Double-Opt-in, Zahlungsaufforderung mit GiroCode, Kasse hakt ab, Sammelliste mit Export, Rolle „Sammelbestellung“, Schalter | Michele kann die erste Runde fahren. |
+| **2** (gebaut) | Artikelsets (SB-38), NaMi-Prüfung, Erinnerung und Storno zum Bestelldatum, Ausgabeliste und -scheine als PDF mit Unterschrift, Abhaken durch Verwaltung, Rüsthaus-Rechnung, Löschfrist | Ablauf vollständig. |
 | **3** | Zahlungsbaustein mit Stripe (SB-91), gemeinsam mit Veranstaltungen nach Absprache mit der Haupt-Sitzung | Online-Zahlung. |
 | später | Lagerbestand des Stamms, Kontoauszug-Import, Übernahme in den Einrichtungsassistenten für andere Stämme | nach Bedarf |
 
@@ -279,6 +279,19 @@ Testbetrieb: Solange „Sammelbestellung für alle freigeben“ aus ist,
 sehen `/bestellen` nur Angemeldete mit Backend-Zugang. Ihre Bestellungen
 sind als Test markiert (`shop_bestellungen.test`) und lassen sich unter
 „Bestellungen“ samt Zahlungen löschen.
+
+**Phase 2 und Sets (23.10.2026) sind gebaut:**
+- **Sets (SB-38/39):** Backend „Sammelbestellung → Sets“. Im Formular wählt man das Set und dann je Teil die Größe; optionale Teile hakt man an. Daraus entstehen normale Positionen mit `set_id`/`set_gruppe`. „Bestellen“ auf einer Karte trägt den Artikel bzw. das Set ins Formular ein.
+- **Ablauf der Runde** (Bestellrunden → „Ablauf“):
+  - Zahlungserinnerung, automatisch am Vortag des Bestelldatums oder von Hand;
+  - Hinweis an die Sammelbestellung am Bestelldatum (SB-22);
+  - **Schließen:** Unbezahltes wird mit Mail storniert, gehaltene Bestellungen bleiben; ist ein Teil bezahlt, fallen nur die unbezahlten Positionen weg;
+  - „Beim Rüsthaus bestellt“, „Ware ist da“ (Mail mit Abholhinweis), „Erledigt“;
+  - Rüsthaus-Rechnung mit Differenz (SB-45).
+- **Ausgabe (SB-42/43):** Ausgabeliste je Stufe (PDF, Querformat, Unterschriftsspalte) und Ausgabescheine je Bestellung. Abhaken je Position oder „Alles ausgegeben“ mit Vermerk, auch durch die Verwaltung (sieht Runden und Bestellungen).
+- **Mitgliedsprüfung (SB-37):** beim Bestätigen und auf Knopfdruck. Abgeglichen werden Vor- und Nachname mit der Mitgliederliste der Kasse (NaMi-Abruf), ohne Liste mit dem Mitgliederabgleich. Ergebnis als Ampel, „von Hand bestätigen“ z. B. für Neumitglieder.
+- **Löschfristen (SB-32/71):** `sammelbestellung:taeglich` (08:10). Unbestätigte Bestellungen werden nach 48 Stunden gelöscht. Runden werden `dpsg.sammelbestellung_loeschfrist_monate` (Standard 6) nach „Erledigt“ anonymisiert; Summen und Zahlungen bleiben. Datenschutz-Anfragen (Auskunft, Löschen) erfassen Sammelbestellungen; Löschen anonymisiert sie.
+- **Noch offen:** Tageszusammenfassung statt Einzelmail (SB-61), Antwort-an-Adresse (SB-62), Ändern einer Bestellung durch die Person (SB-33; bis dahin Storno und neu), Preisänderung offener Positionen (SB-17), Excel-Export (CSV gibt es).
 
 Für andere Stämme gilt die Funktion genauso. Sie ist standardmäßig aus und
 wird je Stamm unter „Verwaltung → Funktionen“ eingeschaltet.

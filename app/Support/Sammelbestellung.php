@@ -7,6 +7,8 @@ use App\Models\Shop\Artikel;
 use App\Models\Shop\Bestellung;
 use App\Models\Shop\Position;
 use App\Models\Shop\Runde;
+use App\Models\Shop\Set;
+use App\Models\Shop\SetTeil;
 use App\Models\Shop\Sperre;
 use App\Models\User;
 use App\Models\Zahlung;
@@ -61,6 +63,50 @@ class Sammelbestellung
             Zahlungen::konto() === null ? 'Bankverbindung eintragen (Verwaltung → Funktionen → Zahlungen)' : null,
             Runde::offene() === null ? 'Bestellrunde öffnen (Sammelbestellung → Bestellrunden → „Runde öffnen“)' : null,
         ]));
+    }
+
+    /** Günstigster Preis eines Sets: Pflichtteile und anfangs angehakte optionale Teile, je kleinste Größe. */
+    public static function setPreisAb(Set $set): int
+    {
+        return (int) $set->teile->filter(fn (SetTeil $t) => ! $t->optional || $t->vorgewaehlt)
+            ->sum(fn (SetTeil $t) => $t->menge * (int) ($t->artikel?->varianten->where('aktiv', true)->min('preis_cent') ?? $t->artikel?->preis_cent));
+    }
+
+    /**
+     * Positionen für ein bestelltes Set (SB-38): je Teil eine Position mit
+     * Verweis aufs Set; optionale Teile nur, wenn angehakt.
+     *
+     * @param  array<int|string, array{variante?: mixed, dabei?: mixed}>  $wahl  je Teil-ID
+     * @param  array<string, mixed>  $basis  mitglied, stufe
+     * @return list<array<string, mixed>>
+     *
+     * @throws InvalidArgumentException mit Feldname => Meldung als JSON
+     */
+    public static function setPositionen(Set $set, int $menge, array $wahl, array $basis): array
+    {
+        if (! $set->freigegeben || ! $set->bestellbar()) {
+            throw new InvalidArgumentException('Dieses Set gibt es gerade nicht.');
+        }
+        $gruppe = Str::lower(Str::random(10));
+        $positionen = [];
+        foreach ($set->teile as $teil) {
+            $artikel = $teil->artikel;
+            $varianten = $artikel?->freigegeben ? $artikel->varianten->where('aktiv', true)->values() : collect();
+            if ($teil->optional && ($varianten->isEmpty() || ! filter_var($wahl[$teil->id]['dabei'] ?? false, FILTER_VALIDATE_BOOLEAN))) {
+                continue;
+            }
+            $variante = $varianten->count() === 1 ? $varianten->first() : $varianten->firstWhere('id', (int) ($wahl[$teil->id]['variante'] ?? 0));
+            if (! $variante) {
+                throw new InvalidArgumentException('Bitte die Größe für „'.$artikel->name.'“ wählen.');
+            }
+            $positionen[] = $basis + [
+                'artikel_id' => $artikel->id, 'set_id' => $set->id, 'set_gruppe' => $gruppe, 'nummer' => $variante->nummer,
+                'bezeichnung' => $artikel->name, 'groesse' => $variante->bezeichnung, 'preis_cent' => $variante->preis_cent,
+                'menge' => $menge * $teil->menge, 'frei' => false, 'bestaetigt' => true,
+            ];
+        }
+
+        return $positionen;
     }
 
     /** Bestellungen aus dem Testbetrieb samt ihren Zahlungen löschen. */

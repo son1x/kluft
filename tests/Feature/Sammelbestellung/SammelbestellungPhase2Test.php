@@ -3,6 +3,7 @@
 namespace Tests\Feature\Sammelbestellung;
 
 use App\Filament\Resources\Shop\BestellungResource;
+use App\Filament\Resources\Shop\Pages\ListArtikel;
 use App\Filament\Resources\Shop\Pages\ManageRunden;
 use App\Filament\Resources\Shop\Pages\ManageSets;
 use App\Filament\Resources\Shop\RundeResource;
@@ -289,5 +290,29 @@ class SammelbestellungPhase2Test extends TestCase
         Livewire::test(ManageRunden::class)->callTableAction('ausgabeliste', $this->runde)->assertFileDownloaded('ausgabeliste-herbst.pdf');
         Livewire::test(ManageRunden::class)->callTableAction('rechnung', $this->runde, ['rechnung_cent' => '43,20', 'versand_cent' => '5,90'])->assertHasNoTableActionErrors();
         $this->assertSame([4320, 590], [$this->runde->fresh()->rechnung_cent, $this->runde->fresh()->versand_cent]);
+    }
+
+    #[TestDox('Eigene Artikel: im Backend anlegen, bestellbar, nicht in der Rüsthaus-Sammelliste, eigene Liste')]
+    public function test_eigene_artikel(): void
+    {
+        $hemd = $this->artikel('Klufthemd', '0100003', ['Kragenweite 30' => 4800]);
+        $this->login('sammelbestellung');
+        Livewire::test(ListArtikel::class)->callAction('create', [
+            'name' => 'Stammesaufnäher', 'kategorie' => 'Aufnäher', 'freigegeben' => true,
+            'varianten' => [['bezeichnung' => '', 'preis_cent' => '4,00', 'aktiv' => true]],
+        ])->assertHasNoActionErrors();
+        $eigen = Artikel::query()->where('eigen', true)->with('varianten')->sole();
+        $this->assertSame([400, 1], [$eigen->preis_cent, $eigen->varianten->count()]);
+        $this->assertStringStartsWith('STAMM-', $eigen->nummer);
+        $this->get('/bestellen')->assertOk()->assertSee('Stammesaufnäher')->assertSee('vom Stamm');
+
+        $b = $this->bestellen([
+            ['mitglied' => 'Mia Muster', 'menge' => 1, 'variante' => $hemd->varianten[0]->id],
+            ['mitglied' => 'Mia Muster', 'menge' => 2, 'variante' => $eigen->varianten[0]->id],
+        ]);
+        $this->assertSame(4800 + 800, Zahlung::query()->sole()->betrag_cent);
+        $b->zahlungen()->sole()->eingang(5600, now());
+        $this->assertSame(['Klufthemd'], Sammelbestellung::sammelliste($this->runde)->pluck('bezeichnung')->all());
+        $this->assertSame([['Stammesaufnäher', 2]], Sammelbestellung::sammelliste($this->runde, true)->map(fn ($z) => [$z['bezeichnung'], $z['menge']])->all());
     }
 }

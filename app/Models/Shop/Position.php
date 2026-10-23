@@ -35,6 +35,12 @@ class Position extends Model
         return $this->belongsTo(Zahlung::class, 'zahlung_id');
     }
 
+    /** @return BelongsTo<Artikel, $this> */
+    public function artikel(): BelongsTo
+    {
+        return $this->belongsTo(Artikel::class, 'artikel_id');
+    }
+
     /** @return BelongsTo<Set, $this> */
     public function set(): BelongsTo
     {

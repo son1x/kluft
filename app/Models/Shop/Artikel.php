@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 /**
  * Rüsthaus-Artikel im eigenen Shop der Sammelbestellung, mit lokal
@@ -16,11 +17,11 @@ class Artikel extends Model
 {
     protected $table = 'shop_artikel';
 
-    protected $fillable = ['nummer', 'name', 'beschreibung', 'url', 'rh_kategorie', 'kategorie', 'bild_media_id', 'preis_cent', 'freigegeben', 'sort', 'abgerufen_am'];
+    protected $fillable = ['nummer', 'eigen', 'name', 'beschreibung', 'url', 'rh_kategorie', 'kategorie', 'bild_media_id', 'preis_cent', 'freigegeben', 'sort', 'abgerufen_am'];
 
     protected function casts(): array
     {
-        return ['preis_cent' => 'integer', 'freigegeben' => 'boolean', 'sort' => 'integer', 'abgerufen_am' => 'datetime'];
+        return ['eigen' => 'boolean', 'preis_cent' => 'integer', 'freigegeben' => 'boolean', 'sort' => 'integer', 'abgerufen_am' => 'datetime'];
     }
 
     /** @return HasMany<Variante, $this> */
@@ -33,6 +34,18 @@ class Artikel extends Model
     public function bild(): BelongsTo
     {
         return $this->belongsTo(Media::class, 'bild_media_id');
+    }
+
+    /**
+     * Nummer für einen eigenen Artikel ohne Rüsthaus-Nummer, z. B. STAMM-4F2K9Q.
+     */
+    public static function eigeneNummer(): string
+    {
+        do {
+            $nummer = 'STAMM-'.Str::upper(Str::random(6));
+        } while (self::query()->where('nummer', $nummer)->exists());
+
+        return $nummer;
     }
 
     /** @param Builder<Artikel> $query */

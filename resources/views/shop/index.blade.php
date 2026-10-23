@@ -1,19 +1,25 @@
 @extends('layouts.app')
 
-{{-- Sammelbestellung beim Rüsthaus: Shop der freigegebenen Artikel und
-     Bestellformular. Erwartet: $page (optional, Einleitung), $testbetrieb, $runde, $bestellbar, $fehlt, $sets, $artikel --}}
+{{-- Sammelbestellung: Angebot als kompakte Liste (Rüsthaus-Artikel, eigene
+     Artikel, Sets) und Bestellung wie ein Formular: oben die Mitglieder, je
+     Artikel Größe, Anzahl und „Hinzufügen“, unten die Übersicht. Die Logik
+     steckt in resources/js/shop-bestellung.js (keine Inline-Skripte, CSP).
+     Erwartet: $page (optional, Einleitung), $testbetrieb, $runde, $bestellbar, $fehlt, $sets, $artikel --}}
 
 @section('seo_title', ($page->title ?? 'Ausrüstung bestellen').' – '.config('dpsg.site.name'))
 
+@php($euro = fn (?int $cent) => \App\Support\Sammelbestellung::euro($cent))
 @php($katalog = $artikel->map(fn ($a) => ['id' => $a->id, 'name' => $a->name, 'varianten' => $a->varianten->map(fn ($v) => ['id' => $v->id, 'bezeichnung' => $v->bezeichnung, 'preis' => $v->preis_cent])->values()])->values())
 @php($setKatalog = $sets->map(fn ($s) => ['id' => 's'.$s->id, 'name' => $s->name, 'teile' => $s->teile->filter(fn ($t) => $t->artikel?->freigegeben && $t->artikel->varianten->isNotEmpty())->map(fn ($t) => [
     'id' => $t->id, 'name' => $t->artikel->name, 'menge' => $t->menge, 'optional' => $t->optional, 'vorgewaehlt' => $t->vorgewaehlt,
     'varianten' => $t->artikel->varianten->map(fn ($v) => ['id' => $v->id, 'bezeichnung' => $v->bezeichnung, 'preis' => $v->preis_cent])->values(),
 ])->values()])->values())
 @php($stufen = collect(config('dpsg.stages'))->map(fn ($s) => $s['label']))
+@php($gruppen = $artikel->groupBy(fn ($a) => $a->kategorie ?: ($a->eigen ? 'Vom Stamm' : 'Weitere Artikel')))
+@php($feld = 'border border-dpsg-mittelbeige bg-white px-3 py-2')
 
 @section('content')
-    <div class="mx-auto max-w-6xl px-4 py-12">
+    <div class="mx-auto max-w-4xl px-4 py-12">
         @if ($testbetrieb)
             <p class="mb-6 border-l-4 border-dpsg-rot bg-white px-4 py-3 font-semibold shadow-sm" role="status">Testbetrieb: Diese Seite sehen nur Angemeldete aus dem Backend. Bestellungen hier sind als Test markiert und werden später gelöscht.</p>
         @endif
@@ -27,67 +33,11 @@
         </div>
 
         @if ($runde)
-            <p class="mt-6 inline-block border-l-4 border-dpsg-rot bg-white px-4 py-3 shadow-sm">
+            <p class="mt-6 border-l-4 border-dpsg-rot bg-white px-4 py-3 shadow-sm">
                 <strong>{{ $runde->name }}:</strong> Bestellen und bezahlen bis zum <strong>{{ $runde->bestelldatum->format('d.m.Y') }}</strong>. Dann bestellen wir beim Rüsthaus.
             </p>
         @else
             <p class="mt-6 border-l-4 border-dpsg-mittelbeige bg-white px-4 py-3 shadow-sm">Gerade läuft keine Sammelbestellung. Die nächste kündigen wir hier und in den Gruppenstunden an.</p>
-        @endif
-
-        @if ($artikel->isNotEmpty() || $sets->isNotEmpty())
-            <section class="mt-10" aria-labelledby="shop-heading">
-                <h2 id="shop-heading" class="font-serif text-2xl font-bold">Unser Angebot</h2>
-                <div class="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                    @foreach ($sets as $s)
-                        <article class="flex flex-col border-t-4 border-dpsg-rot bg-white shadow-md">
-                            @if ($s->bildArtikel?->bild)
-                                <x-picture :media="$s->bildArtikel->bild" sizes="(min-width: 1024px) 360px, 100vw" class="aspect-square w-full bg-white object-contain p-4" loading="lazy" />
-                            @endif
-                            <div class="flex flex-1 flex-col p-4">
-                                <p class="text-xs font-bold uppercase tracking-wide text-dpsg-rot">Set</p>
-                                <h3 class="font-serif text-lg font-bold">{{ $s->name }}</h3>
-                                <p class="text-sm text-text-secondary">ab {{ \App\Support\Sammelbestellung::euro(\App\Support\Sammelbestellung::setPreisAb($s)) }}</p>
-                                @if ($s->beschreibung)
-                                    <p class="mt-2 whitespace-pre-line text-sm">{{ $s->beschreibung }}</p>
-                                @endif
-                                <ul class="mt-2 list-disc pl-5 text-sm">
-                                    @foreach ($s->teile as $t)
-                                        @if ($t->artikel?->freigegeben)
-                                            <li>{{ $t->menge > 1 ? $t->menge.' × ' : '' }}{{ $t->artikel->name }}@if ($t->optional) <span class="text-text-secondary">(optional)</span>@endif</li>
-                                        @endif
-                                    @endforeach
-                                </ul>
-                                @if ($bestellbar)
-                                    <a href="#bestellformular" x-data @click="$dispatch('shop-waehlen', { wahl: @js('s'.$s->id) })" class="mt-auto self-start pt-4 font-bold text-dpsg-rot underline">Bestellen</a>
-                                @endif
-                            </div>
-                        </article>
-                    @endforeach
-                    @foreach ($artikel as $a)
-                        <article class="flex flex-col bg-white shadow-md">
-                            @if ($a->bild)
-                                <x-picture :media="$a->bild" sizes="(min-width: 1024px) 360px, 100vw" class="aspect-square w-full bg-white object-contain p-4" loading="lazy" />
-                            @endif
-                            <div class="flex flex-1 flex-col p-4">
-                                <h3 class="font-serif text-lg font-bold">{{ $a->name }}</h3>
-                                <p class="text-sm text-text-secondary">Rüsthaus-Nr. {{ $a->nummer }} · {{ $a->varianten->min('preis_cent') !== $a->varianten->max('preis_cent') ? 'ab ' : '' }}{{ \App\Support\Sammelbestellung::euro($a->varianten->min('preis_cent') ?? $a->preis_cent) }}</p>
-                                @if ($a->beschreibung)
-                                    <details class="mt-2 text-sm">
-                                        <summary class="cursor-pointer font-bold text-dpsg-rot">Beschreibung</summary>
-                                        <p class="mt-1 whitespace-pre-line">{{ $a->beschreibung }}</p>
-                                    </details>
-                                @endif
-                                @if ($a->varianten->count() > 1)
-                                    <p class="mt-2 text-xs text-text-secondary">Größen: {{ $a->varianten->pluck('bezeichnung')->filter()->implode(' · ') }}</p>
-                                @endif
-                                @if ($bestellbar)
-                                    <a href="#bestellformular" x-data @click="$dispatch('shop-waehlen', { wahl: @js((string) $a->id) })" class="mt-auto self-start pt-4 font-bold text-dpsg-rot underline">Bestellen</a>
-                                @endif
-                            </div>
-                        </article>
-                    @endforeach
-                </div>
-            </section>
         @endif
 
         @if (! $bestellbar && $fehlt !== [])
@@ -97,11 +47,144 @@
             </div>
         @endif
 
+
         @if ($bestellbar)
-            <section id="bestellformular" class="mt-12 scroll-mt-24 bg-white p-6 shadow-md md:p-8" aria-labelledby="bestellen-heading"
-                x-data="shopBestellung(@js($katalog), @js($setKatalog), @js(old('pos', [[]])), @js(route('shop.nachschlagen')))" @shop-waehlen.window="waehlen($event.detail.wahl)">
-                <h2 id="bestellen-heading" class="font-serif text-2xl font-bold">Bestellen</h2>
-                <p class="mt-2 text-sm text-text-secondary">Bestellen dürfen Mitglieder des Stamms bzw. ihre Erziehungsberechtigten. Etwas, das oben fehlt? Trag die Rüsthaus-Artikelnummer ein – wir prüfen es und melden uns mit dem Preis.</p>
+        <div x-data="shopBestellung(@js($katalog), @js($setKatalog), @js(old('pos', [])), @js(route('shop.nachschlagen')), @js($stufen))">
+            {{-- 1. Für wen --}}
+            <section class="mt-10 bg-white p-4 shadow-md md:p-6" aria-labelledby="fuer-heading">
+                <h2 id="fuer-heading" class="font-serif text-xl font-bold">1. Für wen bestellst du?</h2>
+                <p class="mt-1 text-sm text-text-secondary">Vor- und Nachname des Mitglieds. Für Geschwister einfach ein weiteres Mitglied hinzufügen.</p>
+                <div class="mt-3 space-y-2">
+                    <template x-for="(m, mi) in mitglieder" :key="m.key">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <input type="radio" name="_aktiv" :value="m.key" x-model.number="aktiv" x-show="mitglieder.length > 1" class="h-5 w-5" :aria-label="'Artikel für ' + (m.name || 'dieses Mitglied') + ' hinzufügen'" />
+                            <label class="sr-only" :for="'m-name-' + m.key">Vor- und Nachname</label>
+                            <input :id="'m-name-' + m.key" type="text" x-model="m.name" @focus="aktiv = m.key" maxlength="120" placeholder="Vor- und Nachname" class="{{ $feld }} min-w-0 flex-1 basis-48" />
+                            <label class="sr-only" :for="'m-stufe-' + m.key">Stufe</label>
+                            <select :id="'m-stufe-' + m.key" x-model="m.stufe" class="{{ $feld }} basis-36">
+                                <option value="">Stufe</option>
+                                @foreach ($stufen as $key => $label)<option value="{{ $key }}">{{ $label }}</option>@endforeach
+                            </select>
+                            <button type="button" x-show="mitglieder.length > 1" @click="mitgliedEntfernen(m)" class="text-sm text-dpsg-rot underline">entfernen</button>
+                        </div>
+                    </template>
+                </div>
+                <button type="button" @click="mitgliedNeu()" class="mt-3 text-sm font-bold text-dpsg-blau underline">+ weiteres Mitglied</button>
+            </section>
+        @endif
+
+            {{-- 2. Angebot --}}
+            <section class="mt-8" aria-labelledby="shop-heading">
+                <h2 id="shop-heading" class="font-serif text-xl font-bold">{{ $bestellbar ? '2. Artikel auswählen' : 'Unser Angebot' }}</h2>
+                @if ($bestellbar)
+                    <p class="sticky top-20 z-10 mt-2 bg-surface-muted px-3 py-2 text-sm shadow-sm" x-show="mitglieder.length > 1">
+                        Hinzufügen für: <strong x-text="aktivName()"></strong> <span class="text-text-secondary">(oben umschalten)</span>
+                    </p>
+                @endif
+
+                @if ($sets->isNotEmpty())
+                    <h3 class="mt-6 text-sm font-bold uppercase tracking-wide text-text-secondary">Sets</h3>
+                    <ul class="mt-2 divide-y divide-surface-muted bg-white shadow-md">
+                        @foreach ($sets as $s)
+                            @php($sid = 's'.$s->id)
+                            <li class="flex gap-3 p-3">
+                                @if ($s->bildArtikel?->bild)
+                                    <x-picture :media="$s->bildArtikel->bild" sizes="64px" class="h-16 w-16 shrink-0 bg-white object-contain" loading="lazy" />
+                                @endif
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-baseline justify-between gap-2">
+                                        <h4 class="font-bold">{{ $s->name }} <span class="ml-1 text-xs font-bold uppercase text-dpsg-rot">Set</span></h4>
+                                        <span class="whitespace-nowrap text-sm">ab {{ $euro(\App\Support\Sammelbestellung::setPreisAb($s)) }}</span>
+                                    </div>
+                                    <p class="text-sm text-text-secondary">
+                                        @foreach ($s->teile->filter(fn ($t) => $t->artikel?->freigegeben) as $t){{ $loop->first ? '' : ', ' }}{{ $t->menge > 1 ? $t->menge.' × ' : '' }}{{ $t->artikel->name }}{{ $t->optional ? ' (optional)' : '' }}@endforeach
+                                    </p>
+                                    @if ($s->beschreibung)
+                                        <details class="mt-1 text-sm"><summary class="cursor-pointer text-dpsg-rot">Details</summary><p class="mt-1 whitespace-pre-line">{{ $s->beschreibung }}</p></details>
+                                    @endif
+                                    @if ($bestellbar)
+                                        <button type="button" class="mt-2 text-sm font-bold text-dpsg-blau underline" @click="setWahl[@js($sid)].offen = ! setWahl[@js($sid)].offen" x-text="setWahl[@js($sid)].offen ? 'schließen' : 'Größen wählen und hinzufügen'"></button>
+                                        <div x-show="setWahl[@js($sid)].offen" class="mt-2 space-y-2 border-l-4 border-dpsg-mittelbeige pl-3">
+                                            <template x-for="t in setTeile(@js($sid))" :key="t.id">
+                                                <div class="flex flex-wrap items-center gap-2 text-sm">
+                                                    <label class="inline-flex min-w-0 flex-1 basis-40 items-center gap-2">
+                                                        <input type="checkbox" x-show="t.optional" x-model="setWahl[@js($sid)].teile[t.id].dabei" class="h-5 w-5" />
+                                                        <span x-text="(t.menge > 1 ? t.menge + ' × ' : '') + t.name + (t.optional ? ' (optional)' : '')"></span>
+                                                    </label>
+                                                    <select x-show="t.varianten.length > 1" x-model="setWahl[@js($sid)].teile[t.id].variante" :disabled="t.optional && ! setWahl[@js($sid)].teile[t.id].dabei" :aria-label="'Größe ' + t.name" class="{{ $feld }} min-w-0 flex-1 basis-48">
+                                                        <option value="">Größe wählen</option>
+                                                        <template x-for="v in t.varianten" :key="v.id"><option :value="v.id" x-text="(v.bezeichnung || 'Standard') + ' – ' + euro(v.preis)"></option></template>
+                                                    </select>
+                                                    <span x-show="t.varianten.length === 1" class="text-text-secondary" x-text="euro(t.varianten[0].preis)"></span>
+                                                </div>
+                                            </template>
+                                            @include('shop.partials.menge-hinzufuegen', ['ziel' => "setWahl['$sid']", 'aktion' => "setHinzufuegen('$sid')", 'schluessel' => $sid])
+                                        </div>
+                                    @endif
+                                </div>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+
+                @foreach ($gruppen as $kategorie => $liste)
+                    <h3 class="mt-6 text-sm font-bold uppercase tracking-wide text-text-secondary">{{ $kategorie }}</h3>
+                    <ul class="mt-2 divide-y divide-surface-muted bg-white shadow-md">
+                        @foreach ($liste as $a)
+                            @php($ab = $a->varianten->min('preis_cent') ?? $a->preis_cent)
+                            <li class="flex gap-3 p-3">
+                                @if ($a->bild)
+                                    <x-picture :media="$a->bild" sizes="64px" class="h-16 w-16 shrink-0 bg-white object-contain" loading="lazy" />
+                                @endif
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-baseline justify-between gap-2">
+                                        <h4 class="font-bold">{{ $a->name }}</h4>
+                                        <span class="whitespace-nowrap text-sm">{{ $a->varianten->max('preis_cent') !== $ab ? 'ab ' : '' }}{{ $euro($ab) }}</span>
+                                    </div>
+                                    <p class="text-xs text-text-secondary">{{ $a->eigen ? 'vom Stamm' : 'Rüsthaus-Nr. '.$a->nummer }}@if (! $bestellbar && $a->varianten->count() > 1) · Größen: {{ $a->varianten->pluck('bezeichnung')->filter()->implode(', ') }}@endif</p>
+                                    @if ($a->beschreibung)
+                                        <details class="mt-1 text-sm"><summary class="cursor-pointer text-dpsg-rot">Details</summary><p class="mt-1 whitespace-pre-line">{{ $a->beschreibung }}</p></details>
+                                    @endif
+                                    @if ($bestellbar)
+                                        <div class="mt-2 flex flex-wrap items-center gap-2">
+                                            @if ($a->varianten->count() > 1)
+                                                <select x-model="wahl[{{ $a->id }}].variante" aria-label="Größe {{ $a->name }}" class="{{ $feld }} min-w-0 flex-1 basis-48 text-sm">
+                                                    <option value="">Größe wählen</option>
+                                                    @foreach ($a->varianten as $v)<option value="{{ $v->id }}">{{ $v->bezeichnung ?: 'Standard' }}{{ $v->preis_cent !== $ab ? ' – '.$euro($v->preis_cent) : '' }}</option>@endforeach
+                                                </select>
+                                            @endif
+                                            @include('shop.partials.menge-hinzufuegen', ['ziel' => 'wahl['.$a->id.']', 'aktion' => 'artikelHinzufuegen('.$a->id.')', 'schluessel' => (string) $a->id, 'inline' => true])
+                                        </div>
+                                    @endif
+                                </div>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endforeach
+
+                @if ($bestellbar)
+                    <h3 class="mt-6 text-sm font-bold uppercase tracking-wide text-text-secondary">Etwas anderes vom Rüsthaus</h3>
+                    <div class="mt-2 bg-white p-3 shadow-md">
+                        <p class="text-sm text-text-secondary">Rüsthaus-Artikelnummer oder Link eintragen. Wir prüfen Artikel und Preis und melden uns.</p>
+                        <div class="mt-2 flex flex-wrap items-center gap-2">
+                            <label class="sr-only" for="frei-nummer">Rüsthaus-Artikelnummer oder Link</label>
+                            <input id="frei-nummer" type="text" x-model="frei.nummer" maxlength="300" placeholder="z. B. 0100003.32" class="{{ $feld }} min-w-0 flex-1 basis-40" />
+                            <button type="button" @click="nachschlagen()" class="border border-dpsg-blau px-3 py-2 text-sm font-bold text-dpsg-blau hover:bg-dpsg-blau hover:text-white">Prüfen</button>
+                        </div>
+                        <p class="mt-1 text-sm" x-show="frei.info" x-text="frei.info" :class="frei.gesperrt ? 'text-dpsg-rot' : 'text-text-secondary'"></p>
+                        <label class="sr-only" for="frei-text">Größe bzw. was genau</label>
+                        <input id="frei-text" type="text" x-model="frei.text" maxlength="160" placeholder="Größe bzw. was genau (falls nötig)" class="{{ $feld }} mt-2 w-full" />
+                        <div class="mt-2 flex flex-wrap items-center gap-2">
+                            @include('shop.partials.menge-hinzufuegen', ['ziel' => 'frei', 'aktion' => 'freiHinzufuegen()', 'schluessel' => 'frei', 'inline' => true])
+                        </div>
+                    </div>
+                @endif
+            </section>
+
+        @if ($bestellbar)
+            {{-- 3. Übersicht und Angaben --}}
+            <section id="bestellformular" class="mt-8 scroll-mt-24 bg-white p-4 shadow-md md:p-6" aria-labelledby="bestellen-heading">
+                <h2 id="bestellen-heading" class="font-serif text-xl font-bold">3. Deine Bestellung</h2>
 
                 @if ($errors->any())
                     <div class="mt-4 border-l-4 border-dpsg-rot bg-surface-muted p-3 text-sm text-dpsg-rot" role="alert">
@@ -109,89 +192,58 @@
                     </div>
                 @endif
 
+                <p class="mt-3 text-sm text-text-secondary" x-show="! eintraege.length">Noch nichts ausgewählt. Oben bei einem Artikel Größe und Anzahl wählen und „Hinzufügen“ tippen.</p>
+                <template x-for="m in mitglieder" :key="m.key">
+                    <div class="mt-4" x-show="eintraegeFuer(m).length">
+                        <h3 class="font-bold" x-text="(m.name || 'Ohne Namen') + (m.stufe ? ' · ' + stufeName(m.stufe) : '')"></h3>
+                        <ul class="mt-1 divide-y divide-surface-muted text-sm">
+                            <template x-for="e in eintraegeFuer(m)" :key="e.key">
+                                <li class="flex items-start justify-between gap-3 py-2">
+                                    <span class="min-w-0">
+                                        <span x-text="e.menge + ' × ' + e.label"></span>
+                                        <span class="block text-xs text-text-secondary" x-show="e.detail" x-text="e.detail"></span>
+                                    </span>
+                                    <span class="flex shrink-0 items-center gap-3">
+                                        <span x-text="e.preis === null ? 'wird geprüft' : euro(e.preis * e.menge)"></span>
+                                        <button type="button" @click="entfernen(e)" class="text-dpsg-rot" :aria-label="'Entfernen: ' + e.label">✕</button>
+                                    </span>
+                                </li>
+                            </template>
+                        </ul>
+                    </div>
+                </template>
+                <p class="mt-4 border-t border-surface-muted pt-3 text-right" x-show="eintraege.length">Summe: <strong x-text="euro(summe())"></strong><span class="block text-xs text-text-secondary" x-show="eintraege.some(e => e.preis === null)">ohne frei eingegebene Artikel</span></p>
+                <p class="mt-2 text-sm text-dpsg-rot" x-show="eintraege.some(e => ! mitgliedVon(e).name.trim())">Bitte oben bei jedem Mitglied den Namen eintragen.</p>
+
                 <form method="post" action="{{ route('shop.store') }}" class="mt-6 space-y-6" novalidate>
                     @csrf
                     <input type="hidden" name="_t" value="{{ \App\Support\SpamGuard::token() }}" />
                     <div class="hidden" aria-hidden="true"><label>Website <input type="text" name="website" tabindex="-1" autocomplete="off" /></label></div>
-
-                    <fieldset class="space-y-4">
-                        <legend class="font-bold">Artikel</legend>
-                        <template x-for="(pos, i) in positionen" :key="pos.key">
-                            <div class="grid gap-3 border border-dpsg-mittelbeige p-4 md:grid-cols-6">
-                                <div class="md:col-span-2">
-                                    <label class="block text-sm font-bold" :for="'pos-mitglied-' + i">Für (Vor- und Nachname)</label>
-                                    <input :id="'pos-mitglied-' + i" type="text" :name="'pos[' + i + '][mitglied]'" x-model="pos.mitglied" maxlength="120" required class="mt-1 w-full border border-dpsg-mittelbeige px-3 py-2" />
-                                </div>
+                    <template x-for="(e, i) in eintraege" :key="e.key">
+                        <div>
+                            <input type="hidden" :name="'pos[' + i + '][mitglied]'" :value="mitgliedVon(e).name" />
+                            <input type="hidden" :name="'pos[' + i + '][stufe]'" :value="mitgliedVon(e).stufe" />
+                            <input type="hidden" :name="'pos[' + i + '][menge]'" :value="e.menge" />
+                            <template x-if="e.typ === 'artikel'"><input type="hidden" :name="'pos[' + i + '][variante]'" :value="e.variante" /></template>
+                            <template x-if="e.typ === 'frei'">
                                 <div>
-                                    <label class="block text-sm font-bold" :for="'pos-stufe-' + i">Stufe</label>
-                                    <select :id="'pos-stufe-' + i" :name="'pos[' + i + '][stufe]'" x-model="pos.stufe" class="mt-1 w-full border border-dpsg-mittelbeige bg-white px-3 py-2">
-                                        <option value="">–</option>
-                                        @foreach ($stufen as $key => $label)<option value="{{ $key }}">{{ $label }}</option>@endforeach
-                                    </select>
+                                    <input type="hidden" :name="'pos[' + i + '][frei_nummer]'" :value="e.nummer" />
+                                    <input type="hidden" :name="'pos[' + i + '][frei_text]'" :value="e.text" />
                                 </div>
-                                <div class="md:col-span-2">
-                                    <label class="block text-sm font-bold" :for="'pos-artikel-' + i">Artikel</label>
-                                    <select :id="'pos-artikel-' + i" x-model="pos.artikel" @change="gewaehlt(pos)" class="mt-1 w-full border border-dpsg-mittelbeige bg-white px-3 py-2">
-                                        <option value="">bitte wählen</option>
-                                        <template x-for="s in sets" :key="s.id"><option :value="s.id" x-text="'Set: ' + s.name"></option></template>
-                                        <template x-for="a in katalog" :key="a.id"><option :value="String(a.id)" x-text="a.name"></option></template>
-                                        <option value="frei">Anderer Rüsthaus-Artikel (Artikelnummer)</option>
-                                    </select>
-                                </div>
+                            </template>
+                            <template x-if="e.typ === 'set'">
                                 <div>
-                                    <label class="block text-sm font-bold" :for="'pos-menge-' + i">Anzahl</label>
-                                    <input :id="'pos-menge-' + i" type="number" min="1" max="10" :name="'pos[' + i + '][menge]'" x-model="pos.menge" class="mt-1 w-full border border-dpsg-mittelbeige px-3 py-2" />
-                                </div>
-
-                                <div class="space-y-3 md:col-span-6" x-show="set(pos)">
-                                    <input type="hidden" :name="set(pos) ? 'pos[' + i + '][set]' : ''" :value="set(pos) ? set(pos).id.slice(1) : ''" />
-                                    <template x-for="t in setTeile(pos)" :key="t.id">
-                                        <div class="grid items-end gap-2 border-l-4 border-dpsg-mittelbeige pl-3 sm:grid-cols-2">
-                                            <div>
-                                                <label class="inline-flex items-center gap-2 text-sm font-bold" x-show="t.optional">
-                                                    <input type="checkbox" value="1" :name="'pos[' + i + '][teile][' + t.id + '][dabei]'" x-model="pos.teile[t.id].dabei" />
-                                                    <span x-text="(t.menge > 1 ? t.menge + ' × ' : '') + t.name + ' (optional)'"></span>
-                                                </label>
-                                                <p class="text-sm font-bold" x-show="!t.optional" x-text="(t.menge > 1 ? t.menge + ' × ' : '') + t.name"></p>
-                                                <p class="text-xs text-text-secondary" x-show="t.varianten.length === 1" x-text="euro(t.varianten[0].preis)"></p>
-                                            </div>
-                                            <div x-show="t.varianten.length > 1 && (!t.optional || pos.teile[t.id].dabei)">
-                                                <label class="sr-only" :for="'pos-teil-' + i + '-' + t.id" x-text="'Größe ' + t.name"></label>
-                                                <select :id="'pos-teil-' + i + '-' + t.id" :name="t.varianten.length > 1 ? 'pos[' + i + '][teile][' + t.id + '][variante]' : ''" x-model="pos.teile[t.id].variante" class="w-full border border-dpsg-mittelbeige bg-white px-3 py-2">
-                                                    <option value="">Größe wählen</option>
-                                                    <template x-for="v in t.varianten" :key="v.id"><option :value="v.id" x-text="(v.bezeichnung || 'Standard') + ' – ' + euro(v.preis)"></option></template>
-                                                </select>
-                                            </div>
+                                    <input type="hidden" :name="'pos[' + i + '][set]'" :value="e.set" />
+                                    <template x-for="[tid, t] in Object.entries(e.teile)" :key="tid">
+                                        <div>
+                                            <input type="hidden" :name="'pos[' + i + '][teile][' + tid + '][variante]'" :value="t.variante" />
+                                            <input type="hidden" :name="'pos[' + i + '][teile][' + tid + '][dabei]'" :value="t.dabei ? 1 : 0" />
                                         </div>
                                     </template>
                                 </div>
-
-                                <div class="md:col-span-4" x-show="pos.artikel && pos.artikel !== 'frei' && !set(pos)">
-                                    <label class="block text-sm font-bold" :for="'pos-variante-' + i">Größe / Ausführung</label>
-                                    <select :id="'pos-variante-' + i" :name="pos.artikel && pos.artikel !== 'frei' && !set(pos) ? 'pos[' + i + '][variante]' : ''" x-model="pos.variante" class="mt-1 w-full border border-dpsg-mittelbeige bg-white px-3 py-2">
-                                        <option value="">bitte wählen</option>
-                                        <template x-for="v in varianten(pos)" :key="v.id"><option :value="v.id" x-text="(v.bezeichnung || 'Standard') + ' – ' + euro(v.preis)"></option></template>
-                                    </select>
-                                </div>
-
-                                <div class="md:col-span-4" x-show="pos.artikel === 'frei'">
-                                    <label class="block text-sm font-bold" :for="'pos-nummer-' + i">Rüsthaus-Artikelnummer oder Link</label>
-                                    <div class="mt-1 flex gap-2">
-                                        <input :id="'pos-nummer-' + i" type="text" :name="pos.artikel === 'frei' ? 'pos[' + i + '][frei_nummer]' : ''" x-model="pos.nummer" maxlength="300" placeholder="z. B. 0100003.32" class="w-full border border-dpsg-mittelbeige px-3 py-2" />
-                                        <button type="button" @click="nachschlagen(pos)" class="shrink-0 border border-dpsg-blau px-3 py-2 font-bold text-dpsg-blau hover:bg-dpsg-blau hover:text-white">Prüfen</button>
-                                    </div>
-                                    <p class="mt-1 text-sm" x-show="pos.info" x-text="pos.info" :class="pos.gesperrt ? 'text-dpsg-rot' : 'text-text-secondary'"></p>
-                                    <label class="mt-2 block text-sm font-bold" :for="'pos-text-' + i">Größe bzw. was genau <span class="font-normal text-text-secondary">(falls nötig)</span></label>
-                                    <input :id="'pos-text-' + i" type="text" :name="pos.artikel === 'frei' ? 'pos[' + i + '][frei_text]' : ''" x-model="pos.text" maxlength="160" class="mt-1 w-full border border-dpsg-mittelbeige px-3 py-2" />
-                                </div>
-                                <div class="flex items-end md:col-span-2" x-show="positionen.length > 1">
-                                    <button type="button" @click="positionen.splice(i, 1)" class="text-sm text-dpsg-rot underline">Entfernen</button>
-                                </div>
-                            </div>
-                        </template>
-                        <button type="button" @click="neu()" class="border border-dpsg-blau px-4 py-2 font-bold text-dpsg-blau hover:bg-dpsg-blau hover:text-white">+ Weiterer Artikel</button>
-                        <p class="text-sm">Summe (ohne frei eingegebene Artikel): <strong x-text="euro(summe())"></strong></p>
-                    </fieldset>
+                            </template>
+                        </div>
+                    </template>
 
                     <fieldset class="grid gap-4 sm:grid-cols-2">
                         <legend class="mb-2 font-bold">Deine Angaben</legend>
@@ -230,11 +282,11 @@
                         <span>Ich bin Mitglied des Stamms bzw. erziehungsberechtigt für die Mitglieder, für die ich bestelle. Ich willige ein, dass der {{ config('dpsg.site.name') }} meine Angaben für die Sammelbestellung, die Bezahlung und die Ausgabe verarbeitet. Mehr in der <a href="{{ url('/datenschutz') }}" class="text-dpsg-rot underline">Datenschutzerklärung</a>.</span>
                     </label>
 
-                    <button type="submit" class="inline-flex items-center gap-2 bg-dpsg-blau px-5 py-2 font-bold text-white hover:bg-dpsg-rot">Bestellung abschicken</button>
+                    <button type="submit" :disabled="! eintraege.length" class="inline-flex items-center gap-2 bg-dpsg-blau px-5 py-2 font-bold text-white hover:bg-dpsg-rot disabled:opacity-50">Bestellung abschicken</button>
                     <p class="text-xs text-text-secondary">Du bekommst eine Mail mit einem Link zum Bestätigen. Danach folgt die Zahlungsaufforderung.</p>
                 </form>
             </section>
-
+        </div>
         @endif
     </div>
 @endsection

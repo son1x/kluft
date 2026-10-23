@@ -260,14 +260,19 @@ class Sammelbestellung
     }
 
     /**
-     * Sammelliste: bezahlte Positionen einer Runde, nach Artikelnummer und Größe summiert.
+     * Sammelliste: bezahlte Positionen einer Runde, nach Artikelnummer und Größe
+     * summiert; mit $eigene die eigenen Artikel des Stamms statt der Rüsthaus-Artikel.
      *
      * @return Collection<int, array{nummer: ?string, bezeichnung: string, groesse: ?string, menge: int}>
      */
-    public static function sammelliste(Runde $runde): Collection
+    public static function sammelliste(Runde $runde, bool $eigene = false): Collection
     {
         return Position::query()
             ->whereHas('bestellung', fn ($q) => $q->where('runde_id', $runde->id)->whereNull('storniert_am')->whereNotNull('bestaetigt_am'))
+            // Rüsthaus-Liste ohne eigene Artikel des Stamms; die stehen in einer eigenen Liste.
+            ->when($eigene,
+                fn ($q) => $q->whereHas('artikel', fn ($a) => $a->where('eigen', true)),
+                fn ($q) => $q->where(fn ($q) => $q->whereNull('artikel_id')->orWhereHas('artikel', fn ($a) => $a->where('eigen', false))))
             ->whereHas('zahlung', fn ($q) => $q->where('status', 'bezahlt'))
             ->where('bestaetigt', true)
             ->get()

@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Shop;
 
 use App\Filament\Resources\Shop\Pages\ManageRunden;
+use App\Models\Shop\Artikel;
 use App\Models\Shop\Runde;
 use App\Services\Sammelbestellung\Ausgabe;
 use App\Support\AuditLogger;
@@ -148,21 +149,11 @@ class RundeResource extends Resource
                             $record->update($data);
                             AuditLogger::log('sammelbestellung.runde.rechnung', Filament::auth()->user(), 'shop_runden', $record->id, request());
                         }),
-                    Action::make('sammelliste')->label('Sammelliste (CSV)')->icon('heroicon-o-arrow-down-tray')
-                        ->action(function (Runde $record): StreamedResponse {
-                            abort_unless(static::canAccess(), 403);
-                            AuditLogger::log('sammelbestellung.sammelliste', Filament::auth()->user(), 'shop_runden', $record->id, request());
-
-                            return response()->streamDownload(function () use ($record) {
-                                $out = fopen('php://output', 'w');
-                                fwrite($out, "\xEF\xBB\xBF");
-                                fputcsv($out, ['Rüsthaus-Nr.', 'Artikel', 'Größe', 'Anzahl'], ';');
-                                foreach (Sammelbestellung::sammelliste($record) as $zeile) {
-                                    fputcsv($out, [$zeile['nummer'], $zeile['bezeichnung'], $zeile['groesse'], $zeile['menge']], ';');
-                                }
-                                fclose($out);
-                            }, 'sammelliste-'.str($record->name)->slug().'.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
-                        }),
+                    Action::make('sammelliste')->label('Sammelliste Rüsthaus (CSV)')->icon('heroicon-o-arrow-down-tray')
+                        ->action(fn (Runde $record) => static::csv($record, false)),
+                    Action::make('eigene')->label('Liste eigene Artikel (CSV)')->icon('heroicon-o-archive-box')
+                        ->visible(fn () => Artikel::query()->where('eigen', true)->exists())
+                        ->action(fn (Runde $record) => static::csv($record, true)),
                     Action::make('ausgabeliste')->label('Ausgabeliste (PDF)')->icon('heroicon-o-clipboard-document-list')
                         ->visible(fn (Runde $record) => ! $record->istOffen())
                         ->action(fn (Runde $record) => static::pdf($record, 'liste')),
@@ -172,6 +163,23 @@ class RundeResource extends Resource
                     EditAction::make(),
                 ])->label('Ablauf')->button()->color('gray'),
             ]);
+    }
+
+    /** Sammelliste der bezahlten Positionen: Rüsthaus-Artikel bzw. eigene Artikel des Stamms. */
+    public static function csv(Runde $runde, bool $eigene): StreamedResponse
+    {
+        abort_unless(static::canAccess(), 403);
+        AuditLogger::log('sammelbestellung.sammelliste'.($eigene ? '.eigene' : ''), Filament::auth()->user(), 'shop_runden', $runde->id, request());
+
+        return response()->streamDownload(function () use ($runde, $eigene) {
+            $out = fopen('php://output', 'w');
+            fwrite($out, "\xEF\xBB\xBF");
+            fputcsv($out, [$eigene ? 'Nr.' : 'Rüsthaus-Nr.', 'Artikel', 'Größe', 'Anzahl'], ';');
+            foreach (Sammelbestellung::sammelliste($runde, $eigene) as $zeile) {
+                fputcsv($out, [$eigene ? '' : $zeile['nummer'], $zeile['bezeichnung'], $zeile['groesse'], $zeile['menge']], ';');
+            }
+            fclose($out);
+        }, ($eigene ? 'eigene-artikel-' : 'sammelliste-').str($runde->name)->slug().'.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
     /** Ausgabeliste bzw. -scheine mit Namen: nur Sammelbestellung, Verwaltung, Admin (SB-73). */

@@ -7,6 +7,7 @@ use App\Models\Shop\Artikel;
 use App\Support\AuditLogger;
 use App\Support\Sammelbestellung;
 use Filament\Actions\Action;
+use Filament\Actions\CreateAction;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
@@ -20,14 +21,22 @@ class ListArtikel extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            CreateAction::make()->label('Eigenen Artikel anlegen')->icon('heroicon-o-plus')->color('gray')
+                ->modalHeading('Eigener Artikel des Stamms')
+                ->modalDescription('Z. B. Stammesaufnäher oder T-Shirts. Wird mitbestellt und bezahlt wie Rüsthaus-Artikel, steht aber nicht in der Sammelliste fürs Rüsthaus.')
+                ->mutateDataUsing(fn (array $data) => $data + ['eigen' => true, 'nummer' => Artikel::eigeneNummer()])
+                ->after(function (Artikel $record) {
+                    $record->update(['preis_cent' => (int) $record->varianten()->min('preis_cent')]);
+                    AuditLogger::log('sammelbestellung.artikel.eigen_angelegt', Filament::auth()->user(), 'shop_artikel', $record->id, request());
+                }),
             Action::make('alleAktualisieren')->label('Alle aktualisieren')->icon('heroicon-o-arrow-path')->color('gray')
-                ->visible(fn () => Artikel::query()->exists())
+                ->visible(fn () => Artikel::query()->where('eigen', false)->exists())
                 ->requiresConfirmation()
                 ->modalDescription('Name, Beschreibung, Preise und Größen aller Artikel neu vom Rüsthaus holen. Geänderte Preise gelten für neue Bestellungen. Dauert etwa eine Sekunde je Größe.')
                 ->action(function () {
                     abort_unless(ArtikelResource::canAccess(), 403);
                     $fehler = [];
-                    foreach (Artikel::query()->orderBy('id')->get() as $artikel) {
+                    foreach (Artikel::query()->where('eigen', false)->orderBy('id')->get() as $artikel) {
                         try {
                             Sammelbestellung::freigeben($artikel->url ?: $artikel->nummer, $artikel->freigegeben);
                         } catch (InvalidArgumentException $e) {

@@ -131,7 +131,7 @@ class SammelbestellungTest extends TestCase
         $sammler->roleAssignments()->create(['role' => 'sammelbestellung', 'scope_type' => 'global']);
 
         $this->get('/bestellen')->assertOk()->assertSee('Halbarm-Klufthemd')->assertSee('Herbst 2026')->assertSee('Bestellung abschicken')
-            ->assertSee('href="#bestellformular"', false)->assertDontSee('Beim Rüsthaus ansehen')
+            ->assertSee('Hinzufügen')->assertDontSee('Beim Rüsthaus ansehen')
             // Inline-Skripte blockiert die CSP; das Formular kommt aus resources/js/shop-bestellung.js.
             ->assertDontSee('function shopBestellung', false)->assertSee('x-data="shopBestellung(', false);
         $this->getJson('/bestellen/nachschlagen?nummer=1404601')->assertOk()->assertJson(['gesperrt' => false, 'name' => 'Komplett-Kohte']);

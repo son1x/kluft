@@ -157,10 +157,15 @@ class Beitraege
         return ['soll' => $satz['bund'] + $satz['stamm'], 'bund' => $satz['bund']];
     }
 
-    /** Stand des letzten NaMi-Abrufs: laeuft, fertig oder fehler. */
+    /** Stand des letzten NaMi-Abrufs: laeuft, fertig oder fehler. Gekürzt auf die 255 Zeichen der Einstellung. */
     public static function abrufStand(string $status, string $text): void
     {
-        SiteSetting::query()->updateOrCreate(['key' => self::ABRUF], ['value' => (string) json_encode(['status' => $status, 'text' => mb_substr($text, 0, 300), 'am' => now()->toIso8601String()], JSON_UNESCAPED_UNICODE)]);
+        $am = now()->toIso8601String();
+        $json = fn (string $t) => (string) json_encode(['status' => $status, 'text' => $t, 'am' => $am], JSON_UNESCAPED_UNICODE);
+        while (mb_strlen($json($text)) > 255) {
+            $text = mb_substr($text, 0, mb_strlen($text) - max(1, mb_strlen($json($text)) - 255) - 1).'…';
+        }
+        SiteSetting::query()->updateOrCreate(['key' => self::ABRUF], ['value' => $json($text)]);
     }
 
     /**

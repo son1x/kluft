@@ -11,6 +11,7 @@ use App\Jobs\BeitraegeAbrufen;
 use App\Models\Beitrag;
 use App\Models\BeitragsAbrechnung;
 use App\Models\BeitragsMitglied;
+use App\Models\SiteSetting;
 use App\Models\User;
 use App\Services\Beitraege\BeitragsAbruf;
 use App\Services\Mitglieder\NamiVerzeichnis;
@@ -290,6 +291,10 @@ class BeitraegeTest extends TestCase
         $this->assertStringContainsString('1 ohne Beitragsart', $text);
         $this->assertStringContainsString('Mitgliedsdetails, HTTP 200: Zugriff verweigert für Mitglied …', $text);
         $this->assertStringNotContainsString('4712', $text);
+        // Die Einstellung hat 255 Zeichen (MariaDB lehnt Längeres ab): lange Meldungen werden gekürzt.
+        Beitraege::abrufStand('fehler', str_repeat('Zugriff „verweigert“ ', 30));
+        $this->assertLessThanOrEqual(255, mb_strlen((string) SiteSetting::query()->whereKey('beitraege.abruf')->value('value')));
+        $this->assertStringEndsWith('…', Beitraege::letzterAbruf()['text'] ?? '');
         $this->assertNull(BeitragsMitglied::query()->where('nami_id', 102)->value('beitragsart'));
         $this->assertSame('Voller Beitrag', BeitragsMitglied::query()->where('nami_id', 101)->value('beitragsart'));
     }

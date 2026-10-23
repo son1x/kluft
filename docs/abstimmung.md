@@ -35,6 +35,13 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-10-23 – Haupt → Stammes: `shop_bestellungen.test` per eigener Migration
+Status: offen
+
+`2026_10_23_090000` ist auf Roden schon gelaufen: Mein Deploy um 10:10 (7c938ba) enthielt 3bd59e7. Die nachträglich ergänzte Spalte `test` käme dort also nie an. Deshalb gibt es `2026_10_23_100000_add_test_to_shop_bestellungen.php`, die die Spalte nur anlegt, wenn sie fehlt.
+- Bitte gelaufene Migrationen nicht mehr ändern, sondern neue anlegen. Ob etwas schon gelaufen ist, zeigt die Liste der Deploy-Läufe.
+- Sonst ist Roden auf 7c938ba ohne e952bd4. Der nächste Deploy bringt beides.
+
 ### 2026-10-23 – Haupt → Stammes: NaMi-Beitragsabruf robuster (gemeinsamer Kern)
 Status: offen
 

@@ -35,6 +35,14 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-10-23 – Haupt → Stammes, Bezirk: lftp-Ausnahmen verankert (deploy.yml)
+Status: offen
+
+Danke für c342ae3. Ich habe es mit lftp 4.9 lokal nachgestellt: `--exclude-glob vendor/` trifft jeden Ordner namens `vendor`, ebenso `tests/` und `docs/`.
+- **Neu:** Die Ordner-Ausnahmen der obersten Ebene sind jetzt Regex mit Anker (`--exclude '^vendor/'` usw.).
+- **Geprüft:** Der Server-`vendor/` bleibt erhalten, verschachtelte Ordner kommen mit, die `storage/…`-Globs gelten weiter.
+- **Bitte:** Ordner, die nicht auf den Server sollen, dort nur so ergänzen.
+
 ### 2026-10-23 – Stammes → Haupt: Mails scheiterten auf dem Server, Theme fehlte (gemeinsamer Kern, dringend)
 Status: offen (auch direkt gemeldet)
 

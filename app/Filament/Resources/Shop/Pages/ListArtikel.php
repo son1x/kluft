@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Shop\Pages;
 
 use App\Filament\Resources\Shop\ArtikelResource;
+use App\Models\Shop\Artikel;
 use App\Support\AuditLogger;
 use App\Support\Sammelbestellung;
 use Filament\Actions\Action;
@@ -19,6 +20,25 @@ class ListArtikel extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('alleAktualisieren')->label('Alle aktualisieren')->icon('heroicon-o-arrow-path')->color('gray')
+                ->visible(fn () => Artikel::query()->exists())
+                ->requiresConfirmation()
+                ->modalDescription('Name, Beschreibung, Preise und Größen aller Artikel neu vom Rüsthaus holen. Geänderte Preise gelten für neue Bestellungen. Dauert etwa eine Sekunde je Größe.')
+                ->action(function () {
+                    abort_unless(ArtikelResource::canAccess(), 403);
+                    $fehler = [];
+                    foreach (Artikel::query()->orderBy('id')->get() as $artikel) {
+                        try {
+                            Sammelbestellung::freigeben($artikel->url ?: $artikel->nummer, $artikel->freigegeben);
+                        } catch (InvalidArgumentException $e) {
+                            $fehler[] = $artikel->name.': '.$e->getMessage();
+                        }
+                    }
+                    AuditLogger::log('sammelbestellung.artikel.aktualisiert', Filament::auth()->user(), 'shop_artikel', null, request());
+                    $fehler === []
+                        ? Notification::make()->title('Alle Artikel aktualisiert')->success()->send()
+                        : Notification::make()->title('Nicht alle aktualisiert')->body(implode("\n", $fehler))->warning()->persistent()->send();
+                }),
             Action::make('holen')->label('Artikel holen')->icon('heroicon-o-arrow-down-tray')
                 ->modalHeading('Artikel vom Rüsthaus holen und freigeben')
                 ->modalDescription('Artikelnummer (auch einer bestimmten Größe) oder Link zur Produktseite. Name, Beschreibung, Bild, Preise und Größen werden gespeichert.')

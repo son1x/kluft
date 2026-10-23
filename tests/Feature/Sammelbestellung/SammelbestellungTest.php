@@ -102,6 +102,10 @@ class SammelbestellungTest extends TestCase
         $this->assertSame(['0100003.30', 'Halbarm-Klufthemd', 4800, 'group[4]', 'Fair gehandelt.'], [$seite['nummer'], $seite['name'], $seite['preis_cent'], $seite['gruppe'], $seite['beschreibung']]);
         $this->assertSame('zelte', Ruesthaus::kategorie(self::ZELT));
         $this->assertNull(Ruesthaus::produktseite('<html>keine Produktseite</html>', ''));
+
+        // Maßtabelle samt Messanleitung fällt weg, Umlaute ohne Semikolon werden repariert.
+        $this->assertSame("Merkmale:\n- Kragenetikett\n\nkluftbörse für Bedürftige", Ruesthaus::beschreibung(
+            ' <p>Merkmale:<br/>- Kragenetikett<br/><br/><table><tr><th>Gr&ouml&szlige</th></tr></table><br/>So messe ich: R&uumlcken</p><p>kluftb&oumlrse f&uumlr Bed&uumlrftige</p> '));
     }
 
     #[TestDox('Freigabe per Nummer: Artikel mit Größen und Bild; Sperre nach Kategorie greift')]
@@ -126,7 +130,8 @@ class SammelbestellungTest extends TestCase
         $sammler = User::query()->create(['name' => 'Michele', 'email' => 'michele@example.org', 'status' => 'active']);
         $sammler->roleAssignments()->create(['role' => 'sammelbestellung', 'scope_type' => 'global']);
 
-        $this->get('/bestellen')->assertOk()->assertSee('Halbarm-Klufthemd')->assertSee('Herbst 2026')->assertSee('Bestellung abschicken');
+        $this->get('/bestellen')->assertOk()->assertSee('Halbarm-Klufthemd')->assertSee('Herbst 2026')->assertSee('Bestellung abschicken')
+            ->assertSee('href="#bestellformular"', false)->assertDontSee('Beim Rüsthaus ansehen');
         $this->getJson('/bestellen/nachschlagen?nummer=1404601')->assertOk()->assertJson(['gesperrt' => false, 'name' => 'Komplett-Kohte']);
 
         $this->post('/bestellen', [
@@ -202,7 +207,12 @@ class SammelbestellungTest extends TestCase
         $this->get('/bestellen')->assertNotFound();
 
         $this->login('autor');
-        $this->get('/bestellen')->assertOk()->assertSee('Testbetrieb');
+        Zahlungen::kontoSetzen('DPSG Stamm Test', 'DE89 3704 0044 0532 0130 00', null, null);
+        $runde = Runde::query()->sole();
+        $runde->update(['status' => 'geschlossen']);
+        $this->get('/bestellen')->assertOk()->assertSee('Testbetrieb')->assertSee('Bestellrunde öffnen')->assertDontSee('Bankverbindung eintragen');
+        $runde->update(['status' => 'offen']);
+        $this->get('/bestellen')->assertOk()->assertDontSee('Bestellrunde öffnen');
         $this->post('/bestellen', [
             '_t' => Crypt::encryptString((string) now()->subSeconds(30)->timestamp),
             'name' => 'Test', 'email' => 'test@example.org', 'rolle' => 'mitglied', 'einwilligung' => '1',

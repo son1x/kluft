@@ -99,7 +99,7 @@ class ArtikelResource extends Resource
                     ->requiresConfirmation()->modalDescription('Name, Beschreibung, Preise und Größen neu vom Rüsthaus holen. Geänderte Preise gelten für neue Bestellungen.')
                     ->action(function (Artikel $record) {
                         try {
-                            Sammelbestellung::freigeben($record->url ?: $record->nummer);
+                            Sammelbestellung::freigeben($record->url ?: $record->nummer, $record->freigegeben);
                             AuditLogger::log('sammelbestellung.artikel.aktualisiert', Filament::auth()->user(), 'shop_artikel', $record->id, request());
                             Notification::make()->title('Aktualisiert')->success()->send();
                         } catch (InvalidArgumentException $e) {

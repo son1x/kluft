@@ -32,7 +32,7 @@ class Ruesthaus
             return null;
         }
 
-        return Cache::remember('ruesthaus:'.($mitVarianten ? 'v:' : '').sha1(mb_strtolower($eingabe)), now()->addDay(), function () use ($eingabe, $mitVarianten) {
+        return Cache::remember('ruesthaus2:'.($mitVarianten ? 'v:' : '').sha1(mb_strtolower($eingabe)), now()->addDay(), function () use ($eingabe, $mitVarianten) {
             try {
                 $url = self::istLink($eingabe) ? self::sauber($eingabe) : $this->suchen($eingabe);
                 if ($url === null) {
@@ -111,6 +111,23 @@ class Ruesthaus
     }
 
     /**
+     * Beschreibung als Text mit Absätzen. Ohne Maßtabelle samt Messanleitung
+     * danach (die Größen stehen eigens am Artikel); Umlaute stehen beim
+     * Rüsthaus teils ohne Semikolon (&ouml).
+     */
+    public static function beschreibung(string $html): ?string
+    {
+        $html = (string) preg_replace('/<table.*?<\/table>.*?(?=<\/p>|$)/si', '', $html);
+        $html = (string) preg_replace('/&(auml|ouml|uuml|Auml|Ouml|Uuml|szlig|nbsp|amp|quot)(?!;)/', '&$1;', $html);
+        $html = (string) preg_replace('/<br\s*\/?>|<\/p>|<\/li>/i', "\n", $html);
+        $text = html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5);
+        $zeilen = array_map(fn ($z) => trim((string) preg_replace('/[^\S\n]+/u', ' ', $z)), explode("\n", $text));
+        $text = trim((string) preg_replace('/\n{3,}/', "\n\n", implode("\n", $zeilen)));
+
+        return $text !== '' ? mb_substr($text, 0, 3000) : null;
+    }
+
+    /**
      * Produktseite auslesen; null, wenn es keine ist.
      *
      * @return array{nummer: string, name: string, beschreibung: ?string, bild: ?string, preis_cent: int, gruppe: ?string, auswahl: array<string, string>, gewaehlt: ?string}|null
@@ -122,11 +139,7 @@ class Ruesthaus
             || ! preg_match('/<h1 class="product--title"[^>]*>\s*([^<]+?)\s*</', $html, $titel)) {
             return null;
         }
-        $beschreibung = null;
-        if (preg_match('/class="product--description"[^>]*>(.*?)<\/div>/s', $html, $b)) {
-            $text = trim((string) preg_replace('/\s+/u', ' ', html_entity_decode(strip_tags(str_replace(['</p>', '<br>', '<br />', '</li>'], "\n", $b[1])), ENT_QUOTES | ENT_HTML5)));
-            $beschreibung = $text !== '' ? mb_substr($text, 0, 2000) : null;
-        }
+        $beschreibung = preg_match('/class="product--description"[^>]*>(.*?)<\/div>/s', $html, $b) ? self::beschreibung($b[1]) : null;
         $bild = preg_match('/data-img-large="([^"]+)"/', $html, $i) ? html_entity_decode($i[1]) : null;
         $gruppe = null;
         $auswahl = [];

@@ -50,6 +50,19 @@ class Sammelbestellung
         return self::sichtbar($user) && Runde::offene() !== null && Zahlungen::konto() !== null;
     }
 
+    /**
+     * Was zum Bestellen noch fehlt (Hinweis für Angemeldete auf /bestellen).
+     *
+     * @return list<string>
+     */
+    public static function fehlt(): array
+    {
+        return array_values(array_filter([
+            Zahlungen::konto() === null ? 'Bankverbindung eintragen (Verwaltung → Funktionen → Zahlungen)' : null,
+            Runde::offene() === null ? 'Bestellrunde öffnen (Sammelbestellung → Bestellrunden → „Runde öffnen“)' : null,
+        ]));
+    }
+
     /** Bestellungen aus dem Testbetrieb samt ihren Zahlungen löschen. */
     public static function testsLoeschen(): int
     {

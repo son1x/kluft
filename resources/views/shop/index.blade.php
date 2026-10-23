@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 {{-- Sammelbestellung beim Rüsthaus: Shop der freigegebenen Artikel und
-     Bestellformular. Erwartet: $page (optional, Einleitung), $testbetrieb, $runde, $bestellbar, $artikel --}}
+     Bestellformular. Erwartet: $page (optional, Einleitung), $testbetrieb, $runde, $bestellbar, $fehlt, $artikel --}}
 
 @section('seo_title', ($page->title ?? 'Ausrüstung bestellen').' – '.config('dpsg.site.name'))
 
@@ -51,14 +51,21 @@
                                 @if ($a->varianten->count() > 1)
                                     <p class="mt-2 text-xs text-text-secondary">Größen: {{ $a->varianten->pluck('bezeichnung')->filter()->implode(' · ') }}</p>
                                 @endif
-                                @if ($a->url)
-                                    <a href="{{ $a->url }}" class="mt-auto pt-3 text-sm text-dpsg-rot underline" rel="noopener" target="_blank">Beim Rüsthaus ansehen</a>
+                                @if ($bestellbar)
+                                    <a href="#bestellformular" class="mt-auto self-start pt-4 font-bold text-dpsg-rot underline">Bestellen</a>
                                 @endif
                             </div>
                         </article>
                     @endforeach
                 </div>
             </section>
+        @endif
+
+        @if (! $bestellbar && $fehlt !== [])
+            <div class="mt-10 border-l-4 border-dpsg-rot bg-white px-4 py-3 text-sm shadow-sm" role="status">
+                <p class="font-bold">Nur für dich sichtbar (Backend): Das Bestellformular erscheint, sobald Folgendes erledigt ist:</p>
+                <ul class="mt-1 list-disc pl-5">@foreach ($fehlt as $punkt)<li>{{ $punkt }}</li>@endforeach</ul>
+            </div>
         @endif
 
         @if ($bestellbar)

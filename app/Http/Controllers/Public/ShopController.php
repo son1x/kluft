@@ -12,6 +12,7 @@ use App\Models\Shop\Variante;
 use App\Models\User;
 use App\Support\Sammelbestellung;
 use App\Support\SpamGuard;
+use Filament\Facades\Filament;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -37,6 +38,7 @@ class ShopController extends Controller
             'page' => Page::query()->published()->where('slug', 'bestellen')->first(),
             'runde' => Runde::offene(),
             'bestellbar' => Sammelbestellung::bestellbar(auth()->user()),
+            'fehlt' => auth()->user()?->canAccessPanel(Filament::getPanel('admin')) ? Sammelbestellung::fehlt() : [],
             'artikel' => Artikel::query()->freigegeben()->with(['varianten' => fn ($q) => $q->where('aktiv', true), 'bild'])->orderBy('sort')->orderBy('name')->get(),
         ]);
     }

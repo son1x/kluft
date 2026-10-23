@@ -49,17 +49,17 @@
 
 
         @if ($bestellbar)
-        <div x-data="shopBestellung(@js($katalog), @js($setKatalog), @js(old('pos', [])), @js(route('shop.nachschlagen')), @js($stufen))">
+        <div x-data="shopBestellung(@js($katalog), @js($setKatalog), @js(old('pos', [])), @js(route('shop.nachschlagen')), @js($stufen), @js(old('name', '')))">
             {{-- 1. Für wen --}}
             <section class="mt-10 bg-white p-4 shadow-md md:p-6" aria-labelledby="fuer-heading">
                 <h2 id="fuer-heading" class="font-serif text-xl font-bold">1. Für wen bestellst du?</h2>
-                <p class="mt-1 text-sm text-text-secondary">Vor- und Nachname des Mitglieds. Für Geschwister einfach ein weiteres Mitglied hinzufügen.</p>
+                <p class="mt-1 text-sm text-text-secondary">Vor- und Nachname des Mitglieds, damit wir die Sachen richtig ausgeben. Bestellst du für dich selbst, lass das Feld leer. Für Geschwister ein weiteres Mitglied hinzufügen.</p>
                 <div class="mt-3 space-y-2">
                     <template x-for="(m, mi) in mitglieder" :key="m.key">
                         <div class="flex flex-wrap items-center gap-2">
                             <input type="radio" name="_aktiv" :value="m.key" x-model.number="aktiv" x-show="mitglieder.length > 1" class="h-5 w-5" :aria-label="'Artikel für ' + (m.name || 'dieses Mitglied') + ' hinzufügen'" />
                             <label class="sr-only" :for="'m-name-' + m.key">Vor- und Nachname</label>
-                            <input :id="'m-name-' + m.key" type="text" x-model="m.name" @focus="aktiv = m.key" maxlength="120" placeholder="Vor- und Nachname" class="{{ $feld }} min-w-0 flex-1 basis-48" />
+                            <input :id="'m-name-' + m.key" type="text" x-model="m.name" @focus="aktiv = m.key" maxlength="120" placeholder="Vor- und Nachname (leer = du selbst)" class="{{ $feld }} min-w-0 flex-1 basis-48" />
                             <label class="sr-only" :for="'m-stufe-' + m.key">Stufe</label>
                             <select :id="'m-stufe-' + m.key" x-model="m.stufe" class="{{ $feld }} basis-36">
                                 <option value="">Stufe</option>
@@ -195,7 +195,7 @@
                 <p class="mt-3 text-sm text-text-secondary" x-show="! eintraege.length">Noch nichts ausgewählt. Oben bei einem Artikel Größe und Anzahl wählen und „Hinzufügen“ tippen.</p>
                 <template x-for="m in mitglieder" :key="m.key">
                     <div class="mt-4" x-show="eintraegeFuer(m).length">
-                        <h3 class="font-bold" x-text="(m.name || 'Ohne Namen') + (m.stufe ? ' · ' + stufeName(m.stufe) : '')"></h3>
+                        <h3 class="font-bold" x-text="anzeigeName(m) + (m.stufe ? ' · ' + stufeName(m.stufe) : '')"></h3>
                         <ul class="mt-1 divide-y divide-surface-muted text-sm">
                             <template x-for="e in eintraegeFuer(m)" :key="e.key">
                                 <li class="flex items-start justify-between gap-3 py-2">
@@ -213,7 +213,6 @@
                     </div>
                 </template>
                 <p class="mt-4 border-t border-surface-muted pt-3 text-right" x-show="eintraege.length">Summe: <strong x-text="euro(summe())"></strong><span class="block text-xs text-text-secondary" x-show="eintraege.some(e => e.preis === null)">ohne frei eingegebene Artikel</span></p>
-                <p class="mt-2 text-sm text-dpsg-rot" x-show="eintraege.some(e => ! mitgliedVon(e).name.trim())">Bitte oben bei jedem Mitglied den Namen eintragen.</p>
 
                 <form method="post" action="{{ route('shop.store') }}" class="mt-6 space-y-6" novalidate>
                     @csrf
@@ -221,7 +220,7 @@
                     <div class="hidden" aria-hidden="true"><label>Website <input type="text" name="website" tabindex="-1" autocomplete="off" /></label></div>
                     <template x-for="(e, i) in eintraege" :key="e.key">
                         <div>
-                            <input type="hidden" :name="'pos[' + i + '][mitglied]'" :value="mitgliedVon(e).name" />
+                            <input type="hidden" :name="'pos[' + i + '][mitglied]'" :value="name(mitgliedVon(e))" />
                             <input type="hidden" :name="'pos[' + i + '][stufe]'" :value="mitgliedVon(e).stufe" />
                             <input type="hidden" :name="'pos[' + i + '][menge]'" :value="e.menge" />
                             <template x-if="e.typ === 'artikel'"><input type="hidden" :name="'pos[' + i + '][variante]'" :value="e.variante" /></template>
@@ -249,7 +248,7 @@
                         <legend class="mb-2 font-bold">Deine Angaben</legend>
                         <div>
                             <label for="shop-name" class="block text-sm font-bold">Dein Name</label>
-                            <input id="shop-name" type="text" name="name" required maxlength="120" value="{{ old('name') }}" autocomplete="name" class="mt-1 w-full border border-dpsg-mittelbeige px-3 py-2" />
+                            <input id="shop-name" type="text" name="name" x-model="besteller" required maxlength="120" value="{{ old('name') }}" autocomplete="name" class="mt-1 w-full border border-dpsg-mittelbeige px-3 py-2" />
                         </div>
                         <div>
                             <label for="shop-email" class="block text-sm font-bold">Deine E-Mail-Adresse</label>

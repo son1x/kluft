@@ -5,7 +5,7 @@
  * Rüsthaus-Nummer mit Nachschlagen; unten die Übersicht. Abgeschickt wird
  * wie bisher als pos[i][…]. Eigene Datei statt Inline-Skript wegen der CSP.
  */
-export default (katalog, sets, alt, nachschlagenUrl, stufen = {}) => {
+export default (katalog, sets, alt, nachschlagenUrl, stufen = {}, besteller = '') => {
     let zaehler = 0;
     const euro = (cent) => (cent / 100).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
     const mitglied = (name = '', stufe = '') => ({ key: ++zaehler, name, stufe });
@@ -25,6 +25,7 @@ export default (katalog, sets, alt, nachschlagenUrl, stufen = {}) => {
     return {
         katalog,
         sets,
+        besteller,
         mitglieder: [],
         aktiv: null,
         eintraege: [],
@@ -61,7 +62,10 @@ export default (katalog, sets, alt, nachschlagenUrl, stufen = {}) => {
         euro,
         stufeName(key) { return stufen[key] || key; },
         aktivesMitglied() { return this.mitglieder.find((m) => m.key === this.aktiv) || this.mitglieder[0]; },
-        aktivName() { return this.aktivesMitglied().name || 'noch ohne Namen'; },
+        // Ohne Namen gilt das Mitglied als die bestellende Person selbst („Deine Angaben“).
+        name(m) { return (m && m.name.trim()) || this.besteller.trim(); },
+        anzeigeName(m) { return (m && m.name.trim()) || (this.besteller.trim() ? this.besteller.trim() + ' (du selbst)' : 'Du selbst'); },
+        aktivName() { return this.anzeigeName(this.aktivesMitglied()); },
         mitgliedVon(e) { return this.mitglieder.find((m) => m.key === e.mitglied) || { name: '', stufe: '' }; },
         mitgliedNeu() {
             const m = mitglied();
@@ -84,23 +88,14 @@ export default (katalog, sets, alt, nachschlagenUrl, stufen = {}) => {
             this.hinweis[schluessel] = { text, fehler };
             if (!fehler) { setTimeout(() => { if (this.hinweis[schluessel]?.text === text) { delete this.hinweis[schluessel]; } }, 2500); }
         },
-        bereit(schluessel) {
-            if (!this.aktivesMitglied().name.trim()) {
-                this.melden(schluessel, 'Bitte oben zuerst eintragen, für wen du bestellst.', true);
-                document.getElementById('m-name-' + this.aktivesMitglied().key)?.focus();
-                return false;
-            }
-            return true;
-        },
         hinzufuegen(schluessel, eintrag) {
             this.eintraege.push({ key: ++zaehler, mitglied: this.aktivesMitglied().key, ...eintrag });
-            this.melden(schluessel, '✓ Hinzugefügt für ' + this.aktivesMitglied().name.trim());
+            this.melden(schluessel, '✓ Hinzugefügt für ' + (this.name(this.aktivesMitglied()) || 'dich selbst'));
         },
 
         artikelHinzufuegen(id) {
             const a = this.katalog.find((a) => a.id === id);
             const w = this.wahl[id];
-            if (!this.bereit(id)) { return; }
             const v = a.varianten.find((v) => String(v.id) === String(w.variante));
             if (!v) { this.melden(id, 'Bitte eine Größe wählen.', true); return; }
             this.hinzufuegen(id, { typ: 'artikel', variante: v.id, menge: Math.min(10, Math.max(1, parseInt(w.menge) || 1)), label: a.name + groesse(v), detail: '', preis: v.preis });
@@ -122,7 +117,6 @@ export default (katalog, sets, alt, nachschlagenUrl, stufen = {}) => {
         setHinzufuegen(sid) {
             const s = this.sets.find((s) => s.id === sid);
             const w = this.setWahl[sid];
-            if (!this.bereit(sid)) { return; }
             const fehlt = s.teile.find((t) => (!t.optional || w.teile[t.id].dabei) && !w.teile[t.id].variante);
             if (fehlt) { this.melden(sid, 'Bitte die Größe für „' + fehlt.name + '“ wählen.', true); return; }
             const { key, mitglied: _m, ...eintrag } = this.setEintrag(s, w.teile, Math.min(10, Math.max(1, parseInt(w.menge) || 1)));
@@ -155,7 +149,6 @@ export default (katalog, sets, alt, nachschlagenUrl, stufen = {}) => {
         },
         freiHinzufuegen() {
             const f = this.frei;
-            if (!this.bereit('frei')) { return; }
             if (!f.nummer.trim()) { this.melden('frei', 'Bitte eine Rüsthaus-Artikelnummer oder einen Link eintragen.', true); return; }
             if (f.gesperrt) { this.melden('frei', 'Dieser Artikel kann nicht bestellt werden.', true); return; }
             this.hinzufuegen('frei', { typ: 'frei', nummer: f.nummer.trim(), text: f.text.trim(), menge: Math.min(10, Math.max(1, parseInt(f.menge) || 1)),

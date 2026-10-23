@@ -77,7 +77,7 @@ class ShopController extends Controller
             'bemerkung' => ['nullable', 'string', 'max:2000'],
             'einwilligung' => ['accepted'],
             'pos' => ['required', 'array', 'min:1', 'max:30'],
-            'pos.*.mitglied' => ['required', 'string', 'max:120', 'not_regex:/[\r\n]/'],
+            'pos.*.mitglied' => ['nullable', 'string', 'max:120', 'not_regex:/[\r\n]/'],
             'pos.*.stufe' => ['nullable', 'in:'.implode(',', array_keys((array) config('dpsg.stages')))],
             'pos.*.menge' => ['required', 'integer', 'min:1', 'max:10'],
             'pos.*.variante' => ['nullable', 'integer'],
@@ -89,13 +89,13 @@ class ShopController extends Controller
             'pos.*.frei_text' => ['nullable', 'string', 'max:160'],
         ], [
             'pos.required' => 'Bitte mindestens einen Artikel eintragen.',
-            'pos.*.mitglied.required' => 'Bitte bei jedem Artikel angeben, für wen er ist.',
             'einwilligung.accepted' => 'Bitte bestätige die Einwilligung.',
         ]);
 
         $positionen = [];
         foreach ($data['pos'] as $i => $pos) {
-            $basis = ['mitglied' => trim($pos['mitglied']), 'stufe' => $pos['stufe'] ?? null, 'menge' => (int) $pos['menge']];
+            // Ohne Angabe ist die bestellende Person selbst gemeint.
+            $basis = ['mitglied' => trim((string) ($pos['mitglied'] ?? '')) ?: trim($data['name']), 'stufe' => $pos['stufe'] ?? null, 'menge' => (int) $pos['menge']];
             if (filled($pos['set'] ?? null)) {
                 $set = Set::query()->whereKey($pos['set'])->with('teile.artikel.varianten')->first();
                 try {

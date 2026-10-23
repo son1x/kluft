@@ -315,4 +315,12 @@ class SammelbestellungPhase2Test extends TestCase
         $this->assertSame(['Klufthemd'], Sammelbestellung::sammelliste($this->runde)->pluck('bezeichnung')->all());
         $this->assertSame([['Stammesaufnäher', 2]], Sammelbestellung::sammelliste($this->runde, true)->map(fn ($z) => [$z['bezeichnung'], $z['menge']])->all());
     }
+
+    #[TestDox('Ohne Mitgliedsnamen gilt die Bestellung für die bestellende Person selbst')]
+    public function test_ohne_mitglied_selbst(): void
+    {
+        $hemd = $this->artikel('Klufthemd', '0100003', ['Kragenweite 30' => 4800]);
+        $b = $this->bestellen([['mitglied' => '', 'menge' => 1, 'variante' => $hemd->varianten[0]->id]]);
+        $this->assertSame('Erika Muster', $b->positionen->first()->mitglied);
+    }
 }

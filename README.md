@@ -65,7 +65,7 @@ Tests: `php artisan test` für den DV, `KLUFT_INSTANZ=saar-hochwald php artisan 
 
 **2. `config.php` anpassen.**
 - `site`: Name, Kurzname, Ebene mit Wortformen (`level`, `level_genitive`, …), Domain, Beschreibung, Leitung und Geschäftsstelle (`office` mit Artikel)
-- `contact`, `gremien`, `person_email_domain`
+- `contact`, `gremien` (je Gremium Seite, optional `auch` für Personen anderer Gremien und `formular` für ein Kontaktformular unter der Seite), `person_email_domain`
 - `map`: Ausschnitt (`bbox`) und Mittelpunkt
 - `features` und `sections`: einschalten, was die Gliederung nutzt (Standard; Admins können einzelne Funktionen im Backend unter „Verwaltung → Funktionen“ an- und abschalten, siehe `App\Support\Features::KATALOG`)
 - `newsletter`: `null`, wenn sie keinen hat

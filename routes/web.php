@@ -206,6 +206,11 @@ Route::get('/nachricht', [ContactController::class, 'schreiben'])->name('mailfor
 Route::post('/nachricht', [ContactController::class, 'sendDirekt'])
     ->middleware('throttle:5,10')
     ->name('mailformular.senden');
+// Kontaktformular unter einer Gremiumsseite (config dpsg.gremien.<g>.formular).
+Route::post('/gremium/{gremium}/nachricht', [ContactController::class, 'sendGremium'])
+    ->middleware('throttle:5,10')
+    ->where('gremium', '[a-z]+')
+    ->name('gremium.nachricht');
 
 // Sektionen (F-BOL, Pflichtenheft 6.2), z. B. /bolivien. Nur mit
 // konfigurierten Sektionen: whereIn mit leerer Liste fängt sonst jeden Pfad.

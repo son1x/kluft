@@ -56,4 +56,7 @@
     @if (($teamPhoto ?? null) || ($people ?? collect())->isNotEmpty())
         @include('partials.team', ['people' => $people, 'teamPhoto' => $teamPhoto])
     @endif
+    @if (($gremium ?? null) && config("dpsg.gremien.{$gremium}.formular"))
+        @include('partials.gremium-kontakt', ['gremium' => $gremium, 'people' => $people])
+    @endif
 @endsection

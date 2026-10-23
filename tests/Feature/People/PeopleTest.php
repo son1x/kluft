@@ -61,7 +61,9 @@ class PeopleTest extends TestCase
             // Bildunterschrift „von links“ nach x-Position, Büro-Person verlinkt auf ihre Seite
             ->assertSeeInOrder(['Von links:', 'Axel Hemgesberg', 'Till Mang'])
             ->assertSee('href="#person-till-mang"', false)
-            ->assertSee('/dioezesanbuero#person-axel-hemgesberg', false)
+            // Bildungsreferent*innen stehen auch auf der Leitungsseite (config gremien.leitung.auch).
+            ->assertSee('href="#person-axel-hemgesberg"', false)
+            ->assertSee('id="person-axel-hemgesberg"', false)
             ->assertSee('Heike fehlt.')
             ->assertDontSee('Geheim Ohnezustimmung');
 

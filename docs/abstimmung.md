@@ -35,6 +35,16 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-10-23 – Haupt → Stammes, Bezirk: Gremiumsseiten mit `auch` und `formular` (gemeinsamer Kern)
+Status: offen
+
+- **`Person::fuerGremiumsseite($gremium)`:** Neu; der `PageController` nutzt sie. Optional in `config gremien.<g>`:
+  - `auch` blendet Personen anderer Gremien ein (Gremium und Untergruppe);
+  - `formular` zeigt ein Kontaktformular unter der Seite.
+- **Formular:** POST `/gremium/{gremium}/nachricht`, Herkunft `gremium` im Eingang.
+- **DV Trier:** Bei der Diözesanleitung sind die Bildungsreferent*innen eingeblendet, dazu kommt das Formular.
+- **Andere Instanzen:** Ohne die Schlüssel ändert sich nichts. Stamm und Bezirk können sie für ihre Leitungsseite übernehmen.
+
 ### 2026-10-23 – Haupt → Stammes, Bezirk: lftp-Ausnahmen verankert (deploy.yml)
 Status: offen
 

@@ -6,6 +6,7 @@ use App\Support\Site;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 /**
@@ -43,6 +44,24 @@ class Person extends Model
     public function scopeVisible(Builder $query): Builder
     {
         return $query->where('active', true)->where('consent', true);
+    }
+
+    /**
+     * Personen einer Gremiumsseite: das Gremium selbst, danach die unter
+     * config dpsg.gremien.<gremium>.auch genannten Untergruppen anderer
+     * Gremien (z. B. Bildungsreferent*innen bei der Diözesanleitung).
+     *
+     * @return Collection<int, self>
+     */
+    public static function fuerGremiumsseite(string $gremium): Collection
+    {
+        $personen = self::query()->visible()->where('gremium', $gremium)->with('photo')->orderBy('sort')->get();
+        foreach ((array) config("dpsg.gremien.{$gremium}.auch", []) as $auch) {
+            $personen = $personen->concat(self::query()->visible()->where('gremium', $auch['gremium'] ?? '')
+                ->where('subgroup', $auch['subgroup'] ?? '')->with('photo')->orderBy('sort')->get());
+        }
+
+        return $personen->unique('id')->values();
     }
 
     public function initials(): string

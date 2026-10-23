@@ -48,6 +48,20 @@ Funktion **„E-Mail-Adressen öffnen ein Formular“** (Verwaltung → Funktion
 - **Veranstaltungen:** Die Kontaktadresse einer Veranstaltung führt zum Formular „Fragen zur Veranstaltung“ auf derselben Seite. So bleibt die Frage der Veranstaltung zugeordnet.
 - **Schutz vor Missbrauch:** Die Adresse steckt signiert im Link (mit dem `APP_KEY`). Das Formular schreibt deshalb nur an Adressen, die die Website selbst zeigt, nicht an beliebige. Dazu gelten derselbe Spamschutz und dieselbe Begrenzung wie beim Kontaktformular (5 Nachrichten in 10 Minuten).
 
+## Formular auf einer Gremiumsseite
+
+Unter einer Gremiumsseite (DV Trier: Diözesanleitung) steht ein
+Kontaktformular, wenn in der Instanz-Konfiguration bei
+`gremien.<gremium>.formular` `true` steht. Es schreibt an alle Personen der
+Seite oder an eine ausgewählte Person; die Adressen kommen nur aus den
+Personen der Seite.
+
+Die Nachricht steht im Eingang mit der Herkunft „Nachricht an ein Gremium“.
+Mit `gremien.<gremium>.auch` (Gremium und Untergruppe) erscheinen Personen
+anderer Gremien zusätzlich auf der Seite und im Formular. Bei der
+Diözesanleitung sind das die Bildungsreferent*innen aus dem Diözesanbüro
+(Untergruppe „Bildungsreferent*innen“, wie im Backend eingetragen).
+
 ## Datenschutz
 
 - Der Nachrichtentext wird verschlüsselt gespeichert.

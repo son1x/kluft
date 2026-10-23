@@ -48,8 +48,8 @@ class PageController extends Controller
 
         return view('pages.show', [
             'page' => $page,
-            'people' => $gremium === false ? collect() : Person::query()->visible()
-                ->where('gremium', $gremium)->with('photo')->orderBy('sort')->get(),
+            'people' => $gremium === false ? collect() : Person::fuerGremiumsseite($gremium),
+            'gremium' => $gremium === false ? null : $gremium,
             'teamPhoto' => $gremium === false ? null : TeamPhoto::query()->where('gremium', $gremium)->where('active', true)
                 ->with(['media', 'spots.person'])->latest()->first(),
         ]);

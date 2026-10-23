@@ -7,6 +7,7 @@ use App\Mail\ContactMessageMail;
 use App\Models\ContactMessage;
 use App\Models\ContactTopic;
 use App\Models\Event;
+use App\Models\Person;
 use App\Support\AuditLogger;
 use App\Support\Features;
 use App\Support\Mailformular;
@@ -136,6 +137,46 @@ class ContactController extends Controller
         AuditLogger::log('kontakt.direkt:'.($ok ? 'gesendet' : 'fehler'), request: $request);
 
         return $ok ? $back('gesendet') : back()->withInput()->with('kontakt_status', 'fehler');
+    }
+
+    /**
+     * Formular unter einer Gremiumsseite (z. B. Diözesanleitung): an eine
+     * Person der Seite oder an alle. Adressen kommen nur aus den Personen
+     * der Seite, nie aus der Anfrage.
+     */
+    public function sendGremium(Request $request, string $gremium): RedirectResponse
+    {
+        $seite = config("dpsg.gremien.{$gremium}.page");
+        abort_unless($seite && config("dpsg.gremien.{$gremium}.formular"), 404);
+        $personen = Person::fuerGremiumsseite($gremium)->filter(fn (Person $p) => $p->publicEmail() !== null);
+        abort_if($personen->isEmpty(), 404);
+        $back = fn (string $status) => redirect()->to(url('/'.$seite).'#gremium-kontakt')->with('gremium_status', $status);
+
+        if (($spam = SpamGuard::check($request)) !== null) {
+            return $spam === 'bot' ? $back('gesendet') : redirect()->to(url('/'.$seite).'#gremium-kontakt')->withInput()->with('gremium_status', 'abgelaufen');
+        }
+
+        $data = $request->validateWithBag('gremium', $this->messageRules() + [
+            'an' => ['required', 'in:alle,'.$personen->pluck('id')->implode(',')],
+        ], $this->messages() + ['an.required' => 'Bitte wähle, an wen die Nachricht gehen soll.', 'an.in' => 'Bitte wähle aus der Liste.']);
+
+        $label = (string) config("dpsg.gremien.{$gremium}.label", $gremium);
+        $an = $data['an'] === 'alle' ? $personen : $personen->where('id', (int) $data['an']);
+        $recipients = $an->map(fn (Person $p) => mb_strtolower((string) $p->publicEmail()))->unique()->values()->all();
+        $thema = $data['an'] === 'alle' ? 'An alle: '.$label : 'An '.$an->first()?->name.' ('.$label.')';
+
+        $ok = $this->deliver($recipients, new ContactMessageMail(
+            topic: $thema,
+            senderName: $data['name'],
+            senderEmail: $data['email'],
+            subjectLine: $data['betreff'] ?? null,
+            body: $data['nachricht'],
+        ));
+        $ok = $this->speichern(['art' => 'gremium', 'thema' => mb_substr($thema, 0, 200), 'betreff' => $data['betreff'] ?? null], $data, $recipients, $ok) || $ok;
+
+        AuditLogger::log('kontakt.gremium:'.$gremium.':'.($ok ? 'gesendet' : 'fehler'), request: $request);
+
+        return $ok ? $back('gesendet') : redirect()->to(url('/'.$seite).'#gremium-kontakt')->withInput()->with('gremium_status', 'fehler');
     }
 
     /** @return array<string, list<string>> */

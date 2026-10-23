@@ -281,7 +281,11 @@ return [
     'person_email_domain' => 'dpsg-trier.de',
 
     'gremien' => [
-        'leitung' => ['label' => 'Diözesanleitung', 'page' => 'dioezesanleitung'],
+        // „auch“: Personen anderer Gremien, die zusätzlich auf der Seite
+        // stehen (Gremium + Untergruppe, wie im Backend eingetragen);
+        // „formular“: Kontaktformular unter den Personen (an eine Person oder alle).
+        'leitung' => ['label' => 'Diözesanleitung', 'page' => 'dioezesanleitung', 'formular' => true,
+            'auch' => [['gremium' => 'buero', 'subgroup' => 'Bildungsreferent*innen']]],
         'buero' => ['label' => 'Diözesanbüro', 'page' => 'dioezesanbuero'],
         // Je Stufe ein Diözesanarbeitskreis; die Person erscheint auf der
         // Seite ihrer Stufe (Feld „Stufe“), daher keine feste Seite.

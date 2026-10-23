@@ -29,7 +29,7 @@ class ContactMessage extends Model
 {
     public const STATUSES = ['neu' => 'neu', 'in_bearbeitung' => 'in Bearbeitung', 'erledigt' => 'erledigt'];
 
-    public const ARTEN = ['kontakt' => 'Kontaktformular', 'veranstaltung' => 'Frage zur Veranstaltung', 'direkt' => 'Nachricht an eine Adresse'];
+    public const ARTEN = ['kontakt' => 'Kontaktformular', 'veranstaltung' => 'Frage zur Veranstaltung', 'direkt' => 'Nachricht an eine Adresse', 'gremium' => 'Nachricht an ein Gremium'];
 
     protected $fillable = ['art', 'contact_topic_id', 'event_id', 'thema', 'name', 'email', 'betreff', 'nachricht', 'empfaenger', 'zugestellt',
         'status', 'bearbeitet_von', 'bearbeitet_am', 'notiz'];

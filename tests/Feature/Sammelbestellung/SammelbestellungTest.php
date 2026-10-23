@@ -70,8 +70,8 @@ class SammelbestellungTest extends TestCase
             }
             if (str_starts_with($url, self::HEMD)) {
                 return Http::response(match (true) {
-                    str_contains($url, '=11') => self::produkt('Halbarm-Klufthemd', '0100003.32', '49.00', [10 => 'Kragenweite 30', 11 => 'Kragenweite 31/32']),
-                    default => self::produkt('Halbarm-Klufthemd', '0100003.30', '48.00', [10 => 'Kragenweite 30', 11 => 'Kragenweite 31/32']),
+                    str_contains($url, '=11') => self::produkt('Halbarm-Klufthemd', '0100003.32', '49.00', [10 => 'Kragenweite 30', 11 => 'Kragenweite 31/32', 12 => 'Sonderanfertigung']),
+                    default => self::produkt('Halbarm-Klufthemd', '0100003.30', '48.00', [10 => 'Kragenweite 30', 11 => 'Kragenweite 31/32', 12 => 'Sonderanfertigung']),
                 });
             }
             if (str_starts_with($url, self::ZELT)) {

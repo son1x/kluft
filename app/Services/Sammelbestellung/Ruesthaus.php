@@ -32,7 +32,7 @@ class Ruesthaus
             return null;
         }
 
-        return Cache::remember('ruesthaus2:'.($mitVarianten ? 'v:' : '').sha1(mb_strtolower($eingabe)), now()->addDay(), function () use ($eingabe, $mitVarianten) {
+        return Cache::remember('ruesthaus3:'.($mitVarianten ? 'v:' : '').sha1(mb_strtolower($eingabe)), now()->addDay(), function () use ($eingabe, $mitVarianten) {
             try {
                 $url = self::istLink($eingabe) ? self::sauber($eingabe) : $this->suchen($eingabe);
                 if ($url === null) {
@@ -47,7 +47,9 @@ class Ruesthaus
                     $varianten = [];
                     foreach (array_slice($seite['auswahl'], 0, self::MAX_VARIANTEN, true) as $wert => $bezeichnung) {
                         $v = self::produktseite($this->holen($url.'?'.http_build_query([$seite['gruppe'] => $wert])), $url);
-                        if ($v !== null) {
+                        // Auswahl ohne eigene Nummer (z. B. „Sonderanfertigung“ liefert die
+                        // Nummer der ersten Größe): nicht über die Sammelliste bestellbar.
+                        if ($v !== null && ! in_array($v['nummer'], array_column($varianten, 'nummer'), true)) {
                             $varianten[] = ['nummer' => $v['nummer'], 'bezeichnung' => $bezeichnung, 'preis_cent' => $v['preis_cent']];
                         }
                     }

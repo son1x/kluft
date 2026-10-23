@@ -31,7 +31,7 @@ return [
         ['WhatsApp', 'WhatsApp-Newsletter (vorbereitet, aus)', 'partial'],
         ['Bezirke', 'Eigene Websites für Bezirke', 'partial'],
         ['Stämme', 'Eigenständige Websites für Stämme', 'partial'],
-        ['Umfragen', 'Umfragen mit Vorlagen und Auswertung', 'open'],
+        ['Umfragen', 'Umfragen mit Vorlagen und Auswertung', 'partial'],
     ],
 
     'sections' => [
@@ -217,12 +217,15 @@ return [
             ['status' => 'open', 'title' => 'Budget und Meta-Business-Konto', 'note' => 'Jede Newsletter-Nachricht kostet bei Meta grob 0,10–0,15 €. Unternehmensverifizierung mit Vereinsregisterauszug und Zahlungsmittel des Rechtsträgers nötig; danach Einrichtung nach Setup-Anleitung.'],
         ],
         'Umfragen' => [
-            ['status' => 'decide', 'title' => 'Beispielumfragen sichten, Fragetypen festlegen', 'note' => 'Vier Nextcloud-Umfragen gesichtet (Korsika-Fahrt, DiVers-Feedback, Leiter*innenumfrage, Infos für Prisma). Entwurf: docs/pflichtenheft-umfragen.md. Zu entscheiden: Umfang Phase 1, bedingte Fragen, wer anlegen darf, Gewinnspiel.'],
-            ['status' => 'open', 'title' => 'Umfragen im Backend anlegen und organisieren', 'note' => 'Fragen mit Typen wie Einfach- und Mehrfachauswahl, Skala, Ja/Nein, Freitext und Datum; Pflichtfragen, Zeitraum (von–bis), Ergebnis nur intern. Teilnahme über einen Link auf der Website, auf Wunsch nur für Angemeldete oder mit Zugangscode. Rechte wie bei Veranstaltungen (wer anlegt, sieht die Ergebnisse).'],
-            ['status' => 'open', 'title' => 'Umfragen kopieren', 'note' => 'Eine bestehende Umfrage samt Fragen als neue Umfrage übernehmen (ohne Antworten), z. B. die Lagerumfrage vom letzten Jahr.'],
-            ['status' => 'open', 'title' => 'Vorlagen', 'note' => 'Umfragen als Vorlage speichern und daraus neue anlegen; mitgelieferte Vorlagen für häufige Fälle (Feedback zur Veranstaltung, Terminfindung, Interessenabfrage).'],
-            ['status' => 'open', 'title' => 'Grafische Auswertung', 'note' => 'Je Frage Balken- bzw. Kreisdiagramm mit Anzahl und Prozent, Skalen mit Mittelwert, Freitexte als Liste; Teilnahme im Zeitverlauf; Export als Excel/CSV und Druckansicht.'],
-            ['status' => 'open', 'title' => 'Datenschutz', 'note' => 'Standard anonym: keine Namen, keine IP-Adressen; Schutz vor Mehrfachteilnahme ohne Personenbezug. Personenbezogene Umfragen nur mit Hinweis und Löschfrist, wie bei Anmeldungen.'],
+            ['status' => 'done', 'title' => 'Beispielumfragen gesichtet, Fragetypen festgelegt', 'note' => 'Vier Nextcloud-Umfragen (Korsika-Fahrt, DiVers-Feedback, Leiter*innenumfrage, Infos für Prisma); Entscheidungen in docs/pflichtenheft-umfragen.md, Abschnitt 8.'],
+            ['status' => 'done', 'title' => 'Umfragen im Backend anlegen und organisieren', 'note' => 'Verband & Kontakt → Umfragen, für alle ab Diözesanleitung. Fragetypen Einfach-/Mehrfachauswahl (mit „Sonstiges“, Min/Max), Skala, Bewertung, Ja/Nein, Texte, Abschnitte; Kommentarfeld je Frage; bedingte Fragen („Nur zeigen, wenn …“); Zeitraum, Zugangscode, Vorschau. Details: docs/umfragen.md.'],
+            ['status' => 'done', 'title' => 'Umfragen kopieren', 'note' => 'Mit allen Fragen und Bedingungen, ohne Antworten, als Entwurf.'],
+            ['status' => 'done', 'title' => 'Vorlagen', 'note' => 'Eigene Vorlagen („Als Vorlage speichern“) und mitgelieferte: Feedback zur Veranstaltung, Feedback zur Fahrt, Leiter*innenbefragung, Nachfrage an Teilnehmende.'],
+            ['status' => 'done', 'title' => 'Nachfrage an Teilnehmende einer Veranstaltung', 'note' => 'Persönlicher Link per Mail an alle bestätigten Anmeldungen, je Person einmal; nicht anonym mit Zuordnung zur Anmeldung, anonym nur „hat teilgenommen“.'],
+            ['status' => 'done', 'title' => 'Grafische Auswertung und Export', 'note' => 'Zusammenfassung mit Balken, Prozent und Mittelwert, Freitexte und Kommentare; alle Antworten einer Teilnahme nacheinander; PDF (A4) und Excel.'],
+            ['status' => 'done', 'title' => 'Gewinnspiel', 'note' => 'Eigener Baustein nach dem Absenden, getrennt von den Antworten gespeichert; Auslosen und Löschen in der Auswertung, automatische Löschung drei Monate nach dem Ende.'],
+            ['status' => 'partial', 'title' => 'Datenschutz', 'note' => 'Standard anonym (verschlüsselte Antworten, nur Tagesdatum, keine IP); nicht anonyme Antworten und Gewinnspiel in der Datenschutzauskunft; Löschfristen täglich. Offen: Datenschutzerklärung des DV um Umfragen ergänzen.'],
+            ['status' => 'later', 'title' => 'Erinnerung und Vergleich', 'note' => 'Erinnerung an Eingeladene ohne Antwort (UM-41); Vergleich zweier Durchgänge, z. B. Leiter*innenumfrage 2026 und 2028 (UM-42).'],
         ],
     ],
 

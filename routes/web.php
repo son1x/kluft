@@ -21,6 +21,7 @@ use App\Http\Controllers\Public\RoadmapController;
 use App\Http\Controllers\Public\SectionController;
 use App\Http\Controllers\Public\ShopController;
 use App\Http\Controllers\Public\StatusController;
+use App\Http\Controllers\Public\UmfrageController;
 use App\Http\Controllers\Public\WhatsAppController;
 use App\Http\Controllers\Webhooks\WhatsAppWebhookController;
 use App\Http\Middleware\Ausbaustufe;
@@ -206,6 +207,14 @@ Route::get('/nachricht', [ContactController::class, 'schreiben'])->name('mailfor
 Route::post('/nachricht', [ContactController::class, 'sendDirekt'])
     ->middleware('throttle:5,10')
     ->name('mailformular.senden');
+// Umfragen (docs/umfragen.md); ohne Funktion „Umfragen“ 404 im Controller.
+Route::get('/umfrage/{code}', [UmfrageController::class, 'zeigen'])->where('code', '[a-z0-9]+')->name('umfragen.zeigen');
+Route::post('/umfrage/{code}', [UmfrageController::class, 'absenden'])->where('code', '[a-z0-9]+')->middleware('throttle:10,10')->name('umfragen.absenden');
+Route::post('/umfrage/{code}/zugang', [UmfrageController::class, 'code'])->where('code', '[a-z0-9]+')->middleware('throttle:10,10')->name('umfragen.code');
+Route::get('/umfrage/{code}/danke', [UmfrageController::class, 'danke'])->where('code', '[a-z0-9]+')->name('umfragen.danke');
+Route::post('/umfrage/{code}/gewinnspiel', [UmfrageController::class, 'gewinnspiel'])->where('code', '[a-z0-9]+')->middleware('throttle:5,10')->name('umfragen.gewinnspiel');
+Route::get('/umfragen/vorschau/{umfrage}', [UmfrageController::class, 'vorschau'])->name('umfragen.vorschau');
+
 // Kontaktformular unter einer Gremiumsseite (config dpsg.gremien.<g>.formular).
 Route::post('/gremium/{gremium}/nachricht', [ContactController::class, 'sendGremium'])
     ->middleware('throttle:5,10')

@@ -6,6 +6,7 @@ use App\Filament\Resources\GlossaryTerms\GlossaryTermResource;
 use App\Filament\Resources\GlossaryTerms\Pages\CreateGlossaryTerm;
 use App\Filament\Resources\GlossaryTerms\Pages\EditGlossaryTerm;
 use App\Filament\Resources\Gruppenstunden\GruppenstundeResource;
+use App\Filament\Resources\Umfragen\UmfrageResource;
 use App\Models\GlossaryTerm;
 use App\Models\User;
 use App\Support\Features;
@@ -39,7 +40,10 @@ class AdminSmokeTest extends TestCase
         Features::setzen(Features::NACHRICHTEN, true);
         Features::setzen(Features::ZAHLUNGEN, true);
         Features::setzen(Features::SAMMELBESTELLUNG, true);
+        Features::setzen(Features::UMFRAGEN, true);
         $kasse = Features::enabled(Features::MITGLIEDSBEITRAEGE);
+        // Umfragen ab Ausbaustufe 3.
+        $umfragen = Features::enabled(Features::UMFRAGEN);
         $this->get('/admin')->assertOk();
         $checked = 0;
 
@@ -48,7 +52,8 @@ class AdminSmokeTest extends TestCase
                 // Gruppenstunden und Sammelbestellung gibt es nur auf Stammes-Websites; alles andere muss für Super-Admins erreichbar sein.
                 $nurStamm = ($resource === GruppenstundeResource::class || str_starts_with($resource, 'App\\Filament\\Resources\\Shop\\'))
                     && config('dpsg.site.level') !== 'Stamm';
-                if (! $resource::hasPage($page) || (! $kasse && $resource::getNavigationGroup() === 'Kasse') || $nurStamm) {
+                if (! $resource::hasPage($page) || (! $kasse && $resource::getNavigationGroup() === 'Kasse') || $nurStamm
+                    || (! $umfragen && $resource === UmfrageResource::class)) {
                     continue;
                 }
                 $url = $resource::getUrl($page);

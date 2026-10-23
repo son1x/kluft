@@ -1,6 +1,6 @@
 # Pflichtenheft: Umfragen
 
-**Stand:** 23. Oktober 2026 · **Status:** 1. Fassung (Entwurf), offene Fragen in Abschnitt 8 · **Bezug:** Kluft (`docs/pflichtenheft.md`), Meilenstein „Umfragen“ in der Roadmap
+**Stand:** 23. Oktober 2026 · **Status:** 2. Fassung, Entscheidungen in Abschnitt 8, Phase 1 umgesetzt (`docs/umfragen.md`) · **Bezug:** Kluft (`docs/pflichtenheft.md`), Meilenstein „Umfragen“ in der Roadmap
 
 Umfragen werden im Backend angelegt, kopiert und aus Vorlagen erstellt. Teilnehmen kann man über einen Link auf der Website. Die Auswertung zeigt Diagramme. Bisher laufen solche Umfragen über Nextcloud Forms (cloud.dpsg-trier.de).
 
@@ -90,13 +90,16 @@ Gesichtet am 23.10.2026, nur der Aufbau, keine Antworten.
 | UM-53 | Ergebnisse unter 5 Antworten je Auswahl in der Auswertung zusammenfassen (keine Rückschlüsse auf Einzelne), außer bei personenbezogenen Umfragen | SOLL |
 | UM-54 | Antworten werden mit der Umfrage gelöscht; Standardfrist 12 Monate nach Schließen, einstellbar | MUSS |
 
-## 8. Offene Fragen an den DV
+## 8. Entscheidungen (23.10.2026)
 
-1. **Phase 1:** nur anonyme Umfragen (Korsika, DiVers, Leiter*innen) oder gleich auch die Nachfrage an Teilnehmende einer Veranstaltung (Prisma)?
-2. **Bedingte Fragen (UM-05)** gleich in Phase 1? Beide personenbezogenen bzw. großen Beispiele nutzen sie.
-3. **Wer legt Umfragen an?** Nur DL/Büro oder auch Stufen- und Fachbereichsleitungen für ihren Bereich?
-4. **Gewinnspiel:** Soll es als eigener Baustein kommen (UM-51)?
-5. **Bestehende Nextcloud-Umfragen:** Reicht es, die Vorlagen nachzubauen, oder sollen alte Ergebnisse übernommen werden? Empfehlung: nicht übernehmen, alte Ergebnisse bleiben in Nextcloud.
+1. **Umfang:** Beides sofort: anonyme Umfragen und die Nachfrage an Teilnehmende einer Veranstaltung (UM-40 vorgezogen). Gebraucht werden eine zusammenfassende Auswertung aller Antworten und das Lesen aller Antworten einer einzelnen Person.
+2. **Bedingte Fragen (UM-05):** sofort.
+3. **Anlegen:** alle ab Diözesanleitung (Stufen- und Fachbereichsleitungen, Vorstand, Verwaltung, Admins).
+4. **Gewinnspiel:** als eigener Baustein (UM-51).
+5. **Nextcloud:** Alte Umfragen und Ergebnisse bleiben dort; die Beispiele gibt es als mitgelieferte Vorlagen.
+6. **Export:** PDF im Format DIN A4 und Excel.
+
+UM-53 (kleine Gruppen zusammenfassen) entfällt, weil Einzelantworten ausdrücklich lesbar sein sollen.
 
 ## 9. Später
 

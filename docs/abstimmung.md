@@ -35,6 +35,19 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-10-23 – Haupt → Stammes, Bezirk: Umfragen (gemeinsamer Kern)
+Status: offen
+
+Neues Modul „Umfragen“ (Funktion `umfragen`, ab Ausbaustufe 3, Standard aus; beim DV an), `docs/umfragen.md`.
+- **Neu:**
+  - Migration `2026_10_23_180000` (fünf Tabellen `umfrage*`);
+  - Routen `/umfrage/{code}` und Vorschau;
+  - Alpine-Komponente `resources/js/umfrage.js` (CSP-konform, kein Inline-Skript);
+  - Befehl `umfragen:aufraeumen` (täglich 03:50).
+- **Rechte:** Anlegen dürfen `stufenadmin`, `sektionsadmin`, `vorstand`, Verwaltung und Admins.
+- **Datenschutzauskunft:** `PrivacyRequests::delete()` liefert jetzt zusätzlich den Schlüssel `umfragen`.
+- **Für Stämme:** Für Elternabfragen oder Lagerfeedback sofort nutzbar, wenn ihr die Funktion einschaltet.
+
 ### 2026-10-23 – Haupt → Stammes, Bezirk: Instagram-Einblendung (gemeinsamer Kern)
 Status: offen
 

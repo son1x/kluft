@@ -40,6 +40,8 @@ Schedule::call(fn () => Cache::forever(Roadmap::HEARTBEAT_KEY, now()->timestamp)
 Schedule::command('instagram:refresh-token')->weeklyOn(1, '04:00');
 // Instagram-Einblendung: neueste Beiträge eigener Konten, Bilder lokal (docs/instagram.md).
 Schedule::command('instagram:feed')->hourly()->withoutOverlapping(30);
+// Umfragen: Antworten und Gewinnspiel nach Ablauf der Frist löschen (docs/umfragen.md).
+Schedule::command('umfragen:aufraeumen')->dailyAt('03:50');
 
 // Backups (Pflichtenheft 10.2, 11.4): täglich 02:00, Wiederherstellungstest
 // wöchentlich.

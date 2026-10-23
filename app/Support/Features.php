@@ -56,6 +56,8 @@ class Features
 
     public const SAMMELBESTELLUNG_FUER_ALLE = 'sammelbestellung_fuer_alle';
 
+    public const UMFRAGEN = 'umfragen';
+
     private const CACHE_KEY = 'features.schalter';
 
     /**
@@ -86,6 +88,7 @@ class Features
         self::ZAHLUNGEN => ['bereich' => 'Kasse', 'label' => 'Zahlungen', 'text' => 'Kasse → Zahlungen: Forderungen mit Zahlungsaufforderung per Mail (Überweisung mit GiroCode), Zahlungseingang, Erstattung und Storno; Bankverbindung der Gliederung. Grundlage für Module wie die Sammelbestellung. Sichtbar für Kasse (Stamm) bzw. Verwaltung und Admins.', 'standard' => false],
         self::SAMMELBESTELLUNG => ['ab' => 4, 'ebene' => 'Stamm', 'bereich' => 'Kasse', 'label' => 'Sammelbestellung (Rüsthaus)', 'text' => 'Mitglieder bzw. Eltern bestellen Kluft, Halstuch und andere Rüsthaus-Artikel über /bestellen; die Sammelbestellerin gibt Artikel frei, öffnet Runden und bestellt gesammelt. Bezahlt wird vorab über „Zahlungen“. Rolle „Sammelbestellung“ (oder Admin).', 'standard' => false, 'braucht' => 'Zahlungen mit Bankverbindung'],
         self::SAMMELBESTELLUNG_FUER_ALLE => ['ab' => 4, 'ebene' => 'Stamm', 'bereich' => 'Kasse', 'label' => 'Sammelbestellung für alle freigeben', 'text' => 'Aus = Testbetrieb: /bestellen sehen nur Angemeldete mit Backend-Zugang, ihre Bestellungen sind als Test markiert und lassen sich unter „Sammelbestellung → Bestellungen“ samt Zahlungen löschen. An = für alle auf der Website.', 'standard' => false, 'braucht' => 'Sammelbestellung'],
+        self::UMFRAGEN => ['ab' => 3, 'bereich' => 'Website', 'label' => 'Umfragen', 'text' => 'Umfragen mit Vorlagen, bedingten Fragen, Gewinnspiel und grafischer Auswertung (PDF, Excel); auch als Nachfrage an die Teilnehmenden einer Veranstaltung. Anlegen dürfen Stufen- und Fachbereichsleitungen, Vorstand, Verwaltung und Admins. Vor dem Einschalten die Datenschutzerklärung ergänzen.', 'standard' => false],
         self::PUSH => ['ab' => 5, 'bereich' => 'Backend', 'label' => 'Push-Nachrichten (ntfy)', 'text' => '„Mein Konto → Meine Push-Nachrichten“ und Versand aufs Handy.', 'standard' => true],
         self::CODE_LOGIN => ['bereich' => 'Backend', 'label' => 'Anmeldung per E-Mail-Code', 'text' => 'Redaktion ohne Microsoft 365: Zugänge für Personen oder Rollen (Funktionspostfach, z. B. „Stammesvorstand“), Anmeldung mit Einmalcode per E-Mail. Microsoft 365 bleibt daneben möglich.', 'standard' => false],
         self::WP_IMPORT => ['ab' => 3, 'bereich' => 'Backend', 'label' => 'WordPress-Import', 'text' => 'Übernahme von Seiten und Beiträgen aus einer WordPress-Website.', 'standard' => false],

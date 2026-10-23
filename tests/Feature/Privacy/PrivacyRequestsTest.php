@@ -98,7 +98,7 @@ class PrivacyRequestsTest extends TestCase
 
         $result = app(PrivacyRequests::class)->delete('mia@example.org');
 
-        $this->assertSame(['registrations' => 1, 'people' => 1, 'messages' => 0, 'bestellungen' => 0, 'queued' => 0], $result);
+        $this->assertSame(['registrations' => 1, 'people' => 1, 'messages' => 0, 'bestellungen' => 0, 'umfragen' => 0, 'queued' => 0], $result);
         $this->assertSame(0, EventRegistration::query()->where('email', 'mia@example.org')->count());
         Storage::disk('local')->assertMissing('anmeldungen/r.pdf');
         $this->assertSame(0, Person::query()->count());

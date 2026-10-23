@@ -60,6 +60,17 @@
             </x-filament::section>
         @endif
 
+        @if ($found['umfragen']->isNotEmpty() || $found['gewinnspiel']->isNotEmpty())
+            <x-filament::section heading="Umfragen ({{ $found['umfragen']->count() + $found['gewinnspiel']->count() }})" description="Antworten aus nicht anonymen Umfragen und Gewinnspiel-Einträge. Anonyme Antworten haben keinen Bezug zur Person.">
+                @foreach ($found['umfragen'] as $antwort)
+                    <p style="font-size: .875rem;">{{ $antwort->eingegangen_am->format('d.m.Y') }} – {{ $antwort->umfrage?->titel }}</p>
+                @endforeach
+                @foreach ($found['gewinnspiel'] as $eintrag)
+                    <p style="font-size: .875rem;">{{ $eintrag->eingegangen_am->format('d.m.Y') }} – Gewinnspiel: {{ $eintrag->umfrage?->titel }}</p>
+                @endforeach
+            </x-filament::section>
+        @endif
+
         <x-filament::section heading="Weitere Stellen">
             <ul style="font-size: .875rem; list-style: disc; padding-left: 1.25rem;">
                 <li>Mails in der Warteschlange an diese Adresse: {{ $found['queued'] }}</li>

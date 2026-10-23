@@ -8,8 +8,11 @@ use App\Models\EventRegistration;
 use App\Models\Person;
 use App\Models\RegistrationDocument;
 use App\Models\Shop\Bestellung;
+use App\Models\UmfrageAntwort;
+use App\Models\UmfrageGewinnspiel;
 use App\Models\User;
 use App\Services\Mitglieder\MitgliederAbgleich;
+use App\Services\Umfragen\Auswertung;
 use App\Support\Features;
 use App\Support\MailQueueEntry;
 use App\Support\SammelbestellungAblauf;
@@ -31,7 +34,7 @@ class PrivacyRequests
     public function __construct(private EventRegistrations $registrations) {}
 
     /**
-     * @return array{registrations: Collection<int, EventRegistration>, people: Collection<int, Person>, users: Collection<int, User>, messages: Collection<int, ContactMessage>, bestellungen: Collection<int, Bestellung>, queued: int}
+     * @return array{registrations: Collection<int, EventRegistration>, people: Collection<int, Person>, users: Collection<int, User>, messages: Collection<int, ContactMessage>, bestellungen: Collection<int, Bestellung>, umfragen: Collection<int, UmfrageAntwort>, gewinnspiel: Collection<int, UmfrageGewinnspiel>, queued: int}
      */
     public function find(string $email): array
     {
@@ -44,6 +47,13 @@ class PrivacyRequests
             'messages' => ContactMessage::query()->where('email', $email)->orderByDesc('id')->get(),
             'bestellungen' => Schema::hasTable('shop_bestellungen')
                 ? Bestellung::query()->whereRaw('LOWER(email) = ?', [$email])->whereNull('anonymisiert_am')->with('runde', 'positionen', 'zahlungen')->orderByDesc('id')->get()
+                : new EloquentCollection,
+            // Nur nicht anonyme Umfragen haben Namen/Mail; das Gewinnspiel liegt getrennt.
+            'umfragen' => Schema::hasTable('umfrage_antworten')
+                ? UmfrageAntwort::query()->whereRaw('LOWER(email) = ?', [$email])->with('umfrage')->orderByDesc('id')->get()
+                : new EloquentCollection,
+            'gewinnspiel' => Schema::hasTable('umfrage_gewinnspiel')
+                ? UmfrageGewinnspiel::query()->where('email', $email)->with('umfrage')->orderByDesc('id')->get()
                 : new EloquentCollection,
             'queued' => $this->queueEntries($email)->count(),
         ];
@@ -117,6 +127,16 @@ class PrivacyRequests
                     'anzahl' => $p->menge, 'preis_cent' => $p->preis_cent, 'ausgegeben_am' => $p->ausgegeben_am?->toDateString()])->all(),
                 'zahlungen' => $b->zahlungen->map(fn ($z) => ['verwendungszweck' => $z->referenz, 'betrag_cent' => $z->betrag_cent, 'status' => $z->status])->all(),
             ])->values()->all(),
+            'umfragen' => $found['umfragen']->map(fn (UmfrageAntwort $a) => [
+                'umfrage' => $a->umfrage?->titel, 'datum' => $a->eingegangen_am->toDateString(), 'name' => $a->name,
+                'antworten' => $a->umfrage ? $a->umfrage->fragen->filter->istAntwortfrage()->mapWithKeys(fn ($f) => [$f->text => [
+                    'antwort' => Auswertung::wertText($a->daten[$f->schluessel]['wert'] ?? null),
+                    'kommentar' => $a->daten[$f->schluessel]['kommentar'] ?? null,
+                ]])->all() : [],
+            ])->values()->all(),
+            'gewinnspiele' => $found['gewinnspiel']->map(fn (UmfrageGewinnspiel $g) => [
+                'umfrage' => $g->umfrage?->titel, 'name' => $g->name, 'datum' => $g->eingegangen_am->toDateString(), 'gewonnen' => $g->gewonnen,
+            ])->values()->all(),
             'mails_in_warteschlange' => $found['queued'],
             'hinweise' => array_values(array_filter([
                 Features::newsletter() ? config('dpsg.newsletter.name').' (Newsletter): Die Adressen liegen nur beim Versanddienst Brevo, nicht im CMS. Auskunft/Löschung dort.' : null,
@@ -148,7 +168,7 @@ class PrivacyRequests
      * automatisch gelöscht (Rollen/Audit) – das geht unter „Benutzer“.
      * Frei werdende Plätze kommender Veranstaltungen rücken nach.
      *
-     * @return array{registrations: int, people: int, messages: int, bestellungen: int, queued: int}
+     * @return array{registrations: int, people: int, messages: int, bestellungen: int, umfragen: int, queued: int}
      */
     public function delete(string $email): array
     {
@@ -164,13 +184,15 @@ class PrivacyRequests
         $found['messages']->each->delete();
         // Sammelbestellungen: Namen und Adressen weg, Summen und Zahlungen bleiben für die Kasse.
         $found['bestellungen']->each(fn (Bestellung $b) => SammelbestellungAblauf::anonymisieren($b));
+        $found['umfragen']->each->delete();
+        $found['gewinnspiel']->each->delete();
 
         $queued = $this->queueEntries($email);
         DB::table('jobs')->whereIn('id', $queued->where('table', 'jobs')->pluck('id'))->delete();
         DB::table('failed_jobs')->whereIn('id', $queued->where('table', 'failed_jobs')->pluck('id'))->delete();
 
         return ['registrations' => $found['registrations']->count(), 'people' => $found['people']->count(), 'messages' => $found['messages']->count(),
-            'bestellungen' => $found['bestellungen']->count(), 'queued' => $queued->count()];
+            'bestellungen' => $found['bestellungen']->count(), 'umfragen' => $found['umfragen']->count() + $found['gewinnspiel']->count(), 'queued' => $queued->count()];
     }
 
     /**

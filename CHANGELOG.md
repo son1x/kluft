@@ -18,6 +18,7 @@ Admins. Kurz und aus Sicht der Redaktion schreiben.
 - Kasse → Zahlungen: Forderungen mit Zahlungsaufforderung per Mail und GiroCode für die Banking-App, Zahlungseingang, Erstattung, Storno; Bankverbindung im Backend (Verwaltung → Funktionen → Zahlungen).
 - Veranstaltungen mit Teilnahmebeitrag: Preisstufen je Veranstaltung, Auswahl bei der Anmeldung, Zahlungsaufforderung mit GiroCode nach der Bestätigung, Zahlungsstand in Teilnehmendenliste, Export und „Meine Anmeldungen“.
 - Mitgliedsbeiträge: NaMi-Abruf nennt bei Fehlern Schritt und Meldung von NaMi, meldet sich bei Anmeldeseite statt Daten neu an und bricht bei einzelnen nicht abrufbaren Personen nicht mehr ab.
+- Umfragen: anlegen, kopieren, Vorlagen, bedingte Fragen, Kommentar je Frage, Zugangscode, Nachfrage an Teilnehmende einer Veranstaltung, Gewinnspiel getrennt von den Antworten, Auswertung mit Balken und Einzelantworten, PDF (A4) und Excel, Löschfristen (docs/umfragen.md).
 - Instagram-Einblendung: neueste Beiträge eigener Konten auf Startseite und Fachbereichen oberhalb von „Aktuelles“, Bilder lokal gespiegelt, kein Embed (docs/instagram.md).
 - DV Trier: Diözesanleitung zeigt auch die Bildungsreferent*innen; darunter ein Kontaktformular an alle oder eine Person (config `gremien.<g>.auch` und `formular`).
 - Mitgliedsbeiträge: Beitragsart von Hand, wenn NaMi die Details verweigert (Filter „Beitragsart fehlt“); „Halbjahr anlegen“ ohne NaMi; Liste springt auf das gewählte Halbjahr; Einstellungen dürfen länger als 255 Zeichen sein.

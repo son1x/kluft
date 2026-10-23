@@ -94,15 +94,20 @@ class PageForm
                         ->columnSpanFull(),
                 ]),
 
+            // Auf der Startseite ist die SEO-Beschreibung zugleich der Slogan
+            // auf dem Titelbild, daher dort aufgeklappt und erklärt.
             Section::make('SEO')
-                ->collapsed()
+                ->collapsed(fn (Get $get) => $get('slug') !== 'start')
                 ->components([
                     TextInput::make('seo_title')
                         ->label('SEO-Titel')
                         ->maxLength(255),
                     Textarea::make('seo_description')
                         ->label('SEO-Beschreibung')
-                        ->maxLength(500),
+                        ->maxLength(500)
+                        ->helperText(fn (Get $get) => $get('slug') === 'start'
+                            ? 'Erscheint als Slogan unter dem Titel auf dem Titelbild der Startseite und als Beschreibung in Suchmaschinen. Am besten ein kurzer Satz.'
+                            : null),
                 ]),
         ]);
     }

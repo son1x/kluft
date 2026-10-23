@@ -2,13 +2,17 @@
 
 namespace Tests\Feature\Content;
 
+use App\Filament\Resources\Pages\Pages\EditPage;
 use App\Models\FeatureSwitch;
 use App\Models\Media;
 use App\Models\Page;
+use App\Models\User;
 use App\Support\Features;
 use App\Support\Titelbild;
+use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
@@ -117,5 +121,20 @@ class TitelbildTest extends TestCase
                 $this->assertNotEmpty($bild['credit']);
             }
         }
+    }
+
+    #[TestDox('Backend: Bei der Startseite ist „SEO-Beschreibung“ als Slogan auf dem Titelbild erklärt, bei anderen Seiten nicht')]
+    public function test_slogan_hinweis(): void
+    {
+        Filament::setCurrentPanel('admin');
+        $admin = User::query()->create(['name' => 'a', 'email' => 'a@example.org', 'status' => 'active']);
+        $admin->roleAssignments()->create(['role' => 'admin', 'scope_type' => 'global', 'scope_key' => null]);
+        $start = $this->start();
+        $andere = Page::query()->create(['title' => 'Andere', 'slug' => 'andere', 'body' => '<p>x</p>', 'status' => 'published', 'published_at' => now()]);
+
+        Livewire::actingAs($admin)->test(EditPage::class, ['record' => $start->getRouteKey()])
+            ->assertSee('Erscheint als Slogan unter dem Titel');
+        Livewire::actingAs($admin)->test(EditPage::class, ['record' => $andere->getRouteKey()])
+            ->assertDontSee('Erscheint als Slogan unter dem Titel');
     }
 }

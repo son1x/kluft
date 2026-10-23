@@ -18,6 +18,7 @@ Admins. Kurz und aus Sicht der Redaktion schreiben.
 - Kasse → Zahlungen: Forderungen mit Zahlungsaufforderung per Mail und GiroCode für die Banking-App, Zahlungseingang, Erstattung, Storno; Bankverbindung im Backend (Verwaltung → Funktionen → Zahlungen).
 - Veranstaltungen mit Teilnahmebeitrag: Preisstufen je Veranstaltung, Auswahl bei der Anmeldung, Zahlungsaufforderung mit GiroCode nach der Bestätigung, Zahlungsstand in Teilnehmendenliste, Export und „Meine Anmeldungen“.
 - Mitgliedsbeiträge: NaMi-Abruf nennt bei Fehlern Schritt und Meldung von NaMi, meldet sich bei Anmeldeseite statt Daten neu an und bricht bei einzelnen nicht abrufbaren Personen nicht mehr ab.
+- Stammes-Websites: Sammelbestellung beim Rüsthaus (Verwaltung → Funktionen, braucht „Zahlungen“): Artikel per Rüsthaus-Nummer freigeben, Sperrliste, Bestellrunden mit Bestelldatum, Bestellformular unter /bestellen mit Bestätigung per Mail und Zahlungsaufforderung, freie Artikel nach Prüfung, Sammelliste als CSV; Rolle „Sammelbestellung (Rüsthaus)“.
 - Stammes-Websites: Adressen der Leitenden auf Wunsch nach Vorname (vorname@…), auch für die Leitungsteams.
 - Stammes-Websites: Gruppenstunden unter „Verwaltung → Gruppenstunden“, auch mehrere Gruppen einer Stufe; sie erscheinen auf der Startseite („Unsere Gruppenstunden“) und auf der Stufenseite.
 - Stammes-Websites: Menü „Unsere Gruppen · Mitmachen · Über uns · Termine · Aktuelles“; „Termine“ heißt bei Diözese und Bezirk weiter „Veranstaltungen“, der Kalender steht im Stamm darunter.

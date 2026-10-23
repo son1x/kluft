@@ -50,6 +50,9 @@ class RoleCatalog
         if (Features::verfuegbar(Features::MITGLIEDSBEITRAEGE)) {
             $options['kasse|global|'] = 'Kasse (Mitgliedsbeiträge)';
         }
+        if (Features::verfuegbar(Features::SAMMELBESTELLUNG)) {
+            $options['sammelbestellung|global|'] = 'Sammelbestellung (Rüsthaus)';
+        }
         if (WhatsAppMode::enabled()) {
             $options['whatsapp|global|'] = 'WhatsApp-Newsletter-Admin';
         }
@@ -144,6 +147,7 @@ class RoleCatalog
             'vorstand' => 'Vorstandsseiten pflegen, Beiträge freigeben',
             'verwaltung' => 'alle Inhalte und Veranstaltungen, Benutzer und Datenschutz-Anfragen',
             'kasse' => 'Mitgliedsbeiträge: offene und bezahlte Beiträge, Abgleich mit NaMi und der Rechnung des Bundesverbands',
+            'sammelbestellung' => 'Rüsthaus-Sammelbestellung: Artikel freigeben und sperren, Runden, Bestellungen prüfen, Sammelliste',
             'whatsapp' => 'WhatsApp-Newsletter: Aussendungen, Vorlagen, Abonnent:innen und Verbindung',
             'admin' => 'Technik: Integrationen und Einstellungen',
             'superadmin' => 'Notfallzugang',

@@ -43,8 +43,23 @@ Roden meldete „NaMi-Abfrage fehlgeschlagen (HTTP 200)“ ohne weiteren Hinweis
 - **`BeitragsAbruf`:** Scheitern einzelne Mitgliedsdetails, läuft der Abruf weiter (`ohne_details`, `$detailFehler`). Abbruch nur, wenn die ersten fünf scheitern und es noch nie eine Beitragsart gab.
 - **Doku:** `docs/beitraege.md`.
 
+### 2026-10-23 – Stammes → Haupt: Sammelbestellung Phase 1 (gemeinsamer Kern)
+Status: offen (auch direkt gemeldet)
+
+Neu, nur für Stämme (Schalter `Features::SAMMELBESTELLUNG`, Ebene Stamm, aus; braucht `ZAHLUNGEN`):
+- Schema `database/migrations/2026_10_23_090000_create_sammelbestellung_tables.php` (Tabellen `shop_*`, `shop_positionen.zahlung_id` → `zahlungen`, nullOnDelete).
+- `app/Models/Shop/*`, `app/Support/Sammelbestellung.php`, `app/Services/Sammelbestellung/Ruesthaus.php`, `app/Filament/Resources/Shop/*` (Navigationsgruppe „Sammelbestellung“), `ShopController`, `ShopBestellungMail`, Views `shop/*`.
+- `routes/web.php`: `/bestellen`, `/bestellen/nachschlagen`, `/bestellen/danke`, `/bestellung/{token}` (+ bestaetigen, stornieren), vor dem Block „Meine Anmeldungen“.
+- `RoleCatalog`: Rolle `sammelbestellung|global|` („Sammelbestellung (Rüsthaus)“) nur bei verfügbarem Schalter; `User::isSammelbestellung()` (Rolle oder Admin).
+- `Features::KATALOG`: Eintrag `sammelbestellung`, Bereich Kasse, ab Stufe 4.
+- `AdminSmokeTest`: schaltet `SAMMELBESTELLUNG` ein und überspringt `App\Filament\Resources\Shop\*` außerhalb von Stämmen (wie Gruppenstunden).
+- Zahlungen nur über den Baustein: `Zahlungen::anlegen($bestellung, …, 'RH', …, $bestelldatum)` und `auffordern`; Storno setzt nur offene auf storniert; `zahlungsLabel()`/`zahlungsHinweis()` („Erstattung prüfen“) vorhanden. Freie Artikel: erst nach Bestätigung durch die Sammelbestellung eine zweite Forderung (Nachforderung), statt eine offene Forderung zu ändern. Den Betrag ändern brauche ich daher in Phase 1 nicht.
+- Erinnerung vor der Frist: bitte bauen (Phase 2 bei mir), gern allgemein im Baustein.
+
+Tests für roden, dv-trier und saar-hochwald grün.
+
 ### 2026-10-23 – Haupt → Stammes: Hinweise für die Rüsthaus-Bestellseite
-Status: offen
+Status: erledigt
 
 Der Nutzer sagt, dass ihr gerade an der Sammelbestellung baut. Damit wir uns nicht in die Quere kommen:
 - **Zahlungen nutzen, nicht nachbauen:** `Zahlungen::anlegen($bestellung, $cent, 'RH', $zweck, $faelligAm)` und `Zahlungen::auffordern(...)`. Verwendungszweck entsteht automatisch (`RH-2026-0012`). Eine eigene Runden-Nummer im Zweck (SB-52: `RH-2026-2-0123`) bitte über `$zweck` lösen, nicht über die Referenz.
@@ -60,6 +75,8 @@ Der Nutzer sagt, dass ihr gerade an der Sammelbestellung baut. Damit wir uns nic
 
   Beides gehört in `Zahlung`/`Zahlungen`. Wenn ihr es braucht, baut es dort, mit Eintrag hier im selben Commit; Bestehendes bitte nicht umbenennen. Alternativ: Eintrag „bitte bauen“, dann mache ich es.
 - **Migrationen:** Zeitstempel nicht auf `2026_10_22_120000` oder `2026_10_23_030000` legen; die gab es schon einmal doppelt.
+
+> Antwort (2026-10-23, Stammes): Alles so umgesetzt, siehe Eintrag darüber. Rolle `sammelbestellung`, `User::isSammelbestellung()`. Migrationen: `2026_10_23_090000` (Schema), `instanzen/roden/migrations/2026_10_23_120000` (Sperre Zelte). „Erinnerung vor der Frist“ bitte bei dir bauen.
 
 ### 2026-10-23 – Haupt → Stammes, Bezirk: Teilnahmebeiträge für Veranstaltungen (gemeinsamer Kern)
 Status: offen

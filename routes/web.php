@@ -19,6 +19,7 @@ use App\Http\Controllers\Public\PostController;
 use App\Http\Controllers\Public\RegistrationController;
 use App\Http\Controllers\Public\RoadmapController;
 use App\Http\Controllers\Public\SectionController;
+use App\Http\Controllers\Public\ShopController;
 use App\Http\Controllers\Public\StatusController;
 use App\Http\Controllers\Public\WhatsAppController;
 use App\Http\Controllers\Webhooks\WhatsAppWebhookController;
@@ -107,6 +108,18 @@ Route::middleware('throttle:20,10')->group(function () {
     Route::post('/anmeldung/bestaetigen/{token}', [RegistrationController::class, 'confirm'])->name('registrations.confirm.submit');
     Route::get('/anmeldung/stornieren/{token}', [RegistrationController::class, 'showCancel'])->name('registrations.cancel');
     Route::post('/anmeldung/stornieren/{token}', [RegistrationController::class, 'cancel'])->name('registrations.cancel.submit');
+});
+
+// Sammelbestellung beim Rüsthaus (nur Stämme, Funktion „Sammelbestellung“;
+// docs/pflichtenheft-sammelbestellung.md). Abgeschaltet: 404.
+Route::get('/bestellen', [ShopController::class, 'index'])->name('shop.index');
+Route::get('/bestellen/nachschlagen', [ShopController::class, 'nachschlagen'])->middleware('throttle:20,1')->name('shop.nachschlagen');
+Route::post('/bestellen', [ShopController::class, 'store'])->middleware('throttle:5,10')->name('shop.store');
+Route::get('/bestellen/danke', [ShopController::class, 'danke'])->name('shop.danke');
+Route::middleware('throttle:30,10')->group(function () {
+    Route::get('/bestellung/{token}', [ShopController::class, 'show'])->name('shop.show');
+    Route::post('/bestellung/{token}/bestaetigen', [ShopController::class, 'bestaetigen'])->name('shop.bestaetigen');
+    Route::post('/bestellung/{token}/stornieren', [ShopController::class, 'stornieren'])->name('shop.stornieren');
 });
 
 // Meine Anmeldungen: Übersicht für Teilnehmende mit E-Mail und Einmalcode.

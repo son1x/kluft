@@ -173,6 +173,12 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasRole('verwaltung') || $this->isAdmin();
     }
 
+    /** Sammelbestellung beim Rüsthaus (nur Stämme); Admins ebenso. */
+    public function isSammelbestellung(): bool
+    {
+        return $this->hasRole('sammelbestellung') || $this->isAdmin();
+    }
+
     /** Kasse (Mitgliedsbeiträge); Admins ebenso. */
     public function isKasse(): bool
     {

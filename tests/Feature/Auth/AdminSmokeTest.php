@@ -38,14 +38,16 @@ class AdminSmokeTest extends TestCase
         Features::setzen(Features::MITGLIEDSBEITRAEGE, true);
         Features::setzen(Features::NACHRICHTEN, true);
         Features::setzen(Features::ZAHLUNGEN, true);
+        Features::setzen(Features::SAMMELBESTELLUNG, true);
         $kasse = Features::enabled(Features::MITGLIEDSBEITRAEGE);
         $this->get('/admin')->assertOk();
         $checked = 0;
 
         foreach ($panel->getResources() as $resource) {
             foreach (['index', 'create'] as $page) {
-                // Gruppenstunden gibt es nur auf Stammes-Websites; alles andere muss für Super-Admins erreichbar sein.
-                $nurStamm = $resource === GruppenstundeResource::class && config('dpsg.site.level') !== 'Stamm';
+                // Gruppenstunden und Sammelbestellung gibt es nur auf Stammes-Websites; alles andere muss für Super-Admins erreichbar sein.
+                $nurStamm = ($resource === GruppenstundeResource::class || str_starts_with($resource, 'App\\Filament\\Resources\\Shop\\'))
+                    && config('dpsg.site.level') !== 'Stamm';
                 if (! $resource::hasPage($page) || (! $kasse && $resource::getNavigationGroup() === 'Kasse') || $nurStamm) {
                     continue;
                 }

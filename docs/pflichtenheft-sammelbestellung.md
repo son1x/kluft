@@ -1,6 +1,6 @@
 # Pflichtenheft: Sammelbestellung beim Rüsthaus („Schattenshop“)
 
-**Stand:** 19. Oktober 2026 · **Status:** Entwurf, 3. Fassung (Antworten des Stamms Roden eingearbeitet) · **Bezug:** Kluft (`docs/pflichtenheft.md`, `docs/beitraege.md`, `docs/mitgliederabgleich.md`)
+**Stand:** 23. Oktober 2026 · **Status:** 3. Fassung, Phase 1 umgesetzt (siehe Abschnitt 11) · **Bezug:** Kluft (`docs/pflichtenheft.md`, `docs/beitraege.md`, `docs/mitgliederabgleich.md`)
 
 Mitglieder des Stamms bzw. ihre Erziehungsberechtigten bestellen Kluft,
 Halstuch, Aufnäher und andere Artikel aus dem Rüsthaus über die
@@ -263,6 +263,15 @@ Abgenommen ist die Funktion, wenn in Roden auf einer Testrunde:
 | **2** | NaMi-Prüfung, Erinnerung und Storno zum Bestelldatum, Ausgabeliste und -scheine als PDF mit Unterschrift, Abhaken durch Verwaltung, Rüsthaus-Rechnung, Löschfrist | Ablauf vollständig. |
 | **3** | Zahlungsbaustein mit Stripe (SB-91), gemeinsam mit Veranstaltungen nach Absprache mit der Haupt-Sitzung | Online-Zahlung. |
 | später | Lagerbestand des Stamms, Kontoauszug-Import, Übernahme in den Einrichtungsassistenten für andere Stämme | nach Bedarf |
+
+**Stand der Umsetzung (23.10.2026):** Phase 1 ist gebaut. Öffentlich
+unter `/bestellen`, im Backend unter „Sammelbestellung“ (Artikel,
+Sperrliste, Bestellrunden, Bestellungen). Freie Artikel bestätigt die
+Sammelbestellung mit Preis; danach geht die Nachforderung raus. Die
+Sammelliste (CSV) enthält nur bestätigte und bezahlte Positionen.
+Rolle `sammelbestellung` (Haupt-Vorschlag war `material`). Zahlungen
+laufen über den Baustein „Zahlungen“ mit Präfix `RH`, fällig zum
+Bestelldatum.
 
 Für andere Stämme gilt die Funktion genauso. Sie ist standardmäßig aus und
 wird je Stamm unter „Verwaltung → Funktionen“ eingeschaltet.

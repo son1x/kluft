@@ -52,6 +52,8 @@ class Features
 
     public const ZAHLUNGEN = 'zahlungen';
 
+    public const SAMMELBESTELLUNG = 'sammelbestellung';
+
     private const CACHE_KEY = 'features.schalter';
 
     /**
@@ -80,6 +82,7 @@ class Features
         self::MAILFORMULAR => ['bereich' => 'Kontakt', 'label' => 'E-Mail-Adressen öffnen ein Formular', 'text' => 'Ein Klick auf eine E-Mail-Adresse der Website (Personen, Kontakt, eigene Domain im Seitentext) öffnet ein Formular an genau diese Adresse statt des Mailprogramms; die Adresse bleibt daneben sichtbar. Die Nachricht geht per Mail an die Person und liegt mit dem Nachrichten-Eingang zusätzlich im Backend.', 'standard' => false, 'braucht' => 'Nachrichten-Eingang (für die Kopie)'],
         self::MITGLIEDSBEITRAEGE => ['ebene' => 'Stamm', 'bereich' => 'Kasse', 'label' => 'Mitgliedsbeiträge', 'text' => 'Kasse → Mitgliedsbeiträge: Mitglieder je Halbjahr aus NaMi, offene und bezahlte Beiträge, Abgleich mit der Rechnung des Bundesverbands. Sichtbar nur mit der Rolle „Kasse“ (oder Admin).', 'standard' => false, 'braucht' => 'MITGLIEDER_DRIVER=nami'],
         self::ZAHLUNGEN => ['bereich' => 'Kasse', 'label' => 'Zahlungen', 'text' => 'Kasse → Zahlungen: Forderungen mit Zahlungsaufforderung per Mail (Überweisung mit GiroCode), Zahlungseingang, Erstattung und Storno; Bankverbindung der Gliederung. Grundlage für Module wie die Sammelbestellung. Sichtbar für Kasse (Stamm) bzw. Verwaltung und Admins.', 'standard' => false],
+        self::SAMMELBESTELLUNG => ['ab' => 4, 'ebene' => 'Stamm', 'bereich' => 'Kasse', 'label' => 'Sammelbestellung (Rüsthaus)', 'text' => 'Mitglieder bzw. Eltern bestellen Kluft, Halstuch und andere Rüsthaus-Artikel über /bestellen; die Sammelbestellerin gibt Artikel frei, öffnet Runden und bestellt gesammelt. Bezahlt wird vorab über „Zahlungen“. Rolle „Sammelbestellung“ (oder Admin).', 'standard' => false, 'braucht' => 'Zahlungen mit Bankverbindung'],
         self::PUSH => ['ab' => 5, 'bereich' => 'Backend', 'label' => 'Push-Nachrichten (ntfy)', 'text' => '„Mein Konto → Meine Push-Nachrichten“ und Versand aufs Handy.', 'standard' => true],
         self::CODE_LOGIN => ['bereich' => 'Backend', 'label' => 'Anmeldung per E-Mail-Code', 'text' => 'Redaktion ohne Microsoft 365: Zugänge für Personen oder Rollen (Funktionspostfach, z. B. „Stammesvorstand“), Anmeldung mit Einmalcode per E-Mail. Microsoft 365 bleibt daneben möglich.', 'standard' => false],
         self::WP_IMPORT => ['ab' => 3, 'bereich' => 'Backend', 'label' => 'WordPress-Import', 'text' => 'Übernahme von Seiten und Beiträgen aus einer WordPress-Website.', 'standard' => false],

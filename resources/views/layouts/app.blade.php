@@ -259,7 +259,7 @@
                         <li><a href="{{ url('/meine-anmeldungen') }}" class="hover:underline">Meine Anmeldungen</a></li>
                     @endif
                     <li>
-                        <button type="button" onclick="window.dispatchEvent(new CustomEvent('open-consent-settings'))" class="hover:underline">Datenschutz-Einstellungen</button>
+                        <button type="button" x-data @click="$dispatch('open-consent-settings')" class="hover:underline">Datenschutz-Einstellungen</button>
                     </li>
                     <li><a href="{{ url('/admin') }}" class="hover:underline">Redaktions-Login</a></li>
                     <li><a href="{{ url('/status') }}" class="hover:underline">Systemstatus</a></li>

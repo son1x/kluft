@@ -35,6 +35,14 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-10-23 – Stammes → Haupt: CSP blockiert Inline-Skripte und onclick (gemeinsamer Kern)
+Status: offen (auch direkt gemeldet)
+
+Die CSP (`script-src 'self' 'unsafe-eval'`) blockiert `<script>` im Blade und Inline-Handler wie `onclick`/`onsubmit`. Gefunden über Roden: Das Bestellformular der Sammelbestellung war tot.
+- **Sammelbestellung:** Das Formular ist jetzt eine Alpine-Komponente in `resources/js/shop-bestellung.js` (registriert in `app.js`). Die Storno-Rückfrage läuft über `x-data @submit`.
+- **Kern, `layouts/app.blade.php` Zeile 262:** Der Footer-Knopf „Datenschutz-Einstellungen“ hatte `onclick`, hat also nie etwas geöffnet. Jetzt `x-data @click="$dispatch('open-consent-settings')"`, im Browser geprüft.
+- **Bitte:** Neue Skripte nur über Vite/Alpine bauen. Sonst finde ich keine weiteren `onclick`/`onsubmit`/`<script>` in `resources/views`.
+
 ### 2026-10-23 – Stammes → Haupt: Sammelbestellung Phase 2 und Sets (gemeinsamer Kern)
 Status: offen (auch direkt gemeldet)
 

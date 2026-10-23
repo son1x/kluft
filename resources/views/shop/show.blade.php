@@ -48,7 +48,7 @@
         @endforeach
 
         @if (! $bestellung->storniert_am && $bestellung->runde->istOffen() && $bestellung->zahlungen->sum('bezahlt_cent') === 0)
-            <form method="post" action="{{ route('shop.stornieren', $token) }}" class="mt-8" onsubmit="return confirm('Bestellung wirklich stornieren?')">
+            <form method="post" action="{{ route('shop.stornieren', $token) }}" class="mt-8" x-data @submit="if (! confirm('Bestellung wirklich stornieren?')) $event.preventDefault()">
                 @csrf
                 <button type="submit" class="border border-dpsg-rot px-4 py-2 font-bold text-dpsg-rot hover:bg-dpsg-rot hover:text-white">Bestellung stornieren</button>
             </form>

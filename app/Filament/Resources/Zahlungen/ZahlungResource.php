@@ -81,12 +81,17 @@ class ZahlungResource extends Resource
         $user = fn () => Filament::auth()->user();
 
         return $table
+            ->modifyQueryUsing(fn (Builder $query) => $query->with('zahlbar'))
             ->defaultSort('created_at', 'desc')
             ->emptyStateHeading('Noch keine Zahlungen')
             ->emptyStateDescription('Zahlungen legen die Module an (z. B. Sammelbestellung). Oben „Neue Forderung“ schickt eine Zahlungsaufforderung von Hand.')
             ->columns([
                 TextColumn::make('referenz')->label('Verwendungszweck')->searchable()->copyable()->fontFamily('mono')
                     ->description(fn (Zahlung $record) => $record->zweck),
+                TextColumn::make('fuer')->label('Für')->wrap()
+                    ->state(fn (Zahlung $record) => self::fuer($record))
+                    ->description(fn (Zahlung $record) => self::hinweis($record))
+                    ->placeholder('–'),
                 TextColumn::make('betrag_cent')->label('Betrag')->formatStateUsing($euro)->alignEnd()
                     ->summarize(Sum::make()->label('Summe')->formatStateUsing(fn ($state) => Zahlungen::euro((int) $state))),
                 TextColumn::make('bezahlt_cent')->label('Eingegangen')->formatStateUsing($euro)->placeholder('–')->alignEnd()
@@ -181,6 +186,25 @@ class ZahlungResource extends Resource
                         Notification::make()->title("{$n} Zahlungen als bezahlt markiert.")->success()->send();
                     }),
             ]);
+    }
+
+    /** Wer/wofür, vom Auslöser (z. B. Anmeldung: Name und Veranstaltung); nichts davon steht in `zahlungen`. */
+    private static function fuer(Zahlung $zahlung): ?string
+    {
+        $zahlbar = $zahlung->zahlbar;
+        if ($zahlbar === null) {
+            return $zahlung->zahlbar_type ? 'gelöscht' : null;
+        }
+
+        return method_exists($zahlbar, 'zahlungsLabel') ? $zahlbar->zahlungsLabel() : class_basename($zahlbar);
+    }
+
+    private static function hinweis(Zahlung $zahlung): ?string
+    {
+        $zahlbar = $zahlung->zahlbar;
+        $hinweis = $zahlbar !== null && method_exists($zahlbar, 'zahlungsHinweis') ? $zahlbar->zahlungsHinweis() : null;
+
+        return $hinweis !== null && in_array($zahlung->status, ['bezahlt', 'teilweise'], true) ? $hinweis : null;
     }
 
     public static function getPages(): array

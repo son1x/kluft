@@ -22,6 +22,23 @@ Ebenen (Stamm, Bezirk, Diözese) gedacht.
 - **Neue Forderung:** für Einzelfälle ohne Modul (Zweck, Betrag, Fälligkeit). Auf Wunsch geht sofort die Zahlungsaufforderung an Name und E-Mail; beides wird nicht gespeichert.
 - **Protokoll:** Jede Aktion steht im Protokoll.
 
+## Teilnahmebeiträge von Veranstaltungen
+
+- **Preisstufen:** Bei einer Veranstaltung unter „Anmeldung“ → **Teilnahmebeitrag**, z. B. „Mitglied 120 €“, „Nichtmitglied 140 €“, „Geschwisterkind 100 €“. Leer heißt kein Beitrag. Dazu optional die **Zahlungsfrist** in Tagen (Standard 14, höchstens bis zum Vortag des Beginns).
+- **Anmeldung:** Die Seite zeigt die Stufen. Wer sich anmeldet, wählt eine; bei nur einer Stufe ist sie vorausgewählt.
+- **Forderung:** entsteht erst, wenn der Platz fest ist:
+  - nach der Bestätigung per Link;
+  - beim Nachrücken von der Warteliste;
+  - beim Eintragen im Backend mit Status „bestätigt“.
+
+  Dann geht die Zahlungsaufforderung mit GiroCode an die angegebene E-Mail. Verwendungszweck `VA-2026-0041`, Zweck „Veranstaltung (Datum) – Preisstufe“.
+- **Warteliste:** Wer auf der Warteliste steht, zahlt nichts. Wird eine bestätigte Anmeldung auf die Warteliste verschoben, wird die offene Forderung storniert.
+- **Storno:** Eine offene Forderung wird storniert. Eine bezahlte bleibt stehen und erscheint unter „Kasse → Zahlungen“ mit dem Hinweis „Anmeldung storniert – Erstattung prüfen“; die Kasse erfasst dann die Erstattung.
+- **Teilnehmendenliste:** Spalten „Beitrag“ und „Zahlung“ (Stand, Verwendungszweck), dazu die Aktion **Beitrag**: Preisstufe festlegen oder ändern (eine offene Forderung wird dann ersetzt) und die Aufforderung erneut schicken. Der Export enthält Teilnahmebeitrag, Betrag, Zahlungsstand und Verwendungszweck.
+- **Meine Anmeldungen:** zeigt Beitrag und Stand, bei offener Zahlung auch Kontodaten, Verwendungszweck und GiroCode.
+- **Ohne Funktion „Zahlungen“ oder ohne Bankverbindung:** Der Beitrag steht nur als Information an der Anmeldung, es entstehen keine Forderungen. Wird die Funktion später eingeschaltet, legt die Aktion „Beitrag“ die Forderung nachträglich an.
+- **Später geplant:** Ratenzahlung und Kostenteilung (z. B. Zuschuss des Bezirks).
+
 ## Zahlungsaufforderung
 
 Die Mail enthält:
@@ -62,7 +79,7 @@ Event::listen(\App\Events\ZahlungEingegangen::class, function ($e) {
   |---|---|
   | `ZA` | von Hand |
   | `RH` | Rüsthaus / Sammelbestellung |
-  | `VA` | Veranstaltungen |
+  | `VA` | Teilnahmebeiträge von Veranstaltungen (`App\Support\Teilnahmebeitraege`) |
   | `MB` | Mitgliedsbeiträge |
 
 ## Datenschutz

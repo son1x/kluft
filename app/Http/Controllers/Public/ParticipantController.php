@@ -35,7 +35,7 @@ class ParticipantController extends Controller
         $registrations = EventRegistration::query()
             ->where('email', $email)
             ->whereIn('status', ['pending', 'confirmed', 'waitlist', 'cancelled'])
-            ->with(['event', 'documents'])
+            ->with(['event', 'documents', 'zahlungen'])
             ->get()
             ->sortByDesc(fn (EventRegistration $r) => $r->event->starts_at);
 

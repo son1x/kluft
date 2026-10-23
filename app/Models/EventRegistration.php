@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -33,6 +34,7 @@ class EventRegistration extends Model
         'event_id', 'status', 'first_name', 'last_name', 'email', 'birth_year', 'data',
         'guardian_name', 'guardian_consent', 'consent_text_version', 'consent_at',
         'confirm_token_hash', 'confirmed_at', 'cancel_token_hash', 'cancelled_at', 'purge_at',
+        'preis_bezeichnung', 'preis_cent',
     ];
 
     // member_* setzt nur der Mitgliederabgleich (forceFill), nie ein Formular.
@@ -53,6 +55,7 @@ class EventRegistration extends Model
             'member_checked_at' => 'datetime',
             'member_own_group' => 'boolean',
             'certificate_approved_at' => 'datetime',
+            'preis_cent' => 'integer',
         ];
     }
 
@@ -118,5 +121,39 @@ class EventRegistration extends Model
     public function isGast(): bool
     {
         return ($this->data[Event::HERKUNFT] ?? null) === 'gast';
+    }
+
+    /**
+     * Zahlungen zum Teilnahmebeitrag (Baustein „Zahlungen“).
+     *
+     * @return MorphMany<Zahlung, $this>
+     */
+    public function zahlungen(): MorphMany
+    {
+        return $this->morphMany(Zahlung::class, 'zahlbar');
+    }
+
+    /** Die maßgebliche Zahlung: die jüngste, die nicht storniert ist. */
+    public function zahlung(): ?Zahlung
+    {
+        return $this->zahlungen->where('status', '!=', 'storniert')->sortByDesc('id')->first();
+    }
+
+    /** Zahlungsstand für Listen: offen, teilweise, bezahlt, erstattet – oder null. */
+    public function zahlungsstand(): ?string
+    {
+        return $this->zahlung()?->status;
+    }
+
+    /** Für die Liste „Kasse → Zahlungen“: wer und wofür. */
+    public function zahlungsLabel(): string
+    {
+        return $this->fullName().' – '.$this->event?->title;
+    }
+
+    /** Hinweis für die Kasse, z. B. bei bezahlter, aber stornierter Anmeldung. */
+    public function zahlungsHinweis(): ?string
+    {
+        return $this->status === 'cancelled' ? 'Anmeldung storniert – Erstattung prüfen' : null;
     }
 }

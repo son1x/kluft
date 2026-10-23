@@ -74,6 +74,11 @@ class EventController extends Controller
             'guardian_consent' => ['accepted_if:by_guardian,1'],
             'consent' => ['accepted'],
         ];
+        // Teilnahmebeitrag: eine der Preisstufen wählen (Index in der Liste).
+        $preise = $event->preise();
+        if ($preise !== []) {
+            $rules['preis'] = ['required', Rule::in(array_map('strval', array_keys($preise)))];
+        }
 
         foreach ($fields as $key => $field) {
             // Tage: „ganze Zeit“ oder einzelne Tage (Checkboxen).
@@ -106,6 +111,7 @@ class EventController extends Controller
             'plz.regex' => 'Bitte gib eine gültige Postleitzahl an (4 oder 5 Ziffern).',
             'required_if' => 'Bitte wähle mindestens einen Tag aus.',
             'in' => 'Bitte wähle eine der angebotenen Möglichkeiten.',
+            'preis.required' => 'Bitte wähle den passenden Teilnahmebeitrag.',
         ]);
 
         // Unter 16 nur mit Einwilligung der Personensorgeberechtigten (F-EV-14).
@@ -131,6 +137,7 @@ class EventController extends Controller
                 ->all(),
             'guardian_name' => $request->boolean('by_guardian') ? $data['guardian_name'] : null,
             'guardian_consent' => $request->boolean('by_guardian') && $request->boolean('guardian_consent'),
+            'preis' => $preise !== [] ? $preise[(int) $data['preis']] : null,
         ]);
 
         return $done();

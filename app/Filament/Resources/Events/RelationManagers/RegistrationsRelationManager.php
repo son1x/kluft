@@ -10,6 +10,7 @@ use App\Models\EventRegistration;
 use App\Models\Gruppierung;
 use App\Models\RegistrationDocument;
 use App\Models\User;
+use App\Models\Zahlung;
 use App\Services\EventRegistrations;
 use App\Services\Mitglieder\MitgliederAbgleich;
 use App\Services\Mitglieder\Mitgliederverzeichnis;
@@ -21,6 +22,8 @@ use App\Services\TeilnehmendenListe;
 use App\Support\AuditLogger;
 use App\Support\Features;
 use App\Support\NamiAmpel;
+use App\Support\Teilnahmebeitraege;
+use App\Support\Zahlungen;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkAction;
@@ -79,7 +82,7 @@ class RegistrationsRelationManager extends RelationManager
         $fields = $event->formFields();
 
         return $table
-            ->modifyQueryUsing(fn ($query) => $query->with('documents'))
+            ->modifyQueryUsing(fn ($query) => $query->with(['documents', 'zahlungen']))
             ->description(fn () => $this->attendancePerDay($event, $fields))
             ->recordTitle(fn (EventRegistration $record) => $record->fullName())
             ->columns([
@@ -97,6 +100,18 @@ class RegistrationsRelationManager extends RelationManager
                         'cancelled' => 'danger',
                         default => 'gray',
                     }),
+                TextColumn::make('preis_cent')->label('Beitrag')->alignEnd()
+                    ->formatStateUsing(fn (?int $state) => Zahlungen::euro($state))->placeholder('–')
+                    ->description(fn (EventRegistration $record) => $record->preis_bezeichnung)
+                    ->visible($event->hatTeilnahmebeitrag()),
+                TextColumn::make('zahlung')->label('Zahlung')->badge()
+                    ->state(fn (EventRegistration $record) => $record->zahlungsstand() ?? 'keine')
+                    ->formatStateUsing(fn (string $state) => Zahlung::STATUS[$state] ?? 'keine Forderung')
+                    ->color(fn (string $state) => match ($state) {
+                        'bezahlt' => 'success', 'teilweise' => 'warning', 'offen' => 'danger', default => 'gray',
+                    })
+                    ->description(fn (EventRegistration $record) => $record->zahlung()?->referenz)
+                    ->visible($event->hatTeilnahmebeitrag()),
                 ...collect($fields)->filter(fn (array $f) => $f['type'] === 'days')
                     ->map(fn (array $f, string $key) => TextColumn::make("data.{$key}")->label('Tage')
                         ->state(fn (EventRegistration $record) => $event->fieldValueLabel($f, $record->data[$key] ?? null))
@@ -161,6 +176,7 @@ class RegistrationsRelationManager extends RelationManager
                             TextInput::make('email')->label('E-Mail-Adresse')->email()->maxLength(255)
                                 ->helperText('Optional. Ohne Adresse gibt es keine E-Mails und keinen Zugang zu „Meine Anmeldungen“.'),
                             ...$this->eventFieldInputs($event),
+                            ...$this->preisInputs($event),
                             ...$this->manualStatusInputs($event),
                         ])
                         ->action(function (array $data) {
@@ -171,6 +187,7 @@ class RegistrationsRelationManager extends RelationManager
                                 'first_name' => $data['first_name'], 'last_name' => $data['last_name'], 'email' => $data['email'] ?? '',
                                 'birth_year' => filled($data['birth_year'] ?? null) ? (int) $data['birth_year'] : null,
                                 'data' => (array) ($data['data'] ?? []),
+                                'preis' => filled($data['preis'] ?? null) ? ($event->preise()[(int) $data['preis']] ?? null) : null,
                             ];
                             [$result] = app(EventRegistrations::class)->addManually($event, $person, (string) $data['status'], (bool) ($data['notify'] ?? false), self::namiNutzer());
                             $this->afterManualAdd($event);
@@ -420,6 +437,48 @@ class RegistrationsRelationManager extends RelationManager
                         AuditLogger::log('registration.member_decision', Filament::auth()->user(), EventRegistration::class, $record->getKey(), request());
                         Notification::make()->title('Gespeichert.')->success()->send();
                     }),
+                Action::make('beitrag')
+                    ->label('Beitrag')
+                    ->icon('heroicon-o-banknotes')
+                    ->color('gray')
+                    ->visible(fn (EventRegistration $record) => $event->hatTeilnahmebeitrag() && in_array($record->status, ['confirmed', 'waitlist'], true)
+                        && ! in_array($record->zahlungsstand(), ['bezahlt', 'teilweise', 'erstattet'], true))
+                    ->modalHeading(fn (EventRegistration $record) => 'Teilnahmebeitrag – '.$record->fullName())
+                    ->modalDescription(fn (EventRegistration $record) => Teilnahmebeitraege::aktiv()
+                        ? ($record->zahlungsstand() === 'offen'
+                            ? 'Eine Forderung ist offen ('.$record->zahlung()?->referenz.'). Ändern storniert sie und legt eine neue an; „Aufforderung schicken“ verschickt die Mail mit GiroCode erneut.'
+                            : 'Bei bestätigter Anmeldung entsteht eine Forderung; auf Wunsch geht die Zahlungsaufforderung mit GiroCode raus.')
+                        : 'Zahlungsaufforderungen gibt es, sobald die Funktion „Zahlungen“ an und eine Bankverbindung hinterlegt ist.')
+                    ->fillForm(fn (EventRegistration $record) => [
+                        'preis' => ($i = collect($event->preise())->search(fn (array $p) => $p['bezeichnung'] === $record->preis_bezeichnung && $p['cent'] === $record->preis_cent)) === false ? null : $i,
+                        'senden' => filled($record->email),
+                    ])
+                    ->schema(fn () => [
+                        ...$this->preisInputs($event, true),
+                        Toggle::make('senden')->label('Zahlungsaufforderung per E-Mail schicken')->visible(fn () => Teilnahmebeitraege::aktiv()),
+                    ])
+                    ->action(function (EventRegistration $record, array $data) {
+                        $event = $this->veranstaltung();
+                        abort_unless(Filament::auth()->user()?->can('manageParticipants', $event), 403);
+                        $preis = $event->preise()[(int) $data['preis']] ?? null;
+                        if ($preis === null) {
+                            return;
+                        }
+                        $offen = $record->zahlung();
+                        $geaendert = $record->preis_bezeichnung !== $preis['bezeichnung'] || $record->preis_cent !== $preis['cent'];
+                        $record->update(['preis_bezeichnung' => $preis['bezeichnung'], 'preis_cent' => $preis['cent']]);
+                        if ($offen && $geaendert) {
+                            Teilnahmebeitraege::stornieren($record, 'Beitrag geändert');
+                            $offen = null;
+                        }
+                        if ($offen === null) {
+                            Teilnahmebeitraege::fordern($record->fresh(), (bool) ($data['senden'] ?? false));
+                        } elseif (($data['senden'] ?? false) && filled($record->email)) {
+                            Zahlungen::auffordern($offen, $record->email, $record->guardian_name ?: $record->fullName(), 'Teilnehmende Person: '.$record->fullName().'.');
+                        }
+                        AuditLogger::log('registration.beitrag', Filament::auth()->user(), EventRegistration::class, $record->getKey(), request());
+                        Notification::make()->title('Gespeichert.')->success()->send();
+                    }),
                 Action::make('promote')
                     ->label('Platz geben')
                     ->icon('heroicon-o-check-circle')
@@ -580,6 +639,21 @@ class RegistrationsRelationManager extends RelationManager
         AuditLogger::log("registration.{$method}", Filament::auth()->user(), EventRegistration::class, $record->getKey(), request());
 
         Notification::make()->title('Gespeichert – die Person wurde per E-Mail informiert.')->success()->send();
+    }
+
+    /**
+     * Auswahl der Preisstufe (nur bei Veranstaltungen mit Teilnahmebeitrag).
+     *
+     * @return list<Component>
+     */
+    private function preisInputs(Event $event, bool $pflicht = false): array
+    {
+        $optionen = collect($event->preise())->map(fn (array $p) => $p['bezeichnung'].' – '.Zahlungen::euro($p['cent']))->all();
+
+        return $optionen === [] ? [] : [
+            Select::make('preis')->label('Teilnahmebeitrag')->options($optionen)->required($pflicht)
+                ->placeholder('ohne Beitrag')->helperText($pflicht ? null : 'Bei bestätigter Anmeldung entsteht daraus eine Forderung (Funktion „Zahlungen“).'),
+        ];
     }
 
     private static function namiNutzer(): ?User

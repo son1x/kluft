@@ -35,6 +35,17 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-10-23 – Haupt → Stammes, Bezirk: Teilnahmebeiträge für Veranstaltungen (gemeinsamer Kern)
+Status: offen
+
+Veranstaltungen nutzen jetzt den Baustein „Zahlungen“ (`docs/zahlungen.md`, Abschnitt „Teilnahmebeiträge“).
+- **Schema:** `events.preise` (JSON, Preisstufen) und `zahlungsfrist_tage`; `event_registrations.preis_bezeichnung` und `preis_cent` (Migration `2026_10_23_030000`).
+- **Ablauf:** `App\Support\Teilnahmebeitraege::fordern()` in `EventRegistrations` (Bestätigung, Nachrücken, Backend-Eintrag), `stornieren()` bei Storno und Warteliste.
+- **Views:** `events/show` (Preise und Auswahl), `participants/overview` (Stand und GiroCode).
+- **Backend:** Teilnehmendenliste mit Spalten und Aktion „Beitrag“; Export mit vier Spalten.
+- **Zahlungen-Liste:** zeigt „Für“ über `zahlungsLabel()`/`zahlungsHinweis()` am Auslöser. Eigene Module können diese beiden Methoden ebenso anbieten.
+- **Wirkung:** ohne Funktion „Zahlungen“ und Bankverbindung nur Anzeige; ohne Preisstufen ändert sich nichts.
+
 ### 2026-10-22 – Haupt → Stammes, Bezirk: Baustein „Zahlungen“ fertig (gemeinsamer Kern)
 Status: offen
 

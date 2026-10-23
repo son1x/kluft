@@ -9,6 +9,7 @@ use App\Models\EventRegistration;
 use App\Models\User;
 use App\Services\Mitglieder\NamiVerzeichnis;
 use App\Support\AuditLogger;
+use App\Support\Teilnahmebeitraege;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -27,7 +28,7 @@ class EventRegistrations
     public const CONFIRM_HOURS = 48;
 
     /**
-     * @param  array{first_name: string, last_name: string, email: string, birth_year?: int|null, data?: array<string, mixed>, guardian_name?: string|null, guardian_consent?: bool}  $input
+     * @param  array{first_name: string, last_name: string, email: string, birth_year?: int|null, data?: array<string, mixed>, guardian_name?: string|null, guardian_consent?: bool, preis?: array{bezeichnung: string, cent: int}|null}  $input
      */
     public function register(Event $event, array $input): void
     {
@@ -57,6 +58,8 @@ class EventRegistrations
             'data' => array_filter($input['data'] ?? [], fn ($v) => filled($v)),
             'guardian_name' => $input['guardian_name'] ?? null,
             'guardian_consent' => (bool) ($input['guardian_consent'] ?? false),
+            'preis_bezeichnung' => $input['preis']['bezeichnung'] ?? null,
+            'preis_cent' => $input['preis']['cent'] ?? null,
             'consent_text_version' => $event->consentVersion(),
             'consent_at' => now(),
             'confirm_token_hash' => EventRegistration::hashToken($token),
@@ -73,7 +76,7 @@ class EventRegistrations
      * „waitlist“. Doppelte (gleicher Name und ggf. gleiche E-Mail) werden
      * übersprungen. Ergebnis je Person: confirmed, waitlist oder duplicate.
      *
-     * @param  array{first_name: string, last_name: string, email?: string|null, birth_year?: int|null, data?: array<string, mixed>}  $person
+     * @param  array{first_name: string, last_name: string, email?: string|null, birth_year?: int|null, data?: array<string, mixed>, preis?: array{bezeichnung: string, cent: int}|null}  $person
      * @return array{0: string, 1: EventRegistration|null}
      */
     public function addManually(Event $event, array $person, string $statusWahl, bool $notify, ?User $by = null): array
@@ -108,6 +111,8 @@ class EventRegistrations
                 'email' => $email,
                 'birth_year' => $person['birth_year'] ?? null,
                 'data' => array_filter($person['data'] ?? [], fn ($v) => filled($v)),
+                'preis_bezeichnung' => $person['preis']['bezeichnung'] ?? null,
+                'preis_cent' => $person['preis']['cent'] ?? null,
                 // Keine Online-Einwilligung: im Backend eingetragen (wer, steht im Audit-Log).
                 'consent_text_version' => self::MANUELL,
                 'consent_at' => now(),
@@ -124,6 +129,7 @@ class EventRegistrations
             if ($notify) {
                 $this->send($registration, $result, $cancelToken);
             }
+            Teilnahmebeitraege::fordern($registration, $notify);
         }
 
         return [$result, $registration];
@@ -185,6 +191,7 @@ class EventRegistrations
 
         $this->send($registration, $result, $cancelToken);
         app(PushNotifier::class)->registration($registration, $result);
+        Teilnahmebeitraege::fordern($registration);
 
         // Automatisch nur mit technischem Konto; bei persönlicher NaMi-Anmeldung
         // prüft die Veranstaltungsleitung unter „Teilnehmende“.
@@ -210,6 +217,7 @@ class EventRegistrations
 
         $this->send($registration, 'cancelled');
         app(PushNotifier::class)->registration($registration, 'cancelled');
+        Teilnahmebeitraege::stornieren($registration, 'Anmeldung storniert');
 
         if ($wasConfirmed) {
             $this->fillFromWaitlist($registration->event);
@@ -236,12 +244,14 @@ class EventRegistrations
     {
         $registration->update(['status' => 'confirmed']);
         $this->send($registration, 'promoted', $this->issueCancelToken($registration));
+        Teilnahmebeitraege::fordern($registration);
     }
 
     public function moveToWaitlist(EventRegistration $registration): void
     {
         $registration->update(['status' => 'waitlist']);
         $this->send($registration, 'waitlist', $this->issueCancelToken($registration));
+        Teilnahmebeitraege::stornieren($registration, 'Auf die Warteliste verschoben');
     }
 
     /**

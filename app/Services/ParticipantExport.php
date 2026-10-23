@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Event;
 use App\Models\EventRegistration;
+use App\Models\Zahlung;
 use App\Services\Mitglieder\MitgliederAbgleich;
 use OpenSpout\Common\Entity\Row;
 use OpenSpout\Common\Entity\Style\Style;
@@ -28,7 +29,9 @@ class ParticipantExport
 
         $member = $event->checksMembers() ? ['Mitglied', 'Mitgliedsnummer', 'Stamm (Mitgliederverwaltung)', ...($event->nurFuerMitglieder() ? ['Eigene Gruppierung'] : [])] : [];
 
-        return ['Nr.', 'Status', 'Vorname', 'Nachname', 'E-Mail', ...$fields, ...$member, 'Angemeldet durch (sorgeberechtigt)', 'Bestätigt am'];
+        $beitrag = $event->hatTeilnahmebeitrag() ? ['Teilnahmebeitrag', 'Betrag', 'Zahlung', 'Verwendungszweck'] : [];
+
+        return ['Nr.', 'Status', 'Vorname', 'Nachname', 'E-Mail', ...$fields, ...$member, ...$beitrag, 'Angemeldet durch (sorgeberechtigt)', 'Bestätigt am'];
     }
 
     /**
@@ -43,6 +46,7 @@ class ParticipantExport
             ->whereIn('status', ['confirmed', 'waitlist', 'cancelled'])
             ->orderByRaw("case status when 'confirmed' then 0 when 'waitlist' then 1 else 2 end")
             ->orderBy('confirmed_at')
+            ->with('zahlungen')
             ->get()
             ->values()
             ->map(function (EventRegistration $r, int $i) use ($fields, $event, $checksMembers) {
@@ -68,6 +72,12 @@ class ParticipantExport
                     ...($checksMembers && $event->nurFuerMitglieder() ? [match ($r->member_own_group) {
                         true => 'ja', false => 'nein', default => ''
                     }] : []),
+                    ...($event->hatTeilnahmebeitrag() ? [
+                        $r->preis_bezeichnung,
+                        $r->preis_cent !== null ? number_format($r->preis_cent / 100, 2, ',', '') : null,
+                        Zahlung::STATUS[$r->zahlungsstand() ?? ''] ?? '',
+                        $r->zahlung()?->referenz,
+                    ] : []),
                     $r->guardian_name,
                     $r->confirmed_at?->format('d.m.Y H:i'),
                 ]);

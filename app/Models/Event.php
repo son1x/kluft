@@ -37,7 +37,7 @@ class Event extends Model
         'stage', 'section', 'target_group', 'cover_media_id', 'contact_name', 'contact_email',
         'cost_info', 'reg_opens_at', 'reg_closes_at', 'capacity', 'waitlist_enabled', 'adults_only', 'member_check', 'member_gruppierung_id',
         'status', 'form_fields', 'retention_days', 'created_by', 'calendar_uid',
-        'certificate_enabled', 'certificate_text', 'certificate_signer',
+        'certificate_enabled', 'certificate_text', 'certificate_signer', 'preise', 'zahlungsfrist_tage',
     ];
 
     protected function casts(): array
@@ -52,6 +52,8 @@ class Event extends Model
             'member_check' => 'boolean',
             'certificate_enabled' => 'boolean',
             'form_fields' => 'array',
+            'preise' => 'array',
+            'zahlungsfrist_tage' => 'integer',
             'capacity' => 'integer',
             'retention_days' => 'integer',
         ];
@@ -342,5 +344,34 @@ class Event extends Model
     {
         return $birthYear !== null
             && $this->starts_at->year - $birthYear <= config('dpsg.guardian_consent_age', 16);
+    }
+
+    /**
+     * Preisstufen des Teilnahmebeitrags (docs/zahlungen.md), z. B.
+     * „Mitglied“ 120 €, „Nichtmitglied“ 140 €. Leer = kein Beitrag.
+     *
+     * @return list<array{bezeichnung: string, cent: int}>
+     */
+    public function preise(): array
+    {
+        return collect((array) $this->preise)
+            ->filter(fn ($p) => is_array($p) && filled($p['bezeichnung'] ?? null) && (int) ($p['cent'] ?? 0) > 0)
+            ->map(fn (array $p) => ['bezeichnung' => mb_substr(trim((string) $p['bezeichnung']), 0, 100), 'cent' => (int) $p['cent']])
+            ->values()
+            ->all();
+    }
+
+    public function hatTeilnahmebeitrag(): bool
+    {
+        return $this->preise() !== [];
+    }
+
+    /** Zahlungsfrist ab heute (Standard 14 Tage), höchstens bis zum Vortag des Beginns. */
+    public function zahlungFaelligAm(): Carbon
+    {
+        $frist = now()->addDays($this->zahlungsfrist_tage ?: 14)->startOfDay();
+        $spaetestens = $this->starts_at?->copy()->subDay()->startOfDay();
+
+        return $spaetestens && $spaetestens->isFuture() && $spaetestens->lt($frist) ? $spaetestens : $frist;
     }
 }

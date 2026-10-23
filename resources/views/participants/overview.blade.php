@@ -59,6 +59,26 @@
                             <p class="mt-3 text-sm">Noch nicht bestätigt – bitte klicke auf den Link in der E-Mail, die wir dir nach der Anmeldung geschickt haben.</p>
                         @endif
 
+                        @if ($registration->preis_cent && in_array($registration->status, ['confirmed', 'waitlist', 'cancelled'], true))
+                            @php($zahlung = $registration->zahlung())
+                            <div class="mt-4 border-l-4 border-dpsg-hellbeige bg-surface-muted p-3 text-sm">
+                                <p><span class="font-bold">Teilnahmebeitrag:</span> {{ \App\Support\Zahlungen::euro($registration->preis_cent) }}@if ($registration->preis_bezeichnung) ({{ $registration->preis_bezeichnung }})@endif
+                                    @if ($zahlung) – <span class="font-bold">{{ \App\Models\Zahlung::STATUS[$zahlung->status] ?? $zahlung->status }}</span>@endif</p>
+                                @if ($zahlung && in_array($zahlung->status, ['offen', 'teilweise'], true) && ($konto = \App\Support\Zahlungen::konto()))
+                                    <div class="mt-2 flex flex-wrap items-start gap-4">
+                                        <dl class="grid grid-cols-[auto_1fr] gap-x-3">
+                                            <dt>Empfänger</dt><dd>{{ $konto['inhaber'] }}</dd>
+                                            <dt>IBAN</dt><dd class="font-mono">{{ trim(chunk_split($konto['iban'], 4, ' ')) }}</dd>
+                                            <dt>Betrag</dt><dd>{{ \App\Support\Zahlungen::euro($zahlung->offenCent()) }}</dd>
+                                            <dt>Verwendungszweck</dt><dd class="font-mono font-bold">{{ $zahlung->referenz }}</dd>
+                                            @if ($zahlung->faellig_am)<dt>Bis</dt><dd>{{ $zahlung->faellig_am->format('d.m.Y') }}</dd>@endif
+                                        </dl>
+                                        <img src="data:image/png;base64,{{ \App\Support\Zahlungen::weg($zahlung)->anfordern($zahlung)->qrPngBase64 }}" alt="GiroCode für die Überweisung" width="140" height="140" class="bg-white" />
+                                    </div>
+                                @endif
+                            </div>
+                        @endif
+
                         @if ($registration->certificateApproved() && ! $registration->uploadedCertificate())
                             <p class="mt-4">
                                 <a href="{{ route('participants.certificate', $registration) }}" class="inline-flex items-center gap-2 font-bold text-dpsg-blau underline hover:text-dpsg-rot">

@@ -16,6 +16,7 @@ Admins. Kurz und aus Sicht der Redaktion schreiben.
 - Stammes-Websites: eigene Seite „Leiter*in werden“ im Menü (Text im Backend anpassbar, abschaltbar als Entwurf); der Aufruf zur Mitarbeit steht nicht mehr auf jeder Stufenseite.
 - E-Mail-Adressen auf der Website öffnen auf Wunsch ein Formular an genau diese Person statt des Mailprogramms; mit dem Nachrichten-Eingang bleibt eine Kopie im Backend (Verwaltung → Funktionen).
 - Kasse → Zahlungen: Forderungen mit Zahlungsaufforderung per Mail und GiroCode für die Banking-App, Zahlungseingang, Erstattung, Storno; Bankverbindung im Backend (Verwaltung → Funktionen → Zahlungen).
+- Veranstaltungen mit Teilnahmebeitrag: Preisstufen je Veranstaltung, Auswahl bei der Anmeldung, Zahlungsaufforderung mit GiroCode nach der Bestätigung, Zahlungsstand in Teilnehmendenliste, Export und „Meine Anmeldungen“.
 - Stammes-Websites: Adressen der Leitenden auf Wunsch nach Vorname (vorname@…), auch für die Leitungsteams.
 - Stammes-Websites: Gruppenstunden unter „Verwaltung → Gruppenstunden“, auch mehrere Gruppen einer Stufe; sie erscheinen auf der Startseite („Unsere Gruppenstunden“) und auf der Stufenseite.
 - Stammes-Websites: Menü „Unsere Gruppen · Mitmachen · Über uns · Termine · Aktuelles“; „Termine“ heißt bei Diözese und Bezirk weiter „Veranstaltungen“, der Kalender steht im Stamm darunter.

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Events\Schemas;
 
+use App\Filament\Resources\Beitraege\BeitragResource;
 use App\Models\Event;
 use App\Models\Gruppierung;
 use App\Services\Mitglieder\MitgliederAbgleich;
@@ -9,9 +10,11 @@ use App\Services\Mitglieder\Mitgliederverzeichnis;
 use App\Services\Mitglieder\NamiVerzeichnis;
 use App\Support\Features;
 use App\Support\RoleCatalog;
+use App\Support\Teilnahmebeitraege;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -108,6 +111,25 @@ class EventForm
                         ->placeholder('Offen für alle')
                         ->helperText('Z. B. für Stammes- oder Bezirksveranstaltungen. Die Seite weist darauf hin; der Mitgliederabgleich markiert, wer zu einer anderen Gruppierung gehört. Niemand wird automatisch abgelehnt.')
                         ->visible(fn () => Features::enabled(Features::NUR_MITGLIEDER)),
+                    Repeater::make('preise')
+                        ->label('Teilnahmebeitrag')
+                        ->schema([
+                            TextInput::make('bezeichnung')->label('Bezeichnung')->required()->maxLength(100)->placeholder('z. B. Mitglied, Nichtmitglied, Geschwisterkind'),
+                            TextInput::make('cent')->label('Betrag')->suffix('€')->required()->rules(BeitragResource::EURO)->inputMode('decimal')
+                                ->formatStateUsing(fn ($state) => is_numeric($state) ? BeitragResource::alsEuro((int) $state) : $state)
+                                ->dehydrateStateUsing(fn ($state) => BeitragResource::alsCent($state)),
+                        ])
+                        ->columns(2)
+                        ->defaultItems(0)
+                        ->addActionLabel('Preisstufe hinzufügen')
+                        ->reorderable()
+                        ->columnSpan(2)
+                        ->helperText(fn () => 'Leer = kein Teilnahmebeitrag. Bei mehreren Stufen wählt die Person bei der Anmeldung. '
+                            .(Teilnahmebeitraege::aktiv()
+                                ? 'Nach der Bestätigung geht automatisch eine Zahlungsaufforderung mit GiroCode raus; den Stand sieht die Kasse unter „Kasse → Zahlungen“.'
+                                : 'Zahlungsaufforderungen gibt es, sobald unter Verwaltung → Funktionen „Zahlungen“ an ist und eine Bankverbindung hinterlegt ist; bis dahin steht der Betrag nur als Information an der Anmeldung.')),
+                    TextInput::make('zahlungsfrist_tage')->label('Zahlungsfrist (Tage)')->numeric()->minValue(1)->maxValue(120)->placeholder('14')
+                        ->helperText('Ab Bestätigung, höchstens bis zum Vortag der Veranstaltung.'),
                 ]),
 
             Section::make('Teilnahmebescheinigung')

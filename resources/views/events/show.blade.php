@@ -52,6 +52,9 @@
                     <div><dt class="font-bold">Wann</dt><dd>{{ $event->dateLabel() }}</dd></div>
                     @if ($event->location)<div><dt class="font-bold">Wo</dt><dd>{{ $event->location }}</dd></div>@endif
                     @if ($event->cost_info)<div><dt class="font-bold">Kosten</dt><dd>{{ $event->cost_info }}</dd></div>@endif
+                    @if ($event->hatTeilnahmebeitrag())
+                        <div><dt class="font-bold">Teilnahmebeitrag</dt><dd>@foreach ($event->preise() as $preis){{ $preis['bezeichnung'] }}: {{ \App\Support\Zahlungen::euro($preis['cent']) }}@unless ($loop->last)<br />@endunless @endforeach</dd></div>
+                    @endif
                     @if ($event->memberGruppierung)<div><dt class="font-bold">Für</dt><dd>{{ $event->zielgruppeMitglieder() }}</dd></div>@endif
                     @if ($event->capacity)<div><dt class="font-bold">Plätze</dt><dd>{{ $event->capacity }} @if ($state === 'offen')(noch {{ $event->spotsLeft() }} frei)@endif</dd></div>@endif
                     <div><dt class="font-bold">Anmeldung</dt><dd>
@@ -223,6 +226,22 @@
                         </div>
                     </fieldset>
                     @endunless
+
+                    @if ($event->hatTeilnahmebeitrag())
+                        <fieldset class="space-y-2 border-t border-dpsg-mittelbeige pt-5" @error('preis') aria-describedby="preis-error" @enderror>
+                            <legend class="font-bold">Teilnahmebeitrag *</legend>
+                            @foreach ($event->preise() as $i => $preis)
+                                <label class="flex items-center gap-3">
+                                    <input type="radio" name="preis" value="{{ $i }}" required class="h-5 w-5 shrink-0" @checked((string) old('preis', count($event->preise()) === 1 ? '0' : '') === (string) $i) />
+                                    <span>{{ $preis['bezeichnung'] }} – <strong>{{ \App\Support\Zahlungen::euro($preis['cent']) }}</strong></span>
+                                </label>
+                            @endforeach
+                            @if (\App\Support\Teilnahmebeitraege::aktiv())
+                                <p class="text-xs text-text-secondary">Nach der Bestätigung deines Platzes bekommst du eine Zahlungsaufforderung mit Kontodaten und QR-Code für die Banking-App.</p>
+                            @endif
+                            @error('preis')<p id="preis-error" class="text-sm text-dpsg-rot">{{ $message }}</p>@enderror
+                        </fieldset>
+                    @endif
 
                     <div class="border-t border-dpsg-mittelbeige pt-5">
                         <label for="email" class="block text-sm font-bold">E-Mail-Adresse *</label>

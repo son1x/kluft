@@ -5,6 +5,7 @@ namespace App\Services\Beitraege;
 use App\Models\Beitrag;
 use App\Models\BeitragsMitglied;
 use App\Services\Mitglieder\MitgliederverzeichnisException;
+use App\Services\Mitglieder\NamiSitzungAbgelaufen;
 use App\Services\Mitglieder\NamiVerzeichnis;
 use App\Support\Beitraege;
 use Illuminate\Database\Eloquent\Builder;
@@ -23,13 +24,19 @@ class BeitragsAbruf
     /** Beitragsart in der Liste für Schnuppermitglieder. */
     public const SCHNUPPER = 'Schnuppermitglied';
 
+    /** Meldung der ersten fehlgeschlagenen Detailabfrage im letzten Lauf. */
+    public ?string $detailFehler = null;
+
     public function __construct(private NamiVerzeichnis $nami) {}
 
     /**
      * Höchstens $maxDetails Detailabfragen je Lauf; wer danach noch fehlt,
-     * zählt in „offen“ und kommt beim nächsten Lauf dran.
+     * zählt in „offen“ und kommt beim nächsten Lauf dran. Verweigert NaMi
+     * die Details einzelner Personen, zählen sie in „ohne_details“ und werden
+     * beim nächsten Abruf erneut versucht; erst wenn die ersten Abfragen alle
+     * scheitern, bricht der Abruf ab.
      *
-     * @return array{mitglieder: int, neu: int, details: int, offen: int, ausgetreten: int}
+     * @return array{mitglieder: int, neu: int, details: int, offen: int, ausgetreten: int, ohne_details: int}
      *
      * @throws MitgliederverzeichnisException
      */
@@ -37,8 +44,9 @@ class BeitragsAbruf
     {
         $gruppierung = $this->nami->gruppierungId($nummer);
         $arten = $this->nami->beitragsarten($gruppierung);
-        $ergebnis = ['mitglieder' => 0, 'neu' => 0, 'details' => 0, 'offen' => 0, 'ausgetreten' => 0];
+        $ergebnis = ['mitglieder' => 0, 'neu' => 0, 'details' => 0, 'offen' => 0, 'ausgetreten' => 0, 'ohne_details' => 0];
         $gesehen = [];
+        $this->detailFehler = null;
 
         foreach ($this->nami->mitgliederListe($gruppierung) as $zeile) {
             $namiId = (int) ($zeile['id'] ?? 0);
@@ -66,8 +74,7 @@ class BeitragsAbruf
             if ($brauchtDetails && $maxDetails !== null && $ergebnis['details'] >= $maxDetails) {
                 // Ohne Details speichern; nami_version bleibt alt, damit der nächste Lauf sie holt.
                 $ergebnis['offen']++;
-            } elseif ($brauchtDetails) {
-                $details = $this->nami->mitgliedDetails($gruppierung, $namiId);
+            } elseif ($brauchtDetails && ($details = $this->details($gruppierung, $namiId, $ergebnis)) !== null) {
                 $art = filled($details['beitragsart'] ?? null) ? Beitraege::artName((string) $details['beitragsart']) : ($arten[(int) ($details['beitragsartId'] ?? 0)] ?? null);
                 $mitglied->fill(['beitragsart' => $art, 'nami_version' => $version]);
                 if (! array_key_exists('entries_eintrittsdatum', $zeile)) {
@@ -120,6 +127,29 @@ class BeitragsAbruf
         }
 
         return $ergebnis;
+    }
+
+    /**
+     * @param  array{details: int, ohne_details: int}  $ergebnis
+     * @return array<string, mixed>|null
+     *
+     * @throws MitgliederverzeichnisException
+     */
+    private function details(int $gruppierung, int $namiId, array &$ergebnis): ?array
+    {
+        try {
+            return $this->nami->mitgliedDetails($gruppierung, $namiId);
+        } catch (NamiSitzungAbgelaufen $e) {
+            throw $e;
+        } catch (MitgliederverzeichnisException $e) {
+            $this->detailFehler ??= $e->getMessage();
+            // Klappt keine Abfrage und gab es noch nie eine Beitragsart, liegt es nicht an einzelnen Personen.
+            if (++$ergebnis['ohne_details'] >= 5 && $ergebnis['details'] === 0 && ! BeitragsMitglied::query()->whereNotNull('beitragsart')->exists()) {
+                throw $e;
+            }
+
+            return null;
+        }
     }
 
     private static function datum(mixed $wert): ?Carbon

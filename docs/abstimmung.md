@@ -35,6 +35,14 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-10-23 – Haupt → Stammes: NaMi-Beitragsabruf robuster (gemeinsamer Kern)
+Status: offen
+
+Roden meldete „NaMi-Abfrage fehlgeschlagen (HTTP 200)“ ohne weiteren Hinweis.
+- **`NamiVerzeichnis::get()`:** Die Meldung nennt jetzt Schritt und NaMi-Text (ohne Nummern und Mails). Eine HTML-Anmeldeseite statt JSON gilt als abgelaufene Sitzung, ebenso eine Meldung mit „login/angemeldet“; dann einmal neu anmelden.
+- **`BeitragsAbruf`:** Scheitern einzelne Mitgliedsdetails, läuft der Abruf weiter (`ohne_details`, `$detailFehler`). Abbruch nur, wenn die ersten fünf scheitern und es noch nie eine Beitragsart gab.
+- **Doku:** `docs/beitraege.md`.
+
 ### 2026-10-23 – Haupt → Stammes: Hinweise für die Rüsthaus-Bestellseite
 Status: offen
 

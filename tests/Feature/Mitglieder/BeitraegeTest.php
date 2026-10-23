@@ -45,6 +45,9 @@ class BeitraegeTest extends TestCase
     /** @var list<int> */
     private array $detailAbfragen = [];
 
+    /** Antwort vor den üblichen (null = weiter wie sonst). */
+    private ?\Closure $vorher = null;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -68,6 +71,9 @@ class BeitraegeTest extends TestCase
         ];
 
         Http::fake(function (Request $request) {
+            if ($this->vorher && ($antwort = ($this->vorher)($request)) !== null) {
+                return $antwort;
+            }
             $url = $request->url();
             if (str_ends_with($url, '/auth/manual/sessionStartup')) {
                 return Http::response(['statusCode' => 0], 200, ['Set-Cookie' => 'JSESSIONID=abc; Path=/ica']);
@@ -126,7 +132,7 @@ class BeitraegeTest extends TestCase
         $abruf = new BeitragsAbruf(new NamiVerzeichnis);
         $ergebnis = $abruf->abrufen('21 06 01');
 
-        $this->assertSame(['mitglieder' => 4, 'neu' => 4, 'details' => 4, 'offen' => 0, 'ausgetreten' => 0], $ergebnis);
+        $this->assertSame(['mitglieder' => 4, 'neu' => 4, 'details' => 4, 'offen' => 0, 'ausgetreten' => 0, 'ohne_details' => 0], $ergebnis);
         $this->assertSame(['Muster, Ben', 'Muster, Mia', 'Neu, Neo', 'Schnupper, Sam'], BeitragsMitglied::query()->orderBy('nachname')->orderBy('vorname')->get()->map->name()->all());
         $mia = BeitragsMitglied::query()->where('nami_id', 101)->firstOrFail();
         $this->assertSame(['Voller Beitrag', '4711', '2019-04-01'], [$mia->beitragsart, $mia->mitgliedsnummer, $mia->eintritt?->toDateString()]);
@@ -264,6 +270,48 @@ class BeitraegeTest extends TestCase
         $this->assertSame(3, Beitrag::query()->where('halbjahr', '2026-2')->count());
         $this->assertSame('fertig', Beitraege::letzterAbruf()['status'] ?? null);
         $this->assertStringContainsString('4 Mitglieder aus NaMi', Beitraege::letzterAbruf()['text'] ?? '');
+    }
+
+    #[TestDox('NaMi verweigert Details einzelner Personen: Abruf läuft weiter, die Meldung nennt Schritt und Grund ohne Nummern')]
+    public function test_details_einzeln_verweigert(): void
+    {
+        $this->vorher = function (Request $request) {
+            if (str_ends_with($request->url(), '/gruppierung/gruppierung/30/102')) {
+                return Http::response(['success' => false, 'message' => 'Zugriff verweigert für Mitglied 4712', 'data' => null]);
+            }
+
+            return null;
+        };
+
+        BeitraegeAbrufen::dispatchSync('210601', '2026-2');
+
+        $text = Beitraege::letzterAbruf()['text'] ?? '';
+        $this->assertSame('fertig', Beitraege::letzterAbruf()['status'] ?? null);
+        $this->assertStringContainsString('1 ohne Beitragsart', $text);
+        $this->assertStringContainsString('Mitgliedsdetails, HTTP 200: Zugriff verweigert für Mitglied …', $text);
+        $this->assertStringNotContainsString('4712', $text);
+        $this->assertNull(BeitragsMitglied::query()->where('nami_id', 102)->value('beitragsart'));
+        $this->assertSame('Voller Beitrag', BeitragsMitglied::query()->where('nami_id', 101)->value('beitragsart'));
+    }
+
+    #[TestDox('NaMi liefert die Anmeldeseite statt JSON: einmal neu anmelden; bleibt es so, nennt die Meldung den Schritt')]
+    public function test_anmeldeseite_statt_json(): void
+    {
+        $listen = 0;
+        $this->vorher = function (Request $request) use (&$listen) {
+            if (str_contains($request->url(), '/flist') && ++$listen === 1) {
+                return Http::response('<html><body>Login</body></html>', 200, ['Content-Type' => 'text/html']);
+            }
+
+            return null;
+        };
+        $this->assertSame(4, (new BeitragsAbruf(new NamiVerzeichnis))->abrufen('210601')['mitglieder']);
+        $this->assertSame(2, $listen);
+
+        $this->vorher = fn (Request $request) => str_contains($request->url(), '/flist') ? Http::response('<html></html>', 200) : null;
+        BeitraegeAbrufen::dispatchSync('210601', '2026-2');
+        $this->assertSame('fehler', Beitraege::letzterAbruf()['status'] ?? null);
+        $this->assertStringContainsString('Mitgliederliste, HTTP 200, keine JSON-Antwort', Beitraege::letzterAbruf()['text'] ?? '');
     }
 
     #[TestDox('Kasse → Mitgliedsbeiträge nur mit Funktion und Rolle „Kasse“ (oder Admin)')]

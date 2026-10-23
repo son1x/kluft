@@ -61,6 +61,7 @@ class BeitraegeAbrufen implements ShouldBeEncrypted, ShouldQueue
         $beitraege = $abruf->halbjahrAnlegen($this->halbjahr);
         Beitraege::abrufStand('fertig', "{$ergebnis['mitglieder']} Mitglieder aus NaMi"
             .($ergebnis['ausgetreten'] ? ", {$ergebnis['ausgetreten']} nicht mehr gelistet" : '')
+            .($ergebnis['ohne_details'] ? ", {$ergebnis['ohne_details']} ohne Beitragsart (Details in NaMi nicht abrufbar, nächster Abruf versucht es erneut: {$abruf->detailFehler})" : '')
             .'; '.Beitraege::label($this->halbjahr).": {$beitraege['neu']} Beiträge neu, {$beitraege['angepasst']} angepasst.");
     }
 }

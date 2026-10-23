@@ -291,19 +291,46 @@ class NamiVerzeichnis implements Mitgliederverzeichnis
             throw new MitgliederverzeichnisException('NaMi nicht erreichbar.');
         }
         $body = $response->json();
+        $meldung = is_array($body) ? (string) ($body['message'] ?? '') : '';
 
-        // Abgelaufene Session: einmal neu anmelden.
-        if ($retry && ($response->status() === 401 || (is_array($body) && ($body['success'] ?? true) === false && str_contains(mb_strtolower((string) ($body['message'] ?? '')), 'session')))) {
+        // Abgelaufene Session: einmal neu anmelden. NaMi antwortet dann mit 401,
+        // mit einer Meldung zur Sitzung oder (nach Weiterleitung) mit der
+        // HTML-Anmeldeseite statt JSON.
+        $abgelaufen = $response->status() === 401
+            || ($response->successful() && ! is_array($body))
+            || (is_array($body) && ($body['success'] ?? true) === false && preg_match('/session|sitzung|login|angemeldet|anmeld/i', $meldung));
+        if ($retry && $abgelaufen) {
             $this->session = null;
 
             return $this->get($path, $query, false);
         }
 
         if (! $response->successful() || ! is_array($body) || ($body['success'] ?? false) !== true) {
-            throw new MitgliederverzeichnisException('NaMi-Abfrage fehlgeschlagen (HTTP '.$response->status().').');
+            throw new MitgliederverzeichnisException('NaMi-Abfrage fehlgeschlagen ('.self::schritt($path).', HTTP '.$response->status()
+                .($meldung !== '' ? ': '.self::meldung($meldung) : (is_array($body) ? '' : ', keine JSON-Antwort')).').');
         }
 
         return $body;
+    }
+
+    /** Für Fehlermeldungen: welcher Teil des Abrufs (ohne IDs). */
+    private static function schritt(string $path): string
+    {
+        return match (true) {
+            str_contains($path, '/gruppierungen/') => 'Gruppierungsbaum',
+            str_ends_with($path, '/flist') => 'Mitgliederliste',
+            str_contains($path, '/mitglied/filtered-for-navigation/') => 'Mitgliedsdetails',
+            str_contains($path, 'search') => 'Suche',
+            default => 'Abfrage',
+        };
+    }
+
+    /** Meldung von NaMi gekürzt und ohne Nummern oder Mailadressen (landet im Backend). */
+    private static function meldung(string $text): string
+    {
+        $text = (string) preg_replace(['/\S+@\S+/', '/\d{3,}/', '/\s+/'], ['…', '…', ' '], strip_tags($text));
+
+        return mb_strimwidth(trim($text), 0, 160, '…');
     }
 
     private function login(): CookieJar

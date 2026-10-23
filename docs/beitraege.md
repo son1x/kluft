@@ -68,6 +68,15 @@ gelöscht, sondern als „nicht mehr in NaMi“ markiert – seine Zahlungen
 bleiben erhalten. Geänderte Beitragssätze passen offene Beiträge ab dem
 laufenden Halbjahr sofort an; ältere Halbjahre bleiben bei ihren Sätzen.
 
+**Wenn der Abruf scheitert**, nennt die Meldung über der Liste den Schritt
+(Gruppierungsbaum, Mitgliederliste, Mitgliedsdetails) und die Antwort von
+NaMi (ohne Nummern und Mailadressen). Liefert NaMi statt Daten die
+Anmeldeseite („keine JSON-Antwort“), meldet sich Kluft einmal neu an; bei
+persönlicher Anmeldung ohne gespeicherten Zugang bitte den Abruf neu starten.
+Verweigert NaMi nur die Details einzelner Personen, läuft der Abruf weiter;
+sie stehen dann ohne Beitragsart in der Liste, und der nächste Abruf
+versucht es erneut. Mehr zeigt die NaMi-Testabfrage (unten).
+
 ## NaMi-Testabfrage
 
 **Verwaltung → NaMi-Testabfrage** (für Admins und die Kasse) fragt NaMi so ab

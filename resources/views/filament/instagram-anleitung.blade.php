@@ -27,11 +27,18 @@
             <strong>Instagram einrichten:</strong> Im App-Dashboard links <em>Instagram</em> (bzw. unter <em>Produkt hinzufügen</em> bei Instagram auf <em>Einrichten</em>), dann <em>API-Einrichtung mit Instagram-Login</em> (API setup with Instagram business login).
         </li>
         <li>
+            <strong>Instagram-Tester eintragen (nötig vor Schritt 5):</strong> Im App-Dashboard links <em>App-Rollen → Rollen</em> (oder der Link „Rollen“ in Schritt 2 der API-Einrichtung) → bei <em>Instagram-Tester</em> auf <em>Hinzufügen</em> → den Instagram-Benutzernamen des Kontos eintragen → senden.
+            <ul class="mt-1 list-disc space-y-1 ps-5">
+                <li>Dann die Einladung annehmen: im Browser (nicht in der App) bei instagram.com mit dem Konto anmelden → <a href="https://www.instagram.com/accounts/manage_access/" target="_blank" rel="noopener noreferrer" class="{{ $link }}">Einstellungen → Apps und Websites</a> → Reiter <em>Tester-Einladungen</em> → <em>Annehmen</em>. Am Handy notfalls „Desktop-Website anfordern“.</li>
+            </ul>
+        </li>
+        <li>
             <strong>Konto hinzufügen und Token erzeugen:</strong> Auf dieser Seite im Abschnitt <em>1. Zugriffsschlüssel generieren</em> (Generate access tokens) auf <em>Konto hinzufügen</em> klicken.
             <ul class="mt-1 list-disc space-y-1 ps-5">
                 <li>Im Fenster mit dem Instagram-Konto anmelden und den Zugriff erlauben.</li>
                 <li>Danach steht das Konto in der Liste; daneben <em>Token generieren</em> (Generate token), noch einmal bestätigen.</li>
                 <li>Das Token kopieren: eine lange Zeichenkette, die mit <code>IG</code> beginnt.</li>
+                <li>Schritt 3 „Webhooks konfigurieren“ und alles danach (App-Prüfung, Business-Verifizierung) brauchst du nicht.</li>
             </ul>
         </li>
         <li>
@@ -48,7 +55,7 @@
     <div class="rounded-lg bg-gray-50 p-4 dark:bg-white/5">
         <h3 class="font-bold">Wenn es hakt</h3>
         <ul class="mt-2 list-disc space-y-2 ps-5">
-            <li><strong>„Konto hinzufügen“ lehnt ab:</strong> Das Instagram-Konto braucht eine Rolle in der App.
+            <li><strong>„Konto hinzufügen“ lehnt ab:</strong> Meist fehlt die angenommene Tester-Einladung (Schritt 4).
                 <ul class="mt-1 list-disc space-y-1 ps-5">
                     <li>Links <em>App-Rollen → Rollen</em>, bei <em>Instagram-Tester</em> den Instagram-Namen hinzufügen.</li>
                     <li>Dann in Instagram (Browser, <a href="https://www.instagram.com/accounts/manage_access/" target="_blank" rel="noopener noreferrer" class="{{ $link }}">instagram.com → Einstellungen → Apps und Websites</a>) unter <em>Tester-Einladungen</em> annehmen.</li>

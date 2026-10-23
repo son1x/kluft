@@ -142,6 +142,8 @@ Statusfolge einer Runde: `offen` → `geschlossen` → `bestellt` → `geliefert
 - **SB-35** MUSS: Summe mit Bestelldatum als Zahlungsfrist; freie Artikel als „vorläufig“.
 - **SB-36** SOLL: Spamschutz wie beim Kontaktformular (Honeypot, Zeitprüfung, Drosselung).
 - **SB-37** MUSS: **Nur Mitglieder:** Im Backend bei jeder Bestellung „Mitgliedschaft prüfen“ über den vorhandenen NaMi-Abgleich (`docs/mitgliederabgleich.md`, Name und Stamm). Ergebnis als Ampel. Ohne Treffer entscheidet die Sammelbestellerin (z. B. Neumitglied noch nicht in NaMi). Eltern müssen keine Mitgliedsnummer kennen.
+- **SB-38** SOLL: **Artikelsets** (Wunsch Roden, 23.10.2026), z. B. „Starterset“ mit Kluft, Standardaufnähern und Halstuchknoten. Ein Set besteht aus freigegebenen Artikeln mit Menge; einzelne Teile sind optional, mit Vorgabe „dabei“ oder „nicht dabei“. In Roden ist das Halstuch optional und standardmäßig nicht dabei, weil der Stamm es ausgibt. Wer bestellt, wählt das Set einmal je Mitglied, dann für jedes Teil mit Größen die Größe und hakt optionale Teile an oder ab. Der Preis ist die Summe der Teile; ein Setrabatt ist nicht vorgesehen, weil das Rüsthaus keinen gewährt. Gespeichert werden normale Positionen mit Verweis aufs Set. Sammelliste, Zahlung und Ausgabe ändern sich dadurch nicht, die Ausgabeliste fasst die Teile eines Sets aber zusammen. Ein Set erscheint im Angebot wie ein Artikel (eigener Name, Beschreibung, Bild aus dem Hauptartikel). Ist ein Pflichtteil nicht mehr freigegeben, ist das Set nicht bestellbar, und die Sammelbestellung bekommt einen Hinweis.
+- **SB-39** KANN: Aus einer Karte im Angebot „Bestellen“ trägt den Artikel bzw. das Set in die nächste freie Zeile des Formulars ein.
 
 ### 5.4 Backend für die Sammelbestellung
 
@@ -260,7 +262,7 @@ Abgenommen ist die Funktion, wenn in Roden auf einer Testrunde:
 | Phase | Inhalt | Ergebnis |
 |---|---|---|
 | **1** | Freigabe per Artikelnummer mit Cache (Bild, Beschreibung, Varianten, Preis), Sperrliste, lokaler Shop, manuelle Runden mit Bestelldatum, Bestellformular inkl. freier Artikel, Double-Opt-in, Zahlungsaufforderung mit GiroCode, Kasse hakt ab, Sammelliste mit Export, Rolle „Sammelbestellung“, Schalter | Michele kann die erste Runde fahren. |
-| **2** | NaMi-Prüfung, Erinnerung und Storno zum Bestelldatum, Ausgabeliste und -scheine als PDF mit Unterschrift, Abhaken durch Verwaltung, Rüsthaus-Rechnung, Löschfrist | Ablauf vollständig. |
+| **2** | Artikelsets (SB-38), NaMi-Prüfung, Erinnerung und Storno zum Bestelldatum, Ausgabeliste und -scheine als PDF mit Unterschrift, Abhaken durch Verwaltung, Rüsthaus-Rechnung, Löschfrist | Ablauf vollständig. |
 | **3** | Zahlungsbaustein mit Stripe (SB-91), gemeinsam mit Veranstaltungen nach Absprache mit der Haupt-Sitzung | Online-Zahlung. |
 | später | Lagerbestand des Stamms, Kontoauszug-Import, Übernahme in den Einrichtungsassistenten für andere Stämme | nach Bedarf |
 

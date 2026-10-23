@@ -15,6 +15,11 @@ class CreateInstagramKonto extends CreateRecord
 
     protected static string $resource = InstagramKontoResource::class;
 
+    protected function getHeaderActions(): array
+    {
+        return [ListInstagramKonten::anleitung()];
+    }
+
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         return $this->zugangPruefen($data);

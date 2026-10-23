@@ -86,7 +86,7 @@ class InstagramKontoResource extends Resource
                         ->maxLength(2000)
                         ->columnSpanFull()
                         ->helperText(fn (?InstagramKonto $record) => ($record ? 'Leer lassen, um das gespeicherte Token zu behalten. ' : '')
-                            .'Aus der Meta-App (Instagram API mit Instagram-Login, Berechtigung instagram_business_basic). Wird verschlüsselt gespeichert, nicht wieder angezeigt und automatisch verlängert.'),
+                            .'Aus der Meta-App (Instagram API mit Instagram-Login). Wie das geht, steht oben unter „Anleitung: Token erzeugen“. Wird verschlüsselt gespeichert, nicht wieder angezeigt und automatisch verlängert.'),
                     CheckboxList::make('orte')->label('Anzeigen auf')->options(fn () => InstagramKonto::orte())->columns(2)->columnSpanFull()
                         ->helperText('Oberhalb von „Aktuelles“. Mehrere Konten auf einer Seite werden gemischt, neueste zuerst.'),
                     Toggle::make('aktiv')->label('Aktiv')->default(true),

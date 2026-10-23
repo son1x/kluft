@@ -150,7 +150,11 @@ class InstagramFeedTest extends TestCase
 
         $admin = User::query()->create(['name' => 'a', 'email' => 'a@example.org', 'status' => 'active']);
         $admin->roleAssignments()->create(['role' => 'admin', 'scope_type' => 'global', 'scope_key' => null]);
-        $this->actingAs($admin)->get(ListInstagramKonten::getUrl())->assertOk()->assertSee('DPSG Trier');
+        $this->actingAs($admin)->get(ListInstagramKonten::getUrl())->assertOk()->assertSee('DPSG Trier')->assertSee('Anleitung: Token erzeugen');
+        Livewire::actingAs($admin)->test(ListInstagramKonten::class)->mountAction('anleitung')->assertActionMounted('anleitung');
+        $anleitung = view('filament.instagram-anleitung')->render();
+        $this->assertStringContainsString('API-Einrichtung mit Instagram-Login', $anleitung);
+        $this->assertStringContainsString('https://developers.facebook.com/apps/', $anleitung);
 
         Livewire::actingAs($admin)->test(CreateInstagramKonto::class)
             ->fillForm(['name' => 'Falsch', 'access_token' => 'falsch', 'anzahl' => 6, 'orte' => ['startseite']])

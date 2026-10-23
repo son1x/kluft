@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\InstagramKonten\Pages;
 
 use App\Filament\Resources\InstagramKonten\InstagramKontoResource;
+use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
@@ -17,6 +18,23 @@ class ListInstagramKonten extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [CreateAction::make()];
+        return [
+            self::anleitung(),
+            CreateAction::make(),
+        ];
+    }
+
+    /** Schritt-für-Schritt: Token bei Meta erzeugen (auch im Formular „Neu“ verlinkt). */
+    public static function anleitung(): Action
+    {
+        return Action::make('anleitung')
+            ->label('Anleitung: Token erzeugen')
+            ->icon('heroicon-o-question-mark-circle')
+            ->color('gray')
+            ->slideOver()
+            ->modalHeading('Instagram-Token erzeugen')
+            ->modalContent(view('filament.instagram-anleitung'))
+            ->modalSubmitAction(false)
+            ->modalCancelActionLabel('Schließen');
     }
 }

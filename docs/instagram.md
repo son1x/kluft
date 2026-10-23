@@ -24,6 +24,10 @@ Auf der Website gibt es kein Instagram-Embed und keine Skripte von Meta
 
 ## Konto einrichten
 
+Eine ausführliche Schritt-für-Schritt-Anleitung mit Links und Hilfe bei
+Problemen steht im Backend: Verwaltung → Instagram-Einblendung →
+**„Anleitung: Token erzeugen“** (auch im Formular „Neu“). Kurzfassung:
+
 **Voraussetzung:** Das Instagram-Konto ist ein **Business- oder Creator-Konto**
 (in der Instagram-App: Einstellungen → Kontotyp).
 

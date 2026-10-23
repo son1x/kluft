@@ -139,13 +139,15 @@ return [
     'test_allowlist' => array_filter(array_map('trim', preg_split('/[,;]/', (string) env('MAIL_TEST_ALLOWLIST', ''))) ?: []),
 
     /*
-    | Markdown-Mails im Corporate Design (resources/views/vendor/mail/html,
-    | Theme themes/dpsg.css).
+    | Markdown-Mails im Corporate Design (resources/views/mail-design/html,
+    | Theme themes/dpsg.css). Bewusst nicht unter views/vendor: Der Deploy
+    | schließt mit „--exclude-glob vendor/“ jeden Ordner namens vendor aus,
+    | dann fehlte das Theme auf dem Server („View [themes.dpsg] not found“).
     */
     'markdown' => [
         'theme' => 'dpsg',
         'paths' => [
-            resource_path('views/vendor/mail'),
+            resource_path('views/mail-design'),
         ],
     ],
 

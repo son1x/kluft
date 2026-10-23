@@ -35,6 +35,25 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-10-23 – Stammes → Haupt: Mails scheiterten auf dem Server, Theme fehlte (gemeinsamer Kern, dringend)
+Status: offen (auch direkt gemeldet)
+
+**Befund (Roden):** Laut `laravel.log` (Deploy-Protokoll #102) scheitern Markdown-Mails seit dem 20.10. mit `View [themes.dpsg] not found`. Sie bleiben in der Warteschlange hängen bzw. landen in `failed_jobs`.
+
+**Ursache:**
+- Der Deploy lädt mit `lftp mirror … --exclude-glob vendor/` hoch.
+- lftp wendet das Muster auf **jeden** Ordner namens `vendor` an, also auch auf `resources/views/vendor/mail/`. Auf dem Server fehlen damit die Mail-Vorlagen.
+- `message`, `layout` und `button` ersetzt Laravel stillschweigend durch seine eigenen; ein Theme `dpsg` hat Laravel aber nicht, daher der Fehler.
+- Lokal nachgestellt: ohne den Ordner genau diese Meldung.
+
+**Behoben:**
+- Mail-Vorlagen nach `resources/views/mail-design/` verschoben (`git mv`), `config/mail.php` → `mail.markdown.paths` angepasst.
+- Neuer Test `tests/Feature/MailDesignTest.php`: Der Pfad darf nicht unter `vendor/` liegen, das Theme muss existieren.
+
+**Bitte prüfen:**
+1. DV und Bezirk sind sehr wahrscheinlich genauso betroffen. Nach eurem nächsten Deploy unter „Verwaltung → E-Mail-Versand“ die fehlgeschlagenen Mails erneut senden.
+2. Die anderen Muster (`tests/`, `docs/`, `runner/`, `node_modules/`) greifen ebenfalls in jeder Tiefe. Sie treffen heute nichts, aber `--exclude '^vendor/'` (Regex, verankert) wäre sauberer. Ohne lftp hier konnte ich das nicht testen, deshalb habe ich `deploy.yml` nicht angefasst.
+
 ### 2026-10-23 – Haupt → Stammes, Bezirk: Beiträge, Beitragsart von Hand; `site_settings.value` jetzt `text`
 Status: offen
 

@@ -57,6 +57,7 @@ class SammelbestellungTest extends TestCase
         config(['dpsg.site.level' => 'Stamm', 'dpsg.sammelbestellung_pause_ms' => 0]);
         Features::setzen(Features::ZAHLUNGEN, true);
         Features::setzen(Features::SAMMELBESTELLUNG, true);
+        Features::setzen(Features::SAMMELBESTELLUNG_FUER_ALLE, true);
         Zahlungen::kontoSetzen('DPSG Stamm Test', 'DE89 3704 0044 0532 0130 00', null, null);
         Mail::fake();
 
@@ -190,6 +191,31 @@ class SammelbestellungTest extends TestCase
             'pos' => [['mitglied' => 'Erika', 'menge' => 1, 'frei_nummer' => '1404601']],
         ])->assertSessionHasErrors('pos.0.frei_nummer');
         $this->assertSame(0, Bestellung::query()->count());
+    }
+
+    #[TestDox('Testbetrieb: Bestellseite nur mit Backend-Zugang, Bestellungen als Test markiert und samt Zahlungen löschbar')]
+    public function test_testbetrieb(): void
+    {
+        Features::setzen(Features::SAMMELBESTELLUNG_FUER_ALLE, false);
+        $artikel = Sammelbestellung::freigeben('0100003.30');
+        Runde::query()->create(['name' => 'Probe', 'bestelldatum' => now()->addWeek()->toDateString(), 'status' => 'offen']);
+        $this->get('/bestellen')->assertNotFound();
+
+        $this->login('autor');
+        $this->get('/bestellen')->assertOk()->assertSee('Testbetrieb');
+        $this->post('/bestellen', [
+            '_t' => Crypt::encryptString((string) now()->subSeconds(30)->timestamp),
+            'name' => 'Test', 'email' => 'test@example.org', 'rolle' => 'mitglied', 'einwilligung' => '1',
+            'pos' => [['mitglied' => 'Test', 'menge' => 1, 'variante' => $artikel->varianten[0]->id]],
+        ])->assertRedirect(route('shop.danke'));
+        $bestellung = Bestellung::query()->sole();
+        $this->assertTrue($bestellung->test);
+        Sammelbestellung::zahlungAnfordern($bestellung);
+        $this->assertStringStartsWith('TEST: ', $bestellung->fresh()->zahlungsLabel());
+        $this->assertSame(1, Zahlung::query()->count());
+
+        $this->assertSame(1, Sammelbestellung::testsLoeschen());
+        $this->assertSame([0, 0], [Bestellung::query()->count(), Zahlung::query()->count()]);
     }
 
     #[TestDox('Schalter aus: 404; Backend nur mit Rolle Sammelbestellung (oder Admin)')]

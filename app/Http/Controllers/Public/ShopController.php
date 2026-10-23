@@ -30,12 +30,13 @@ class ShopController extends Controller
 {
     public function index(): View
     {
-        abort_unless(Sammelbestellung::aktiv(), 404);
+        abort_unless(Sammelbestellung::sichtbar(auth()->user()), 404);
 
         return view('shop.index', [
+            'testbetrieb' => Sammelbestellung::testbetrieb(),
             'page' => Page::query()->published()->where('slug', 'bestellen')->first(),
             'runde' => Runde::offene(),
-            'bestellbar' => Sammelbestellung::bestellbar(),
+            'bestellbar' => Sammelbestellung::bestellbar(auth()->user()),
             'artikel' => Artikel::query()->freigegeben()->with(['varianten' => fn ($q) => $q->where('aktiv', true), 'bild'])->orderBy('sort')->orderBy('name')->get(),
         ]);
     }
@@ -43,7 +44,7 @@ class ShopController extends Controller
     /** Freier Artikel: Name, Preis und Größen zur Artikelnummer (Rüsthaus, gecacht). */
     public function nachschlagen(Request $request): JsonResponse
     {
-        abort_unless(Sammelbestellung::bestellbar(), 404);
+        abort_unless(Sammelbestellung::bestellbar(auth()->user()), 404);
         $nummer = trim((string) $request->query('nummer'));
         abort_unless($nummer !== '' && mb_strlen($nummer) <= 300, 422);
 
@@ -52,7 +53,7 @@ class ShopController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        abort_unless(Sammelbestellung::bestellbar(), 404);
+        abort_unless(Sammelbestellung::bestellbar(auth()->user()), 404);
         if (($spam = SpamGuard::check($request)) !== null) {
             return $spam === 'bot' ? redirect()->route('shop.danke') : back()->withInput()->withErrors(['name' => 'Das Formular war zu lange offen. Bitte noch einmal absenden.']);
         }
@@ -118,6 +119,7 @@ class ShopController extends Controller
             $bestellung = Bestellung::query()->create([
                 'runde_id' => $runde->id, 'token' => hash('sha256', $token), 'name' => trim($data['name']), 'email' => $data['email'],
                 'telefon' => $data['telefon'] ?? null, 'rolle' => $data['rolle'], 'abholung' => $data['abholung'] ?? null, 'bemerkung' => $data['bemerkung'] ?? null,
+                'test' => Sammelbestellung::testbetrieb(),
             ]);
             $bestellung->positionen()->createMany($positionen);
 

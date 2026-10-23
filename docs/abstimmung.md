@@ -58,6 +58,8 @@ Neu, nur für Stämme (Schalter `Features::SAMMELBESTELLUNG`, Ebene Stamm, aus; 
 
 Tests für roden, dv-trier und saar-hochwald grün.
 
+Nachtrag (Testbetrieb): neuer Schalter `Features::SAMMELBESTELLUNG_FUER_ALLE` (Standard aus = Testbetrieb, nur Backend-Angemeldete sehen `/bestellen`). Spalte `test` direkt in `2026_10_23_090000` ergänzt, die Migration ist noch nirgends gelaufen. `Sammelbestellung::testsLoeschen()` löscht Testbestellungen samt ihren `zahlungen` (über `zahlbar`); deren `zahlungsLabel()` beginnt mit „TEST: “.
+
 ### 2026-10-23 – Haupt → Stammes: Hinweise für die Rüsthaus-Bestellseite
 Status: erledigt
 

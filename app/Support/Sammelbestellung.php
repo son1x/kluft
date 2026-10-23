@@ -32,10 +32,33 @@ class Sammelbestellung
         return Features::enabled(Features::SAMMELBESTELLUNG) && Features::enabled(Features::ZAHLUNGEN);
     }
 
-    /** Bestellen geht nur mit offener Runde und Bankverbindung. */
-    public static function bestellbar(): bool
+    /** Testbetrieb: Bestellseite nur für Angemeldete mit Backend-Zugang. */
+    public static function testbetrieb(): bool
     {
-        return self::aktiv() && Runde::offene() !== null && Zahlungen::konto() !== null;
+        return ! Features::enabled(Features::SAMMELBESTELLUNG_FUER_ALLE);
+    }
+
+    /** Die Bestellseite ist für diese Person sichtbar. */
+    public static function sichtbar(?User $user): bool
+    {
+        return self::aktiv() && (! self::testbetrieb() || ($user !== null && $user->isActive() && $user->roleAssignments->isNotEmpty()));
+    }
+
+    /** Bestellen geht nur mit offener Runde und Bankverbindung. */
+    public static function bestellbar(?User $user = null): bool
+    {
+        return self::sichtbar($user) && Runde::offene() !== null && Zahlungen::konto() !== null;
+    }
+
+    /** Bestellungen aus dem Testbetrieb samt ihren Zahlungen löschen. */
+    public static function testsLoeschen(): int
+    {
+        return DB::transaction(function () {
+            $ids = Bestellung::query()->where('test', true)->pluck('id');
+            Zahlung::query()->where('zahlbar_type', (new Bestellung)->getMorphClass())->whereIn('zahlbar_id', $ids)->delete();
+
+            return Bestellung::query()->whereIn('id', $ids)->delete();
+        });
     }
 
     public static function zugriff(?User $user): bool

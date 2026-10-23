@@ -54,6 +54,8 @@ class Features
 
     public const SAMMELBESTELLUNG = 'sammelbestellung';
 
+    public const SAMMELBESTELLUNG_FUER_ALLE = 'sammelbestellung_fuer_alle';
+
     private const CACHE_KEY = 'features.schalter';
 
     /**
@@ -83,6 +85,7 @@ class Features
         self::MITGLIEDSBEITRAEGE => ['ebene' => 'Stamm', 'bereich' => 'Kasse', 'label' => 'Mitgliedsbeiträge', 'text' => 'Kasse → Mitgliedsbeiträge: Mitglieder je Halbjahr aus NaMi, offene und bezahlte Beiträge, Abgleich mit der Rechnung des Bundesverbands. Sichtbar nur mit der Rolle „Kasse“ (oder Admin).', 'standard' => false, 'braucht' => 'MITGLIEDER_DRIVER=nami'],
         self::ZAHLUNGEN => ['bereich' => 'Kasse', 'label' => 'Zahlungen', 'text' => 'Kasse → Zahlungen: Forderungen mit Zahlungsaufforderung per Mail (Überweisung mit GiroCode), Zahlungseingang, Erstattung und Storno; Bankverbindung der Gliederung. Grundlage für Module wie die Sammelbestellung. Sichtbar für Kasse (Stamm) bzw. Verwaltung und Admins.', 'standard' => false],
         self::SAMMELBESTELLUNG => ['ab' => 4, 'ebene' => 'Stamm', 'bereich' => 'Kasse', 'label' => 'Sammelbestellung (Rüsthaus)', 'text' => 'Mitglieder bzw. Eltern bestellen Kluft, Halstuch und andere Rüsthaus-Artikel über /bestellen; die Sammelbestellerin gibt Artikel frei, öffnet Runden und bestellt gesammelt. Bezahlt wird vorab über „Zahlungen“. Rolle „Sammelbestellung“ (oder Admin).', 'standard' => false, 'braucht' => 'Zahlungen mit Bankverbindung'],
+        self::SAMMELBESTELLUNG_FUER_ALLE => ['ab' => 4, 'ebene' => 'Stamm', 'bereich' => 'Kasse', 'label' => 'Sammelbestellung für alle freigeben', 'text' => 'Aus = Testbetrieb: /bestellen sehen nur Angemeldete mit Backend-Zugang, ihre Bestellungen sind als Test markiert und lassen sich unter „Sammelbestellung → Bestellungen“ samt Zahlungen löschen. An = für alle auf der Website.', 'standard' => false, 'braucht' => 'Sammelbestellung'],
         self::PUSH => ['ab' => 5, 'bereich' => 'Backend', 'label' => 'Push-Nachrichten (ntfy)', 'text' => '„Mein Konto → Meine Push-Nachrichten“ und Versand aufs Handy.', 'standard' => true],
         self::CODE_LOGIN => ['bereich' => 'Backend', 'label' => 'Anmeldung per E-Mail-Code', 'text' => 'Redaktion ohne Microsoft 365: Zugänge für Personen oder Rollen (Funktionspostfach, z. B. „Stammesvorstand“), Anmeldung mit Einmalcode per E-Mail. Microsoft 365 bleibt daneben möglich.', 'standard' => false],
         self::WP_IMPORT => ['ab' => 3, 'bereich' => 'Backend', 'label' => 'WordPress-Import', 'text' => 'Übernahme von Seiten und Beiträgen aus einer WordPress-Website.', 'standard' => false],

@@ -77,7 +77,8 @@ class BestellungResource extends Resource
             ->modifyQueryUsing(fn (Builder $query) => $query->with('positionen.zahlung', 'runde'))
             ->defaultSort('id', 'desc')
             ->columns([
-                TextColumn::make('name')->label('Bestellt von')->weight('bold')->searchable()->description(fn (Bestellung $record) => $record->email),
+                TextColumn::make('name')->label('Bestellt von')->weight('bold')->searchable()->description(fn (Bestellung $record) => $record->email)
+                    ->formatStateUsing(fn (Bestellung $record, string $state) => $record->test ? 'TEST: '.$state : $state),
                 TextColumn::make('runde.name')->label('Runde'),
                 TextColumn::make('mitglieder')->label('Für')->state(fn (Bestellung $record) => $record->positionen->pluck('mitglied')->unique()->implode(', '))->wrap(),
                 TextColumn::make('summe')->label('Summe')->state(fn (Bestellung $record) => Sammelbestellung::euro($record->summeCent()))->alignEnd(),

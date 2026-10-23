@@ -19,13 +19,13 @@ class Bestellung extends Model
 
     public const ROLLEN = ['mitglied' => 'Ich bin selbst Mitglied', 'erziehungsberechtigt' => 'Ich bin erziehungsberechtigt'];
 
-    protected $fillable = ['runde_id', 'token', 'name', 'email', 'telefon', 'rolle', 'abholung', 'bemerkung', 'bestaetigt_am', 'storniert_am'];
+    protected $fillable = ['runde_id', 'token', 'name', 'email', 'telefon', 'rolle', 'abholung', 'bemerkung', 'bestaetigt_am', 'storniert_am', 'test'];
 
     protected $hidden = ['token'];
 
     protected function casts(): array
     {
-        return ['bestaetigt_am' => 'datetime', 'storniert_am' => 'datetime'];
+        return ['bestaetigt_am' => 'datetime', 'storniert_am' => 'datetime', 'test' => 'boolean'];
     }
 
     /** @return BelongsTo<Runde, $this> */
@@ -86,7 +86,7 @@ class Bestellung extends Model
     /** Für die Liste „Kasse → Zahlungen“. */
     public function zahlungsLabel(): string
     {
-        return $this->name.' – Sammelbestellung '.$this->runde?->name;
+        return ($this->test ? 'TEST: ' : '').$this->name.' – Sammelbestellung '.$this->runde?->name;
     }
 
     public function zahlungsHinweis(): ?string

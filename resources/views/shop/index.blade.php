@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 {{-- Sammelbestellung beim Rüsthaus: Shop der freigegebenen Artikel und
-     Bestellformular. Erwartet: $page (optional, Einleitung), $runde, $bestellbar, $artikel --}}
+     Bestellformular. Erwartet: $page (optional, Einleitung), $testbetrieb, $runde, $bestellbar, $artikel --}}
 
 @section('seo_title', ($page->title ?? 'Ausrüstung bestellen').' – '.config('dpsg.site.name'))
 
@@ -10,6 +10,9 @@
 
 @section('content')
     <div class="mx-auto max-w-6xl px-4 py-12">
+        @if ($testbetrieb)
+            <p class="mb-6 border-l-4 border-dpsg-rot bg-white px-4 py-3 font-semibold shadow-sm" role="status">Testbetrieb: Diese Seite sehen nur Angemeldete aus dem Backend. Bestellungen hier sind als Test markiert und werden später gelöscht.</p>
+        @endif
         <h1 class="font-serif text-3xl font-bold md:text-4xl">{{ $page->title ?? 'Ausrüstung bestellen' }}</h1>
         <div class="prose prose-lg mt-4 max-w-3xl">
             @if ($page)

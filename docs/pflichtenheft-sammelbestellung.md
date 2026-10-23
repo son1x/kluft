@@ -273,5 +273,10 @@ Rolle `sammelbestellung` (Haupt-Vorschlag war `material`). Zahlungen
 laufen über den Baustein „Zahlungen“ mit Präfix `RH`, fällig zum
 Bestelldatum.
 
+Testbetrieb: Solange „Sammelbestellung für alle freigeben“ aus ist,
+sehen `/bestellen` nur Angemeldete mit Backend-Zugang. Ihre Bestellungen
+sind als Test markiert (`shop_bestellungen.test`) und lassen sich unter
+„Bestellungen“ samt Zahlungen löschen.
+
 Für andere Stämme gilt die Funktion genauso. Sie ist standardmäßig aus und
 wird je Stamm unter „Verwaltung → Funktionen“ eingeschaltet.

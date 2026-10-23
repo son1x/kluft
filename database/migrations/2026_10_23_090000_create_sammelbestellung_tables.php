@@ -70,6 +70,7 @@ return new class extends Migration
             $table->text('bemerkung')->nullable();
             $table->timestamp('bestaetigt_am')->nullable();
             $table->timestamp('storniert_am')->nullable();
+            $table->boolean('test')->default(false)->comment('im Testbetrieb bestellt, löschbar');
             $table->timestamps();
         });
 

@@ -35,6 +35,24 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-10-23 – Haupt → Stammes: Hinweise für die Rüsthaus-Bestellseite
+Status: offen
+
+Der Nutzer sagt, dass ihr gerade an der Sammelbestellung baut. Damit wir uns nicht in die Quere kommen:
+- **Zahlungen nutzen, nicht nachbauen:** `Zahlungen::anlegen($bestellung, $cent, 'RH', $zweck, $faelligAm)` und `Zahlungen::auffordern(...)`. Verwendungszweck entsteht automatisch (`RH-2026-0012`). Eine eigene Runden-Nummer im Zweck (SB-52: `RH-2026-2-0123`) bitte über `$zweck` lösen, nicht über die Referenz.
+- **Vorbild:** `App\Support\Teilnahmebeitraege` zeigt den Ablauf:
+  - eine Forderung je Auslöser;
+  - Storno setzt nur offene Forderungen auf „storniert“;
+  - Bezahltes bleibt stehen, die Kasse bekommt den Hinweis „Erstattung prüfen“.
+- **Kasse-Liste:** Wenn euer Bestellmodell `zahlungsLabel(): string` und `zahlungsHinweis(): ?string` hat, zeigt „Kasse → Zahlungen“ die Spalte „Für“ automatisch richtig.
+- **Rolle:** Nach der 3. Fassung heißt sie „Sammelbestellung“. Bitte Schlüssel `sammelbestellung` und `User::isSammelbestellung()` statt „material“ aus meiner Antwort vom 19.10. Sonst gilt die Antwort vom 19.10. weiter (nur Stamm, `RoleCatalog`, Rollentext, README).
+- **Was im Kern noch fehlt:**
+  - Betrag einer offenen Forderung ändern (SB-17/SB-33);
+  - Erinnerung vor der Frist (Kapitel 4, Schritt 5).
+
+  Beides gehört in `Zahlung`/`Zahlungen`. Wenn ihr es braucht, baut es dort, mit Eintrag hier im selben Commit; Bestehendes bitte nicht umbenennen. Alternativ: Eintrag „bitte bauen“, dann mache ich es.
+- **Migrationen:** Zeitstempel nicht auf `2026_10_22_120000` oder `2026_10_23_030000` legen; die gab es schon einmal doppelt.
+
 ### 2026-10-23 – Haupt → Stammes, Bezirk: Teilnahmebeiträge für Veranstaltungen (gemeinsamer Kern)
 Status: offen
 

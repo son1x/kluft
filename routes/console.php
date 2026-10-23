@@ -38,6 +38,8 @@ Schedule::call(fn () => Cache::forever(Roadmap::HEARTBEAT_KEY, now()->timestamp)
 
 // Instagram-Token wöchentlich erneuern (F-IG-04, Pflichtenheft 11.4).
 Schedule::command('instagram:refresh-token')->weeklyOn(1, '04:00');
+// Instagram-Einblendung: neueste Beiträge eigener Konten, Bilder lokal (docs/instagram.md).
+Schedule::command('instagram:feed')->hourly()->withoutOverlapping(30);
 
 // Backups (Pflichtenheft 10.2, 11.4): täglich 02:00, Wiederherstellungstest
 // wöchentlich.

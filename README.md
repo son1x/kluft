@@ -8,7 +8,7 @@ Der Name: Die Kluft tragen alle gleich, das Halstuch zeigt, wo man herkommt. Gen
 
 ## Was Kluft kann
 
-- **Redaktion:** Seiten und Beiträge, Mediathek mit Bildvarianten, Menü aus den Seiten (Reihenfolge und Unterpunkte je Seite), Glossar (Begriffe wie DAK oder FAK mit Erklärung), Weiterleitungen
+- **Redaktion:** Seiten und Beiträge, Mediathek mit Bildvarianten, Menü aus den Seiten (Reihenfolge und Unterpunkte je Seite), Glossar (Begriffe wie DAK oder FAK mit Erklärung), Weiterleitungen, Einblendung eigener Instagram-Konten ohne Embed ([docs/instagram.md](docs/instagram.md))
 - **Gliederung zeigen:** Verzeichnis der Bezirke und Stämme mit selbst gehosteter Karte, Personen und Gremien mit Porträts, Stufen und Fachbereiche mit eigenen Seiten
 - **Veranstaltungen:** Anmeldung mit Double-Opt-In, „Meine Anmeldungen“ per E-Mail-Code, Teilnehmendenliste und Export, Dokumente, Löschfristen, optional Mitgliederabgleich mit der NaMi
 - **Downloads:** Methoden, Formulare und Arbeitshilfen mit Suche und Filter; Typ, Größe, Seiten und Stand ermittelt das CMS

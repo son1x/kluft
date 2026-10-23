@@ -80,15 +80,33 @@ class InstagramClient
     }
 
     /**
-     * Verlängert das Long-Lived-Token (ca. 60 Tage, F-IG-04).
+     * Neueste Beiträge des Kontos zu einem Token (Instagram-Einblendung,
+     * Berechtigung instagram_business_basic).
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function media(string $accessToken, int $limit): array
+    {
+        $json = $this->send(fn (PendingRequest $http) => $http->get($this->url('me/media'), [
+            'fields' => 'id,caption,media_type,media_url,thumbnail_url,permalink,timestamp',
+            'limit' => max(1, min(50, $limit)),
+            'access_token' => $accessToken,
+        ]));
+
+        return array_values(array_filter((array) ($json['data'] ?? []), 'is_array'));
+    }
+
+    /**
+     * Verlängert das Long-Lived-Token (ca. 60 Tage, F-IG-04); ohne Angabe
+     * das Token der Veröffentlichung.
      *
      * @return array{access_token: string, expires_in: int}
      */
-    public function refreshToken(): array
+    public function refreshToken(?string $accessToken = null): array
     {
         $json = $this->send(fn (PendingRequest $http) => $http->get(config('services.instagram.graph_url').'/refresh_access_token', [
             'grant_type' => 'ig_refresh_token',
-            'access_token' => $this->accessToken(),
+            'access_token' => $accessToken ?? $this->accessToken(),
         ]));
 
         if (blank($json['access_token'] ?? null)) {

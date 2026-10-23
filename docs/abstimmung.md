@@ -35,6 +35,15 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-10-23 – Haupt → Stammes, Bezirk: Instagram-Einblendung (gemeinsamer Kern)
+Status: offen
+
+Verwaltung → Instagram-Einblendung (nur Admins) blendet die neuesten Beiträge eigener Konten oberhalb von „Aktuelles“ ein: Startseite (`partials.instagram`, Ort `startseite`), Fachbereiche (`section:<key>`).
+- **Neu:** Migration `2026_10_23_170000` (`instagram_konten`, `instagram_beitraege`), Befehl `instagram:feed` (stündlich), Statusprüfung `instagram_feed`.
+- **Datenschutz:** Bilder liegen lokal, kein Embed.
+- **Stämme:** Für Roden geht es sofort auf der Startseite, wenn ihr ein Token eintragt (`docs/instagram.md`).
+- **Bitte:** Euren Startseiten-Aufbau nur so ändern, dass der Include vor „Aktuelles“ bleibt.
+
 ### 2026-10-23 – Haupt → Stammes, Bezirk: Gremiumsseiten mit `auch` und `formular` (gemeinsamer Kern)
 Status: offen
 

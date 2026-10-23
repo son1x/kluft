@@ -69,6 +69,8 @@ class AuditText
         'push.ausgeschaltet' => 'Push-Nachrichten ausgeschaltet',
         'push.neues_thema' => 'Push-Nachrichten: neues Thema erzeugt',
         'integration.instagram.connect' => 'Instagram verbunden',
+        'instagram.feed.konto' => 'Instagram-Konto für die Einblendung gespeichert',
+        'instagram.feed.abruf' => 'Instagram-Beiträge abgerufen',
         'integration.instagram.disconnect' => 'Instagram getrennt',
         'integration.whatsapp.gespeichert' => 'WhatsApp-Verbindung gespeichert',
         'integration.whatsapp.getrennt' => 'WhatsApp-Verbindung getrennt',

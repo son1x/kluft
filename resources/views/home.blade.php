@@ -80,6 +80,8 @@
         </div>
     </section>
 
+    @include('partials.instagram', ['ort' => 'startseite'])
+
     @if (\App\Support\Ausbau::termine())
     <section class="mx-auto mt-20 max-w-6xl px-4" aria-labelledby="aktuelles-heading">
         @include('partials.section-heading', ['id' => 'aktuelles-heading', 'title' => 'Aktuelles'])

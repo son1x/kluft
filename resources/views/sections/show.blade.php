@@ -158,6 +158,8 @@
             </section>
         @endif
 
+        @include('partials.instagram', ['ort' => 'section:'.$section, 'class' => 'mt-16'])
+
         <section class="mt-16" aria-labelledby="sektion-aktuelles">
             @include('partials.section-heading', ['id' => 'sektion-aktuelles', 'title' => 'Aktuelles'])
             @if ($posts->isEmpty())

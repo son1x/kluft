@@ -248,7 +248,7 @@ class BackupService
 
         $sources = [
             'storage/app/private' => ['backups'],
-            'public/uploads' => ['media/variants', 'instagram'],
+            'public/uploads' => ['media/variants', 'instagram', 'instagram-feed'],
         ];
         foreach ($sources as $dir => $exclude) {
             $base = base_path($dir);

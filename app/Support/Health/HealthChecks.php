@@ -3,6 +3,7 @@
 namespace App\Support\Health;
 
 use App\Models\Calendar;
+use App\Models\InstagramKonto;
 use App\Models\IntegrationToken;
 use App\Models\WhatsAppCampaign;
 use App\Services\Backup\BackupService;
@@ -45,6 +46,7 @@ class HealthChecks
             'backups' => ['Backups', fn () => $this->backups()],
             'kalender' => ['Kalender-Abgleich (Nextcloud)', fn () => $this->calendars()],
             'instagram' => ['Instagram-Anbindung', fn () => $this->instagram()],
+            'instagram_feed' => ['Instagram-Einblendung', fn () => $this->instagramFeed()],
         ];
         if (config('mitglieder.driver') === 'nami') {
             $checks['nami'] = ['Mitgliederverwaltung (NaMi)', fn () => $this->nami()];
@@ -165,6 +167,24 @@ class HealthChecks
         }
 
         return $token->last_error ? [self::WARN, 'Letzte Erneuerung mit Fehler.'] : [self::OK, 'Verbunden.'];
+    }
+
+    /**
+     * Instagram-Einblendung: Konten, deren Abruf scheitert oder lange her ist.
+     *
+     * @return array{0: string, 1: string}
+     */
+    private function instagramFeed(): array
+    {
+        $konten = InstagramKonto::query()->where('aktiv', true)->get();
+        if ($konten->isEmpty()) {
+            return [self::OFF, 'Kein Konto eingeblendet.'];
+        }
+        $gestoert = $konten->filter(fn (InstagramKonto $k) => $k->fehler !== null || $k->abgerufen_am === null || $k->abgerufen_am->lt(now()->subHours(6)));
+
+        return $gestoert->isEmpty()
+            ? [self::OK, $konten->count().' Konto/Konten aktuell.']
+            : [self::WARN, 'Abruf gestört: '.$gestoert->pluck('name')->implode(', ').' (Verwaltung → Instagram-Einblendung).'];
     }
 
     /** @return array{0: string, 1: string} */

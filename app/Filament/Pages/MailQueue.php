@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Mail\TestRecipientFilter;
 use App\Support\AuditLogger;
 use App\Support\MailQueueEntry;
 use BackedEnum;
@@ -66,7 +67,49 @@ class MailQueue extends Page
                     'error' => MailQueueEntry::shortError($row->exception),
                 ]),
             'dailyLimit' => (int) config('mail.daily_limit'),
+            'testUmleitung' => filled(config('mail.test_redirect_to')),
+            'testSecret' => TestRecipientFilter::ausSecret(),
+            'testBackend' => TestRecipientFilter::ausBackend(),
+            'testWirksam' => TestRecipientFilter::allowlist(),
+            'istAdmin' => (bool) Filament::auth()->user()?->isAdmin(),
         ];
+    }
+
+    /** Neue Test-Empfänger*in (Adresse oder @domain) für die Testumgebung. */
+    public string $neueTestAdresse = '';
+
+    public function testEmpfaengerHinzufuegen(): void
+    {
+        abort_unless((bool) Filament::auth()->user()?->isAdmin(), 403);
+        $this->resetErrorBag('neueTestAdresse');
+        $eintrag = TestRecipientFilter::normalisieren($this->neueTestAdresse);
+        if (! TestRecipientFilter::istGueltig($eintrag)) {
+            $this->addError('neueTestAdresse', 'Bitte eine E-Mail-Adresse oder „@domain.de“ eingeben.');
+
+            return;
+        }
+        if (in_array($eintrag, TestRecipientFilter::allowlist(), true)) {
+            $this->addError('neueTestAdresse', 'Diese Adresse bekommt ihre Mails schon direkt.');
+
+            return;
+        }
+        if (count(TestRecipientFilter::allowlist()) >= TestRecipientFilter::MAX_ALLOWED) {
+            $this->addError('neueTestAdresse', 'Es sind schon '.TestRecipientFilter::MAX_ALLOWED.' Einträge freigeschaltet (Grenze).');
+
+            return;
+        }
+        TestRecipientFilter::backendSetzen([...TestRecipientFilter::ausBackend(), $eintrag], Filament::auth()->id());
+        AuditLogger::log('mail.allowlist.hinzu', Filament::auth()->user(), request: request());
+        $this->neueTestAdresse = '';
+        Notification::make()->title('Freigeschaltet: Mails an diese Adresse gehen ab sofort direkt raus.')->success()->send();
+    }
+
+    public function testEmpfaengerEntfernen(string $eintrag): void
+    {
+        abort_unless((bool) Filament::auth()->user()?->isAdmin(), 403);
+        TestRecipientFilter::backendSetzen(array_values(array_diff(TestRecipientFilter::ausBackend(), [$eintrag])), Filament::auth()->id());
+        AuditLogger::log('mail.allowlist.entfernt', Filament::auth()->user(), request: request());
+        Notification::make()->title('Entfernt.')->success()->send();
     }
 
     public function retry(string $uuid): void

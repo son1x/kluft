@@ -23,12 +23,12 @@ class MailAllowlistCheckCommand extends Command
         $raw = array_values(array_filter(array_map('trim', (array) config('mail.test_allowlist', []))));
         $allowed = TestRecipientFilter::allowlist();
 
-        $this->line('Einträge im Secret: '.count($raw).' · davon wirksam: '.count($allowed).' (höchstens '.TestRecipientFilter::MAX_ALLOWED.')');
+        $this->line('Einträge im Secret: '.count($raw).' · im Backend ergänzt: '.count(TestRecipientFilter::ausBackend()).' · wirksam: '.count($allowed).' (höchstens '.TestRecipientFilter::MAX_ALLOWED.')');
         foreach ($allowed as $i => $entry) {
             $this->line(' '.($i + 1).'. '.self::mask($entry));
         }
 
-        $ignored = count($raw) - count($allowed);
+        $ignored = count($raw) + count(TestRecipientFilter::ausBackend()) - count($allowed);
         if ($ignored > 0) {
             $this->warn("{$ignored} Eintrag/Einträge werden ignoriert (ungültig, doppelt oder über der Grenze von ".TestRecipientFilter::MAX_ALLOWED.').');
         }

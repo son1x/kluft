@@ -229,7 +229,7 @@ class Roadmap
                 'key' => 'test-empfaenger',
                 'phase' => 'Testing',
                 'title' => 'Tester*innen für echte Mails freischalten',
-                'detail' => 'GitHub-Secret MAIL_TEST_ALLOWLIST anlegen: bis zu zehn Einträge, getrennt durch Komma, Semikolon oder Zeilenumbruch – einzelne Adressen (z. B. „a@example.org,b@dpsg-trier.de“). Eine ganze Domain („@dpsg-trier.de“) ginge auch, schließt aber Ehrenamtliche mit Verbandsadresse ein. Diese Personen bekommen Mails auf test.dpsg-trier.de direkt, alle anderen Mails gehen weiter an MAIL_TEST_REDIRECT_TO. Nach dem nächsten Deploy aktiv; prüfen mit Actions → „Server-Prüfung“ → mail:check-allowlist. Vor dem Livegang wieder löschen.',
+                'detail' => 'GitHub-Secret MAIL_TEST_ALLOWLIST anlegen: bis zu zehn Einträge, getrennt durch Komma, Semikolon oder Zeilenumbruch – einzelne Adressen (z. B. „a@example.org,b@dpsg-trier.de“). Eine ganze Domain („@dpsg-trier.de“) ginge auch, schließt aber Ehrenamtliche mit Verbandsadresse ein. Diese Personen bekommen Mails auf test.dpsg-trier.de direkt, alle anderen Mails gehen weiter an MAIL_TEST_REDIRECT_TO. Nach dem nächsten Deploy aktiv; prüfen mit Actions → „Server-Prüfung“ → mail:check-allowlist. Weitere Adressen ergänzen Admins ohne Secret unter Verwaltung → E-Mail-Versand (dort stehen auch die Einträge aus dem Secret). Vor dem Livegang wieder löschen.',
                 'done' => TestRecipientFilter::allowlist() !== [],
             ],
             [

@@ -2,9 +2,14 @@
 
 namespace Tests\Feature\Mail;
 
+use App\Filament\Pages\MailQueue;
 use App\Mail\ContactMessageMail;
 use App\Mail\TestRecipientFilter;
+use App\Models\User;
+use Filament\Facades\Filament;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
+use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\TestDox;
 use Symfony\Component\Mime\Email;
 use Tests\TestCase;
@@ -15,6 +20,8 @@ use Tests\TestCase;
  */
 class TestRecipientFilterTest extends TestCase
 {
+    use RefreshDatabase;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -87,7 +94,7 @@ class TestRecipientFilterTest extends TestCase
         config(['mail.test_allowlist' => ['talia@example.org', '@dpsg-trier.de', 'kaputt', ...array_map(fn (int $i) => "p{$i}@x.de", range(1, 9))]]);
 
         $this->artisan('mail:check-allowlist')
-            ->expectsOutputToContain('Einträge im Secret: 12 · davon wirksam: 10')
+            ->expectsOutputToContain('Einträge im Secret: 12 · im Backend ergänzt: 0 · wirksam: 10')
             ->expectsOutputToContain('1. t…@example.org')
             ->expectsOutputToContain('2. ganze Domain @dpsg-trier.de')
             ->expectsOutputToContain('2 Eintrag/Einträge werden ignoriert')
@@ -101,5 +108,32 @@ class TestRecipientFilterTest extends TestCase
         config(['mail.test_redirect_to' => null]);
 
         $this->assertSame(['referent@dpsg-trier.de'], $this->to($this->send(['referent@dpsg-trier.de'])));
+    }
+
+    #[TestDox('Ergänzung im Backend (Verwaltung → E-Mail-Versand, nur Admins): zusätzlich zum Secret, das Secret bleibt; Liste für Admins sichtbar')]
+    public function test_ergaenzung_im_backend(): void
+    {
+        Filament::setCurrentPanel('admin');
+        config(['mail.test_allowlist' => ['secret@example.org']]);
+        $admin = User::query()->create(['name' => 'a', 'email' => 'admin@example.org', 'status' => 'active']);
+        $admin->roleAssignments()->create(['role' => 'admin', 'scope_type' => 'global']);
+        $verwaltung = User::query()->create(['name' => 'v', 'email' => 'v@example.org', 'status' => 'active']);
+        $verwaltung->roleAssignments()->create(['role' => 'verwaltung', 'scope_type' => 'global']);
+
+        Livewire::actingAs($verwaltung)->test(MailQueue::class)
+            ->assertSee('s…@example.org')->assertDontSee('secret@example.org')->assertDontSee('Freischalten')
+            ->set('neueTestAdresse', 'neu@example.org')->call('testEmpfaengerHinzufuegen')->assertForbidden();
+
+        Livewire::actingAs($admin)->test(MailQueue::class)
+            ->assertSee('secret@example.org')
+            ->set('neueTestAdresse', 'keine-adresse')->call('testEmpfaengerHinzufuegen')->assertHasErrors('neueTestAdresse')
+            ->set('neueTestAdresse', 'Neu@Example.org')->call('testEmpfaengerHinzufuegen')->assertHasNoErrors()
+            ->assertSee('neu@example.org');
+
+        $this->assertSame(['secret@example.org', 'neu@example.org'], TestRecipientFilter::allowlist());
+        $this->assertSame(['neu@example.org'], $this->to($this->send(['neu@example.org'])));
+
+        Livewire::actingAs($admin)->test(MailQueue::class)->call('testEmpfaengerEntfernen', 'neu@example.org');
+        $this->assertSame(['secret@example.org'], TestRecipientFilter::allowlist());
     }
 }

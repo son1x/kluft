@@ -70,6 +70,8 @@ class AuditText
         'push.neues_thema' => 'Push-Nachrichten: neues Thema erzeugt',
         'integration.instagram.connect' => 'Instagram verbunden',
         'umfrage.angelegt' => 'Umfrage angelegt',
+        'mail.allowlist.hinzu' => 'Test-Empfänger*in freigeschaltet',
+        'mail.allowlist.entfernt' => 'Test-Empfänger*in entfernt',
         'umfrage.geaendert' => 'Umfrage geändert',
         'umfrage.kopiert' => 'Umfrage kopiert',
         'umfrage.vorlage' => 'Umfrage als Vorlage gespeichert',

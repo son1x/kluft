@@ -32,6 +32,7 @@ return [
         ['Bezirke', 'Eigene Websites für Bezirke', 'partial'],
         ['Stämme', 'Eigenständige Websites für Stämme', 'partial'],
         ['Umfragen', 'Umfragen mit Vorlagen und Auswertung', 'partial'],
+        ['Livegang', 'www.dpsg-trier.de live am Totensonntag (22.11.2026)', 'open'],
     ],
 
     'sections' => [
@@ -215,6 +216,15 @@ return [
             ['status' => 'done', 'title' => 'Beide Varianten vorbereitet, keine online', 'note' => 'Schalter WHATSAPP_MODE (GitHub-Secret): off (aktuell), channel oder api. Kanal-Variante: /whatsapp lädt zum Kanal ein (WHATSAPP_CHANNEL_URL), an veröffentlichten Beiträgen und Veranstaltungen „Für WhatsApp-Kanal“ mit fertigem Text zum Kopieren. Business-Variante: Cloud-API-Modul wie oben. Ausgeschaltet sind Seite, Webhook, Backend-Menü, Rolle, Statusprüfung und Zeitpläne unsichtbar bzw. inaktiv.'],
             ['status' => 'open', 'title' => 'Entscheidung: kostenloser Kanal oder bezahlte Cloud API', 'note' => 'docs/entscheidungen/whatsapp-kostenlos-oder-bezahlt.md: Cloud API bei 50 Empfänger:innen ca. 13–26 € im Monat, bei 100 ca. 26–52 € (2–4 Aussendungen); WhatsApp-Kanal kostenlos und ohne Nummern beim Verband, aber Versand von Hand und standardmäßig stummgeschaltet. Empfehlung: mit dem Kanal starten. WhatsApp Web automatisiert oder CLI-Werkzeuge scheiden aus (Sperre der Nummer, kein Webspace, Datenschutz).'],
             ['status' => 'open', 'title' => 'Budget und Meta-Business-Konto', 'note' => 'Jede Newsletter-Nachricht kostet bei Meta grob 0,10–0,15 €. Unternehmensverifizierung mit Vereinsregisterauszug und Zahlungsmittel des Rechtsträgers nötig; danach Einrichtung nach Setup-Anleitung.'],
+        ],
+        'Livegang' => [
+            ['status' => 'done', 'title' => 'Entscheidungen (26.10.2026)', 'note' => 'Live am Totensonntag, 22.11.2026. Die Live-Website startet mit allen Inhalten und Einstellungen aus test.dpsg-trier.de. Test bleibt erhalten, wird aber als Testsystem deutlich gekennzeichnet bzw. geschlossen. Weg: der erprobte Deploy, nicht das Update-System (das wird danach an einem Stamm erprobt). Plan: docs/livegang.md.'],
+            ['status' => 'open', 'title' => 'Deploy auf zwei Ziele derselben Instanz', 'note' => 'Deploy-Workflow mit Wahl „Test“ oder „Live“ für dv-trier (Environments dv-trier und dv-trier-live). Live bekommt eigene Server-Prüfung, Monitoring und Backups; nie gleichzeitig mit Test.'],
+            ['status' => 'open', 'title' => 'Inhalte von Test nach Live übernehmen', 'note' => 'Eigener Workflow „Test → Live übernehmen“: Datenbank und hochgeladene Dateien (Mediathek, Dokumente) von Test in die Live-Website kopieren, mit Sicherung vorher. Danach angepasst: Adressen auf www.dpsg-trier.de, Testumleitung und Test-Empfänger*innen aus, Warteschlange und Testanmeldungen geleert, Suchmaschinen erlaubt. Einmal für den Probelauf, endgültig am Livetag; danach wird nur noch auf Live gepflegt.'],
+            ['status' => 'open', 'title' => 'Testsystem kennzeichnen und schließen', 'note' => 'Schalter KLUFT_TESTSYSTEM für test.dpsg-trier.de: Hinweisband auf jeder Seite („Testsystem – die offizielle Website ist www.dpsg-trier.de“, mit Link), Suchmaschinen ausgesperrt (noindex, robots.txt), Mails weiter an die Testadresse; auf Wunsch geschlossen: Website nur nach Anmeldung im Backend bzw. mit Zugangscode, öffentliche Formulare aus.'],
+            ['status' => 'open', 'title' => 'Probelauf um den 18.11.', 'note' => 'Live-Website unter vorläufiger Adresse (z. B. neu.dpsg-trier.de) mit Kopie der Test-Inhalte: Anmeldung mit Microsoft 365, Kontaktformular, Veranstaltungsanmeldung mit echter Mail, Weiterleitungen alter WordPress-Adressen, Bolivien und Beraten.'],
+            ['status' => 'open', 'title' => 'Livetag und danach', 'note' => 'Umschalten nach docs/livegang.md, dann Monitoring auf www.dpsg-trier.de (MONITOR_URL), Backups und Cronjob der Live-Website prüfen, alte WordPress-Seite abschalten. Ab dann gibt es Änderungen nur noch auf Live; Test dient zum Ausprobieren neuer Funktionen.'],
+            ['status' => 'open', 'title' => 'Inhalte bis 15.11. fertig', 'note' => 'Aus den anderen Meilensteinen: importierte WordPress-Beiträge durchsehen, Impressum und Rechtsträger, Personenvorstellung bestätigen, Fachbereiche, Bankverbindung Bolivien, Testanmeldung durchspielen.'],
         ],
         'Umfragen' => [
             ['status' => 'done', 'title' => 'Beispielumfragen gesichtet, Fragetypen festgelegt', 'note' => 'Vier Nextcloud-Umfragen (Korsika-Fahrt, DiVers-Feedback, Leiter*innenumfrage, Infos für Prisma); Entscheidungen in docs/pflichtenheft-umfragen.md, Abschnitt 8.'],

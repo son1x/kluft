@@ -288,6 +288,41 @@ class Roadmap
                 'detail' => 'Instagram als Business- oder Creator-Konto einrichten, in einer Meta-App „Instagram API mit Instagram-Login“ hinzufügen (Berechtigung instagram_business_content_publish), ein Long-Lived-Token erzeugen und im Backend unter „Integrationen“ eintragen.',
                 'done' => app(InstagramClient::class)->isConfigured(),
             ],
+            [
+                'key' => 'live-webspace',
+                'phase' => 'Livegang',
+                'title' => 'Livegang 1/5: Webspace und Datenbank für www.dpsg-trier.de anlegen',
+                'detail' => 'In Plesk einen eigenen Ordner für die Live-Website anlegen (nicht der von test.dpsg-trier.de und nicht der der alten WordPress-Seite) und eine neue, leere MariaDB-Datenbank (utf8mb4) mit eigenem Benutzer. Zum Probelauf bis ca. 18.11. eine vorläufige Adresse wie neu.dpsg-trier.de auf diesen Ordner zeigen lassen (mit Let’s-Encrypt-Zertifikat). Ordnerpfad und Datenbankname an die Technik geben (keine Passwörter in Chat oder Mail). Details: docs/livegang.md.',
+                'done' => null,
+            ],
+            [
+                'key' => 'live-environment',
+                'phase' => 'Livegang',
+                'title' => 'Livegang 2/5: GitHub-Environment „dv-trier-live“ anlegen',
+                'detail' => 'Repository → Settings → Environments → „New environment“: dv-trier-live. Secrets wie bei dv-trier, aber mit SSH_TARGET_DIR und DB_* der Live-Website, APP_URL zunächst die vorläufige Adresse (am Livetag https://www.dpsg-trier.de). MAIL_TEST_REDIRECT_TO und MAIL_TEST_ALLOWLIST hier NICHT anlegen – auf der Live-Website gehen Mails an die echten Empfänger*innen. Die Testumgebung dv-trier bleibt, wie sie ist.',
+                'done' => null,
+            ],
+            [
+                'key' => 'live-entra',
+                'phase' => 'Livegang',
+                'title' => 'Livegang 3/5: Microsoft-365-Login für die neue Adresse freischalten',
+                'detail' => 'In der Entra-App (Azure-Portal → App-Registrierungen → Authentifizierung) die Umleitungs-URIs https://neu.dpsg-trier.de/auth/entra/callback (Probelauf) und https://www.dpsg-trier.de/auth/entra/callback ergänzen. Die URI für test.dpsg-trier.de bleibt.',
+                'done' => null,
+            ],
+            [
+                'key' => 'live-datenschutz',
+                'phase' => 'Livegang',
+                'title' => 'Livegang 4/5: Datenschutzerklärung und Impressum für den Livegang prüfen',
+                'detail' => 'Datenschutzerklärung um Nachrichten-Eingang, Umfragen (anonym als Standard, Gewinnspiel getrennt) und die Instagram-Einblendung (Bilder lokal, kein Embed) ergänzen; Impressum vervollständigen (siehe „Rechtsträger und Impressum“). Die Technik liefert auf Wunsch einen Textvorschlag.',
+                'done' => null,
+            ],
+            [
+                'key' => 'live-umschalten',
+                'phase' => 'Livegang',
+                'title' => 'Livegang 5/5: Umschalten am 21./22.11.',
+                'detail' => 'Mit der Technik abgestimmt: alte WordPress-Seite sichern, Domain dpsg-trier.de und www in Plesk auf den Live-Ordner zeigen lassen, Zertifikat ausstellen, APP_URL im Environment dv-trier-live auf https://www.dpsg-trier.de, letzte Übernahme der Inhalte aus Test und Deploy. Danach bolivienpartnerschaft.de und beraten-online.de als Aliasse. Ablauf Schritt für Schritt in docs/livegang.md.',
+                'done' => null,
+            ],
         ];
     }
 

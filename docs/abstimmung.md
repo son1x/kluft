@@ -35,6 +35,14 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-10-31 – Haupt → Stammes, Bezirk: Actions-Minuten, Qualität nicht mehr bei jedem Push
+Status: offen
+
+Das Free-Tier-Kontingent (2.000 Minuten) war am 26.10. leer; seitdem startet GitHub keine Jobs, auch keine Deploys (bis zum neuen Abrechnungsmonat). Entscheidung des Nutzers: `quality.yml` läuft nicht mehr bei jedem Push, nur montags und von Hand.
+- **Bitte:** vor jedem Push lokal Pint und die Tests aller drei Instanzen ausführen. Die CI fängt das nicht mehr ab.
+- **Deploys bündeln:** nicht nach jedem Commit deployen. Ein Deploy kostet etwa 6 Minuten, ohne grüne Qualitätsprüfung etwas mehr, weil er dann selbst testet.
+- **Stand prüfen:** `python3 scripts/actions-minuten.py`, Abschnitt „Actions-Minuten“ in `docs/deploy.md`.
+
 ### 2026-10-31 – Haupt → Stammes, Bezirk: Diözesanlager, Lager-Aussehen (gemeinsamer Kern)
 Status: offen
 

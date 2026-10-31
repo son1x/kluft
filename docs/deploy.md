@@ -10,6 +10,18 @@ GitHub baut und testet (Tests der Instanz, Frontend, `vendor/`, Bilder der Insta
 
 **Schutzregeln** (auch beim echten Deploy): Läuft im Zielordner eine andere Instanz, bricht der Deploy ab. Bei einer Erstinstallation muss der Ordner leer sein (bis auf `.well-known` und `cgi-bin`), sonst würde der Abgleich eine vorhandene Website löschen. Hochgeladen wird nur der Ordner der eigenen Instanz unter `instanzen/`.
 
+## Actions-Minuten (Free Tier)
+
+Das Konto läuft im Free Tier: **2.000 Actions-Minuten im Monat** für alle privaten Repositories zusammen. Ist das Kontingent leer, startet GitHub keine Jobs mehr („spending limit needs to be increased“), bis zum nächsten Abrechnungsmonat. So war es vom 26. bis 31.10.2026.
+
+- **Stand prüfen:** `python3 scripts/actions-minuten.py` (Minuten dieses Monats je Workflow, nur dieses Repository); genau unter GitHub → Settings → Billing → Usage.
+- **Verbrauch Oktober 2026:** 1.765 Minuten, davon Qualität 883 (5 Jobs bei jedem Push), Deploy 623 (113 Läufe, je etwa 5–6 Minuten), Monitoring 235.
+- **Seit 31.10.2026:**
+  - „Qualität und Sicherheit“ läuft nur noch montags und von Hand. Vor dem Push daher lokal Pint und die Tests aller drei Instanzen ausführen.
+  - Der Deploy testet selbst, wenn für den Commit keine grüne Qualitätsprüfung vorliegt.
+- **Sparsam deployen:** Änderungen sammeln und einmal deployen statt nach jedem Commit. Mit `runner: nas` kostet ein Deploy keine Minuten (`docs/runner.md`).
+- **Monitoring:** alle 6 Stunden für drei Instanzen, etwa 8 Minuten am Tag.
+
 ## Environment anlegen
 
 Settings → Environments → **New environment**. Der Name ist der Schlüssel der Instanz: `dv-trier`, `saar-hochwald` bzw. `roden`.

@@ -2,22 +2,15 @@ name: Qualität und Sicherheit
 
 # Pflichtenheft 10.1/10.5: bekannte Sicherheitslücken in Abhängigkeiten
 # (composer audit, npm audit), Code-Stil (Pint) und statische Analyse
-# (Larastan). Läuft bei jedem Push mit Code-Änderung, jeden Montag (neue
-# Sicherheitsmeldungen auch ohne Code-Änderung) und auf Knopfdruck. Schlägt
-# ein Lauf fehl, schickt GitHub eine Mail. Der Deploy übernimmt einen grünen
-# Lauf für denselben Commit und spart sich dann die SQLite-Tests.
+# (Larastan). Läuft jeden Montag (neue Sicherheitsmeldungen auch ohne
+# Code-Änderung) und auf Knopfdruck. Seit 31.10.2026 nicht mehr bei jedem
+# Push: Das Free-Tier-Kontingent (2.000 Actions-Minuten) war im Oktober nach
+# drei Wochen leer, fast die Hälfte davon ging auf diesen Workflow (5 Jobs je
+# Push). Vor dem Push daher lokal Pint und Tests aller Instanzen laufen
+# lassen. Schlägt ein Lauf fehl, schickt GitHub eine Mail. Der Deploy
+# übernimmt einen grünen Lauf für denselben Commit, sonst testet er selbst.
 
 on:
-  push:
-    branches:
-      - claude/dpsg-trier-homepage-design-jwdgs4
-      - claude/kluft-instanzen
-    # Reine Doku- und Datei-Commits brauchen keinen Lauf (Actions-Minuten).
-    paths-ignore:
-      - 'docs/**'
-      - '**.md'
-      - 'instanzen/*/dateien/**'
-      - 'runner/**'
   schedule:
     - cron: '17 5 * * 1'
   workflow_dispatch:
@@ -27,10 +20,10 @@ on:
         type: boolean
         default: false
 
-# Schnell hintereinander gepusht: nur der letzte Stand wird geprüft.
+# Zweimal hintereinander gestartet: nur ein Lauf je Branch gleichzeitig.
 concurrency:
   group: quality-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'push' }}
+  cancel-in-progress: false
 
 jobs:
   sicherheit:

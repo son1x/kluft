@@ -122,7 +122,21 @@ Leitenden „eingesehen am“ und „gültig bis“ speichern (keine Inhalte, ke
 - Hat die DPSG im Saarland (Träger oder Dachverband) eine/n **vom Land geförderte/n Jugendbildungsreferent*in**? Davon hängt ab, ob das Land Bildung mit 15 oder 21 € und Schulungen mit 17 oder 23 € fördert. Die Schätzung rechnet vorsichtig mit dem niedrigeren Satz, bis das geklärt ist.
 - Zählweise der Tage beim Bistum: Tag = 6 Std. Programm. Für An- und Abreisetag rechnet die Schätzung vorsichtig je einen halben Tag.
 
-## 9. Umsetzung in Phasen (Vorschlag)
+## 9. Umsetzung in Phasen
+
+**Stand der Umsetzung (01.11.2026): Phase 1 ist gebaut.**
+- **Schalter und Felder:** Funktion „Zuschussanträge“ (Verwaltung → Funktionen, alle Ebenen, ab Ausbaustufe 3, Standard aus). Je Veranstaltung Abschnitt „Zuschuss“: „Zuschuss beantragen“, Art, Zuschussgeber, „weiter als 250 km“, Kosten- und Finanzierungsplan (Cent in `events.zuschuss_finanzen`).
+- **Anmeldung:** Neue Felder `strasse`, `geburtsdatum` (Typ `date`), `geschlecht` in `dpsg.event_fields`, bei „Zuschuss beantragen“ samt PLZ und Wohnort Pflicht. Das Geburtsjahr fällt weg und folgt aus dem Datum. Die Einwilligung nennt den Zweck (Version `+zuschuss-1`).
+- **Teilnehmende:**
+  - Spalten Funktion und Anwesend;
+  - Aktion „Zuschuss“ je Person: Funktion, Juleica, Kreis abweichend von der PLZ, Anwesenheit gesamt oder je Tag;
+  - Sammelaktionen „War dabei“, „War nicht dabei“, „Funktion setzen“;
+  - Funktion und Juleica schon beim Eintragen von Hand.
+- **Kopfaktion „Zuschuss“ in der Teilnehmendenliste:** „Übersicht und Schätzung“ (Zählung je Kreis und Geschlecht, fehlende Angaben, Schätzung), „Teilnahmeliste (PDF)“, „Förderschätzung (PDF)“.
+- **Code:** `App\Support\Zuschuesse` (Personen, Zählung, fehlende Angaben, Finanzen), `App\Support\Zuschuesse\Kreise` (69 saarländische PLZ → Kreis, OpenPLZ), `App\Support\Zuschuesse\Foerderrechner` (Sätze mit Fassung der Richtlinie), `App\Services\Zuschuss\ZuschussPdf`, Trait `RegistrationsRelationManager\Concerns\ZuschussAktionen`. Migration `2026_10_31_120000_add_zuschuss_to_events`.
+- **Noch nicht:** Formular A, D/E, C und die Anträge von Stadt und Bistum (Phase 2), Stammdaten der Leitenden mit Juleica (ZU-06), Pro-Kopf-Liste der Stadt (ZU-19).
+
+**Phasen:**
 
 | Phase | Inhalt |
 |---|---|

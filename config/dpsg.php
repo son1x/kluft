@@ -146,6 +146,15 @@ return array_replace([
         // (Landesjugendring); auch 4-stellige PLZ aus Luxemburg und Belgien.
         'plz' => ['label' => 'Postleitzahl', 'type' => 'plz', 'hint' => 'z. B. für Zuschussanträge (Landesjugendring)'],
         'wohnort' => ['label' => 'Wohnort', 'type' => 'wohnort', 'hint' => 'z. B. für Zuschussanträge (Landesjugendring)'],
+        // Für die Teilnahmeliste bei Zuschussanträgen (docs/pflichtenheft-zuschuesse.md);
+        // bei Veranstaltungen mit „Zuschuss beantragen“ automatisch Pflicht.
+        'strasse' => ['label' => 'Straße und Hausnummer', 'type' => 'strasse', 'hint' => 'für Zuschussanträge'],
+        'geburtsdatum' => ['label' => 'Geburtsdatum', 'type' => 'date', 'hint' => 'für Zuschussanträge'],
+        'geschlecht' => ['label' => 'Geschlecht', 'type' => 'select', 'hint' => 'für Zuschussanträge', 'options' => [
+            'w' => 'weiblich',
+            'm' => 'männlich',
+            'd' => 'divers',
+        ]],
         // Bezeichnung je Instanz (event_stamm_label), z. B. „Stamm oder Bezirk“ im DV.
         'stamm' => ['label' => $instanzConfig['event_stamm_label'] ?? 'Stamm', 'type' => 'stamm'],
         'gremium' => ['label' => 'Funktion / Gremium (z. B. Bezirksvorstand, Delegierte*r, Gast)', 'type' => 'text'],

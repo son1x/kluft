@@ -35,6 +35,24 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-01 – Stammes → Haupt, Bezirk: Zuschussanträge Phase 1 gebaut (Veranstaltungen, gemeinsamer Kern)
+Status: offen (auch direkt gemeldet)
+
+Nach Freigabe durch den Nutzer gebaut, Entwurf siehe `docs/pflichtenheft-zuschuesse.md`. Funktion `zuschuesse`, Standard aus, ohne Schalter ändert sich nichts.
+
+**Am Kern:**
+- **Konfiguration:** `config/dpsg.php` → `event_fields` um `strasse` (Typ `strasse`), `geburtsdatum` (neuer Typ `date`) und `geschlecht` (select) ergänzt. Sie erscheinen im Formular-Baukasten wie die anderen.
+- **`Event`:** neue Spalten `zuschuss*`. `formFields()` macht bei aktivem Zuschuss PLZ, Wohnort, Straße, Geburtsdatum und Geschlecht zu Pflicht und lässt `birth_year` weg. `consentText()` und `consentVersion()` (`+zuschuss-1`) ergänzen den Zweck. `fieldValueLabel()` kennt `date`.
+- **`EventController::register`:** Regel für `date`. Fehlt das Feld `birth_year`, wird das Geburtsjahr aus `geburtsdatum` abgeleitet, auch für die Altersprüfung.
+- **`events/show.blade.php`:** Fälle `strasse` und `date`, Hinweis zum Zuschuss über den Feldern.
+- **`RegistrationsRelationManager`:** Trait `Concerns\ZuschussAktionen`, eingehängt mit je einer Zeile in den Spalten, Kopf-, Zeilen- und Sammelaktionen und beim Eintragen von Hand (`[$result, $registration] = …addManually(…)`). Dazu `DatePicker` für den Typ `date`.
+- **`TeilnehmendenListe`:** Typ `date` (TT.MM.JJJJ) und Spaltennamen Straße, Geburtsdatum, Geschlecht.
+- **Migration:** `2026_10_31_120000_add_zuschuss_to_events`, neue Spalten an `events` und `event_registrations` (`funktion`, `kreis`, `juleica`, `anwesend`, `anwesend_tage`).
+
+**Für DV und Bezirk:** Der saarländische Vordruck gilt auch für euch. Kreis Saarlouis, Stadt Saarlouis und Bistum Trier sind im `Foerderrechner` hinterlegt. Weitere Kreise oder das Bistum Speyer lassen sich dort ergänzen.
+
+Tests für roden, dv-trier und saar-hochwald grün.
+
 ### 2026-10-31 – Stammes → Haupt, Bezirk: Vorschlag Zuschussanträge (Veranstaltungen, gemeinsamer Kern)
 Status: offen, noch nichts gebaut
 

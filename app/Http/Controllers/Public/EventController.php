@@ -95,6 +95,7 @@ class EventController extends Controller
                 'select', 'herkunft' => [Rule::in(array_keys($field['options'] ?? []))],
                 'tel' => ['string', 'max:40', 'regex:/^[0-9 +()\/-]+$/'],
                 'plz' => ['string', 'max:10', 'regex:/^([A-Za-z]{1,2}[- ]?)?[0-9]{4,5}$/'],
+                'date' => ['date_format:Y-m-d', 'before_or_equal:today', 'after:'.now()->subYears(100)->toDateString()],
                 'textarea' => ['string', 'max:1000'],
                 default => ['string', 'max:150'],
             }];
@@ -112,7 +113,15 @@ class EventController extends Controller
             'required_if' => 'Bitte wähle mindestens einen Tag aus.',
             'in' => 'Bitte wähle eine der angebotenen Möglichkeiten.',
             'preis.required' => 'Bitte wähle den passenden Teilnahmebeitrag.',
+            'date_format' => 'Bitte gib ein gültiges Datum an.',
+            'before_or_equal' => 'Bitte gib ein gültiges Geburtsdatum an.',
+            'after' => 'Bitte gib ein gültiges Geburtsdatum an.',
         ]);
+
+        // Zuschussantrag: Geburtsjahr aus dem Geburtsdatum (für die Altersprüfung unten).
+        if (! isset($fields['birth_year']) && preg_match('/^(\d{4})-\d{2}-\d{2}$/', (string) $request->input('geburtsdatum'), $treffer)) {
+            $request->merge(['birth_year' => (int) $treffer[1]]);
+        }
 
         // Unter 16 nur mit Einwilligung der Personensorgeberechtigten (F-EV-14).
         $validator->after(function (Validator $validator) use ($event, $request) {
@@ -131,7 +140,7 @@ class EventController extends Controller
             'first_name' => $data['first_name'],
             'last_name' => $data['last_name'],
             'email' => $data['email'],
-            'birth_year' => $data['birth_year'] ?? null,
+            'birth_year' => $data['birth_year'] ?? (isset($data['geburtsdatum']) ? (int) substr((string) $data['geburtsdatum'], 0, 4) : null),
             'data' => collect($fields)->except('birth_year')
                 ->map(fn (array $field, string $k) => $field['type'] === 'days' ? $this->selectedDays($event, $data, $k) : ($data[$k] ?? null))
                 ->all(),

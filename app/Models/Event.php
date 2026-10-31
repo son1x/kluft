@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Services\Mitglieder\MitgliederAbgleich;
 use App\Support\Ausbau;
 use App\Support\Features;
+use App\Support\Zuschuesse;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -38,6 +39,7 @@ class Event extends Model
         'cost_info', 'reg_opens_at', 'reg_closes_at', 'capacity', 'waitlist_enabled', 'adults_only', 'member_check', 'member_gruppierung_id',
         'status', 'form_fields', 'retention_days', 'created_by', 'calendar_uid',
         'certificate_enabled', 'certificate_text', 'certificate_signer', 'preise', 'zahlungsfrist_tage',
+        'zuschuss', 'zuschuss_art', 'zuschuss_geber', 'zuschuss_finanzen', 'zuschuss_fern',
     ];
 
     protected function casts(): array
@@ -54,6 +56,10 @@ class Event extends Model
             'form_fields' => 'array',
             'preise' => 'array',
             'zahlungsfrist_tage' => 'integer',
+            'zuschuss' => 'boolean',
+            'zuschuss_geber' => 'array',
+            'zuschuss_finanzen' => 'array',
+            'zuschuss_fern' => 'boolean',
             'capacity' => 'integer',
             'retention_days' => 'integer',
         ];
@@ -159,13 +165,20 @@ class Event extends Model
         $config = $this->form_fields ?? [];
         $fields = [];
 
+        $zuschuss = $this->zuschussAktiv();
         foreach (config('dpsg.event_fields') as $key => $field) {
             // Tage-Auswahl ergibt nur bei mehrtägigen Veranstaltungen Sinn.
             if ($field['type'] === 'days' && count($this->days()) < 2) {
                 continue;
             }
-            if (in_array($config[$key] ?? null, ['optional', 'required'], true)) {
-                $fields[$key] = [...$field, 'required' => $config[$key] === 'required'];
+            // Zuschussantrag: Anschrift, Geburtsdatum und Geschlecht sind Pflicht;
+            // das Geburtsjahr ergibt sich aus dem Geburtsdatum.
+            if ($zuschuss && $key === 'birth_year') {
+                continue;
+            }
+            $modus = $zuschuss && in_array($key, Zuschuesse::FELDER, true) ? 'required' : ($config[$key] ?? null);
+            if (in_array($modus, ['optional', 'required'], true)) {
+                $fields[$key] = [...$field, 'required' => $modus === 'required'];
             }
             // Unter der Stamm-/Bezirksauswahl: „Gast aus einem anderen …“ (Ankreuzfeld).
             if ($key === 'stamm' && isset($fields['stamm']) && Features::enabled(Features::GAESTE)) {
@@ -243,16 +256,25 @@ class Event extends Model
      * Einwilligungstext der Anmeldung; mit Mitgliederabgleich um dessen
      * Hinweis ergänzt (eigene Version, damit nachweisbar bleibt, was galt).
      */
+    /** Zuschuss beantragen: an der Veranstaltung eingeschaltet und Funktion „Zuschüsse“ an. */
+    public function zuschussAktiv(): bool
+    {
+        return $this->zuschuss && Features::enabled(Features::ZUSCHUESSE);
+    }
+
     public function consentText(): string
     {
         $text = __((string) config('dpsg.event_consent.text'), ['tage' => $this->retention_days]);
+        if ($this->zuschussAktiv()) {
+            $text .= ' '.Zuschuesse::EINWILLIGUNG;
+        }
 
         return $this->checksMembers() ? $text.' '.config('mitglieder.consent.text') : $text;
     }
 
     public function consentVersion(): string
     {
-        $version = (string) config('dpsg.event_consent.version');
+        $version = (string) config('dpsg.event_consent.version').($this->zuschussAktiv() ? '+zuschuss-1' : '');
 
         return $this->checksMembers() ? $version.'+mitglieder-'.config('mitglieder.consent.version') : $version;
     }
@@ -313,6 +335,7 @@ class Event extends Model
 
         return match ($field['type']) {
             'select', 'herkunft' => $field['options'][$value] ?? (string) $value,
+            'date' => Carbon::parse((string) $value)->format('d.m.Y'),
             'days' => array_values((array) $value) === array_keys($this->days())
                 ? 'ganze Zeit'
                 : collect((array) $value)->map(fn (string $d) => $this->days()[$d] ?? $d)->implode(' · '),

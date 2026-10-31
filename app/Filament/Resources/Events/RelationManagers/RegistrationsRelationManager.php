@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Events\RelationManagers;
 
+use App\Filament\Resources\Events\RelationManagers\Concerns\ZuschussAktionen;
 use App\Jobs\CheckEventMembers;
 use App\Mail\RegistrationDocumentMail;
 use App\Mail\TeilnahmebescheinigungMail;
@@ -30,6 +31,7 @@ use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -57,6 +59,8 @@ use Throwable;
  */
 class RegistrationsRelationManager extends RelationManager
 {
+    use ZuschussAktionen;
+
     protected static string $relationship = 'registrations';
 
     protected static ?string $title = 'Teilnehmende';
@@ -148,6 +152,7 @@ class RegistrationsRelationManager extends RelationManager
                     ->color(fn (?string $state) => $state === 'offen' ? 'gray' : 'success')
                     ->description(fn (EventRegistration $record) => $record->certificateApproved() ? $record->certificate_approved_at?->format('d.m.Y') : null)
                     ->placeholder('–'),
+                ...$this->zuschussSpalten($event),
                 TextColumn::make('guardian_name')->label('Angemeldet durch')->placeholder('–')->toggleable(),
                 TextColumn::make('confirmed_at')->label('Bestätigt am')->dateTime('d.m.Y H:i')->sortable(),
             ])
@@ -177,6 +182,7 @@ class RegistrationsRelationManager extends RelationManager
                                 ->helperText('Optional. Ohne Adresse gibt es keine E-Mails und keinen Zugang zu „Meine Anmeldungen“.'),
                             ...$this->eventFieldInputs($event),
                             ...$this->preisInputs($event),
+                            ...$this->zuschussEingaben($event),
                             ...$this->manualStatusInputs($event),
                         ])
                         ->action(function (array $data) {
@@ -189,7 +195,8 @@ class RegistrationsRelationManager extends RelationManager
                                 'data' => (array) ($data['data'] ?? []),
                                 'preis' => filled($data['preis'] ?? null) ? ($event->preise()[(int) $data['preis']] ?? null) : null,
                             ];
-                            [$result] = app(EventRegistrations::class)->addManually($event, $person, (string) $data['status'], (bool) ($data['notify'] ?? false), self::namiNutzer());
+                            [$result, $registration] = app(EventRegistrations::class)->addManually($event, $person, (string) $data['status'], (bool) ($data['notify'] ?? false), self::namiNutzer());
+                            $this->zuschussNachEintragen($registration, $data);
                             $this->afterManualAdd($event);
 
                             match ($result) {
@@ -306,6 +313,7 @@ class RegistrationsRelationManager extends RelationManager
                         AuditLogger::log('event.member_check', Filament::auth()->user(), Event::class, $event->getKey(), request());
                         Notification::make()->title('Abgleich gestartet – die Spalte „Mitglied“ füllt sich in den nächsten Minuten.')->success()->send();
                     }),
+                $this->zuschussKopfaktionen($event),
                 Action::make('export')
                     ->label('Teilnehmerliste (.xlsx)')
                     ->icon('heroicon-o-arrow-down-tray')
@@ -322,6 +330,7 @@ class RegistrationsRelationManager extends RelationManager
                     }),
             ])
             ->recordActions([
+                $this->zuschussAktion($event),
                 Action::make('details')
                     ->label('Details')
                     ->icon('heroicon-o-eye')
@@ -522,6 +531,7 @@ class RegistrationsRelationManager extends RelationManager
                         ->deselectRecordsAfterCompletion()
                         ->action(fn (Collection $records) => $this->revokeCertificates($records)),
                 ])->label('Bescheinigungen')->visible($event->bescheinigungAn()),
+                $this->zuschussSammelaktionen($event),
             ]);
     }
 
@@ -683,6 +693,7 @@ class RegistrationsRelationManager extends RelationManager
                 'herkunft' => Select::make($name)->label($field['label'])->options($field['options'] ?? [])->default($field['default'] ?? null)->selectablePlaceholder(false),
                 'days' => CheckboxList::make($name)->label($field['label'])->options($event->days())->columns(2),
                 'textarea' => Textarea::make($name)->label($field['label'])->rows(2)->maxLength(1000),
+                'date' => DatePicker::make($name)->label($field['label'])->native(false)->displayFormat('d.m.Y')->maxDate(now()),
                 default => TextInput::make($name)->label($field['label'])->maxLength(255),
             };
         })->values()->all();

@@ -129,6 +129,13 @@ class TeilnehmendenListe
                 if ($feld['type'] === 'plz' && ! preg_match('/^\d{4,5}$/', $wert)) {
                     $problem ??= 'Postleitzahl ungültig';
                 }
+                if ($feld['type'] === 'date') {
+                    $datum = preg_match('/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/', $wert, $t) ? sprintf('%04d-%02d-%02d', $t[3], $t[2], $t[1]) : $wert;
+                    if (! preg_match('/^\d{4}-\d{2}-\d{2}$/', $datum) || ! strtotime($datum)) {
+                        $problem ??= $feld['label'].' ungültig (TT.MM.JJJJ)';
+                    }
+                    $wert = $datum;
+                }
                 if ($feld['type'] === 'herkunft') {
                     $wert = self::herkunft($wert, (array) ($feld['options'] ?? []));
                     if ($wert === '') {
@@ -174,6 +181,7 @@ class TeilnehmendenListe
             'geburtsjahr' => 'birth_year', 'jahrgang' => 'birth_year', 'postleitzahl' => 'plz', 'plz' => 'plz',
             'wohnort' => 'wohnort', 'ort' => 'wohnort', 'stamm' => 'stamm', 'telefon' => 'phone', 'anmerkungen' => 'comment',
             'herkunft' => 'herkunft', 'gast' => 'herkunft',
+            'straße' => 'strasse', 'strasse' => 'strasse', 'anschrift' => 'strasse', 'geburtsdatum' => 'geburtsdatum', 'geb.-datum' => 'geburtsdatum', 'geschlecht' => 'geschlecht',
             'bezirk' => 'stamm', 'verband' => 'stamm', 'gruppe' => 'stamm', 'stamm / bezirk' => 'stamm',
         ];
         foreach ($felder as $key => $feld) {

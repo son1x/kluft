@@ -35,6 +35,7 @@ class EventRegistration extends Model
         'guardian_name', 'guardian_consent', 'consent_text_version', 'consent_at',
         'confirm_token_hash', 'confirmed_at', 'cancel_token_hash', 'cancelled_at', 'purge_at',
         'preis_bezeichnung', 'preis_cent',
+        'funktion', 'kreis', 'juleica', 'anwesend', 'anwesend_tage',
     ];
 
     // member_* setzt nur der Mitgliederabgleich (forceFill), nie ein Formular.
@@ -56,6 +57,9 @@ class EventRegistration extends Model
             'member_own_group' => 'boolean',
             'certificate_approved_at' => 'datetime',
             'preis_cent' => 'integer',
+            'juleica' => 'boolean',
+            'anwesend' => 'boolean',
+            'anwesend_tage' => 'array',
         ];
     }
 

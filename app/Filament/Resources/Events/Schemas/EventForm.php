@@ -11,7 +11,9 @@ use App\Services\Mitglieder\NamiVerzeichnis;
 use App\Support\Features;
 use App\Support\RoleCatalog;
 use App\Support\Teilnahmebeitraege;
+use App\Support\Zuschuesse;
 use Filament\Facades\Filament;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
@@ -20,12 +22,21 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 
 class EventForm
 {
+    /** Eurobetrag als Eingabe, gespeichert in Cent. */
+    private static function euro(string $name, string $label): TextInput
+    {
+        return TextInput::make($name)->label($label)->suffix('€')->inputMode('decimal')->rules(['nullable', 'regex:/^\d{1,6}([.,]\d{1,2})?$/'])
+            ->formatStateUsing(fn ($state) => $state === null || $state === '' ? null : number_format($state / 100, 2, ',', ''))
+            ->dehydrateStateUsing(fn ($state) => $state === null || $state === '' ? null : (int) round((float) str_replace(',', '.', (string) $state) * 100));
+    }
+
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
@@ -149,6 +160,35 @@ class EventForm
                         ->placeholder('Name, Funktion – z. B. Anna Beispiel, Diözesanvorsitzende')
                         ->helperText('Ohne Angabe steht dort der Name der Gliederung.')
                         ->visible(fn (Get $get) => (bool) $get('certificate_enabled')),
+                ]),
+
+            Section::make('Zuschuss')
+                ->description('Für Jugendamt, Landesjugendamt, Stadt und Bistum. Ist „Zuschuss beantragen“ an, fragt das Anmeldeformular Anschrift, Geburtsdatum und Geschlecht als Pflicht ab. Teilnahmeliste und Förderschätzung gibt es unter „Teilnehmende“.')
+                ->columns(2)
+                ->columnSpanFull()
+                ->collapsible()
+                ->visible(fn () => Zuschuesse::aktiv())
+                ->components([
+                    Toggle::make('zuschuss')->label('Zuschuss beantragen')->live()->columnSpanFull(),
+                    Select::make('zuschuss_art')->label('Art der Maßnahme')->options(Zuschuesse::ARTEN)->native(false)
+                        ->required(fn (Get $get) => (bool) $get('zuschuss'))->visible(fn (Get $get) => (bool) $get('zuschuss')),
+                    CheckboxList::make('zuschuss_geber')->label('Zuschussgeber')->options(Zuschuesse::GEBER)
+                        ->visible(fn (Get $get) => (bool) $get('zuschuss')),
+                    Toggle::make('zuschuss_fern')->label('Ziel weiter als 250 km entfernt')->helperText('Die Stadt Saarlouis fördert Lager dann mit 2,50 € statt 1,50 € je Tag.')
+                        ->visible(fn (Get $get) => (bool) $get('zuschuss')),
+                    Fieldset::make('Kosten- und Finanzierungsplan')->columns(3)->columnSpanFull()
+                        ->visible(fn (Get $get) => (bool) $get('zuschuss'))
+                        ->components([
+                            ...collect([
+                                'fahrt' => 'Fahrt', 'unterkunft' => 'Übernachtung/Unterkunft', 'verpflegung' => 'Verpflegung',
+                                'raummiete' => 'Raummieten', 'material' => 'Arbeitsmaterialien', 'durchfuehrung' => 'Durchführung, Vor- und Nachbereitung',
+                                'honorare' => 'Honorare',
+                            ])->map(fn (string $label, string $key) => self::euro("zuschuss_finanzen.{$key}", $label))->values()->all(),
+                            self::euro('zuschuss_finanzen.teilnahmebeitraege', 'Teilnahmebeiträge (Einnahme)')
+                                ->helperText('Leer: Kluft nimmt die Summe der Teilnahmebeiträge bestätigter Anmeldungen.'),
+                            self::euro('zuschuss_finanzen.spenden', 'Spenden, andere Zuschüsse (Einnahme)'),
+                            self::euro('zuschuss_finanzen.sonstige', 'Sonstige Einnahmen'),
+                        ]),
                 ]),
 
             Section::make('Formular-Baukasten')

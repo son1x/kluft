@@ -136,6 +136,9 @@
                             </div>
                         </div>
 
+                        @if ($event->zuschussAktiv())
+                            <p class="text-sm text-text-secondary">Für diese Veranstaltung beantragen wir Zuschüsse. Dafür brauchen wir Anschrift, Geburtsdatum und Geschlecht für die Teilnahmeliste.</p>
+                        @endif
                         @foreach ($fields as $key => $field)
                             @continue($field['type'] === 'herkunft') {{-- gehört zum Feld „Stamm“ --}}
                             @if ($field['type'] === 'stamm')
@@ -164,6 +167,12 @@
                                         @break
                                     @case('plz')
                                         <input id="{{ $key }}" name="{{ $key }}" type="text" inputmode="numeric" autocomplete="postal-code" maxlength="10" @required($field['required']) value="{{ old($key) }}" class="{{ $input }} sm:max-w-40" />
+                                        @break
+                                    @case('strasse')
+                                        <input id="{{ $key }}" name="{{ $key }}" type="text" autocomplete="street-address" maxlength="150" @required($field['required']) value="{{ old($key) }}" class="{{ $input }}" />
+                                        @break
+                                    @case('date')
+                                        <input id="{{ $key }}" name="{{ $key }}" type="date" autocomplete="bday" max="{{ now()->toDateString() }}" @required($field['required']) value="{{ old($key) }}" class="{{ $input }} sm:max-w-52" />
                                         @break
                                     @case('wohnort')
                                         <input id="{{ $key }}" name="{{ $key }}" type="text" autocomplete="address-level2" maxlength="150" @required($field['required']) value="{{ old($key) }}" class="{{ $input }}" />

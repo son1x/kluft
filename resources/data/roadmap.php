@@ -33,6 +33,7 @@ return [
         ['Stämme', 'Eigenständige Websites für Stämme', 'partial'],
         ['Umfragen', 'Umfragen mit Vorlagen und Auswertung', 'partial'],
         ['Livegang', 'www.dpsg-trier.de live am Totensonntag (22.11.2026)', 'open'],
+        ['Diözesanlager', 'Rubrik Diözesanlager mit Archiv vergangener Lager', 'partial'],
     ],
 
     'sections' => [
@@ -236,6 +237,13 @@ return [
             ['status' => 'done', 'title' => 'Gewinnspiel', 'note' => 'Eigener Baustein nach dem Absenden, getrennt von den Antworten gespeichert; Auslosen und Löschen in der Auswertung, automatische Löschung drei Monate nach dem Ende.'],
             ['status' => 'partial', 'title' => 'Datenschutz', 'note' => 'Standard anonym (verschlüsselte Antworten, nur Tagesdatum, keine IP); nicht anonyme Antworten und Gewinnspiel in der Datenschutzauskunft; Löschfristen täglich. Offen: Datenschutzerklärung des DV um Umfragen ergänzen.'],
             ['status' => 'later', 'title' => 'Erinnerung und Vergleich', 'note' => 'Erinnerung an Eingeladene ohne Antwort (UM-41); Vergleich zweier Durchgänge, z. B. Leiter*innenumfrage 2026 und 2028 (UM-42).'],
+        ],
+        'Diözesanlager' => [
+            ['status' => 'done', 'title' => 'Rubrik „Diözesanlager“', 'note' => 'Übersicht /dioezesanlager unter „Diözesanverband“. Jedes Lager ist ein eigener Bereich (config sections, kind „Diözesanlager“) mit eigenem Aussehen im Inhaltsbereich; Kopf und Fuß bleiben DPSG. Zurückliegende Lager tragen den Hinweis „Archiv“.'],
+            ['status' => 'done', 'title' => 'Archiv „Scoutergy“ (FroLeiLa 2023)', 'note' => 'Aus der WordPress-Sicherung von scoutergy.de: Startseite mit Teaser-Video, Programm mit Programmkacheln, häufige Fragen, Team (nur Aufgaben, ohne Namen und Adressen), sechs Beiträge mit den alten Daten. Design nach der alten Seite (Figtree, Farbwolken), Akzent im Rot der Lagershirts.'],
+            ['status' => 'open', 'title' => 'Domain scoutergy.de verbinden', 'note' => 'Domain auf Kluft zeigen lassen und in config sections.scoutergy.domains eintragen; alte Adressen weiterleiten (Liste in docs/dioezesanlager-archiv.md).'],
+            ['status' => 'open', 'title' => 'Weitere vergangene Lager', 'note' => 'Material sammeln nach der Checkliste in docs/dioezesanlager-archiv.md, dann je Lager ein Bereich mit Aussehen und Inhalts-Migration.'],
+            ['status' => 'later', 'title' => 'Diözesanlager 2027/28', 'note' => 'Neues Lager als Bereich ohne „Archiv“, mit Veranstaltungsanmeldung und Teilnahmebeitrag aus Kluft; eigene Domain möglich.'],
         ],
     ],
 

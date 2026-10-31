@@ -112,6 +112,9 @@ return array_replace([
     // Übersichtsseite der Fachbereiche (Hauptmenüpunkt mit Unterpunkten).
     'sections_page' => 'fachbereiche',
 
+    // Übersicht der Diözesanlager (Bereiche mit kind „Diözesanlager“); null = keine.
+    'lager_page' => null,
+
     // CMS-Seite mit dem Kontaktformular (F-CMS-09).
     'contact_page' => 'kontakt',
 

@@ -18,6 +18,10 @@
 @import '@fontsource/carlito/700.css';
 @import '@fontsource/arvo/400.css';
 @import '@fontsource/arvo/700.css';
+/* Figtree nur für das Diözesanlager „Scoutergy“ (2023), siehe .lager-scoutergy */
+@import '@fontsource/figtree/400.css';
+@import '@fontsource/figtree/600.css';
+@import '@fontsource/figtree/800.css';
 
 /*
  * DPSG-Design-Tokens (Corporate Design der DPSG, Stand April 2026),
@@ -207,3 +211,58 @@ abbr.glossar:focus-visible::after {
 
 /* Lange Adressen und Befehle in <code> umbrechen statt die Seite zu verbreitern */
 code { overflow-wrap: anywhere; }
+
+/*
+ * Diözesanlager (Rubrik /dioezesanlager): Jedes Lager behält im
+ * Inhaltsbereich sein eigenes Aussehen, Kopf und Fuß bleiben DPSG.
+ * .lager liefert den Aufbau, .lager-<theme> nur die Werte
+ * (config dpsg.sections.<lager>.theme). Neues Lager = neuer Block.
+ */
+/* Farbe und Stärke als Komponente, damit Utilities (text-white, font-extrabold) gewinnen;
+   die Schrift ungeschichtet, damit sie font-serif in den Seitenvorlagen ersetzt. */
+@layer components {
+    .lager { color: var(--lager-text); }
+    .lager :is(h1, h2, h3, h4) { font-weight: 600; color: var(--lager-kopf); }
+}
+.lager { font-family: var(--lager-schrift); }
+.lager :is(h1, h2, h3, h4) { font-family: var(--lager-schrift); line-height: 1.1; letter-spacing: -0.02em; }
+.lager .prose { --tw-prose-body: var(--lager-text); --tw-prose-headings: var(--lager-kopf); --tw-prose-links: var(--lager-akzent-text); --tw-prose-bold: var(--lager-kopf); --tw-prose-quote-borders: var(--lager-akzent); }
+.lager .prose table { font-size: 1rem; }
+.lager .prose details { margin: 0.75rem 0; border: 1px solid var(--lager-rand); border-radius: 1rem; background: #fff; padding: 0.75rem 1.25rem; }
+.lager .prose summary { cursor: pointer; font-weight: 600; color: var(--lager-kopf); }
+.lager .prose details[open] summary { margin-bottom: 0.5rem; }
+.lager .prose details > :last-child { margin-bottom: 0; }
+.lager-wolken { background: var(--lager-wolken), #fff; }
+.lager-karte { background: #fff; border: 1px solid var(--lager-rand); border-radius: var(--lager-radius); box-shadow: 0 0 30px 0 var(--lager-schatten); }
+a.lager-karte { transition: transform 0.15s, box-shadow 0.15s; }
+a.lager-karte:hover, a.lager-karte:focus-visible { transform: translateY(-3px); box-shadow: 0 6px 30px 0 var(--lager-schatten); }
+.lager-pill { display: inline-flex; align-items: center; gap: 0.4rem; border-radius: 99px; padding: 0.35rem 0.9rem; font-size: 0.875rem; font-weight: 600; }
+.lager-pill-akzent { background: var(--lager-akzent); color: var(--lager-akzent-ink); }
+.lager-pill-hell { background: #fff; color: var(--lager-kopf); border: 1px solid var(--lager-rand); }
+.lager-button { display: inline-flex; align-items: center; gap: 0.5rem; border-radius: 99px; padding: 0.7rem 1.4rem; font-weight: 600; background: var(--lager-akzent); color: var(--lager-akzent-ink); }
+.lager-button:hover, .lager-button:focus-visible { filter: brightness(0.92); }
+.lager-laufband { overflow: hidden; white-space: nowrap; background: var(--lager-akzent); color: var(--lager-akzent-ink); font-weight: 800; letter-spacing: 0.02em; }
+.lager-laufband > div { display: inline-block; padding: 0.9rem 0; animation: lager-laufband 40s linear infinite; }
+@keyframes lager-laufband { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) { .lager-laufband > div { animation: none; } }
+
+/* Scoutergy – FroLeiLa des DV Trier 2023: Farbwolken der alten Seite,
+   Rot der Lagershirts als Akzent (Weiß darauf: Kontrast 4,9 : 1). */
+.lager-scoutergy {
+    --lager-schrift: 'Figtree', -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --lager-text: #1d243c;
+    --lager-kopf: #070b1b;
+    --lager-flaeche: #f6f6f9;
+    --lager-rand: #d0d4e3;
+    --lager-schatten: #b7afff33;
+    --lager-radius: 30px;
+    --lager-akzent: #d7262e;
+    --lager-akzent-ink: #fff;
+    --lager-akzent-text: #b81f26;
+    --lager-wolken:
+        radial-gradient(15% 15% at 8% 50%, #4c00ff3b 1%, transparent 99%),
+        radial-gradient(33% 33% at -1% 43%, #00c1ff47 1%, transparent 99%),
+        radial-gradient(15% 15% at 71% 43%, #00e4ff3b 1%, transparent 99%),
+        radial-gradient(20% 20% at 82% 77%, #0039ff3d 1%, transparent 99%),
+        radial-gradient(40% 40% at 89% 61%, #5800ff4a 1%, transparent 99%);
+}

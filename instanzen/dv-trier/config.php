@@ -238,7 +238,35 @@ return [
             'landing' => 'politische-bildung',
             'fak' => true,
         ],
+        // Rubrik „Diözesanlager“ (Übersicht /dioezesanlager): je Lager ein
+        // Bereich mit eigenem Aussehen im Inhaltsbereich (`theme`, CSS
+        // .lager-<theme>). `archiv` zeigt den Hinweis, dass das Lager
+        // zurückliegt. Anleitung für weitere Lager: docs/dioezesanlager-archiv.md
+        'scoutergy' => [
+            'label' => 'Scoutergy',
+            'kind' => 'Diözesanlager',
+            'landing' => 'scoutergy',
+            'theme' => 'scoutergy',
+            'archiv' => true,
+            'jahr' => 2023,
+            'titel' => 'FroLeiLa des DV Trier 2023',
+            'zeitraum' => '8.–11. Juni 2023 (Fronleichnam)',
+            'ort' => 'Bundeszentrum Westernohe',
+            'motto' => 'Energie ohne Ende',
+            'laufband' => ['Unter Strom', 'Energie', 'Nachhaltigkeit', 'Power', 'Scoutergy'],
+            // Glühbirne mit Schriftzug (ohne Endung; .webp/.png)
+            'logo' => 'instanz/images/scoutergy/logo',
+            'logo_alt' => 'Glühbirne mit Scoutergy-Schriftzug und dem Hinweis: FroLeiLa 2023 des DPSG DV Trier',
+            'logo_size' => [480, 665],
+            // Teaser der alten Seite, auf 720p verkleinert (Original 174 MB im Repo wp-scoutergy)
+            'video' => 'instanz/images/scoutergy/teaser-720.mp4',
+            'video_poster' => 'instanz/images/scoutergy/teaser-poster.jpg',
+            // scoutergy.de zeigt später hierher (Weiterleitungen alter Adressen: docs/dioezesanlager-archiv.md).
+            'domains' => [],
+        ],
     ],
+
+    'lager_page' => 'dioezesanlager',
 
     'contact' => [
         'name' => 'DPSG Diözesanverband Trier',

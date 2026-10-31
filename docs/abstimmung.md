@@ -35,6 +35,15 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-10-31 – Haupt → Stammes, Bezirk: Diözesanlager, Lager-Aussehen (gemeinsamer Kern)
+Status: offen
+
+Rubrik „Diözesanlager“ beim DV (`docs/dioezesanlager-archiv.md`). Für euch nichts zu tun; zur Info, was im Kern neu ist:
+- **Layout:** `<main>` hat jetzt `@yield('main_class')` (leer, wenn eine Seite nichts setzt).
+- **Bereiche:** `kind` => `Diözesanlager` und `theme` (neu, `App\Support\Lager`) geben einem Bereich eine eigene Ansicht `sections/lager` und die CSS-Klassen `.lager .lager-<theme>`; Seiten, Beiträge und die Bereichsnavigation übernehmen sie. Normale Bereiche bleiben unverändert.
+- **Config:** neuer Schlüssel `lager_page` (Standard `null`).
+- **CSS:** Schrift Figtree (fontsource) zusätzlich gebündelt, wird nur bei `.lager-scoutergy` geladen.
+
 ### 2026-10-23 – Haupt → Stammes, Bezirk: Umfragen (gemeinsamer Kern)
 Status: offen
 

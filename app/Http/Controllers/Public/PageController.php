@@ -10,6 +10,7 @@ use App\Models\Page;
 use App\Models\Person;
 use App\Models\TeamPhoto;
 use App\Support\Ausbau;
+use App\Support\Lager;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 
@@ -30,6 +31,10 @@ class PageController extends Controller
 
         if ($slug === config('dpsg.sections_page')) {
             return $this->sectionOverview($page);
+        }
+
+        if ($slug === config('dpsg.lager_page')) {
+            return $this->lagerOverview($page);
         }
 
         if ($slug === config('dpsg.contact_page')) {
@@ -116,6 +121,23 @@ class PageController extends Controller
             ->values();
 
         return view('pages.sections', ['page' => $page, 'items' => $items]);
+    }
+
+    /**
+     * Rubrik „Diözesanlager“: alle Lager (Bereiche mit kind
+     * „Diözesanlager“), das neueste zuerst, mit Logo und Eckdaten.
+     */
+    private function lagerOverview(Page $page): View
+    {
+        $lager = Lager::alle();
+        $landings = Page::query()->published()->whereIn('slug', array_column($lager, 'landing'))->get()->keyBy('slug');
+
+        $items = collect($lager)
+            ->filter(fn (array $l) => $landings->has($l['landing']))
+            ->map(fn (array $l, string $key) => ['key' => $key, 'config' => $l, 'page' => $landings[$l['landing']]])
+            ->values();
+
+        return view('pages.lager', ['page' => $page, 'items' => $items]);
     }
 
     private function stageOverview(Page $page): View

@@ -225,7 +225,7 @@
         </nav>
     </div>
 
-    <main id="inhalt" class="flex-1">
+    <main id="inhalt" class="flex-1 @yield('main_class')">
         @yield('content')
     </main>
 

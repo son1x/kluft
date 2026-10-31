@@ -3,7 +3,13 @@
 @section('seo_title', $post->title.' – '.config('dpsg.site.name'))
 @section('seo_description', $post->teaser)
 
+@section('main_class', \App\Support\Lager::klasse($post->section))
+
 @section('content')
+    {{-- Beiträge eines Diözesanlagers stehen in dessen Navigation und Aussehen. --}}
+    @if (\App\Support\Lager::ist($post->section))
+        @include('sections.nav', ['section' => $post->section, 'current' => 'aktuelles'])
+    @endif
     <article class="max-w-3xl mx-auto px-4 py-10">
         @if ($post->stage)
             <div class="mb-2">@include('partials.stufe-badge', ['stage' => $post->stage])</div>
@@ -33,7 +39,11 @@
         @endif
 
         <p class="mt-8">
-            <a href="{{ url('/aktuelles') }}" class="text-dpsg-blau hover:underline">&larr; Zurück zu Aktuelles</a>
+            @if (\App\Support\Lager::ist($post->section))
+                <a href="{{ route('sections.posts', $post->section) }}" class="font-semibold hover:underline">&larr; Alle Beiträge: {{ config("dpsg.sections.{$post->section}.label") }}</a>
+            @else
+                <a href="{{ url('/aktuelles') }}" class="text-dpsg-blau hover:underline">&larr; Zurück zu Aktuelles</a>
+            @endif
         </p>
     </article>
 @endsection

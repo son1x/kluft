@@ -8,6 +8,7 @@ use App\Models\Page;
 use App\Models\Person;
 use App\Models\Post;
 use App\Support\Features;
+use App\Support\Lager;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -23,7 +24,8 @@ class SectionController extends Controller
         $config = config("dpsg.sections.{$section}");
         abort_unless($config, 404);
 
-        return view('sections.show', [
+        // Diözesanlager: eigene Ansicht mit dem Aussehen des Lagers.
+        return view(Lager::ist($section) ? 'sections.lager' : 'sections.show', [
             'section' => $section,
             'config' => $config,
             'landing' => Page::query()->published()->with('coverMedia')->where('slug', $config['landing'])->first(),

@@ -5,6 +5,8 @@
     @section('seo_description', $page->seo_description)
 @endif
 
+@section('main_class', \App\Support\Lager::klasse($page->section))
+
 @section('content')
     @if ($page->section && config("dpsg.sections.{$page->section}"))
         @include('sections.nav', ['section' => $page->section, 'current' => $page->slug])

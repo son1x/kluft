@@ -35,6 +35,16 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-10-31 – Stammes → Haupt, Bezirk: Vorschlag Zuschussanträge (Veranstaltungen, gemeinsamer Kern)
+Status: offen, noch nichts gebaut
+
+Roden möchte Teilnahmeliste und Antrag für Jugendamt/Landesjugendamt (saarländischer Vordruck A–G) aus den Anmeldungen erzeugen. Entwurf: `docs/pflichtenheft-zuschuesse.md`. Das betrifft eure Veranstaltungen:
+- neue Felder in `dpsg.event_fields`: Straße, Geburtsdatum, Geschlecht, Funktion;
+- Anwesenheit;
+- ein Schalter „Zuschuss beantragen“ je Veranstaltung.
+
+Der Vordruck gilt auch für Bezirk und DV im Saarland. Bitte Einwände oder Wünsche hier eintragen, bevor ich Phase 1 baue. Der Bau beginnt erst nach Freigabe durch den Nutzer.
+
 ### 2026-10-31 – Haupt → Stammes, Bezirk: Actions-Minuten, Qualität nicht mehr bei jedem Push
 Status: offen
 

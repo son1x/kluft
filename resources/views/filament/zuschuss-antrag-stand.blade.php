@@ -29,7 +29,7 @@
                 @else
                     @foreach ($fehlend as $art => $liste)
                         @continue($liste === [])
-                        <p><span class="font-medium">{{ \App\Services\Zuschuss\ZuschussPdf::UNTERLAGEN[$art][0] }}:</span> {{ implode(', ', $liste) }}</p>
+                        <p><span class="font-medium">{{ \App\Services\Zuschuss\ZuschussPdf::bezeichnung($event, $art) }}:</span> {{ implode(', ', $liste) }}</p>
                     @endforeach
                 @endif
             </div>

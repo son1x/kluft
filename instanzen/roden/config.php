@@ -10,6 +10,8 @@ use App\Support\Einrichtung\StammVorlage;
 | Secrets (Datenbank, Mail, SSH) kommen nur aus dem Environment.
 */
 
-return StammVorlage::config(
-    (array) json_decode((string) file_get_contents(__DIR__.'/angaben.json'), true)
-);
+return [
+    ...StammVorlage::config((array) json_decode((string) file_get_contents(__DIR__.'/angaben.json'), true)),
+    // Zuschussgeber für Saarlouis-Roden (Verwaltung → Zuschussgeber).
+    'zuschuss_geber' => ['land', 'kreis_sls', 'stadt_sls', 'bistum_trier'],
+];

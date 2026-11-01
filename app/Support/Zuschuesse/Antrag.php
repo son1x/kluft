@@ -132,12 +132,16 @@ class Antrag
     {
         $ende = self::ende($event);
 
-        return match ($geber) {
+        $r = Geber::regeln($geber);
+
+        return match (Geber::modell($geber)?->vorlage ?? ($r === [] ? $geber : null)) {
             'land', 'kreis_sls' => $ende->copy()->addMonthsNoOverflow(3),
             // Stadt: 2 Monate nach Ende, spätestens 30.09. (Zuschusszeitraum 01.10.–30.09.).
             'stadt_sls' => $ende->copy()->addMonthsNoOverflow(2)->min(Carbon::create($ende->month >= 10 ? $ende->year + 1 : $ende->year, 9, 30)),
             'bistum_trier' => $ende->copy()->addWeeks(8),
-            default => $ende->copy()->addMonthsNoOverflow(2),
+            // Eigener Zuschussgeber: Wochen bzw. Monate nach Ende laut Backend, sonst 2 Monate.
+            default => filled($r['frist_wochen'] ?? null) ? $ende->copy()->addWeeks((int) $r['frist_wochen'])
+                : $ende->copy()->addMonthsNoOverflow(filled($r['frist_monate'] ?? null) ? (int) $r['frist_monate'] : 2),
         };
     }
 
@@ -170,7 +174,7 @@ class Antrag
     /** @return list<string> Gewählte Zuschussgeber. */
     public static function geber(Event $event): array
     {
-        return array_values(array_intersect(array_keys(Zuschuesse::GEBER), (array) ($event->zuschuss_geber ?: array_keys(Zuschuesse::GEBER))));
+        return Geber::vonEvent($event);
     }
 
     /**
@@ -186,7 +190,7 @@ class Antrag
             $e = self::eintrag($event, $key);
             $zeilen[] = [
                 'key' => $key,
-                'name' => Zuschuesse::GEBER[$key],
+                'name' => Geber::name($key),
                 'frist' => self::frist($event, $key),
                 'status' => self::status($event, $key),
                 'geschaetzt' => (int) ($schaetzung[$key]['betrag'] ?? 0),
@@ -275,7 +279,8 @@ class Antrag
                     self::FELDER['leitung_anschrift'] => blank($as['leitung_anschrift']),
                 ]))],
                 'bistum' => [...$allgemein, ...array_keys(array_filter(['Programm' => blank($b['programm'] ?? null)]))],
-                default => [],
+                // Allgemeiner Antrag eines eigenen Zuschussgebers.
+                default => [...$allgemein, ...array_keys(array_filter(['Anschrift des Zuschussgebers' => blank(Geber::regeln(substr($art, 7))['anschrift'] ?? null)]))],
             };
         }
 

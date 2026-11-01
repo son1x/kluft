@@ -8,6 +8,7 @@ use App\Filament\Resources\GlossaryTerms\Pages\CreateGlossaryTerm;
 use App\Filament\Resources\GlossaryTerms\Pages\EditGlossaryTerm;
 use App\Filament\Resources\Gruppenstunden\GruppenstundeResource;
 use App\Filament\Resources\Umfragen\UmfrageResource;
+use App\Filament\Resources\Zuschussgeber\ZuschussgeberResource;
 use App\Models\GlossaryTerm;
 use App\Models\User;
 use App\Support\Features;
@@ -43,6 +44,7 @@ class AdminSmokeTest extends TestCase
         Features::setzen(Features::SAMMELBESTELLUNG, true);
         Features::setzen(Features::UMFRAGEN, true);
         Features::setzen(Features::NAMI_DATENABGLEICH, true);
+        Features::setzen(Features::ZUSCHUESSE, true);
         $kasse = Features::enabled(Features::MITGLIEDSBEITRAEGE);
         // Umfragen ab Ausbaustufe 3.
         $umfragen = Features::enabled(Features::UMFRAGEN);
@@ -56,7 +58,8 @@ class AdminSmokeTest extends TestCase
                     && config('dpsg.site.level') !== 'Stamm';
                 if (! $resource::hasPage($page) || (! $kasse && $resource::getNavigationGroup() === 'Kasse') || $nurStamm
                     || (! $umfragen && $resource === UmfrageResource::class)
-                    || ($resource === DatenabgleichResource::class && ! Features::enabled(Features::NAMI_DATENABGLEICH))) {
+                    || ($resource === DatenabgleichResource::class && ! Features::enabled(Features::NAMI_DATENABGLEICH))
+                    || ($resource === ZuschussgeberResource::class && ! Features::enabled(Features::ZUSCHUESSE))) {
                     continue;
                 }
                 $url = $resource::getUrl($page);

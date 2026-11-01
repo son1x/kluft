@@ -11,6 +11,7 @@ use App\Support\AuditLogger;
 use App\Support\Zuschuesse;
 use App\Support\Zuschuesse\Antrag;
 use App\Support\Zuschuesse\Foerderrechner;
+use App\Support\Zuschuesse\Geber;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Facades\Filament;
@@ -118,7 +119,8 @@ class ZuschussAntrag extends EditRecord
                     Toggle::make('zuschuss')->label('Zuschuss beantragen')->live()->columnSpanFull(),
                     Select::make('zuschuss_art')->label('Art der Maßnahme')->options(Zuschuesse::ARTEN)->native(false)
                         ->required(fn (Get $get) => (bool) $get('zuschuss')),
-                    CheckboxList::make('zuschuss_geber')->label('Zuschussgeber')->options(Zuschuesse::GEBER)->live(),
+                    CheckboxList::make('zuschuss_geber')->label('Zuschussgeber')->options(fn () => Geber::auswahl($this->event()))->live()
+                        ->helperText('Ohne Auswahl: alle eingeschalteten (Verwaltung → Zuschussgeber).'),
                     Toggle::make('zuschuss_fern')->label('Ziel weiter als 250 km entfernt')
                         ->helperText('Die Stadt Saarlouis fördert Lager dann mit 2,50 € statt 1,50 € je Tag.'),
                 ]),
@@ -143,8 +145,8 @@ class ZuschussAntrag extends EditRecord
 
             Section::make('Fristen und Bewilligungen')->columnSpanFull()->collapsible()
                 ->description('Je Zuschussgeber. Ohne eigene Frist gilt die der Richtlinie; Kluft erinnert 14 und 3 Tage vorher, solange nichts eingereicht ist.')
-                ->components(collect(Zuschuesse::GEBER)->map(fn (string $name, string $key) => Fieldset::make($name)->columns(4)
-                    ->visible(fn (Get $get) => in_array($key, (array) ($get('zuschuss_geber') ?: array_keys(Zuschuesse::GEBER)), true))
+                ->components(collect(Geber::auswahl($this->event()))->map(fn (string $name, string $key) => Fieldset::make($name)->columns(4)
+                    ->visible(fn (Get $get) => in_array($key, (array) ($get('zuschuss_geber') ?: array_keys(Geber::aktiv())), true))
                     ->components([
                         DatePicker::make("zuschuss_stand.{$key}.frist")->label('Frist')->native(false)->displayFormat('d.m.Y')
                             ->placeholder(fn () => Antrag::regelfrist($this->event(), $key)->format('d.m.Y').' (Richtlinie)'),
@@ -168,9 +170,8 @@ class ZuschussAntrag extends EditRecord
             Action::make('veranstaltung')->label('Veranstaltung und Teilnehmende')->icon('heroicon-o-users')->color('gray')
                 ->url(EventResource::getUrl('edit', ['record' => $event])),
             ActionGroup::make([
-                ...collect(ZuschussPdf::UNTERLAGEN)->map(fn (array $u, string $art) => Action::make('pdf_'.$art)->label($u[0].' (PDF)')
+                ...collect(ZuschussPdf::unterlagen($event))->map(fn (string $label, string $art) => Action::make('pdf_'.$art)->label($label.' (PDF)')
                     ->icon('heroicon-o-document-text')
-                    ->visible(fn () => array_key_exists($art, ZuschussPdf::unterlagen($this->event())))
                     ->action(fn (): StreamedResponse => $this->pdf($art)))->values()->all(),
                 Action::make('zip')->label('Alle Unterlagen (ZIP)')->icon('heroicon-o-archive-box-arrow-down')
                     ->action(fn (): StreamedResponse => $this->zip()),

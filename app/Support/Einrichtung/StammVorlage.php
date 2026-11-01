@@ -36,6 +36,8 @@ class StammVorlage
         };
 
         return [
+            // Zuschussgeber beim Einrichten: im Bistum Trier der KJP, alles Weitere unter Verwaltung → Zuschussgeber.
+            'zuschuss_geber' => preg_match('/^trier$/i', $dioezese) ? ['bistum_trier'] : [],
             'site' => [
                 'name' => $name,
                 'name_genitive' => 'DPSG Stammes '.$stamm,

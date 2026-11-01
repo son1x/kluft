@@ -6,6 +6,7 @@ use App\Models\Event;
 use App\Support\Zuschuesse;
 use App\Support\Zuschuesse\Antrag;
 use App\Support\Zuschuesse\Foerderrechner;
+use App\Support\Zuschuesse\Geber;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Illuminate\Support\Carbon;
@@ -29,24 +30,41 @@ class ZuschussPdf
         'bistum' => ['Antrag Bistum Trier (KJP)', 'antrag-bistum-trier'],
     ];
 
-    /** @return array<string, string> Schlüssel => Bezeichnung */
+    /**
+     * Unterlagen zu den gewählten Zuschussgebern: Vordrucke der Vorlagen,
+     * dazu je eigenem Zuschussgeber mit allgemeinem Vordruck „antrag_<key>“.
+     *
+     * @return array<string, string> Schlüssel => Bezeichnung
+     */
     public static function unterlagen(Event $event): array
     {
-        $geber = (array) ($event->zuschuss_geber ?: array_keys(Zuschuesse::GEBER));
-        $landKreis = in_array('land', $geber, true) || in_array('kreis_sls', $geber, true);
+        $vordrucke = collect(Geber::vonEvent($event))->mapWithKeys(fn (string $key) => [$key => Geber::vordruck($key)]);
+        $formularA = $vordrucke->contains('formular_a');
 
-        return collect(self::UNTERLAGEN)->map(fn (array $u) => $u[0])->filter(fn (string $label, string $key) => match ($key) {
-            'a', 'bericht' => $landKreis,
-            'c' => $landKreis && Zuschuesse::brauchtAufenthaltsbestaetigung($event),
-            'stadt' => in_array('stadt_sls', $geber, true),
-            'bistum' => in_array('bistum_trier', $geber, true),
+        $liste = collect(self::UNTERLAGEN)->map(fn (array $u) => $u[0])->filter(fn (string $label, string $key) => match ($key) {
+            'a', 'bericht' => $formularA,
+            'c' => $formularA && Zuschuesse::brauchtAufenthaltsbestaetigung($event),
+            'stadt' => $vordrucke->contains('stadt_sls'),
+            'bistum' => $vordrucke->contains('bistum_trier'),
             default => true,
         })->all();
+        foreach ($vordrucke->filter(fn (string $v) => $v === 'allgemein')->keys() as $key) {
+            $liste['antrag_'.$key] = 'Antrag '.Geber::name($key);
+        }
+
+        return $liste;
+    }
+
+    public static function bezeichnung(Event $event, string $art): string
+    {
+        return self::unterlagen($event)[$art] ?? (self::UNTERLAGEN[$art][0] ?? $art);
     }
 
     public static function dateiname(Event $event, string $art): string
     {
-        return (self::UNTERLAGEN[$art][1] ?? $art).'-'.str($event->title)->slug().'.pdf';
+        $basis = str_starts_with($art, 'antrag_') ? 'antrag-'.str(Geber::name(substr($art, 7)))->slug() : (self::UNTERLAGEN[$art][1] ?? $art);
+
+        return $basis.'-'.str($event->title)->slug().'.pdf';
     }
 
     public function unterlage(Event $event, string $art): string
@@ -74,10 +92,20 @@ class ZuschussPdf
         if ($art === 'stadt') {
             $daten['dritte'] = Antrag::bewilligteDritte($event, 'stadt_sls');
         }
+        if (str_starts_with($art, 'antrag_') && array_key_exists($art, self::unterlagen($event))) {
+            $key = substr($art, 7);
+            $daten['geber'] = ['key' => $key, 'name' => Geber::name($key), 'regeln' => Geber::regeln($key),
+                'schaetzung' => collect(Foerderrechner::rechnen($event)['geber'])->firstWhere('key', $key)];
+            $daten['stand'] = collect(Antrag::uebersicht($event))->firstWhere('key', $key);
+            $daten['dritte'] = Antrag::bewilligteDritte($event, $key);
+
+            return $this->render('pdf.zuschuss-allgemein', $daten, 'portrait', self::bezeichnung($event, $art).' – '.$event->title);
+        }
+        $daten['jugendaemter'] = Geber::jugendaemterFormularA($event);
         $view = ['a' => 'pdf.zuschuss-formular-a', 'bericht' => 'pdf.zuschuss-bericht', 'c' => 'pdf.zuschuss-formular-c',
             'stadt' => 'pdf.zuschuss-stadt-sls', 'bistum' => 'pdf.zuschuss-bistum'][$art] ?? abort(404);
 
-        return $this->render($view, $daten, 'portrait', (self::UNTERLAGEN[$art][0] ?? $art).' – '.$event->title);
+        return $this->render($view, $daten, 'portrait', self::bezeichnung($event, $art).' – '.$event->title);
     }
 
     /** @param list<array<string, mixed>> $personen */

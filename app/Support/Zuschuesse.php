@@ -28,12 +28,7 @@ class Zuschuesse
         'sonstige' => 'sonstige Maßnahme',
     ];
 
-    public const GEBER = [
-        'land' => 'Landesjugendamt Saarland',
-        'kreis_sls' => 'Kreisjugendamt Saarlouis',
-        'stadt_sls' => 'Kreisstadt Saarlouis',
-        'bistum_trier' => 'Bistum Trier (KJP)',
-    ];
+    // Zuschussgeber: App\Support\Zuschuesse\Geber (Katalog je Instanz).
 
     /** Funktion auf der Teilnahmeliste (Vordruck B: TN, B, R, L). */
     public const FUNKTIONEN = [

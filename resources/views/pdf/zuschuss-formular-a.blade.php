@@ -15,7 +15,7 @@
 <p class="unter">zur Förderung der Kinder- und Jugendarbeit bei Land, Kreisen und Regionalverband · an das örtlich zuständige Jugendamt und das Landesjugendamt des Saarlandes</p>
 
 <table class="f">
-    <tr><td class="l">Anträge wurden gestellt beim Jugendamt in</td><td>@foreach (['HOM', 'MZG', 'NK', 'SB', 'SLS', 'WND'] as $k){!! $x(in_array('kreis_'.strtolower($k), (array) $event->zuschuss_geber, true)) !!}{{ $k }}&nbsp;&nbsp; @endforeach</td></tr>
+    <tr><td class="l">Anträge wurden gestellt beim Jugendamt in</td><td>@foreach (['HOM', 'MZG', 'NK', 'SB', 'SLS', 'WND'] as $k){!! $x(in_array($k, $jugendaemter, true)) !!}{{ $k }}&nbsp;&nbsp; @endforeach</td></tr>
 </table>
 <table class="f">
     <tr><th class="kopf" colspan="4">Antragsteller/in (Verband/Gruppe)</th></tr>

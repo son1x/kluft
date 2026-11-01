@@ -12,6 +12,8 @@ use Instanzen\SaarHochwald\Seeders\SaarHochwaldSeeder;
 */
 
 return [
+    // Zuschussgeber (Verwaltung → Zuschussgeber).
+    'zuschuss_geber' => ['land', 'bistum_trier'],
 
     'site' => [
         'name' => 'DPSG Bezirk Saar-Hochwald',

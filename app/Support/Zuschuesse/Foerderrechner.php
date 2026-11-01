@@ -36,17 +36,17 @@ class Foerderrechner
         $art = (string) $event->zuschuss_art;
 
         $geber = [];
-        foreach ((array) ($event->zuschuss_geber ?: array_keys(Zuschuesse::GEBER)) as $key) {
-            if (! isset(Zuschuesse::GEBER[$key])) {
-                continue;
-            }
-            $ergebnis = match ($key) {
+        foreach (Geber::vonEvent($event) as $key) {
+            $modell = Geber::modell($key);
+            $ergebnis = match ($modell?->vorlage) {
                 'land' => self::land($art, $personen, $tage),
                 'kreis_sls' => self::kreisSaarlouis($art, $personen, $tage),
                 'stadt_sls' => self::stadtSaarlouis($art, $personen, $tage, (bool) $event->zuschuss_fern, $finanzen['ausgaben']),
                 'bistum_trier' => self::bistumTrier($art, $personen, $tage),
+                default => self::eigen($art, $personen, $tage, Geber::regeln($key)),
             };
-            $geber[] = ['key' => $key, 'name' => Zuschuesse::GEBER[$key], 'richtlinie' => self::RICHTLINIEN[$key]] + $ergebnis;
+            $richtlinie = $modell?->vorlage ? self::RICHTLINIEN[$modell->vorlage] : (string) (Geber::regeln($key)['richtlinie'] ?? 'eigene Angaben des Stamms');
+            $geber[] = ['key' => $key, 'name' => Geber::name($key), 'richtlinie' => $richtlinie] + $ergebnis;
         }
 
         $summe = (int) array_sum(array_column($geber, 'betrag'));
@@ -277,11 +277,15 @@ class Foerderrechner
         if ($tn->count() < 7) {
             return self::nichts("Zu wenige zuschussfähige Teilnehmende ({$tn->count()}, mindestens 7).");
         }
-        $imBistum = $tn->filter(fn (array $p) => ! in_array($p['kreis'], [...Kreise::BISTUM_SPEYER, 'SONST'], true))->count();
+        // Wohnort im Bistum: Saarland ohne Saarpfalz-Kreis, in RLP die Regionen Trier und Koblenz (Gebiete::bistumTrier).
+        $imBistum = $tn->filter(fn (array $p) => Gebiete::bistumTrier($p['plz']) === true)->count();
+        $unklar = $tn->filter(fn (array $p) => Gebiete::bistumTrier($p['plz']) === null)->count();
         $hinweise = [];
+        if ($unklar > 0) {
+            $hinweise[] = "Bei {$unklar} Teilnehmenden ist aus der PLZ nicht sicher, ob sie im Bistum Trier wohnen (z. B. Kreis Altenkirchen, Grenzorte); sie zählen hier nicht zur Mehrheit.";
+        }
         if ($imBistum * 2 <= $tn->count()) {
-            return self::nichts("Die Mehrheit muss im Bistum Trier wohnen: nur {$imBistum} von {$tn->count()} Teilnehmenden sicher (Saarland ohne Saarpfalz-Kreis).",
-                ['Wohnorte außerhalb des Saarlands kann Kluft nicht zuordnen; liegen sie im Bistum Trier, bitte selbst prüfen.']);
+            return self::nichts("Die Mehrheit muss im Bistum Trier wohnen: nur {$imBistum} von {$tn->count()} Teilnehmenden sicher.", $hinweise);
         }
         // Ein Tag = 6 Std. Programm; An- und Abreisetag zählen vorsichtig je halb.
         $tageJePerson = function (array $p) use ($tage): float {
@@ -302,6 +306,78 @@ class Foerderrechner
             "Zuschussfähig: {$pt['tn']} Teilnehmende ({$regeln['von']}".($art === 'schulung' ? '+' : '–27').' Jahre im Kalenderjahr)'
                 .($regeln['betreuer'] ? " und {$pt['betreuer']} von höchstens {$schluessel} Betreuer*innen über 18" : '').'.',
             self::zahl($pt['tage']).' Personentage × '.self::euro($regeln['satz']).' = '.self::euro($betrag).($betrag < 2500 ? ' (unter 25 € keine Auszahlung)' : ''),
+        ], 'hinweise' => $hinweise];
+    }
+
+    /**
+     * Eigener Zuschussgeber (Verwaltung → Zuschussgeber): Satz je Tag und
+     * Person nach Art, Alter, Mindestzahl, Höchsttage, Wohngebiet,
+     * Betreuungsschlüssel und Mindestbetrag.
+     *
+     * @param  array<string, mixed>  $r
+     * @return array{betrag: int, zeilen: list<string>, hinweise: list<string>}
+     */
+    private static function eigen(string $art, Collection $personen, int $tage, array $r): array
+    {
+        $satz = (int) (($r['saetze'][$art] ?? null) ?: 0);
+        if ($satz <= 0) {
+            return self::nichts('Für diese Art der Maßnahme ist bei diesem Zuschussgeber kein Satz hinterlegt.');
+        }
+        $juleica = (int) ($r['juleica_zuschlag'] ?? 0);
+        if ($juleica > 0 && $personen->contains(fn (array $p) => Zuschuesse::istBetreuung($p['funktion']) && $p['juleica'])) {
+            $satz += $juleica;
+        }
+        $minTage = max(1, (int) ($r['min_tage'] ?? 1));
+        if ($tage < $minTage) {
+            return self::nichts("Gefördert ab {$minTage} Tagen.");
+        }
+        $von = (int) ($r['alter_von'] ?? 0);
+        $bis = filled($r['alter_bis'] ?? null) ? (int) $r['alter_bis'] : 200;
+        $gebiet = array_values(array_filter((array) ($r['gebiet'] ?? [])));
+        $nurGebiet = $gebiet !== [] && ($r['gebiet_regel'] ?? 'nur') === 'nur';
+        $imGebiet = fn (array $p) => $gebiet === [] || Gebiete::imGebiet($p['plz'], $gebiet) === true;
+        $alter = fn (array $p) => $p['alter'] !== null && $p['alter'] >= $von && $p['alter'] <= $bis;
+        $ab18 = (bool) ($r['betreuer_ab_18'] ?? false);
+        [$tn, $betreuung] = self::aufteilen($personen,
+            fn (array $p) => $alter($p) && (! $nurGebiet || $imGebiet($p)),
+            fn (array $p) => (! $ab18 || ($p['alter'] ?? 0) >= 18) && (! $nurGebiet || $imGebiet($p)));
+        $hinweise = [];
+        $gebietName = implode(', ', array_map([Gebiete::class, 'name'], $gebiet));
+        if ($gebiet !== []) {
+            $unklar = $personen->filter(fn (array $p) => $p['funktion'] === 'TN' && Gebiete::imGebiet($p['plz'], $gebiet) === null)->count();
+            if ($unklar > 0) {
+                $hinweise[] = "Bei {$unklar} Teilnehmenden ist aus der PLZ nicht sicher, ob sie im Gebiet ({$gebietName}) wohnen; sie zählen nicht.";
+            }
+            if (! $nurGebiet) {
+                $drin = $tn->filter($imGebiet)->count();
+                if ($drin * 2 <= $tn->count()) {
+                    return self::nichts("Die Mehrheit muss im Gebiet wohnen ({$gebietName}): nur {$drin} von {$tn->count()} sicher.", $hinweise);
+                }
+            }
+        }
+        $min = (int) ($r['min_tn'] ?? 0);
+        if ($tn->count() < max(1, $min)) {
+            return self::nichts("Zu wenige zuschussfähige Teilnehmende ({$tn->count()}, mindestens ".max(1, $min).').', $hinweise);
+        }
+        $schluessel = match ($r['betreuer'] ?? 'schluessel') {
+            'keine' => 0,
+            'fuenf' => intdiv($tn->count(), 5),
+            'alle' => $betreuung->count(),
+            default => self::schluessel($tn->count()),
+        };
+        $maxTage = filled($r['max_tage'] ?? null) ? (float) $r['max_tage'] : 365.0;
+        $pt = self::personentage($tn, $betreuung, $schluessel, $maxTage);
+        $betrag = (int) round($pt['tage'] * $satz);
+        $mindest = (int) ($r['mindestbetrag'] ?? 0);
+        if (filled($r['hinweis'] ?? null)) {
+            $hinweise[] = (string) $r['hinweis'];
+        }
+
+        return ['betrag' => $betrag < $mindest ? 0 : $betrag, 'zeilen' => [
+            self::euro($satz).' je Tag und Person'.($maxTage < 365 ? ', höchstens '.self::zahl($maxTage).' Tage' : '').'.',
+            "Zuschussfähig: {$pt['tn']} Teilnehmende".($von > 0 || $bis < 200 ? " ({$von}".($bis < 200 ? "–{$bis}" : '+').' Jahre)' : '')
+                .($nurGebiet ? ' aus dem Gebiet' : '').($schluessel > 0 ? " und {$pt['betreuer']} von höchstens {$schluessel} Betreuer*innen" : '').'.',
+            self::zahl($pt['tage']).' Personentage × '.self::euro($satz).' = '.self::euro($betrag).($betrag < $mindest ? ' (unter '.self::euro($mindest).' keine Auszahlung)' : ''),
         ], 'hinweise' => $hinweise];
     }
 }

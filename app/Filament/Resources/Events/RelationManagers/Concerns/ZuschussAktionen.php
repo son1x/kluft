@@ -172,9 +172,8 @@ trait ZuschussAktionen
                     'fehlend' => Zuschuesse::fehlend($this->getOwnerRecord()),
                     'schaetzung' => Foerderrechner::rechnen($this->getOwnerRecord()),
                 ])->render())),
-            ...collect(ZuschussPdf::UNTERLAGEN)->map(fn (array $u, string $art) => Action::make('zuschuss_'.$art)->label($u[0].' (PDF)')
+            ...collect($event->zuschussAktiv() ? ZuschussPdf::unterlagen($event) : [])->map(fn (string $label, string $art) => Action::make('zuschuss_'.$art)->label($label.' (PDF)')
                 ->icon($art === 'schaetzung' ? 'heroicon-o-document-chart-bar' : 'heroicon-o-document-text')
-                ->visible(fn () => array_key_exists($art, ZuschussPdf::unterlagen($this->getOwnerRecord())))
                 ->action(fn () => $this->zuschussPdf($art)))->values()->all(),
             Action::make('zuschussExcel')->label('Teilnahmeliste (.xlsx)')->icon('heroicon-o-table-cells')
                 ->action(function (): StreamedResponse {

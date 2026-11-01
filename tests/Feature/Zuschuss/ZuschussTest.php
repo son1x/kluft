@@ -11,6 +11,7 @@ use App\Models\EventRegistration;
 use App\Models\Person;
 use App\Models\SiteSetting;
 use App\Models\User;
+use App\Models\Zuschussgeber;
 use App\Services\Zuschuss\ProKopfListe;
 use App\Services\Zuschuss\ZuschussExcel;
 use App\Services\Zuschuss\ZuschussPdf;
@@ -44,6 +45,8 @@ class ZuschussTest extends TestCase
         Mail::fake();
         config(['mitglieder.driver' => 'off']);
         Features::setzen(Features::ZUSCHUESSE, true);
+        // Alle eingebauten Zuschussgeber an, unabhängig von der Instanz.
+        Zuschussgeber::query()->update(['aktiv' => true]);
     }
 
     private function lager(array $attrs = []): Event

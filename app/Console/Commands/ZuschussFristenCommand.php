@@ -8,6 +8,7 @@ use App\Models\Event;
 use App\Models\User;
 use App\Support\Zuschuesse;
 use App\Support\Zuschuesse\Antrag;
+use App\Support\Zuschuesse\Geber;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Mail;
 
@@ -44,7 +45,7 @@ class ZuschussFristenCommand extends Command
                 if ($stufe === null || in_array($stufe, $erinnert, true)) {
                     continue;
                 }
-                $mail = new ZuschussFristMail((string) $event->title, Zuschuesse::GEBER[$geber], $frist->format('d.m.Y'), $tage,
+                $mail = new ZuschussFristMail((string) $event->title, Geber::name($geber), $frist->format('d.m.Y'), $tage,
                     EventResource::getUrl('zuschuss', ['record' => $event], panel: 'admin'));
                 if (filled($event->contact_email)) {
                     Mail::to($event->contact_email, $event->contact_name)->send($mail);

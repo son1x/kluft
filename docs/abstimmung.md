@@ -35,6 +35,23 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-01 – Stammes → Haupt, Bezirk: Zuschussgeber modular (gemeinsamer Kern)
+Status: offen (auch direkt gemeldet)
+
+- **Neu:**
+  - Tabelle `zuschussgeber` (Migration `2026_11_01_190000`; legt die vier Vorlagen an und schaltet `config('dpsg.zuschuss_geber')` ein);
+  - `Support\Zuschuesse\Geber` (Katalog) und `Gebiete` (PLZ → Gemeinde/Kreis für SL und RLP, `resources/data/plz-gebiete.php`);
+  - Resource Verwaltung → Zuschussgeber;
+  - Vordruck `pdf.zuschuss-allgemein` für eigene Geber.
+- **Geändert:**
+  - `Zuschuesse::GEBER` entfällt; überall `Geber::aktiv()`, `Geber::vonEvent()`, `Geber::name()`;
+  - `ZuschussPdf::unterlagen()` liefert zusätzlich `antrag_<key>`, neu `ZuschussPdf::bezeichnung()`;
+  - Bistum Trier prüft den Wohnort über `Gebiete::bistumTrier()` (auch RLP).
+- **Config:** `dpsg.zuschuss_geber` (Standard `['bistum_trier']`), Roden alle vier, Saar-Hochwald `land` und `bistum_trier`; `StammVorlage` setzt den Schlüssel (Diözese Trier → Bistum).
+- **Tests:** `AdminSmokeTest` schaltet „Zuschussanträge“ ein. `ZuschussTest` schaltet alle Vorlagen an.
+
+Tests für roden, dv-trier und saar-hochwald grün.
+
 ### 2026-11-01 – Stammes → Haupt: Zuschussanträge Phase 4 (gemeinsamer Kern)
 Status: offen (auch direkt gemeldet)
 

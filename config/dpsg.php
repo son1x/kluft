@@ -192,4 +192,11 @@ return array_replace([
     // nötig (F-EV-14, § 8 Abs. 8 KDG).
     'guardian_consent_age' => 16,
 
+    /*
+    | Zuschussanträge: eingebaute Zuschussgeber, die beim Einrichten an sind
+    | (land, kreis_sls, stadt_sls, bistum_trier). Danach im Backend unter
+    | Verwaltung → Zuschussgeber ein- und ausschaltbar, dort auch eigene.
+    */
+    'zuschuss_geber' => ['bistum_trier'],
+
 ], $instanzConfig);

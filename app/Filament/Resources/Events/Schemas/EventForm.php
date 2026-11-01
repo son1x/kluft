@@ -12,6 +12,7 @@ use App\Support\Features;
 use App\Support\RoleCatalog;
 use App\Support\Teilnahmebeitraege;
 use App\Support\Zuschuesse;
+use App\Support\Zuschuesse\Geber;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DateTimePicker;
@@ -207,7 +208,8 @@ class EventForm
                     Toggle::make('zuschuss')->label('Zuschuss beantragen')->live()->columnSpanFull(),
                     Select::make('zuschuss_art')->label('Art der Maßnahme')->options(Zuschuesse::ARTEN)->native(false)
                         ->required(fn (Get $get) => (bool) $get('zuschuss'))->visible(fn (Get $get) => (bool) $get('zuschuss')),
-                    CheckboxList::make('zuschuss_geber')->label('Zuschussgeber')->options(Zuschuesse::GEBER)
+                    CheckboxList::make('zuschuss_geber')->label('Zuschussgeber')->options(fn (?Event $record) => Geber::auswahl($record))
+                        ->helperText('Welche zur Wahl stehen, legt die Verwaltung unter „Zuschussgeber“ fest. Ohne Auswahl: alle eingeschalteten.')
                         ->visible(fn (Get $get) => (bool) $get('zuschuss')),
                     Toggle::make('zuschuss_fern')->label('Ziel weiter als 250 km entfernt')->helperText('Die Stadt Saarlouis fördert Lager dann mit 2,50 € statt 1,50 € je Tag.')
                         ->visible(fn (Get $get) => (bool) $get('zuschuss')),

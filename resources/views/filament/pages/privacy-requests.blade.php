@@ -71,6 +71,14 @@
             </x-filament::section>
         @endif
 
+        @if ($found['datenmeldungen']->isNotEmpty())
+            <x-filament::section heading="Meine Daten aktualisieren ({{ $found['datenmeldungen']->count() }})" description="Meldungen für den NaMi-Datenabgleich. Löschen entfernt sie samt den Zeilen der Unterschiedsliste; in NaMi ändert Kluft nichts.">
+                @foreach ($found['datenmeldungen'] as $meldung)
+                    <p style="font-size: .875rem;">{{ $meldung->created_at->format('d.m.Y') }} – {{ trim(($meldung->daten['vorname'] ?? '').' '.($meldung->daten['nachname'] ?? '')) }} ({{ $meldung->bestaetigt_am ? 'bestätigt' : 'unbestätigt' }})</p>
+                @endforeach
+            </x-filament::section>
+        @endif
+
         <x-filament::section heading="Weitere Stellen">
             <ul style="font-size: .875rem; list-style: disc; padding-left: 1.25rem;">
                 <li>Mails in der Warteschlange an diese Adresse: {{ $found['queued'] }}</li>

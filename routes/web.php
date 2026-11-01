@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\EntraAuthController;
 use App\Http\Controllers\Public\CalendarController;
 use App\Http\Controllers\Public\CertificateController;
 use App\Http\Controllers\Public\ContactController;
+use App\Http\Controllers\Public\DatenmeldungController;
 use App\Http\Controllers\Public\DownloadController;
 use App\Http\Controllers\Public\EventController;
 use App\Http\Controllers\Public\FeedController;
@@ -122,6 +123,12 @@ Route::middleware('throttle:30,10')->group(function () {
     Route::post('/bestellung/{token}/bestaetigen', [ShopController::class, 'bestaetigen'])->name('shop.bestaetigen');
     Route::post('/bestellung/{token}/stornieren', [ShopController::class, 'stornieren'])->name('shop.stornieren');
 });
+
+// NaMi-Datenabgleich: „Meine Daten aktualisieren“ (docs/pflichtenheft-nami-datenabgleich.md).
+Route::get('/meine-daten', [DatenmeldungController::class, 'create'])->name('datenmeldung.create');
+Route::post('/meine-daten', [DatenmeldungController::class, 'store'])->middleware('throttle:5,10')->name('datenmeldung.store');
+Route::get('/meine-daten/danke', [DatenmeldungController::class, 'danke'])->name('datenmeldung.danke');
+Route::get('/meine-daten/bestaetigen/{token}', [DatenmeldungController::class, 'bestaetigen'])->middleware('throttle:30,10')->name('datenmeldung.bestaetigen');
 
 // Meine Anmeldungen: Übersicht für Teilnehmende mit E-Mail und Einmalcode.
 // Bestätigen/Stornieren per Link und die Echtheitsprüfung bleiben immer

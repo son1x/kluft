@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\ContactMessage;
+use App\Models\DatenabgleichZeile;
+use App\Models\Datenmeldung;
 use App\Models\Event;
 use App\Models\EventRegistration;
 use App\Models\Person;
@@ -34,7 +36,7 @@ class PrivacyRequests
     public function __construct(private EventRegistrations $registrations) {}
 
     /**
-     * @return array{registrations: Collection<int, EventRegistration>, people: Collection<int, Person>, users: Collection<int, User>, messages: Collection<int, ContactMessage>, bestellungen: Collection<int, Bestellung>, umfragen: Collection<int, UmfrageAntwort>, gewinnspiel: Collection<int, UmfrageGewinnspiel>, queued: int}
+     * @return array{registrations: Collection<int, EventRegistration>, people: Collection<int, Person>, users: Collection<int, User>, messages: Collection<int, ContactMessage>, bestellungen: Collection<int, Bestellung>, umfragen: Collection<int, UmfrageAntwort>, gewinnspiel: Collection<int, UmfrageGewinnspiel>, datenmeldungen: Collection<int, Datenmeldung>, queued: int}
      */
     public function find(string $email): array
     {
@@ -54,6 +56,10 @@ class PrivacyRequests
                 : new EloquentCollection,
             'gewinnspiel' => Schema::hasTable('umfrage_gewinnspiel')
                 ? UmfrageGewinnspiel::query()->where('email', $email)->with('umfrage')->orderByDesc('id')->get()
+                : new EloquentCollection,
+            // NaMi-Datenabgleich: Mail des Mitglieds oder der Erziehungsberechtigten.
+            'datenmeldungen' => Schema::hasTable('datenmeldungen')
+                ? Datenmeldung::query()->where('email_hash', Datenmeldung::hash($email))->orWhere('email_eltern_hash', Datenmeldung::hash($email))->orderByDesc('id')->get()
                 : new EloquentCollection,
             'queued' => $this->queueEntries($email)->count(),
         ];
@@ -137,6 +143,11 @@ class PrivacyRequests
             'gewinnspiele' => $found['gewinnspiel']->map(fn (UmfrageGewinnspiel $g) => [
                 'umfrage' => $g->umfrage?->titel, 'name' => $g->name, 'datum' => $g->eingegangen_am->toDateString(), 'gewonnen' => $g->gewonnen,
             ])->values()->all(),
+            'datenmeldungen' => $found['datenmeldungen']->map(fn (Datenmeldung $m) => [
+                'eingang' => $m->created_at->toIso8601String(), 'bestaetigt_am' => $m->bestaetigt_am?->toIso8601String(),
+                'angaben' => (array) $m->daten,
+                'loeschung_spaetestens' => ($m->bestaetigt_am ?? $m->created_at)->copy()->addMonths(6)->toDateString(),
+            ])->values()->all(),
             'mails_in_warteschlange' => $found['queued'],
             'hinweise' => array_values(array_filter([
                 Features::newsletter() ? config('dpsg.newsletter.name').' (Newsletter): Die Adressen liegen nur beim Versanddienst Brevo, nicht im CMS. Auskunft/Löschung dort.' : null,
@@ -168,7 +179,7 @@ class PrivacyRequests
      * automatisch gelöscht (Rollen/Audit) – das geht unter „Benutzer“.
      * Frei werdende Plätze kommender Veranstaltungen rücken nach.
      *
-     * @return array{registrations: int, people: int, messages: int, bestellungen: int, umfragen: int, queued: int}
+     * @return array{registrations: int, people: int, messages: int, bestellungen: int, umfragen: int, datenmeldungen: int, queued: int}
      */
     public function delete(string $email): array
     {
@@ -186,13 +197,18 @@ class PrivacyRequests
         $found['bestellungen']->each(fn (Bestellung $b) => SammelbestellungAblauf::anonymisieren($b));
         $found['umfragen']->each->delete();
         $found['gewinnspiel']->each->delete();
+        // NaMi-Datenabgleich: Meldungen samt ihren Zeilen der Unterschiedsliste.
+        if ($found['datenmeldungen']->isNotEmpty()) {
+            DatenabgleichZeile::query()->where('quelle', 'meldung')->whereIn('quelle_id', $found['datenmeldungen']->pluck('id'))->delete();
+            $found['datenmeldungen']->each->delete();
+        }
 
         $queued = $this->queueEntries($email);
         DB::table('jobs')->whereIn('id', $queued->where('table', 'jobs')->pluck('id'))->delete();
         DB::table('failed_jobs')->whereIn('id', $queued->where('table', 'failed_jobs')->pluck('id'))->delete();
 
         return ['registrations' => $found['registrations']->count(), 'people' => $found['people']->count(), 'messages' => $found['messages']->count(),
-            'bestellungen' => $found['bestellungen']->count(), 'umfragen' => $found['umfragen']->count() + $found['gewinnspiel']->count(), 'queued' => $queued->count()];
+            'bestellungen' => $found['bestellungen']->count(), 'umfragen' => $found['umfragen']->count() + $found['gewinnspiel']->count(), 'datenmeldungen' => $found['datenmeldungen']->count(), 'queued' => $queued->count()];
     }
 
     /**

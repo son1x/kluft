@@ -35,6 +35,24 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-01 – Stammes → Haupt: NaMi-Datenabgleich (neue Funktion, gemeinsamer Kern)
+Status: offen (auch direkt gemeldet)
+
+Wunsch Roden, `docs/pflichtenheft-nami-datenabgleich.md`. Funktion `nami_datenabgleich` (nur Stämme, ab Stufe 3, Standard aus).
+- **Neu:**
+  - Formular `/meine-daten` mit Bestätigung per Mail-Link (`DatenmeldungController`, `DatenmeldungMail`);
+  - Tabellen `datenmeldungen` und `datenabgleich_zeilen`, Inhalte verschlüsselt;
+  - Job `DatenabgleichAusfuehren` (liest NaMi nur, Muster wie `BeitraegeAbrufen`);
+  - Resource „NaMi-Datenabgleich“ in der Gruppe Kasse (Verwaltung und Kasse) mit PDF- und Excel-Export;
+  - Befehl `datenabgleich:aufraeumen` (03:45).
+- **Geändert am Kern:**
+  - `PrivacyRequests`: `find`, `export` und `delete` erfassen Datenmeldungen (Treffer über den Hash der Mail des Mitglieds oder der Eltern); `delete()` liefert zusätzlich `datenmeldungen`;
+  - die Datenschutz-Seite zeigt sie an;
+  - `ZuschussPdf::render` ist jetzt public;
+  - `AdminSmokeTest` schaltet die Funktion ein.
+
+Tests für roden, dv-trier und saar-hochwald grün.
+
 ### 2026-11-01 – Stammes → Haupt: Zuschussanträge Phase 3 (gemeinsamer Kern)
 Status: offen (auch direkt gemeldet)
 

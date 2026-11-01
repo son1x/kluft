@@ -103,7 +103,7 @@ class ZuschussPdf
     }
 
     /** @param array<string, mixed> $daten */
-    private function render(string $view, array $daten, string $ausrichtung, string $titel): string
+    public function render(string $view, array $daten, string $ausrichtung, string $titel): string
     {
         $html = view($view, $daten + [
             'fonts' => resource_path('fonts/pdf'),

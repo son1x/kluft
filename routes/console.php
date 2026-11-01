@@ -65,6 +65,9 @@ Schedule::command('sammelbestellung:taeglich')->dailyAt('08:10');
 Schedule::command('zuschuss:nextcloud')->dailyAt('03:20')->withoutOverlapping();
 Schedule::command('zuschuss:juleica')->dailyAt('08:20');
 
+// NaMi-Datenabgleich: Löschfristen (docs/pflichtenheft-nami-datenabgleich.md).
+Schedule::command('datenabgleich:aufraeumen')->dailyAt('03:45');
+
 // Kluft-Updates für eigenständige Installationen (docs/updates.md): im
 // Backend angestoßene Installation jede Minute abholen, täglich nach neuen
 // Versionen schauen und bei KLUFT_UPDATES=auto nachts installieren – nach

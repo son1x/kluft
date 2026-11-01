@@ -143,6 +143,71 @@ class Zuschuesse
         return $fehlend;
     }
 
+    /**
+     * Antragsteller für alle Anträge: Gliederung, Anschrift, Bank aus
+     * „Zahlungen“, Rückfragen an den Kontakt der Veranstaltung.
+     *
+     * @return array{name: string, anschrift: string, bank: ?string, iban: ?string, bic: ?string, inhaber: ?string, rueckfragen: ?string, telefon: ?string, email: ?string}
+     */
+    public static function antragsteller(Event $event): array
+    {
+        $kontakt = (array) config('dpsg.contact');
+        $konto = Zahlungen::konto();
+
+        return [
+            'name' => (string) ($kontakt['name'] ?? config('dpsg.site.name')),
+            'anschrift' => trim(implode(', ', array_filter([$kontakt['street'] ?? null, $kontakt['city'] ?? null]))),
+            'bank' => null,
+            'iban' => $konto ? trim(chunk_split($konto['iban'], 4, ' ')) : null,
+            'bic' => $konto['bic'] ?? null,
+            'inhaber' => $konto['inhaber'] ?? null,
+            'rueckfragen' => $event->contact_name ?: ($kontakt['office'] ?? null),
+            'telefon' => $kontakt['phone'] ?? null,
+            'email' => $event->contact_email ?: ($kontakt['email'] ?? null),
+        ];
+    }
+
+    /**
+     * Programmpunkte aus dem Textfeld: je Zeile „Zeit: Thema – Referent*in“.
+     *
+     * @return list<array{zeit: string, thema: string, referent: string}>
+     */
+    public static function programm(Event $event): array
+    {
+        $zeilen = preg_split('/\R/', (string) (((array) $event->zuschuss_bericht)['programm'] ?? '')) ?: [];
+
+        return array_values(array_filter(array_map(function (string $zeile) {
+            $zeile = trim($zeile);
+            if ($zeile === '') {
+                return null;
+            }
+            [$zeit, $rest] = str_contains($zeile, ': ') ? explode(': ', $zeile, 2) : ['', $zeile];
+            [$thema, $referent] = str_contains($rest, ' – ') ? explode(' – ', $rest, 2) : [$rest, ''];
+
+            return ['zeit' => trim($zeit), 'thema' => trim($thema), 'referent' => trim($referent)];
+        }, $zeilen)));
+    }
+
+    /** Juleica gilt, wenn vorhanden und (falls angegeben) am Beginn der Veranstaltung noch gültig. */
+    public static function juleicaGueltig(array $daten, Event $event): bool
+    {
+        return (bool) ($daten['juleica'] ?? false)
+            && (blank($daten['juleica_bis'] ?? null) || Carbon::parse((string) $daten['juleica_bis'])->gte($event->starts_at->copy()->startOfDay()));
+    }
+
+    /** Qualifikation für Formular D/E und Bistum. */
+    public static function qualifikation(array $person): string
+    {
+        return $person['juleica'] ? 'Juleica-Inhaber*in' : 'langjährige Tätigkeit in der Jugendarbeit';
+    }
+
+    /** Aufenthaltsbestätigung (Formular C) nur bei Teilnehmenden aus NK, MZG oder dem Saarpfalz-Kreis. */
+    public static function brauchtAufenthaltsbestaetigung(Event $event): bool
+    {
+        return in_array((string) $event->zuschuss_art, ['freizeit'], true)
+            && self::personen($event)->contains(fn (array $p) => in_array($p['kreis'], ['NK', 'MZG', 'HOM'], true));
+    }
+
     /** @return array<string, int> Finanzen in Cent mit Summen (Formular A). */
     public static function finanzen(Event $event): array
     {

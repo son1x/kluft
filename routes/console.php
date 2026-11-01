@@ -61,6 +61,9 @@ Schedule::command('kontakt:prune')->dailyAt('03:55');
 // am Bestelldatum, Löschfristen (docs/pflichtenheft-sammelbestellung.md).
 Schedule::command('sammelbestellung:taeglich')->dailyAt('08:10');
 
+// Zuschussanträge: Unterlagen in die Nextcloud-Ablage (docs/pflichtenheft-zuschuesse.md, ZU-40).
+Schedule::command('zuschuss:nextcloud')->dailyAt('03:20')->withoutOverlapping();
+
 // Kluft-Updates für eigenständige Installationen (docs/updates.md): im
 // Backend angestoßene Installation jede Minute abholen, täglich nach neuen
 // Versionen schauen und bei KLUFT_UPDATES=auto nachts installieren – nach

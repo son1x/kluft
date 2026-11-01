@@ -6,14 +6,18 @@ use App\Filament\Resources\Events\Pages\EditEvent;
 use App\Filament\Resources\Events\RelationManagers\RegistrationsRelationManager;
 use App\Models\Event;
 use App\Models\EventRegistration;
+use App\Models\Person;
+use App\Models\SiteSetting;
 use App\Models\User;
 use App\Services\Zuschuss\ZuschussPdf;
 use App\Support\Features;
+use App\Support\NextcloudAblage;
 use App\Support\Zuschuesse;
 use App\Support\Zuschuesse\Foerderrechner;
 use App\Support\Zuschuesse\Kreise;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\TestDox;
@@ -157,6 +161,76 @@ class ZuschussTest extends TestCase
         $this->assertFalse($mia->fresh()->anwesend);
 
         $tabelle()->mountTableAction('zuschussUebersicht')->assertSee('Förderschätzung');
-        $tabelle()->callTableAction('zuschussListe')->assertFileDownloaded('teilnahmeliste-pfingstlager.pdf');
+        $tabelle()->callTableAction('zuschuss_liste')->assertFileDownloaded('teilnahmeliste-pfingstlager.pdf');
+    }
+
+    #[TestDox('Phase 2: Unterlagen je Zuschussgeber (A, Bericht, C nur bei NK/MZG/HOM, Stadt, Bistum mit erwarteten anderen Zuschüssen)')]
+    public function test_unterlagen(): void
+    {
+        $event = $this->lager(['zuschuss_geber' => ['land', 'stadt_sls'], 'zuschuss_bericht' => ['programm' => "Sa 10–12 Uhr: Geländespiel – Anna\nSo: Abbau"]]);
+        foreach (range(1, 8) as $i) {
+            $this->person($event, 'Kind'.$i, 9);
+        }
+        $this->person($event, 'Anna', 25, 'L', juleica: true);
+        $this->assertSame(['liste', 'schaetzung', 'a', 'bericht', 'stadt'], array_keys(ZuschussPdf::unterlagen($event)));
+        $this->assertSame([['zeit' => 'Sa 10–12 Uhr', 'thema' => 'Geländespiel', 'referent' => 'Anna'], ['zeit' => 'So', 'thema' => 'Abbau', 'referent' => '']], Zuschuesse::programm($event));
+
+        $this->person($event, 'Paul', 10, data: ['plz' => '66538', 'wohnort' => 'Neunkirchen']);
+        $event->update(['zuschuss_geber' => ['land', 'bistum_trier']]);
+        $this->assertSame(['liste', 'schaetzung', 'a', 'bericht', 'c', 'bistum'], array_keys(ZuschussPdf::unterlagen($event->fresh())));
+        foreach (array_keys(ZuschussPdf::UNTERLAGEN) as $art) {
+            $this->assertStringStartsWith('%PDF', app(ZuschussPdf::class)->unterlage($event->fresh(), $art), $art);
+        }
+        $this->assertSame('formular-a-antrag-pfingstlager.pdf', ZuschussPdf::dateiname($event, 'a'));
+    }
+
+    #[TestDox('Phase 2: Leitung aus Personen übernehmen, mit Stammdaten und gültiger Juleica')]
+    public function test_leitung_uebernehmen(): void
+    {
+        $event = $this->lager();
+        $gueltig = Person::query()->create(['name' => 'Anna Maria Leitung', 'gremium' => 'leitung', 'active' => true,
+            'zuschuss_daten' => ['strasse' => 'Am Markt 1', 'plz' => '66740', 'wohnort' => 'Saarlouis', 'geburtsdatum' => '1998-04-01', 'geschlecht' => 'w', 'juleica' => true, 'juleica_bis' => now()->addYear()->toDateString()]]);
+        $abgelaufen = Person::query()->create(['name' => 'Jan Alt', 'gremium' => 'leitung', 'active' => true,
+            'zuschuss_daten' => ['juleica' => true, 'juleica_bis' => now()->subMonth()->toDateString()]]);
+        $this->assertArrayNotHasKey('zuschuss_daten', $gueltig->toArray(), 'nie in Ausgaben');
+
+        $user = User::query()->create(['name' => 'Büro', 'email' => 'buero@example.org', 'status' => 'active']);
+        $user->roleAssignments()->create(['role' => 'verwaltung', 'scope_type' => 'global']);
+        Filament::setCurrentPanel('admin');
+        $this->actingAs($user->fresh());
+        Livewire::test(RegistrationsRelationManager::class, ['ownerRecord' => $event, 'pageClass' => EditEvent::class])
+            ->callTableAction('zuschussLeitung', data: ['personen' => [$gueltig->id, $abgelaufen->id], 'funktion' => 'L'])
+            ->assertHasNoTableActionErrors();
+
+        $anna = EventRegistration::query()->where('last_name', 'Leitung')->sole();
+        $this->assertSame(['Anna Maria', 'L', true, 'Am Markt 1', 'confirmed'], [$anna->first_name, $anna->funktion, $anna->juleica, $anna->data['strasse'], $anna->status]);
+        $this->assertFalse(EventRegistration::query()->where('last_name', 'Alt')->sole()->juleica);
+    }
+
+    #[TestDox('Phase 2: Nextcloud-Ablage legt Ordner „JJJJ-MM-TT Titel“ mit Belege-Ordner an und lädt die Unterlagen hoch; Passwort verschlüsselt')]
+    public function test_nextcloud(): void
+    {
+        $event = $this->lager(['title' => 'Pfingstlager: Wald/Wiese', 'zuschuss_geber' => ['land']]);
+        $this->person($event, 'Mia', 9);
+        Http::fake(fn ($request) => Http::response('', match ($request->method()) {
+            'MKCOL' => 201, 'PUT' => 201, 'PROPFIND' => 207, default => 400
+        }));
+
+        $this->assertFalse(NextcloudAblage::eingerichtet());
+        NextcloudAblage::speichern('https://cloud.example.org/remote.php/dav/files/stamm/Zuschuesse/', 'stamm', 'geheim-123', null);
+        $this->assertStringNotContainsString('geheim-123', (string) SiteSetting::query()->whereKey(NextcloudAblage::KEY)->value('value'));
+        NextcloudAblage::speichern('https://cloud.example.org/remote.php/dav/files/stamm/Zuschuesse', 'stamm', null, null);
+        $this->assertSame('geheim-123', NextcloudAblage::zugang()['passwort'], 'leer behält das Passwort');
+        $this->assertStringStartsWith('Verbindung in Ordnung', NextcloudAblage::testen());
+
+        $ordner = $event->starts_at->format('Y-m-d').' Pfingstlager Wald Wiese';
+        $this->assertSame($ordner, NextcloudAblage::ordner($event));
+        $this->assertSame(4, NextcloudAblage::abgleichen($event));
+        $basis = 'https://cloud.example.org/remote.php/dav/files/stamm/Zuschuesse/'.rawurlencode($ordner);
+        Http::assertSent(fn ($r) => $r->method() === 'MKCOL' && $r->url() === $basis);
+        Http::assertSent(fn ($r) => $r->method() === 'MKCOL' && $r->url() === $basis.'/Belege');
+        Http::assertSent(fn ($r) => $r->method() === 'PUT' && str_ends_with($r->url(), '/teilnahmeliste-pfingstlager-waldwiese.pdf') && $r->hasHeader('Authorization'));
+
+        $this->artisan('zuschuss:nextcloud')->assertSuccessful();
     }
 }

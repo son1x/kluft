@@ -35,6 +35,20 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-01 – Stammes → Haupt: Zuschussanträge Phase 2 (gemeinsamer Kern)
+Status: offen (auch direkt gemeldet)
+
+- **Migration** `2026_11_01_100000_add_zuschuss_bericht_und_leitende`: `events.zuschuss_bericht` (json), `people.zuschuss_daten` (Text, Cast `encrypted:array`, in `$hidden`).
+- **`PersonResource`:** einklappbarer Abschnitt „Für Zuschussanträge (nur intern)“ am Ende des Formulars. Nur sichtbar, wenn die Funktion an ist und die Person die Verwaltungsrolle hat.
+- **`EventForm`:** im Abschnitt „Zuschuss“ das Fieldset „Für Bericht und Anträge“.
+- **Neu:**
+  - Seite `NextcloudAblagePage` (Verwaltung, nur Admins, Funktion `zuschuesse`);
+  - `App\Support\NextcloudAblage` (WebDAV wie beim Backup, Zugang verschlüsselt in `site_settings`);
+  - Befehl `zuschuss:nextcloud` (03:20, `routes/console.php`).
+- **Eure Teilnehmendenliste:** nur weitere Aktionen im Trait `ZuschussAktionen`, an den Einhängepunkten ändert sich nichts.
+
+Tests für roden, dv-trier und saar-hochwald grün.
+
 ### 2026-11-01 – Stammes → Haupt, Bezirk: Zuschussanträge Phase 1 gebaut (Veranstaltungen, gemeinsamer Kern)
 Status: offen (auch direkt gemeldet)
 

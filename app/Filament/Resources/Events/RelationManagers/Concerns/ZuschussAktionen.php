@@ -4,8 +4,11 @@ namespace App\Filament\Resources\Events\RelationManagers\Concerns;
 
 use App\Models\Event;
 use App\Models\EventRegistration;
+use App\Models\Person;
+use App\Services\EventRegistrations;
 use App\Services\Zuschuss\ZuschussPdf;
 use App\Support\AuditLogger;
+use App\Support\NextcloudAblage;
 use App\Support\Zuschuesse;
 use App\Support\Zuschuesse\Foerderrechner;
 use App\Support\Zuschuesse\Kreise;
@@ -17,11 +20,13 @@ use Filament\Facades\Filament;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\HtmlString;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Throwable;
 
 /**
  * Zuschussanträge in der Teilnehmendenliste (docs/pflichtenheft-zuschuesse.md):
@@ -133,6 +138,28 @@ trait ZuschussAktionen
     protected function zuschussKopfaktionen(Event $event): ActionGroup
     {
         return ActionGroup::make([
+            Action::make('zuschussLeitung')->label('Leitung aus Personen übernehmen')->icon('heroicon-o-user-group')
+                ->modalDescription('Trägt die gewählten Personen als bestätigt ein, mit den hinterlegten Angaben für Zuschussanträge (Personen → „Für Zuschussanträge“). Wer schon angemeldet ist, wird übersprungen.')
+                ->schema([
+                    CheckboxList::make('personen')->label('Personen')->required()->searchable()->columns(2)
+                        ->options(fn () => Person::query()->where('active', true)->orderBy('name')->get()
+                            ->mapWithKeys(fn (Person $p) => [$p->id => $p->name.($p->role ? ' ('.$p->role.')' : '').(filled($p->zuschuss_daten) ? '' : ' – ohne Angaben')])->all()),
+                    Select::make('funktion')->label('Funktion')->options(['L' => 'Leiter*in', 'B' => 'Betreuer*in', 'R' => 'Referent*in'])->default('B')->required(),
+                ])
+                ->action(fn (array $data) => $this->leitungUebernehmen((array) $data['personen'], (string) $data['funktion'])),
+            Action::make('zuschussNextcloud')->label('In Nextcloud ablegen')->icon('heroicon-o-cloud-arrow-up')
+                ->visible(fn () => NextcloudAblage::eingerichtet())
+                ->action(function () {
+                    $event = $this->getOwnerRecord();
+                    abort_unless($event instanceof Event && Filament::auth()->user()?->can('manageParticipants', $event), 403);
+                    try {
+                        $n = NextcloudAblage::abgleichen($event);
+                        AuditLogger::log('event.zuschuss_nextcloud', Filament::auth()->user(), Event::class, $event->getKey(), request());
+                        Notification::make()->success()->title($n.' Datei(en) in „'.NextcloudAblage::ordner($event).'“ abgelegt')->send();
+                    } catch (Throwable $e) {
+                        Notification::make()->danger()->title('Nextcloud-Ablage fehlgeschlagen')->body($e->getMessage())->send();
+                    }
+                }),
             Action::make('zuschussUebersicht')->label('Übersicht und Schätzung')->icon('heroicon-o-calculator')
                 ->modalSubmitAction(false)->modalCancelActionLabel('Schließen')->modalWidth('3xl')
                 ->modalContent(fn () => new HtmlString(view('filament.zuschuss-uebersicht', [
@@ -141,11 +168,37 @@ trait ZuschussAktionen
                     'fehlend' => Zuschuesse::fehlend($this->getOwnerRecord()),
                     'schaetzung' => Foerderrechner::rechnen($this->getOwnerRecord()),
                 ])->render())),
-            Action::make('zuschussListe')->label('Teilnahmeliste (PDF)')->icon('heroicon-o-document-text')
-                ->action(fn () => $this->zuschussPdf('liste')),
-            Action::make('zuschussSchaetzung')->label('Förderschätzung (PDF)')->icon('heroicon-o-document-chart-bar')
-                ->action(fn () => $this->zuschussPdf('schaetzung')),
+            ...collect(ZuschussPdf::UNTERLAGEN)->map(fn (array $u, string $art) => Action::make('zuschuss_'.$art)->label($u[0].' (PDF)')
+                ->icon($art === 'schaetzung' ? 'heroicon-o-document-chart-bar' : 'heroicon-o-document-text')
+                ->visible(fn () => array_key_exists($art, ZuschussPdf::unterlagen($this->getOwnerRecord())))
+                ->action(fn () => $this->zuschussPdf($art)))->values()->all(),
         ])->label('Zuschuss')->icon('heroicon-o-banknotes')->button()->color('gray')->visible($event->zuschussAktiv());
+    }
+
+    /** @param list<int|string> $ids */
+    private function leitungUebernehmen(array $ids, string $funktion): void
+    {
+        $event = $this->getOwnerRecord();
+        abort_unless($event instanceof Event && Filament::auth()->user()?->can('manageParticipants', $event), 403);
+        $felder = array_keys($event->formFields());
+        $neu = 0;
+        foreach (Person::query()->whereKey($ids)->get() as $person) {
+            $daten = (array) $person->zuschuss_daten;
+            $name = trim((string) $person->name);
+            $pos = mb_strrpos($name, ' ');
+            $eintrag = [
+                'first_name' => $pos === false ? $name : mb_substr($name, 0, $pos),
+                'last_name' => $pos === false ? '–' : mb_substr($name, $pos + 1),
+                'email' => '',
+                'data' => array_intersect_key($daten, array_flip($felder)),
+            ];
+            [, $registrierung] = app(EventRegistrations::class)->addManually($event, $eintrag, 'confirmed', false, Filament::auth()->user());
+            if ($registrierung) {
+                $registrierung->update(['funktion' => $funktion, 'juleica' => Zuschuesse::juleicaGueltig($daten, $event)]);
+                $neu++;
+            }
+        }
+        Notification::make()->success()->title($neu.' Person(en) übernommen')->body(count($ids) > $neu ? (count($ids) - $neu).' waren schon angemeldet.' : null)->send();
     }
 
     private function zuschussPdf(string $art): StreamedResponse
@@ -153,8 +206,8 @@ trait ZuschussAktionen
         $event = $this->getOwnerRecord();
         abort_unless($event instanceof Event && Filament::auth()->user()?->can('manageParticipants', $event), 403);
         AuditLogger::log('event.zuschuss_'.$art, Filament::auth()->user(), Event::class, $event->getKey(), request());
-        $pdf = $art === 'liste' ? app(ZuschussPdf::class)->teilnahmeliste($event) : app(ZuschussPdf::class)->schaetzung($event);
+        $pdf = app(ZuschussPdf::class)->unterlage($event, $art);
 
-        return response()->streamDownload(fn () => print ($pdf), ($art === 'liste' ? 'teilnahmeliste-' : 'foerderschaetzung-').str($event->title)->slug().'.pdf', ['Content-Type' => 'application/pdf']);
+        return response()->streamDownload(fn () => print ($pdf), ZuschussPdf::dateiname($event, $art), ['Content-Type' => 'application/pdf']);
     }
 }

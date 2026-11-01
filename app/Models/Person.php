@@ -19,12 +19,15 @@ class Person extends Model
 
     protected $fillable = [
         'gremium', 'section', 'subgroup', 'name', 'role', 'stage', 'badge', 'email', 'bio',
-        'photo_media_id', 'consent', 'active', 'sort',
+        'photo_media_id', 'consent', 'active', 'sort', 'zuschuss_daten',
     ];
+
+    // Nur intern für Zuschussanträge (ZU-06); nie auf der Website oder in Exporten.
+    protected $hidden = ['zuschuss_daten'];
 
     protected function casts(): array
     {
-        return ['consent' => 'boolean', 'active' => 'boolean', 'sort' => 'integer'];
+        return ['consent' => 'boolean', 'active' => 'boolean', 'sort' => 'integer', 'zuschuss_daten' => 'encrypted:array'];
     }
 
     /**

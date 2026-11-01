@@ -189,6 +189,22 @@ class EventForm
                             self::euro('zuschuss_finanzen.spenden', 'Spenden, andere Zuschüsse (Einnahme)'),
                             self::euro('zuschuss_finanzen.sonstige', 'Sonstige Einnahmen'),
                         ]),
+                    Fieldset::make('Für Bericht und Anträge')->columns(2)->columnSpanFull()
+                        ->visible(fn (Get $get) => (bool) $get('zuschuss'))
+                        ->components([
+                            TextInput::make('zuschuss_bericht.thema')->label('Thema / Schwerpunkt')->maxLength(200)
+                                ->helperText('Bildung und Schulung (Formular E), Bistum (Programmfolge).'),
+                            TextInput::make('zuschuss_bericht.unterkunft')->label('Unterkunft (z. B. Zeltplatz)')->maxLength(200)
+                                ->helperText('Für die Aufenthaltsbestätigung (Formular C).'),
+                            Textarea::make('zuschuss_bericht.programm')->label('Programm (eine Zeile je Programmpunkt)')->rows(6)->maxLength(5000)->columnSpanFull()
+                                ->placeholder("Sa 10–12 Uhr: Geländespiel – Referent*in\nSa 14–17 Uhr: Workshop Erste Hilfe"),
+                            Textarea::make('zuschuss_bericht.methodik')->label('Inhalt, Methodik, Zielsetzung')->rows(3)->maxLength(3000)
+                                ->helperText('Formular E und Stadt Saarlouis.'),
+                            Textarea::make('zuschuss_bericht.bericht')->label('Sachbericht / Ergebnis der Bewertung')->rows(3)->maxLength(3000)
+                                ->helperText('Leer: „wurde programmgemäß durchgeführt“.'),
+                            TextInput::make('zuschuss_bericht.entfernung_km')->label('Entfernung Saarlouis – Ziel (km)')->numeric()->minValue(0)->maxValue(5000)
+                                ->helperText('Für den Antrag der Stadt Saarlouis.'),
+                        ]),
                 ]),
 
             Section::make('Formular-Baukasten')

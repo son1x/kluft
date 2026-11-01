@@ -88,6 +88,8 @@ ohnehin auf Papier (Roden, 31.10.2026).
   Vor der Veranstaltung aus den Anmeldungen und dem Kostenplan (Planung, z. B. für die Höhe des Teilnahmebeitrags), danach aus der Anwesenheit. Hinweise, wo etwas fehlt („Geburtsdatum fehlt bei 2 Personen“, „Stadt Saarlouis: Zuschusszeitraum endet am 30.09.“). Kennzeichnung als Schätzung ohne Gewähr. Die Sätze stehen als Tabelle im Code, mit Datum der Richtlinie, damit sie sich leicht nachziehen lassen.
 - **ZU-19** KANN: **Pro-Kopf-Zuschuss der Stadt Saarlouis** (jährlich bis 15.02.): Namensliste der Mitglieder bis 18 Jahre mit Anschrift und Geburtsdatum aus dem NaMi-Abruf der Kasse, mit Richtigkeitsbestätigung.
 
+- **ZU-40** SOLL: **Nextcloud-Ablage** (Wunsch Roden, 01.11.2026): Unter Verwaltung trägt ein Admin einen WebDAV-Ordner ein (Nextcloud-Adresse, Benutzer, App-Passwort; das Passwort wird verschlüsselt gespeichert und nie wieder angezeigt), mit Knopf „Verbindung testen“. Je Veranstaltung mit Zuschuss legt Kluft darin einen Ordner „JJJJ-MM-TT Titel“ an und legt die Unterlagen ab: Teilnahmeliste, Förderschätzung und die Anträge der gewählten Zuschussgeber. Dazu einen leeren Unterordner „Belege“ für Rechnungen und Quittungen. Abgleich auf Knopfdruck („In Nextcloud ablegen“) und nachts automatisch von 14 Tagen vor Beginn bis 90 Tage nach Ende. Nur in diese Richtung: Kluft überschreibt seine eigenen Dateien und löscht in Nextcloud nichts. Dokumente aus den Anmeldungen (z. B. Einverständniserklärungen) werden nicht abgelegt.
+
 ## 5. Rollen und Einbindung
 
 - **ZU-20** MUSS: Funktionsschalter `zuschuesse` in `Features::KATALOG`, alle Ebenen (der Vordruck gilt für Stamm, Bezirk und DV im Saarland), Standard aus.
@@ -134,12 +136,17 @@ Leitenden „eingesehen am“ und „gültig bis“ speichern (keine Inhalte, ke
   - Funktion und Juleica schon beim Eintragen von Hand.
 - **Kopfaktion „Zuschuss“ in der Teilnehmendenliste:** „Übersicht und Schätzung“ (Zählung je Kreis und Geschlecht, fehlende Angaben, Schätzung), „Teilnahmeliste (PDF)“, „Förderschätzung (PDF)“.
 - **Code:** `App\Support\Zuschuesse` (Personen, Zählung, fehlende Angaben, Finanzen), `App\Support\Zuschuesse\Kreise` (69 saarländische PLZ → Kreis, OpenPLZ), `App\Support\Zuschuesse\Foerderrechner` (Sätze mit Fassung der Richtlinie), `App\Services\Zuschuss\ZuschussPdf`, Trait `RegistrationsRelationManager\Concerns\ZuschussAktionen`. Migration `2026_10_31_120000_add_zuschuss_to_events`.
-- **Noch nicht:** Formular A, D/E, C und die Anträge von Stadt und Bistum (Phase 2), Stammdaten der Leitenden mit Juleica (ZU-06), Pro-Kopf-Liste der Stadt (ZU-19).
+- **Phase 2 gebaut (01.11.2026):**
+  - **Anträge und Berichte als PDF:** Formular A (Antrag und Nachweis), Bericht D (Freizeit) bzw. E (Bildung/Schulung), Formular C (nur bei Teilnehmenden aus NK, MZG, HOM), Antrag der Kreisstadt Saarlouis mit deren Teilnehmerliste, Antrag des Bistums (KJP) mit Programmfolge. Beim Bistum stehen unter „zu erwartende Zuschüsse“ die geschätzten Beträge der übrigen Stellen. Welche Unterlagen es gibt, richtet sich nach den gewählten Zuschussgebern (`ZuschussPdf::unterlagen`).
+  - **Berichtsfelder an der Veranstaltung** (`events.zuschuss_bericht`): Thema, Unterkunft, Programm (eine Zeile je Punkt, „Zeit: Thema – Referent*in“), Methodik, Sachbericht, Entfernung.
+  - **Stammdaten der Leitenden (ZU-06):** Personen → „Für Zuschussanträge (nur intern)“, verschlüsselt in `people.zuschuss_daten`, nur für die Verwaltung. In der Teilnehmendenliste „Leitung aus Personen übernehmen“; Juleica zählt, wenn sie am Beginn noch gilt.
+  - **Nextcloud-Ablage (ZU-40):** Verwaltung → Nextcloud-Ablage (nur Admins, App-Passwort verschlüsselt, „Verbindung testen“). „In Nextcloud ablegen“ in der Teilnehmendenliste, nachts `zuschuss:nextcloud` (03:20).
+- **Noch nicht:** Pro-Kopf-Liste der Stadt (ZU-19), Juleica-Erinnerung, Excel-Export (Phase 3).
 
 **Phasen:**
 
 | Phase | Inhalt |
 |---|---|
 | **1** | Zuschuss-Schalter je Veranstaltung, neue Felder (Straße, Geburtsdatum, Geschlecht, Funktion), Kreis aus PLZ, Anwesenheit (gesamt und je Tag), gemeinsame Teilnahmeliste als PDF, Übersicht mit fehlenden Angaben, **Förderschätzung als PDF (ZU-18)** |
-| **2** | Formular A mit Zählung und Kosten-/Finanzierungsplan, Formular D/E, Stammdaten der Leitenden mit Juleica (ZU-06) |
-| **3** | Anträge Kreisstadt Saarlouis und Bistum (ZU-17), Formular C, Excel-Export, ggf. Führungszeugnisse (Kapitel 6) |
+| **2** | Formular A, D/E, C, Anträge Kreisstadt Saarlouis und Bistum (ZU-17), Stammdaten der Leitenden mit Juleica (ZU-06), Nextcloud-Ablage (ZU-40) |
+| **3** | Pro-Kopf-Liste Stadt (ZU-19), Juleica-Erinnerung, Excel-Export, ggf. Führungszeugnisse (Kapitel 6) |

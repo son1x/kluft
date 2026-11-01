@@ -8,8 +8,11 @@ use App\Filament\Resources\People\Pages\ListPeople;
 use App\Models\Media;
 use App\Models\Person;
 use App\Support\Site;
+use App\Support\Zuschuesse;
 use BackedEnum;
 use Filament\Actions\EditAction;
+use Filament\Facades\Filament;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
@@ -167,6 +170,28 @@ class PersonResource extends Resource
                     Select::make('photo_media_id')->label('… oder Bild aus der Mediathek wählen')
                         ->relationship('photo', 'alt_text')->searchable()->preload()
                         ->hidden(fn (Get $get) => filled($get('portrait_upload'))),
+                ]),
+
+            // Zuschussanträge (docs/pflichtenheft-zuschuesse.md, ZU-06): nur intern,
+            // verschlüsselt, nie auf der Website; nur für die Verwaltung.
+            Section::make('Für Zuschussanträge (nur intern)')
+                ->description('Wird beim Übernehmen der Leitung in eine Veranstaltung mit Zuschuss eingetragen (Teilnahmeliste, Berichte). Verschlüsselt gespeichert, erscheint nie auf der Website. Löschen, wenn die Person ausscheidet.')
+                ->columns(3)
+                ->columnSpanFull()
+                ->collapsible()
+                ->collapsed()
+                ->visible(fn () => Zuschuesse::aktiv() && (bool) Filament::auth()->user()?->isVerwaltung())
+                ->components([
+                    TextInput::make('zuschuss_daten.strasse')->label('Straße und Hausnummer')->maxLength(150),
+                    TextInput::make('zuschuss_daten.plz')->label('PLZ')->maxLength(10),
+                    TextInput::make('zuschuss_daten.wohnort')->label('Wohnort')->maxLength(150),
+                    DatePicker::make('zuschuss_daten.geburtsdatum')->label('Geburtsdatum')->native(false)->displayFormat('d.m.Y')->maxDate(now()),
+                    Select::make('zuschuss_daten.geschlecht')->label('Geschlecht')->options(Zuschuesse::GESCHLECHTER),
+                    Toggle::make('zuschuss_daten.juleica')->label('Juleica')->inline(false)->live(),
+                    TextInput::make('zuschuss_daten.juleica_nummer')->label('Juleica-Nummer')->maxLength(40)
+                        ->visible(fn (Get $get) => (bool) $get('zuschuss_daten.juleica')),
+                    DatePicker::make('zuschuss_daten.juleica_bis')->label('Juleica gültig bis')->native(false)->displayFormat('d.m.Y')
+                        ->visible(fn (Get $get) => (bool) $get('zuschuss_daten.juleica')),
                 ]),
         ]);
     }

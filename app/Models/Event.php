@@ -39,7 +39,7 @@ class Event extends Model
         'cost_info', 'reg_opens_at', 'reg_closes_at', 'capacity', 'waitlist_enabled', 'adults_only', 'member_check', 'member_gruppierung_id',
         'status', 'form_fields', 'retention_days', 'created_by', 'calendar_uid',
         'certificate_enabled', 'certificate_text', 'certificate_signer', 'preise', 'zahlungsfrist_tage',
-        'zuschuss', 'zuschuss_art', 'zuschuss_geber', 'zuschuss_finanzen', 'zuschuss_fern',
+        'zuschuss', 'zuschuss_art', 'zuschuss_geber', 'zuschuss_finanzen', 'zuschuss_fern', 'zuschuss_bericht',
     ];
 
     protected function casts(): array
@@ -60,6 +60,7 @@ class Event extends Model
             'zuschuss_geber' => 'array',
             'zuschuss_finanzen' => 'array',
             'zuschuss_fern' => 'boolean',
+            'zuschuss_bericht' => 'array',
             'capacity' => 'integer',
             'retention_days' => 'integer',
         ];

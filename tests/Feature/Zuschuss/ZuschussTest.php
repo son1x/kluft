@@ -2,13 +2,17 @@
 
 namespace Tests\Feature\Zuschuss;
 
+use App\Filament\Pages\ProKopfZuschussPage;
 use App\Filament\Resources\Events\Pages\EditEvent;
 use App\Filament\Resources\Events\RelationManagers\RegistrationsRelationManager;
+use App\Mail\JuleicaErinnerungMail;
 use App\Models\Event;
 use App\Models\EventRegistration;
 use App\Models\Person;
 use App\Models\SiteSetting;
 use App\Models\User;
+use App\Services\Zuschuss\ProKopfListe;
+use App\Services\Zuschuss\ZuschussExcel;
 use App\Services\Zuschuss\ZuschussPdf;
 use App\Support\Features;
 use App\Support\NextcloudAblage;
@@ -17,6 +21,8 @@ use App\Support\Zuschuesse\Foerderrechner;
 use App\Support\Zuschuesse\Kreise;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Livewire;
@@ -232,5 +238,77 @@ class ZuschussTest extends TestCase
         Http::assertSent(fn ($r) => $r->method() === 'PUT' && str_ends_with($r->url(), '/teilnahmeliste-pfingstlager-waldwiese.pdf') && $r->hasHeader('Authorization'));
 
         $this->artisan('zuschuss:nextcloud')->assertSuccessful();
+    }
+
+    #[TestDox('Phase 3: Pro-Kopf-Liste aus dem NaMi-Export: nur aktive Mitglieder unter 18 am 01.01., PDF, Datei wird nicht gespeichert')]
+    public function test_pro_kopf(): void
+    {
+        config(['dpsg.site.level' => 'Stamm']);
+        $csv = "Nachname;Vorname;Straße;PLZ;Ort;Geburtsdatum;Mitgliedstyp;Status\n"
+            ."Muster;Mia;Hauptstr. 1;66740;Saarlouis;04.05.2015;Mitglied;Aktiv\n"
+            ."Alt;Anna;Weg 2;66740;Saarlouis;01.01.2009;Mitglied;Aktiv\n"
+            ."Jung;Jan;Weg 3;66740;Saarlouis;02.01.2009;Mitglied;Aktiv\n"
+            ."Probe;Paul;Weg 4;66740;Saarlouis;01.01.2016;Schnuppermitglied;Aktiv\n"
+            ."Weg;Wilma;Weg 5;66740;Saarlouis;01.01.2014;Mitglied;Inaktiv\n"
+            ."Ohne;Otto;Weg 6;66740;Saarlouis;;Mitglied;Aktiv\n";
+        $pfad = tempnam(sys_get_temp_dir(), 'nami');
+        file_put_contents($pfad, mb_convert_encoding($csv, 'Windows-1252', 'UTF-8'));
+        $ergebnis = app(ProKopfListe::class)->lesen($pfad, 'export.csv', Carbon::create(2027, 1, 1));
+        unlink($pfad);
+        $this->assertSame(['Jung', 'Muster'], array_column($ergebnis['personen'], 'nachname'));
+        $this->assertSame('Hauptstr. 1', $ergebnis['personen'][1]['strasse']);
+        $this->assertSame(['zu_alt' => 1, 'kein_mitglied' => 2, 'ohne_datum' => 1], $ergebnis['ausgelassen']);
+        $this->assertStringStartsWith('%PDF', app(ZuschussPdf::class)->proKopf($ergebnis['personen'], Carbon::create(2027, 1, 1), new Event));
+        $this->assertNotEmpty(app(ProKopfListe::class)->lesen(__FILE__, 'falsch.pdf', now())['fehler']);
+
+        // Seite: Verwaltung lädt hoch und bekommt das PDF; Datei wird nicht abgelegt.
+        $user = User::query()->create(['name' => 'Kasse', 'email' => 'kasse@example.org', 'status' => 'active']);
+        $user->roleAssignments()->create(['role' => 'verwaltung', 'scope_type' => 'global']);
+        Filament::setCurrentPanel('admin');
+        $this->actingAs($user->fresh());
+        $this->get(ProKopfZuschussPage::getUrl())->assertOk();
+        Livewire::test(ProKopfZuschussPage::class)
+            ->set('data.jahr', '2027')
+            ->set('data.datei', [UploadedFile::fake()->createWithContent('export.csv', $csv)])
+            ->call('erzeugen')
+            ->assertFileDownloaded('pro-kopf-zuschuss-2027.pdf');
+    }
+
+    #[TestDox('Phase 3: Juleica-Erinnerung zwei Monate vorher, je Ablaufdatum einmal, ohne Adresse an die Verwaltung')]
+    public function test_juleica_erinnerung(): void
+    {
+        $bald = Person::query()->create(['name' => 'Anna Leitung', 'gremium' => 'leitung', 'active' => true, 'email' => 'anna@example.org',
+            'zuschuss_daten' => ['juleica' => true, 'juleica_bis' => now()->addMonth()->toDateString()]]);
+        Person::query()->create(['name' => 'Spät', 'gremium' => 'leitung', 'active' => true, 'email' => 'spaet@example.org',
+            'zuschuss_daten' => ['juleica' => true, 'juleica_bis' => now()->addYear()->toDateString()]]);
+        Person::query()->create(['name' => 'Ohne Mail', 'gremium' => 'leitung', 'active' => true,
+            'zuschuss_daten' => ['juleica' => true, 'juleica_bis' => now()->subDay()->toDateString()]]);
+        $buero = User::query()->create(['name' => 'Büro', 'email' => 'buero@example.org', 'status' => 'active']);
+        $buero->roleAssignments()->create(['role' => 'verwaltung', 'scope_type' => 'global']);
+
+        $this->artisan('zuschuss:juleica')->assertSuccessful();
+        Mail::assertQueued(JuleicaErinnerungMail::class, 2);
+        Mail::assertQueued(JuleicaErinnerungMail::class, fn ($m) => $m->hasTo('anna@example.org') && ! $m->abgelaufen);
+        Mail::assertQueued(JuleicaErinnerungMail::class, fn ($m) => $m->hasTo('buero@example.org') && $m->abgelaufen && $m->anVerwaltung);
+
+        Mail::fake();
+        $this->artisan('zuschuss:juleica')->assertSuccessful();
+        Mail::assertNothingQueued();
+        $bald->update(['zuschuss_daten' => [...$bald->fresh()->zuschuss_daten, 'juleica_bis' => now()->addMonths(2)->subDay()->toDateString()]]);
+        $this->artisan('zuschuss:juleica')->assertSuccessful();
+        Mail::assertQueued(JuleicaErinnerungMail::class, 1);
+    }
+
+    #[TestDox('Phase 3: Teilnahmeliste als Excel')]
+    public function test_excel(): void
+    {
+        $event = $this->lager();
+        $this->person($event, 'Mia', 9);
+        $this->person($event, 'Ida', 24, 'L', juleica: true);
+        ob_start();
+        app(ZuschussExcel::class)->write($event);
+        $xlsx = (string) ob_get_clean();
+        $this->assertStringStartsWith('PK', $xlsx);
+        $this->assertSame('zuschuss-teilnehmende-pfingstlager.xlsx', ZuschussExcel::dateiname($event));
     }
 }

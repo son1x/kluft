@@ -141,7 +141,11 @@ Leitenden „eingesehen am“ und „gültig bis“ speichern (keine Inhalte, ke
   - **Berichtsfelder an der Veranstaltung** (`events.zuschuss_bericht`): Thema, Unterkunft, Programm (eine Zeile je Punkt, „Zeit: Thema – Referent*in“), Methodik, Sachbericht, Entfernung.
   - **Stammdaten der Leitenden (ZU-06):** Personen → „Für Zuschussanträge (nur intern)“, verschlüsselt in `people.zuschuss_daten`, nur für die Verwaltung. In der Teilnehmendenliste „Leitung aus Personen übernehmen“; Juleica zählt, wenn sie am Beginn noch gilt.
   - **Nextcloud-Ablage (ZU-40):** Verwaltung → Nextcloud-Ablage (nur Admins, App-Passwort verschlüsselt, „Verbindung testen“). „In Nextcloud ablegen“ in der Teilnehmendenliste, nachts `zuschuss:nextcloud` (03:20).
-- **Noch nicht:** Pro-Kopf-Liste der Stadt (ZU-19), Juleica-Erinnerung, Excel-Export (Phase 3).
+- **Phase 3 gebaut (01.11.2026):**
+  - **Pro-Kopf-Zuschuss der Stadt Saarlouis (ZU-19):** Kasse → Pro-Kopf-Zuschuss (Verwaltung und Kasse, nur Stämme). Mitglieder-Export aus NaMi (.xlsx/.csv) hochladen; aufgenommen werden aktive Mitglieder unter 18 am 01.01., ohne Schnuppermitglieder. Ergebnis ist das PDF mit Anschrift, Geburtsdatum und Richtigkeitsbestätigung (Vorsitz und Kasse). Die Datei wird nur gelesen und danach verworfen (`ProKopfListe`).
+  - **Juleica-Erinnerung:** `zuschuss:juleica` (08:20) zwei Monate vor Ablauf, je Ablaufdatum einmal, an die Person bzw. ohne Adresse an die Verwaltung; Spalte „Juleica bis“ in der Personenliste.
+  - **Excel-Export** der Zuschuss-Teilnahmeliste (ZU-16).
+- **Offen:** Führungszeugnisse (Kapitel 6), nur nach eigener Entscheidung.
 
 **Phasen:**
 

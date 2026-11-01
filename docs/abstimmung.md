@@ -35,6 +35,19 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-01 – Stammes → Haupt: Zuschussanträge Phase 3 (gemeinsamer Kern)
+Status: offen (auch direkt gemeldet)
+
+- **`TeilnehmendenListe::ausDatei`:** Datumszellen aus .xlsx jetzt als `Y-m-d` statt nur Jahr. Das Geburtsjahr bleibt richtig, weil `(int) '2015-05-04'` 2015 ergibt; dazu kann der Import das Geburtsdatum lesen.
+- **`PersonResource`:** verstecktes Feld `zuschuss_daten.juleica_erinnert` und die Spalte „Juleica bis“, beides nur für die Verwaltung bei eingeschalteter Funktion.
+- **Neu:**
+  - Seite `ProKopfZuschussPage` (Gruppe Kasse, nur Stämme);
+  - Befehl `zuschuss:juleica` (08:20);
+  - `JuleicaErinnerungMail`;
+  - `ZuschussExcel`.
+
+Tests für roden, dv-trier und saar-hochwald grün.
+
 ### 2026-11-01 – Stammes → Haupt: Zuschussanträge Phase 2 (gemeinsamer Kern)
 Status: offen (auch direkt gemeldet)
 

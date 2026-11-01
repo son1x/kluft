@@ -6,6 +6,7 @@ use App\Models\Event;
 use App\Models\EventRegistration;
 use App\Models\Person;
 use App\Services\EventRegistrations;
+use App\Services\Zuschuss\ZuschussExcel;
 use App\Services\Zuschuss\ZuschussPdf;
 use App\Support\AuditLogger;
 use App\Support\NextcloudAblage;
@@ -172,6 +173,15 @@ trait ZuschussAktionen
                 ->icon($art === 'schaetzung' ? 'heroicon-o-document-chart-bar' : 'heroicon-o-document-text')
                 ->visible(fn () => array_key_exists($art, ZuschussPdf::unterlagen($this->getOwnerRecord())))
                 ->action(fn () => $this->zuschussPdf($art)))->values()->all(),
+            Action::make('zuschussExcel')->label('Teilnahmeliste (.xlsx)')->icon('heroicon-o-table-cells')
+                ->action(function (): StreamedResponse {
+                    $event = $this->getOwnerRecord();
+                    abort_unless($event instanceof Event && Filament::auth()->user()?->can('manageParticipants', $event), 403);
+                    AuditLogger::log('event.zuschuss_xlsx', Filament::auth()->user(), Event::class, $event->getKey(), request());
+
+                    return response()->streamDownload(fn () => app(ZuschussExcel::class)->write($event), ZuschussExcel::dateiname($event),
+                        ['Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']);
+                }),
         ])->label('Zuschuss')->icon('heroicon-o-banknotes')->button()->color('gray')->visible($event->zuschussAktiv());
     }
 

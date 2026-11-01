@@ -14,6 +14,7 @@ use Filament\Actions\EditAction;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -28,6 +29,7 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\HtmlString;
 use UnitEnum;
@@ -191,7 +193,9 @@ class PersonResource extends Resource
                     TextInput::make('zuschuss_daten.juleica_nummer')->label('Juleica-Nummer')->maxLength(40)
                         ->visible(fn (Get $get) => (bool) $get('zuschuss_daten.juleica')),
                     DatePicker::make('zuschuss_daten.juleica_bis')->label('Juleica gültig bis')->native(false)->displayFormat('d.m.Y')
-                        ->visible(fn (Get $get) => (bool) $get('zuschuss_daten.juleica')),
+                        ->visible(fn (Get $get) => (bool) $get('zuschuss_daten.juleica'))
+                        ->helperText('Zwei Monate vorher erinnert Kluft per Mail (an die Person, sonst an die Verwaltung).'),
+                    Hidden::make('zuschuss_daten.juleica_erinnert'),
                 ]),
         ]);
     }
@@ -205,6 +209,12 @@ class PersonResource extends Resource
                 TextColumn::make('gremium')->label('Gremium')->badge()
                     ->formatStateUsing(fn (string $state) => config("dpsg.gremien.{$state}.label", $state)),
                 TextColumn::make('subgroup')->label('Zwischenüberschrift')->toggleable(),
+                TextColumn::make('juleica_bis')->label('Juleica bis')->toggleable()
+                    ->visible(fn () => Zuschuesse::aktiv() && (bool) Filament::auth()->user()?->isVerwaltung())
+                    ->state(fn (Person $record) => ($d = (array) $record->zuschuss_daten) && ($d['juleica'] ?? false)
+                        ? (filled($d['juleica_bis'] ?? null) ? Carbon::parse($d['juleica_bis'])->format('d.m.Y') : 'ja') : null)
+                    ->color(fn (Person $record) => filled($b = ((array) $record->zuschuss_daten)['juleica_bis'] ?? null) && Carbon::parse($b)->lt(now()->addMonths(2)) ? 'danger' : null)
+                    ->placeholder('–'),
                 IconColumn::make('consent')->label('Abgestimmt')->boolean(),
                 IconColumn::make('active')->label('Aktiv')->boolean(),
             ])

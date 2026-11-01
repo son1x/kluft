@@ -7,6 +7,7 @@ use App\Support\Zuschuesse;
 use App\Support\Zuschuesse\Foerderrechner;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\File;
 
 /**
@@ -71,6 +72,13 @@ class ZuschussPdf
             'stadt' => 'pdf.zuschuss-stadt-sls', 'bistum' => 'pdf.zuschuss-bistum'][$art] ?? abort(404);
 
         return $this->render($view, $daten, 'portrait', (self::UNTERLAGEN[$art][0] ?? $art).' – '.$event->title);
+    }
+
+    /** @param list<array<string, mixed>> $personen */
+    public function proKopf(array $personen, Carbon $stichtag, Event $vorlage): string
+    {
+        return $this->render('pdf.zuschuss-pro-kopf', ['personen' => $personen, 'stichtag' => $stichtag, 'as' => Zuschuesse::antragsteller($vorlage)],
+            'portrait', 'Pro-Kopf-Zuschuss '.$stichtag->year);
     }
 
     public function teilnahmeliste(Event $event): string

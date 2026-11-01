@@ -56,7 +56,7 @@ class TeilnehmendenListe
                 $zellen = [];
                 foreach ($row->getCells() as $zelle) {
                     $wert = $zelle->getValue();
-                    $zellen[] = $wert instanceof \DateTimeInterface ? $wert->format('Y') : (is_scalar($wert) ? (string) $wert : '');
+                    $zellen[] = $wert instanceof \DateTimeInterface ? $wert->format('Y-m-d') : (is_scalar($wert) ? (string) $wert : '');
                 }
                 $tabelle[] = $zellen;
                 if (count($tabelle) > self::MAX_ZEILEN + 1) {

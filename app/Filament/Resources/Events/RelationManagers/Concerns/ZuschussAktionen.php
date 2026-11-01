@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Events\RelationManagers\Concerns;
 
+use App\Filament\Resources\Events\EventResource;
 use App\Models\Event;
 use App\Models\EventRegistration;
 use App\Models\Person;
@@ -139,6 +140,8 @@ trait ZuschussAktionen
     protected function zuschussKopfaktionen(Event $event): ActionGroup
     {
         return ActionGroup::make([
+            Action::make('zuschussMaske')->label('Zuschussantrag: alle Angaben')->icon('heroicon-o-pencil-square')
+                ->url(fn () => EventResource::getUrl('zuschuss', ['record' => $this->getOwnerRecord()])),
             Action::make('zuschussLeitung')->label('Leitung aus Personen übernehmen')->icon('heroicon-o-user-group')
                 ->modalDescription('Trägt die gewählten Personen als bestätigt ein, mit den hinterlegten Angaben für Zuschussanträge (Personen → „Für Zuschussanträge“). Wer schon angemeldet ist, wird übersprungen.')
                 ->schema([

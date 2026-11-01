@@ -4,6 +4,7 @@ namespace App\Services\Zuschuss;
 
 use App\Models\Event;
 use App\Support\Zuschuesse;
+use App\Support\Zuschuesse\Antrag;
 use App\Support\Zuschuesse\Foerderrechner;
 use Dompdf\Dompdf;
 use Dompdf\Options;
@@ -64,9 +65,14 @@ class ZuschussPdf
             'programm' => Zuschuesse::programm($event),
         ];
         if ($art === 'bistum') {
-            $andere = collect(Foerderrechner::rechnen($event)['geber'])->reject(fn (array $g) => $g['key'] === 'bistum_trier' || $g['betrag'] === 0);
+            // Bewilligt, sonst beantragt, sonst geschätzt (Maske „Zuschussantrag“).
+            $andere = collect(Antrag::uebersicht($event))->reject(fn (array $z) => $z['key'] === 'bistum_trier')
+                ->map(fn (array $z) => ['name' => $z['name'], 'betrag' => Antrag::betrag($z)])->filter(fn (array $z) => $z['betrag'] > 0);
             $daten['andereZuschuesse'] = (int) $andere->sum('betrag');
             $daten['andereGeber'] = $andere->pluck('name')->all();
+        }
+        if ($art === 'stadt') {
+            $daten['dritte'] = Antrag::bewilligteDritte($event, 'stadt_sls');
         }
         $view = ['a' => 'pdf.zuschuss-formular-a', 'bericht' => 'pdf.zuschuss-bericht', 'c' => 'pdf.zuschuss-formular-c',
             'stadt' => 'pdf.zuschuss-stadt-sls', 'bistum' => 'pdf.zuschuss-bistum'][$art] ?? abort(404);

@@ -35,6 +35,17 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-01 – Stammes → Haupt: Zuschussanträge Phase 4 (gemeinsamer Kern)
+Status: offen (auch direkt gemeldet)
+
+- **EventForm:** Kosten- und Berichtsfelder liegen jetzt in `EventForm::zuschussFelder()` und erscheinen nur noch in der neuen Maske; `EventForm::euro()` ist public.
+- **Neue Seite** `EventResource` → `zuschuss` (`Pages\ZuschussAntrag`, `events/{record}/zuschuss`), Knopf „Zuschussantrag“ in `EditEvent`.
+- **Migration** `2026_11_01_170000`: `events.zuschuss_antrag` (verschlüsselt) und `events.zuschuss_stand`.
+- **`Zuschuesse::antragsteller()`** liefert jetzt `Antrag::werte()` (zusätzliche Schlüssel `vertretung`, `leitung_name`, `leitung_anschrift`).
+- **Neu:** `Support\Zuschuesse\Antrag`, Seite `ZuschuesseUebersichtPage`, Befehl `zuschuss:fristen` (08:25), `ZuschussFristMail`.
+
+Tests für roden, dv-trier und saar-hochwald grün.
+
 ### 2026-11-01 – Stammes → Haupt: NaMi-Datenabgleich (neue Funktion, gemeinsamer Kern)
 Status: offen (auch direkt gemeldet)
 

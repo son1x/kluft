@@ -145,6 +145,12 @@ Leitenden „eingesehen am“ und „gültig bis“ speichern (keine Inhalte, ke
   - **Pro-Kopf-Zuschuss der Stadt Saarlouis (ZU-19):** Kasse → Pro-Kopf-Zuschuss (Verwaltung und Kasse, nur Stämme). Mitglieder-Export aus NaMi (.xlsx/.csv) hochladen; aufgenommen werden aktive Mitglieder unter 18 am 01.01., ohne Schnuppermitglieder. Ergebnis ist das PDF mit Anschrift, Geburtsdatum und Richtigkeitsbestätigung (Vorsitz und Kasse). Die Datei wird nur gelesen und danach verworfen (`ProKopfListe`).
   - **Juleica-Erinnerung:** `zuschuss:juleica` (08:20) zwei Monate vor Ablauf, je Ablaufdatum einmal, an die Person bzw. ohne Adresse an die Verwaltung; Spalte „Juleica bis“ in der Personenliste.
   - **Excel-Export** der Zuschuss-Teilnahmeliste (ZU-16).
+- **Phase 4 gebaut (01.11.2026, Wunsch Roden „eine Maske, alle Anträge“):**
+  - **ZU-50 Maske „Zuschussantrag“** je Veranstaltung (Knopf auf der Veranstaltung und im Menü „Zuschuss“ der Teilnehmendenliste, Route `events/{id}/zuschuss`). Sie enthält alles an einer Stelle: Maßnahme (Art, Zuschussgeber, Entfernung), Antragsteller (Institution, Anschrift, Ansprechperson, Telefon, E-Mail, Bank, IBAN, BIC, Kontoinhaber*in, Vertretungsberechtigte*r, Leitung der Maßnahme mit Anschrift), Kosten- und Finanzierungsplan, Programm und Bericht, je Zuschussgeber Frist, Einreichung und Bewilligung. Oben stehen der Stand je Geber und je Unterlage, was noch fehlt. Unter „Unterlagen“ jede Unterlage einzeln als PDF oder alle als ZIP. Kosten und Bericht stehen nicht mehr im Veranstaltungsformular.
+  - **ZU-51 Antragsteller:** vorbelegt mit dem Standard des Stamms, sonst Kontakt der Website, Konto aus „Zahlungen“ und Kontakt der Veranstaltung. „Als Standard merken“ speichert Antragsteller und Bank (ohne Leitung) verschlüsselt für neue Anträge. An der Veranstaltung verschlüsselt in `events.zuschuss_antrag`.
+  - **ZU-52 Fristen:** nach Richtlinie (Land und Kreis 3 Monate, Stadt 2 Monate und spätestens 30.09., Bistum 8 Wochen nach Ende), je Geber überschreibbar. `zuschuss:fristen` (08:25) erinnert 14 und 3 Tage vorher, solange nichts als eingereicht vermerkt ist, an den Kontakt der Veranstaltung, sonst an die Verwaltung.
+  - **ZU-53 Bewilligungen:** je Geber beantragt, Bescheid vom, Aktenzeichen, bewilligt, abgelehnt, ausgezahlt (`events.zuschuss_stand`). Die Stadt Saarlouis bekommt in Abschnitt V die bewilligten Zuschüsse Dritter; beim Bistum zählen bei „zu erwartende Zuschüsse“ bewilligt vor beantragt vor geschätzt, abgelehnt mit 0.
+  - **ZU-54 Übersicht** „Zuschussanträge“ (Termine & Veranstaltungen, Verwaltung und Kasse): alle Anträge der letzten 18 Monate mit Frist, Stand und Beträgen; Zahl der offenen Fristen in den nächsten 14 Tagen als Hinweis im Menü.
 - **Offen:** Führungszeugnisse (Kapitel 6), nur nach eigener Entscheidung.
 
 **Phasen:**
@@ -154,3 +160,4 @@ Leitenden „eingesehen am“ und „gültig bis“ speichern (keine Inhalte, ke
 | **1** | Zuschuss-Schalter je Veranstaltung, neue Felder (Straße, Geburtsdatum, Geschlecht, Funktion), Kreis aus PLZ, Anwesenheit (gesamt und je Tag), gemeinsame Teilnahmeliste als PDF, Übersicht mit fehlenden Angaben, **Förderschätzung als PDF (ZU-18)** |
 | **2** | Formular A, D/E, C, Anträge Kreisstadt Saarlouis und Bistum (ZU-17), Stammdaten der Leitenden mit Juleica (ZU-06), Nextcloud-Ablage (ZU-40) |
 | **3** | Pro-Kopf-Liste Stadt (ZU-19), Juleica-Erinnerung, Excel-Export, ggf. Führungszeugnisse (Kapitel 6) |
+| **4** | Gemeinsame Maske „Zuschussantrag“ (ZU-50/51), Fristen mit Erinnerung (ZU-52), Bewilligungen (ZU-53), Übersicht (ZU-54) |

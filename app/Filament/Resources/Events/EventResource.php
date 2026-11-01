@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Events;
 use App\Filament\Resources\Events\Pages\CreateEvent;
 use App\Filament\Resources\Events\Pages\EditEvent;
 use App\Filament\Resources\Events\Pages\ListEvents;
+use App\Filament\Resources\Events\Pages\ZuschussAntrag;
 use App\Filament\Resources\Events\RelationManagers\QuestionsRelationManager;
 use App\Filament\Resources\Events\RelationManagers\RegistrationsRelationManager;
 use App\Filament\Resources\Events\Schemas\EventForm;
@@ -82,6 +83,7 @@ class EventResource extends Resource
             'index' => ListEvents::route('/'),
             'create' => CreateEvent::route('/create'),
             'edit' => EditEvent::route('/{record}/edit'),
+            'zuschuss' => ZuschussAntrag::route('/{record}/zuschuss'),
         ];
     }
 }

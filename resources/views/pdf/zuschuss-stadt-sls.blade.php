@@ -46,14 +46,15 @@
     <tr><th class="kopf" colspan="3">V. Zahlenmäßiger Nachweis</th></tr>
     <tr><td colspan="2">Gesamtausgaben (Rechnungen als Anlage)</td><td class="z">{{ $euro($finanzen['ausgaben'] ?: null) }}</td></tr>
     <tr><th class="kopf">Bewilligte Zuschüsse Dritter: Bewilligende Stelle</th><th class="kopf">Datum und Aktenzeichen</th><th class="kopf z">€</th></tr>
-    @for ($i = 0; $i < 3; $i++)<tr><td>&nbsp;</td><td></td><td></td></tr>@endfor
-    <tr><td colspan="2" class="z">Bewilligter Gesamtbetrag</td><td></td></tr>
+    @foreach ($dritte as $d)<tr><td>{{ $d['name'] }}</td><td>{{ trim(($d['datum'] ?? '').' '.($d['aktenzeichen'] ?? '')) }}</td><td class="z">{{ $euro($d['betrag']) }}</td></tr>@endforeach
+    @for ($i = count($dritte); $i < 3; $i++)<tr><td>&nbsp;</td><td></td><td></td></tr>@endfor
+    <tr><td colspan="2" class="z">Bewilligter Gesamtbetrag</td><td class="z">{{ $dritte !== [] ? $euro(array_sum(array_column($dritte, 'betrag'))) : '' }}</td></tr>
 </table>
 <table class="f">
     <tr><th class="kopf">VI. Erklärung des Antragstellers</th></tr>
     <tr><td>1. Hiermit erkenne ich gem. § 3 die Richtlinien als verbindlich an.<br>2. Ich versichere, die Angaben vollständig und ordnungsgemäß erteilt zu haben.</td></tr>
 </table>
-<table class="sig"><tr><td><div class="linie">Saarlouis, den</div></td><td><div class="linie">Unterschrift des/der Vertretungsberechtigten</div></td></tr></table>
+<table class="sig"><tr><td><div class="linie">Saarlouis, den</div></td><td>{{ $as['vertretung'] ?? '' }}<div class="linie">Unterschrift des/der Vertretungsberechtigten</div></td></tr></table>
 
 <div class="neu"></div>
 <h1>Teilnehmerliste</h1>
@@ -66,5 +67,5 @@
     @for ($j = 0; $j < 3; $j++)<tr><td class="z">{{ count($personen) + $j + 1 }}</td><td></td><td></td><td></td><td></td><td style="height:6mm"></td></tr>@endfor
 </table>
 <p style="margin-top:4mm">Die Richtigkeit der Teilnehmerliste und der durchgeführten Maßnahme wird bescheinigt:</p>
-<table class="sig"><tr><td><div class="linie">Der/Die Leiter/in (Name und Anschrift)</div></td><td><div class="linie">Unterschrift und Stempel</div></td></tr></table>
+<table class="sig"><tr><td>{{ $as['leitung_name'] ?? '' }}{{ filled($as['leitung_anschrift'] ?? null) ? ', '.preg_replace('/\s*\R\s*/', ', ', $as['leitung_anschrift']) : '' }}<div class="linie">Der/Die Leiter/in (Name und Anschrift)</div></td><td><div class="linie">Unterschrift und Stempel</div></td></tr></table>
 </body></html>

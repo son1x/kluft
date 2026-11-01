@@ -24,17 +24,52 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 
 class EventForm
 {
     /** Eurobetrag als Eingabe, gespeichert in Cent. */
-    private static function euro(string $name, string $label): TextInput
+    public static function euro(string $name, string $label): TextInput
     {
         return TextInput::make($name)->label($label)->suffix('€')->inputMode('decimal')->rules(['nullable', 'regex:/^\d{1,6}([.,]\d{1,2})?$/'])
             ->formatStateUsing(fn ($state) => $state === null || $state === '' ? null : number_format($state / 100, 2, ',', ''))
             ->dehydrateStateUsing(fn ($state) => $state === null || $state === '' ? null : (int) round((float) str_replace(',', '.', (string) $state) * 100));
+    }
+
+    /** Kosten- und Finanzierungsplan und Berichtsfelder für die Maske „Zuschussantrag“. @return list<Fieldset> */
+    public static function zuschussFelder(): array
+    {
+        return [
+            Fieldset::make('Kosten- und Finanzierungsplan')->columns(3)->columnSpanFull()
+                ->components([
+                    ...collect([
+                        'fahrt' => 'Fahrt', 'unterkunft' => 'Übernachtung/Unterkunft', 'verpflegung' => 'Verpflegung',
+                        'raummiete' => 'Raummieten', 'material' => 'Arbeitsmaterialien', 'durchfuehrung' => 'Durchführung, Vor- und Nachbereitung',
+                        'honorare' => 'Honorare',
+                    ])->map(fn (string $label, string $key) => self::euro("zuschuss_finanzen.{$key}", $label))->values()->all(),
+                    self::euro('zuschuss_finanzen.teilnahmebeitraege', 'Teilnahmebeiträge (Einnahme)')
+                        ->helperText('Leer: Kluft nimmt die Summe der Teilnahmebeiträge bestätigter Anmeldungen.'),
+                    self::euro('zuschuss_finanzen.spenden', 'Spenden, andere Zuschüsse (Einnahme)'),
+                    self::euro('zuschuss_finanzen.sonstige', 'Sonstige Einnahmen'),
+                ]),
+            Fieldset::make('Für Bericht und Anträge')->columns(2)->columnSpanFull()
+                ->components([
+                    TextInput::make('zuschuss_bericht.thema')->label('Thema / Schwerpunkt')->maxLength(200)
+                        ->helperText('Bildung und Schulung (Formular E), Bistum (Programmfolge).'),
+                    TextInput::make('zuschuss_bericht.unterkunft')->label('Unterkunft (z. B. Zeltplatz)')->maxLength(200)
+                        ->helperText('Für die Aufenthaltsbestätigung (Formular C).'),
+                    Textarea::make('zuschuss_bericht.programm')->label('Programm (eine Zeile je Programmpunkt)')->rows(6)->maxLength(5000)->columnSpanFull()
+                        ->placeholder("Sa 10–12 Uhr: Geländespiel – Referent*in\nSa 14–17 Uhr: Workshop Erste Hilfe"),
+                    Textarea::make('zuschuss_bericht.methodik')->label('Inhalt, Methodik, Zielsetzung')->rows(3)->maxLength(3000)
+                        ->helperText('Formular E und Stadt Saarlouis.'),
+                    Textarea::make('zuschuss_bericht.bericht')->label('Sachbericht / Ergebnis der Bewertung')->rows(3)->maxLength(3000)
+                        ->helperText('Leer: „wurde programmgemäß durchgeführt“.'),
+                    TextInput::make('zuschuss_bericht.entfernung_km')->label('Entfernung Saarlouis – Ziel (km)')->numeric()->minValue(0)->maxValue(5000)
+                        ->helperText('Für den Antrag der Stadt Saarlouis.'),
+                ]),
+        ];
     }
 
     public static function configure(Schema $schema): Schema
@@ -163,7 +198,7 @@ class EventForm
                 ]),
 
             Section::make('Zuschuss')
-                ->description('Für Jugendamt, Landesjugendamt, Stadt und Bistum. Ist „Zuschuss beantragen“ an, fragt das Anmeldeformular Anschrift, Geburtsdatum und Geschlecht als Pflicht ab. Teilnahmeliste und Förderschätzung gibt es unter „Teilnehmende“.')
+                ->description('Für Jugendamt, Landesjugendamt, Stadt und Bistum. Ist „Zuschuss beantragen“ an, fragt das Anmeldeformular Anschrift, Geburtsdatum und Geschlecht als Pflicht ab.')
                 ->columns(2)
                 ->columnSpanFull()
                 ->collapsible()
@@ -176,35 +211,8 @@ class EventForm
                         ->visible(fn (Get $get) => (bool) $get('zuschuss')),
                     Toggle::make('zuschuss_fern')->label('Ziel weiter als 250 km entfernt')->helperText('Die Stadt Saarlouis fördert Lager dann mit 2,50 € statt 1,50 € je Tag.')
                         ->visible(fn (Get $get) => (bool) $get('zuschuss')),
-                    Fieldset::make('Kosten- und Finanzierungsplan')->columns(3)->columnSpanFull()
-                        ->visible(fn (Get $get) => (bool) $get('zuschuss'))
-                        ->components([
-                            ...collect([
-                                'fahrt' => 'Fahrt', 'unterkunft' => 'Übernachtung/Unterkunft', 'verpflegung' => 'Verpflegung',
-                                'raummiete' => 'Raummieten', 'material' => 'Arbeitsmaterialien', 'durchfuehrung' => 'Durchführung, Vor- und Nachbereitung',
-                                'honorare' => 'Honorare',
-                            ])->map(fn (string $label, string $key) => self::euro("zuschuss_finanzen.{$key}", $label))->values()->all(),
-                            self::euro('zuschuss_finanzen.teilnahmebeitraege', 'Teilnahmebeiträge (Einnahme)')
-                                ->helperText('Leer: Kluft nimmt die Summe der Teilnahmebeiträge bestätigter Anmeldungen.'),
-                            self::euro('zuschuss_finanzen.spenden', 'Spenden, andere Zuschüsse (Einnahme)'),
-                            self::euro('zuschuss_finanzen.sonstige', 'Sonstige Einnahmen'),
-                        ]),
-                    Fieldset::make('Für Bericht und Anträge')->columns(2)->columnSpanFull()
-                        ->visible(fn (Get $get) => (bool) $get('zuschuss'))
-                        ->components([
-                            TextInput::make('zuschuss_bericht.thema')->label('Thema / Schwerpunkt')->maxLength(200)
-                                ->helperText('Bildung und Schulung (Formular E), Bistum (Programmfolge).'),
-                            TextInput::make('zuschuss_bericht.unterkunft')->label('Unterkunft (z. B. Zeltplatz)')->maxLength(200)
-                                ->helperText('Für die Aufenthaltsbestätigung (Formular C).'),
-                            Textarea::make('zuschuss_bericht.programm')->label('Programm (eine Zeile je Programmpunkt)')->rows(6)->maxLength(5000)->columnSpanFull()
-                                ->placeholder("Sa 10–12 Uhr: Geländespiel – Referent*in\nSa 14–17 Uhr: Workshop Erste Hilfe"),
-                            Textarea::make('zuschuss_bericht.methodik')->label('Inhalt, Methodik, Zielsetzung')->rows(3)->maxLength(3000)
-                                ->helperText('Formular E und Stadt Saarlouis.'),
-                            Textarea::make('zuschuss_bericht.bericht')->label('Sachbericht / Ergebnis der Bewertung')->rows(3)->maxLength(3000)
-                                ->helperText('Leer: „wurde programmgemäß durchgeführt“.'),
-                            TextInput::make('zuschuss_bericht.entfernung_km')->label('Entfernung Saarlouis – Ziel (km)')->numeric()->minValue(0)->maxValue(5000)
-                                ->helperText('Für den Antrag der Stadt Saarlouis.'),
-                        ]),
+                    Text::make('Kosten, Programm, Antragsteller, Fristen und Bewilligungen stehen gesammelt in der Maske „Zuschussantrag“ (Knopf oben, nach dem Speichern).')
+                        ->columnSpanFull()->visible(fn (Get $get) => (bool) $get('zuschuss')),
                 ]),
 
             Section::make('Formular-Baukasten')

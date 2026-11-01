@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Models\Event;
 use App\Models\EventRegistration;
+use App\Support\Zuschuesse\Antrag;
 use App\Support\Zuschuesse\Kreise;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -144,27 +145,14 @@ class Zuschuesse
     }
 
     /**
-     * Antragsteller für alle Anträge: Gliederung, Anschrift, Bank aus
-     * „Zahlungen“, Rückfragen an den Kontakt der Veranstaltung.
+     * Antragsteller für alle Anträge aus der Maske „Zuschussantrag“
+     * (Veranstaltung, sonst Standard des Stamms, sonst Website und Konto).
      *
-     * @return array{name: string, anschrift: string, bank: ?string, iban: ?string, bic: ?string, inhaber: ?string, rueckfragen: ?string, telefon: ?string, email: ?string}
+     * @return array<string, ?string>
      */
     public static function antragsteller(Event $event): array
     {
-        $kontakt = (array) config('dpsg.contact');
-        $konto = Zahlungen::konto();
-
-        return [
-            'name' => (string) ($kontakt['name'] ?? config('dpsg.site.name')),
-            'anschrift' => trim(implode(', ', array_filter([$kontakt['street'] ?? null, $kontakt['city'] ?? null]))),
-            'bank' => null,
-            'iban' => $konto ? trim(chunk_split($konto['iban'], 4, ' ')) : null,
-            'bic' => $konto['bic'] ?? null,
-            'inhaber' => $konto['inhaber'] ?? null,
-            'rueckfragen' => $event->contact_name ?: ($kontakt['office'] ?? null),
-            'telefon' => $kontakt['phone'] ?? null,
-            'email' => $event->contact_email ?: ($kontakt['email'] ?? null),
-        ];
+        return Antrag::werte($event);
     }
 
     /**

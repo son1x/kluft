@@ -32,7 +32,7 @@ class SectionController extends Controller
             'pages' => $this->sectionPages($section, $config['landing']),
             // Dezent verlinkte Seiten (z. B. Spenden) nur als kleiner Hinweis unten.
             'quietPages' => Page::query()->published()->whereIn('slug', $config['quiet_pages'] ?? [])->orderBy('title')->get(),
-            'contacts' => Person::query()->visible()->where('section', $section)->where('gremium', '!=', 'fak')->with('photo')->orderBy('sort')->get(),
+            'contacts' => Person::query()->visible()->ansprechpersonFuer($section)->with('photo')->orderBy('sort')->get(),
             // Facharbeitskreis (nur bei Fachbereichen mit `fak`).
             'fak' => ($config['fak'] ?? false)
                 ? Person::query()->visible()->where('section', $section)->where('gremium', 'fak')->with('photo')->orderBy('sort')->orderBy('name')->get()

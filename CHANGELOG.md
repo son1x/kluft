@@ -18,6 +18,7 @@ Admins. Kurz und aus Sicht der Redaktion schreiben.
 - Kasse → Zahlungen: Forderungen mit Zahlungsaufforderung per Mail und GiroCode für die Banking-App, Zahlungseingang, Erstattung, Storno; Bankverbindung im Backend (Verwaltung → Funktionen → Zahlungen).
 - Veranstaltungen mit Teilnahmebeitrag: Preisstufen je Veranstaltung, Auswahl bei der Anmeldung, Zahlungsaufforderung mit GiroCode nach der Bestätigung, Zahlungsstand in Teilnehmendenliste, Export und „Meine Anmeldungen“.
 - Mitgliedsbeiträge: NaMi-Abruf nennt bei Fehlern Schritt und Meldung von NaMi, meldet sich bei Anmeldeseite statt Daten neu an und bricht bei einzelnen nicht abrufbaren Personen nicht mehr ab.
+- Personen: Ansprechperson für mehrere Fachbereiche (Mehrfachauswahl); die Person erscheint auf jeder gewählten Fachbereichsseite, in der Übersicht und bei den passenden Kontaktthemen.
 - DV Trier: Rubrik „Diözesanlager“ unter „Diözesanverband“; jedes Lager mit eigenem Aussehen im Inhaltsbereich. Erstes Archiv: „Scoutergy“ (FroLeiLa 2023) mit Video, Programm, häufigen Fragen und Beiträgen von scoutergy.de.
 - Umfragen: anlegen, kopieren, Vorlagen, bedingte Fragen, Kommentar je Frage, Zugangscode, Nachfrage an Teilnehmende einer Veranstaltung, Gewinnspiel getrennt von den Antworten, Auswertung mit Balken und Einzelantworten, PDF (A4) und Excel, Löschfristen (docs/umfragen.md).
 - Instagram-Einblendung: neueste Beiträge eigener Konten auf Startseite und Fachbereichen oberhalb von „Aktuelles“, Bilder lokal gespiegelt, kein Embed (docs/instagram.md).

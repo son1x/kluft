@@ -36,7 +36,7 @@ class ContactTopic extends Model
 
         $people = match (true) {
             filled($this->stage) => Person::query()->visible()->where('gremium', 'leitung')->where('stage', $this->stage)->orderBy('sort')->get(),
-            filled($this->section) => Person::query()->visible()->where('section', $this->section)->orderBy('sort')->get(),
+            filled($this->section) => Person::query()->visible()->ansprechpersonFuer($this->section)->orderBy('sort')->get(),
             default => collect(),
         };
 

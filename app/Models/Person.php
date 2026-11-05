@@ -18,7 +18,7 @@ class Person extends Model
     protected $table = 'people';
 
     protected $fillable = [
-        'gremium', 'section', 'subgroup', 'name', 'role', 'stage', 'badge', 'email', 'bio',
+        'gremium', 'section', 'sections', 'subgroup', 'name', 'role', 'stage', 'badge', 'email', 'bio',
         'photo_media_id', 'consent', 'active', 'sort', 'zuschuss_daten',
     ];
 
@@ -27,7 +27,7 @@ class Person extends Model
 
     protected function casts(): array
     {
-        return ['consent' => 'boolean', 'active' => 'boolean', 'sort' => 'integer', 'zuschuss_daten' => 'encrypted:array'];
+        return ['consent' => 'boolean', 'active' => 'boolean', 'sort' => 'integer', 'sections' => 'array', 'zuschuss_daten' => 'encrypted:array'];
     }
 
     /**
@@ -47,6 +47,32 @@ class Person extends Model
     public function scopeVisible(Builder $query): Builder
     {
         return $query->where('active', true)->where('consent', true);
+    }
+
+    /**
+     * Ansprechpersonen eines Bereichs (nicht der FAK): Personen, die den
+     * Bereich in `sections` haben. `section` zählt mit, falls ein
+     * Datensatz noch keine Liste hat.
+     */
+    public function scopeAnsprechpersonFuer(Builder $query, string $section): Builder
+    {
+        return $query->where('gremium', '!=', 'fak')
+            ->where(fn (Builder $q) => $q->whereJsonContains('sections', $section)
+                ->orWhere(fn (Builder $q) => $q->whereNull('sections')->where('section', $section)));
+    }
+
+    /**
+     * Alle Bereiche, für die die Person Ansprechperson ist (FAK: keiner).
+     *
+     * @return list<string>
+     */
+    public function ansprechBereiche(): array
+    {
+        if ($this->gremium === 'fak') {
+            return [];
+        }
+
+        return array_values(array_filter((array) ($this->sections ?? ($this->section ? [$this->section] : []))));
     }
 
     /**
@@ -83,6 +109,15 @@ class Person extends Model
         static::saving(function (Person $person) {
             if (self::ohneEigeneAdresse($person->gremium)) {
                 $person->email = null;
+            }
+            // FAK: genau ein Fachbereich in `section`. Sonst ist `sections`
+            // maßgeblich und `section` der erste Eintrag daraus.
+            if ($person->gremium === 'fak') {
+                $person->sections = null;
+            } elseif ($person->isDirty('sections') || ($person->sections === null && $person->section)) {
+                $liste = array_values(array_unique(array_filter((array) ($person->sections ?? [$person->section]))));
+                $person->sections = $liste === [] ? null : $liste;
+                $person->section = $liste[0] ?? null;
             }
         });
     }

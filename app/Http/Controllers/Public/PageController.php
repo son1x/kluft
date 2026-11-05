@@ -107,7 +107,11 @@ class PageController extends Controller
         // Nur echte Fachbereiche (nicht z. B. das Serviceangebot Beratung).
         $sections = array_filter(config('dpsg.sections'), fn (array $s) => ($s['kind'] ?? 'Fachbereich') === 'Fachbereich');
         $landings = Page::query()->published()->whereIn('slug', array_column($sections, 'landing'))->get()->keyBy('slug');
-        $contacts = Person::query()->visible()->whereIn('section', array_keys($sections))->orderBy('sort')->get()->groupBy('section');
+        // Ansprechpersonen je Fachbereich; eine Person kann bei mehreren stehen.
+        $personen = Person::query()->visible()->where('gremium', '!=', 'fak')->whereNotNull('section')->orderBy('sort')->get();
+        $contacts = collect(array_keys($sections))->mapWithKeys(fn (string $key) => [
+            $key => $personen->filter(fn (Person $p) => in_array($key, $p->ansprechBereiche(), true))->values(),
+        ]);
 
         $items = collect($sections)
             ->filter(fn (array $s) => $landings->has($s['landing']))

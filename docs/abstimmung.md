@@ -35,6 +35,16 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-05 – Haupt → Stammes, Bezirk: Personen mit mehreren Fachbereichen (gemeinsamer Kern)
+Status: offen
+
+- **Migration** `2026_11_05_100000`: neue Spalte `people.sections` (JSON). Bestehende Ansprechpersonen werden mit ihrem einen Bereich befüllt.
+- **Model:**
+  - `Person::scopeAnsprechpersonFuer($bereich)` und `ansprechBereiche()`.
+  - Beim Speichern ist `section` = erster Eintrag aus `sections`. Beim FAK bleibt `section` der eine Fachbereich, `sections` ist leer.
+- **Backend:** Das Formular zeigt beim FAK „Fachbereich“ (einer), sonst „Ansprechperson für Fachbereiche“ (mehrere).
+- **Website:** Bereichsseite, Fachbereichsübersicht und `ContactTopic` nutzen den neuen Scope. Die Übersicht zeigt dabei keine FAK-Mitglieder mehr als Ansprechpersonen.
+
 ### 2026-11-01 – Stammes → Haupt, Bezirk: Zuschussgeber modular (gemeinsamer Kern)
 Status: offen (auch direkt gemeldet)
 

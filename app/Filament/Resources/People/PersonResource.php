@@ -123,14 +123,20 @@ class PersonResource extends Resource
                         ->in(array_keys(config('dpsg.person_badges')))
                         ->placeholder('DPSG-Blau')
                         ->native(false),
-                    Select::make('section')->label(fn (Get $get) => $get('gremium') === 'fak' ? 'Fachbereich' : 'Ansprechperson für Fachbereich')
+                    Select::make('section')->label('Fachbereich')
+                        ->visible(fn (Get $get) => $get('gremium') === 'fak')
                         ->required(fn (Get $get) => $get('gremium') === 'fak')
                         ->options(collect(config('dpsg.sections'))->map(fn (array $s) => $s['label'])->all())
                         ->placeholder('–')
                         ->native(false)
-                        ->helperText(fn (Get $get) => $get('gremium') === 'fak'
-                            ? 'Mitglieder im Facharbeitskreis erscheinen auf der Seite ihres Fachbereichs (ohne eigene Adresse).'
-                            : 'Erscheint dann auf der Startseite des Fachbereichs als Ansprechperson.'),
+                        ->helperText('Mitglieder im Facharbeitskreis erscheinen auf der Seite ihres Fachbereichs (ohne eigene Adresse).'),
+                    Select::make('sections')->label('Ansprechperson für Fachbereiche')
+                        ->visible(fn (Get $get) => $get('gremium') !== 'fak')
+                        ->multiple()
+                        ->options(collect(config('dpsg.sections'))->map(fn (array $s) => $s['label'])->all())
+                        ->placeholder('–')
+                        ->native(false)
+                        ->helperText('Mehrere möglich. Die Person erscheint auf der Startseite jedes gewählten Fachbereichs als Ansprechperson.'),
                     TextInput::make('email')->label('E-Mail')->email()->maxLength(255)
                         ->visible(fn (Get $get) => ! Person::ohneEigeneAdresse($get('gremium')))
                         ->placeholder(fn (Get $get) => Person::suggestedEmail($get('name')) ?? $adressMuster.'@'.config('dpsg.person_email_domain'))

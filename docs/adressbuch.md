@@ -1,6 +1,6 @@
 # Adressbuch
 
-**Stand:** 7. November 2026 · Funktion „Adressbuch“ (`adressbuch`, ab Ausbaustufe 3, Standard aus, beim DV an; abschaltbar unter Verwaltung → Funktionen)
+**Stand:** 7. November 2026 · Funktion „Adressbuch“ (`adressbuch`, ab Ausbaustufe 3, Standard aus; **zurückgestellt**, beim DV vorerst aus). Einschalten unter Verwaltung → Funktionen oder in `instanzen/dv-trier/config.php`.
 
 Ein gemeinsames Adressbuch im Backend unter **Verband & Kontakt**:
 

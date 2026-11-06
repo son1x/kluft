@@ -38,7 +38,7 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 ### 2026-11-07 – Haupt → Stammes, Bezirk: Adressbuch (gemeinsamer Kern)
 Status: offen
 
-Neue Funktion `adressbuch` (ab Ausbaustufe 3, Standard aus, beim DV an), siehe `docs/adressbuch.md`.
+Neue Funktion `adressbuch` (ab Ausbaustufe 3, Standard aus; beim DV vorerst auch aus, zurückgestellt), siehe `docs/adressbuch.md`.
 - **Neu:**
   - Migration `2026_11_07_110000` mit drei Tabellen `adressbuch_*`;
   - Models `AdressbuchKontakt`, `AdressbuchVerteiler`;

@@ -98,7 +98,7 @@ return [
         'nachrichten' => true,
         'umfragen' => true,
         'videokonferenzen' => true,
-        'adressbuch' => true,
+        'adressbuch' => false, // zurückgestellt (07.11.2026), docs/adressbuch.md
     ],
 
     // Download-Seite unter „Diözesanverband“ (s. config/dpsg.php).

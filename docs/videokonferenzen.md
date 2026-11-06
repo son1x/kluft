@@ -2,6 +2,8 @@
 
 **Stand:** 6. November 2026 · Funktion „Videokonferenzen (Jitsi)“ (`videokonferenzen`, ab Ausbaustufe 3, beim DV an)
 
+**Abschaltbar** wie jede Funktion unter Verwaltung → Funktionen. Standard ist aus; nur der DV hat sie in `instanzen/dv-trier/config.php` eingeschaltet. Sie setzt eine eigene Jitsi-Installation mit Token-Anmeldung voraus: Prosody mit `authentication = "token"`, Gäste warten auf die Moderation, Anmeldung der Mitglieder über einen OpenID-Adapter wie `jitsi-openid`. Ohne diesen Aufbau die Funktion aus lassen.
+
 Im Backend unter **Verband & Kontakt → Videokonferenzen** legt man eine Konferenz mit **Titel und Beginn** an. Kluft zeigt dann:
 
 - den **Teilnahme-Link** `https://meet.dpsg-trier.de/<raum>`, zum Kopieren;

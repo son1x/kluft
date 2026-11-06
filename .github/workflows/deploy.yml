@@ -209,6 +209,9 @@ jobs:
           # geschlossen = zusätzlich nur nach Anmeldung. KLUFT_LIVE_URL = Ziel des Hinweises.
           KLUFT_TESTSYSTEM: ${{ vars.KLUFT_TESTSYSTEM }}
           KLUFT_LIVE_URL: ${{ vars.KLUFT_LIVE_URL }}
+          # Videokonferenzen (docs/videokonferenzen.md): gleiches Secret wie Prosody/jitsi-openid.
+          JITSI_URL: ${{ vars.JITSI_URL }}
+          JITSI_SECRET: ${{ secrets.JITSI_SECRET }}
           APP_ENV_VALUE: ${{ vars.APP_ENV || secrets.APP_ENV || 'local' }}
           APP_NAME_VAR: ${{ vars.APP_NAME || secrets.APP_NAME }}
           MAIL_FROM_ADDRESS: ${{ vars.MAIL_FROM_ADDRESS || secrets.MAIL_FROM_ADDRESS }}
@@ -315,6 +318,8 @@ jobs:
           KLUFT_REPOSITORY_URL=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}
           KLUFT_TESTSYSTEM=$(trim "$KLUFT_TESTSYSTEM")
           KLUFT_LIVE_URL=$(trim "$KLUFT_LIVE_URL")
+          JITSI_URL=$(trim "${JITSI_URL:-https://meet.dpsg-trier.de}")
+          JITSI_SECRET="$(trim "$JITSI_SECRET")"
           APP_NAME="${APP_NAME}"
           APP_ENV=${APP_ENV_VALUE}
           APP_KEY=${APP_KEY}

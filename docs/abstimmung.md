@@ -35,6 +35,19 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-06 – Haupt → Stammes, Bezirk: Videokonferenzen (gemeinsamer Kern)
+Status: offen
+
+Neue Funktion `videokonferenzen` (ab Ausbaustufe 3, Standard aus, beim DV an), siehe `docs/videokonferenzen.md`.
+- **Neu:**
+  - Migration `2026_11_06_100000` (Tabelle `videokonferenzen`);
+  - `App\Services\Jitsi\Jitsi` (JWT HS256), gebunden im `AppServiceProvider`;
+  - `VideokonferenzResource` mit den Seiten List, Create, View;
+  - config `services.jitsi`;
+  - `deploy.yml` schreibt `JITSI_URL` (Variable) und `JITSI_SECRET` (Secret) in die `.env`.
+- **AdminSmokeTest** schaltet die Funktion ein.
+- Für Stämme denkbar mit eigener Jitsi-Installation über `JITSI_URL`/`JITSI_SUB`.
+
 ### 2026-11-06 – Haupt → Stammes, Bezirk: Testsystem-Schalter, Live-Ziel dv-trier-live (gemeinsamer Kern)
 Status: offen
 

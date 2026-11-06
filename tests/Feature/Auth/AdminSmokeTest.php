@@ -8,6 +8,7 @@ use App\Filament\Resources\GlossaryTerms\Pages\CreateGlossaryTerm;
 use App\Filament\Resources\GlossaryTerms\Pages\EditGlossaryTerm;
 use App\Filament\Resources\Gruppenstunden\GruppenstundeResource;
 use App\Filament\Resources\Umfragen\UmfrageResource;
+use App\Filament\Resources\Videokonferenzen\VideokonferenzResource;
 use App\Filament\Resources\Zuschussgeber\ZuschussgeberResource;
 use App\Models\GlossaryTerm;
 use App\Models\User;
@@ -45,6 +46,7 @@ class AdminSmokeTest extends TestCase
         Features::setzen(Features::UMFRAGEN, true);
         Features::setzen(Features::NAMI_DATENABGLEICH, true);
         Features::setzen(Features::ZUSCHUESSE, true);
+        Features::setzen(Features::VIDEOKONFERENZEN, true);
         $kasse = Features::enabled(Features::MITGLIEDSBEITRAEGE);
         // Umfragen ab Ausbaustufe 3.
         $umfragen = Features::enabled(Features::UMFRAGEN);
@@ -59,7 +61,8 @@ class AdminSmokeTest extends TestCase
                 if (! $resource::hasPage($page) || (! $kasse && $resource::getNavigationGroup() === 'Kasse') || $nurStamm
                     || (! $umfragen && $resource === UmfrageResource::class)
                     || ($resource === DatenabgleichResource::class && ! Features::enabled(Features::NAMI_DATENABGLEICH))
-                    || ($resource === ZuschussgeberResource::class && ! Features::enabled(Features::ZUSCHUESSE))) {
+                    || ($resource === ZuschussgeberResource::class && ! Features::enabled(Features::ZUSCHUESSE))
+                    || ($resource === VideokonferenzResource::class && ! Features::enabled(Features::VIDEOKONFERENZEN))) {
                     continue;
                 }
                 $url = $resource::getUrl($page);

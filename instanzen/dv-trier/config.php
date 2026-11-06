@@ -97,6 +97,7 @@ return [
         // Datenschutzerklärung des DV: Kontaktanfragen werden gespeichert.
         'nachrichten' => true,
         'umfragen' => true,
+        'videokonferenzen' => true,
     ],
 
     // Download-Seite unter „Diözesanverband“ (s. config/dpsg.php).

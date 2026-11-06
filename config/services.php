@@ -98,4 +98,17 @@ return [
         'allowed_hosts' => env('NEXTCLOUD_ALLOWED_HOSTS', ''),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Jitsi Meet des DV (docs/videokonferenzen.md): Moderator-Links per JWT
+    |--------------------------------------------------------------------------
+    | JITSI_SECRET = app_secret in Prosody = JITSI_SECRET von jitsi-openid.
+    | Nur als Secret im GitHub-Environment, nie im Repository.
+    */
+    'jitsi' => [
+        'url' => env('JITSI_URL', 'https://meet.dpsg-trier.de'),
+        'secret' => env('JITSI_SECRET'),
+        'sub' => env('JITSI_SUB', 'meet.dpsg-trier.de'),
+    ],
+
 ];

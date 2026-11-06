@@ -34,6 +34,7 @@ return [
         ['Umfragen', 'Umfragen mit Vorlagen und Auswertung', 'partial'],
         ['Livegang', 'www.dpsg-trier.de live am Totensonntag (22.11.2026)', 'open'],
         ['Diözesanlager', 'Rubrik Diözesanlager mit Archiv vergangener Lager', 'partial'],
+        ['Videokonferenzen', 'Jitsi-Konferenzen mit Teilnahme- und Moderator-Link', 'partial'],
     ],
 
     'sections' => [
@@ -237,6 +238,11 @@ return [
             ['status' => 'done', 'title' => 'Gewinnspiel', 'note' => 'Eigener Baustein nach dem Absenden, getrennt von den Antworten gespeichert; Auslosen und Löschen in der Auswertung, automatische Löschung drei Monate nach dem Ende.'],
             ['status' => 'partial', 'title' => 'Datenschutz', 'note' => 'Standard anonym (verschlüsselte Antworten, nur Tagesdatum, keine IP); nicht anonyme Antworten und Gewinnspiel in der Datenschutzauskunft; Löschfristen täglich. Offen: Datenschutzerklärung des DV um Umfragen ergänzen.'],
             ['status' => 'later', 'title' => 'Erinnerung und Vergleich', 'note' => 'Erinnerung an Eingeladene ohne Antwort (UM-41); Vergleich zweier Durchgänge, z. B. Leiter*innenumfrage 2026 und 2028 (UM-42).'],
+        ],
+        'Videokonferenzen' => [
+            ['status' => 'done', 'title' => 'Konferenzen im Backend terminieren', 'note' => 'Verband & Kontakt → Videokonferenzen (ab Diözesanleitung): Titel und Beginn, Raumname mit Zufallsanhang, Teilnahme-Link und Einladungstext zum Kopieren, Moderator-Link (JWT, bis Ende des Folgetags), eigene Konferenzen bzw. alle für die Verwaltung. docs/videokonferenzen.md.'],
+            ['status' => 'open', 'title' => 'Secret JITSI_SECRET einrichten und live testen', 'note' => 'Secret im Environment dv-trier (später dv-trier-live) setzen, deployen, Prüfsummen vergleichen, Tests 2–6 aus der Jitsi-Doku (Moderator-Link, Gast wartet, falscher Raum, abgelaufen).'],
+            ['status' => 'later', 'title' => 'An Veranstaltungen hängen, wiederkehrende Termine', 'note' => 'Bei Bedarf: Teilnahme-Link in die Bestätigungsmail einer Veranstaltung, wöchentliche Termine.'],
         ],
         'Diözesanlager' => [
             ['status' => 'done', 'title' => 'Rubrik „Diözesanlager“', 'note' => 'Übersicht /dioezesanlager unter „Diözesanverband“. Jedes Lager ist ein eigener Bereich (config sections, kind „Diözesanlager“) mit eigenem Aussehen im Inhaltsbereich; Kopf und Fuß bleiben DPSG. Zurückliegende Lager tragen den Hinweis „Archiv“.'],

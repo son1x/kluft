@@ -18,6 +18,7 @@ Admins. Kurz und aus Sicht der Redaktion schreiben.
 - Kasse → Zahlungen: Forderungen mit Zahlungsaufforderung per Mail und GiroCode für die Banking-App, Zahlungseingang, Erstattung, Storno; Bankverbindung im Backend (Verwaltung → Funktionen → Zahlungen).
 - Veranstaltungen mit Teilnahmebeitrag: Preisstufen je Veranstaltung, Auswahl bei der Anmeldung, Zahlungsaufforderung mit GiroCode nach der Bestätigung, Zahlungsstand in Teilnehmendenliste, Export und „Meine Anmeldungen“.
 - Mitgliedsbeiträge: NaMi-Abruf nennt bei Fehlern Schritt und Meldung von NaMi, meldet sich bei Anmeldeseite statt Daten neu an und bricht bei einzelnen nicht abrufbaren Personen nicht mehr ab.
+- Videokonferenzen (Jitsi): Konferenzen im Backend terminieren, Teilnahme-Link und Einladungstext zum Kopieren, Moderator-Link bis zum Ende des Folgetags (docs/videokonferenzen.md).
 - Testsystem kennzeichnen (Variable KLUFT_TESTSYSTEM): gelbes Band auf Website und im Backend, Suchmaschinen ausgesperrt, auf Wunsch nur nach Anmeldung; Deploy und Server-Prüfung auch für das Live-Ziel dv-trier-live.
 - Personen: Ansprechperson für mehrere Fachbereiche (Mehrfachauswahl); die Person erscheint auf jeder gewählten Fachbereichsseite, in der Übersicht und bei den passenden Kontaktthemen.
 - DV Trier: Rubrik „Diözesanlager“ unter „Diözesanverband“; jedes Lager mit eigenem Aussehen im Inhaltsbereich. Erstes Archiv: „Scoutergy“ (FroLeiLa 2023) mit Video, Programm, häufigen Fragen und Beiträgen von scoutergy.de.

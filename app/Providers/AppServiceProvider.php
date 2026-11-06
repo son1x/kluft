@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Mail\TestRecipientFilter;
 use App\Models\Page;
 use App\Services\Glossary;
+use App\Services\Jitsi\Jitsi;
 use App\Services\Mitglieder\HitobitoVerzeichnis;
 use App\Services\Mitglieder\KeinVerzeichnis;
 use App\Services\Mitglieder\Mitgliederverzeichnis;
@@ -33,6 +34,8 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         // Mitgliederverwaltung je nach Treiber (docs/mitgliederabgleich.md).
+        // Jitsi-Links (docs/videokonferenzen.md); bind statt singleton, damit Config-Änderungen greifen.
+        $this->app->bind(Jitsi::class, fn () => Jitsi::ausConfig());
         $this->app->singleton(Mitgliederverzeichnis::class, fn () => match (config('mitglieder.driver')) {
             'nami' => new NamiVerzeichnis,
             'hitobito' => new HitobitoVerzeichnis,

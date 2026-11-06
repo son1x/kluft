@@ -47,6 +47,7 @@ class AdminSmokeTest extends TestCase
         Features::setzen(Features::NAMI_DATENABGLEICH, true);
         Features::setzen(Features::ZUSCHUESSE, true);
         Features::setzen(Features::VIDEOKONFERENZEN, true);
+        Features::setzen(Features::ADRESSBUCH, true);
         $kasse = Features::enabled(Features::MITGLIEDSBEITRAEGE);
         // Umfragen ab Ausbaustufe 3.
         $umfragen = Features::enabled(Features::UMFRAGEN);
@@ -62,7 +63,8 @@ class AdminSmokeTest extends TestCase
                     || (! $umfragen && $resource === UmfrageResource::class)
                     || ($resource === DatenabgleichResource::class && ! Features::enabled(Features::NAMI_DATENABGLEICH))
                     || ($resource === ZuschussgeberResource::class && ! Features::enabled(Features::ZUSCHUESSE))
-                    || ($resource === VideokonferenzResource::class && ! Features::enabled(Features::VIDEOKONFERENZEN))) {
+                    || ($resource === VideokonferenzResource::class && ! Features::enabled(Features::VIDEOKONFERENZEN))
+                    || (str_starts_with($resource, 'App\\Filament\\Resources\\Adressbuch\\') && ! Features::enabled(Features::ADRESSBUCH))) {
                     continue;
                 }
                 $url = $resource::getUrl($page);

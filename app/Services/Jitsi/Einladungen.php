@@ -3,7 +3,9 @@
 namespace App\Services\Jitsi;
 
 use App\Mail\VideokonferenzMail;
+use App\Models\User;
 use App\Models\Videokonferenz;
+use App\Support\Adressbuch;
 use Illuminate\Support\Facades\Mail;
 
 /**
@@ -35,6 +37,21 @@ class Einladungen
         }
 
         return ['moderation' => count($moderation), 'teilnehmende' => count($teilnehmende)];
+    }
+
+    /**
+     * Adressen aus dem Formular: eingetippte plus die aus gewählten
+     * Verteilern des Adressbuchs (nur sichtbare).
+     *
+     * @param  array<string, mixed>  $data
+     * @return array{moderation: list<string>, teilnehmende: list<string>}
+     */
+    public static function ausFormular(array $data, ?User $user): array
+    {
+        return [
+            'moderation' => self::bereinigen([...($data['moderation_emails'] ?? []), ...Adressbuch::adressen((array) ($data['moderation_verteiler'] ?? []), $user)]),
+            'teilnehmende' => self::bereinigen([...($data['teilnehmende_emails'] ?? []), ...Adressbuch::adressen((array) ($data['teilnehmende_verteiler'] ?? []), $user)]),
+        ];
     }
 
     /**

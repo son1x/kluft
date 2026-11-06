@@ -23,13 +23,14 @@ class ViewVideokonferenz extends ViewRecord
                 ->label('Einladungen senden')
                 ->icon('heroicon-o-envelope')
                 ->modalDescription('An jede Adresse geht eine eigene Mail. Bereits Eingeladene bekommen die Mail noch einmal, wenn sie in der Liste stehen; zum Nachladen nur die neuen Adressen eintragen.')
-                ->fillForm(fn (Videokonferenz $record) => ['moderation_emails' => [], 'teilnehmende_emails' => []])
+                ->fillForm(fn (Videokonferenz $record) => ['moderation_emails' => [], 'teilnehmende_emails' => [], 'moderation_verteiler' => [], 'teilnehmende_verteiler' => []])
                 ->schema(VideokonferenzResource::adressFelder())
                 ->visible(fn (Videokonferenz $record) => $record->moderatorAblauf()->isFuture())
                 ->action(function (Videokonferenz $record, array $data) {
                     abort_unless(VideokonferenzResource::canView($record), 403);
-                    $neuM = Einladungen::bereinigen($data['moderation_emails'] ?? []);
-                    $neuT = Einladungen::bereinigen($data['teilnehmende_emails'] ?? []);
+                    $adressen = Einladungen::ausFormular($data, Filament::auth()->user());
+                    $neuM = $adressen['moderation'];
+                    $neuT = $adressen['teilnehmende'];
                     $gesendet = Einladungen::senden($record, $neuM, $neuT);
                     $record->forceFill([
                         'moderation_emails' => Einladungen::bereinigen([...($record->moderation_emails ?? []), ...$neuM]) ?: null,

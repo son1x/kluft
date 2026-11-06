@@ -7,12 +7,14 @@ use App\Filament\Resources\Videokonferenzen\Pages\ListVideokonferenzen;
 use App\Filament\Resources\Videokonferenzen\Pages\ViewVideokonferenz;
 use App\Models\Videokonferenz;
 use App\Services\Jitsi\Jitsi;
+use App\Support\Adressbuch;
 use App\Support\Videokonferenzen;
 use BackedEnum;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ViewAction;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\TextEntry;
@@ -104,22 +106,32 @@ class VideokonferenzResource extends Resource
     }
 
     /**
-     * Adressfelder für Formular und Aktion „Einladungen senden“.
+     * Adressfelder für Formular und Aktion „Einladungen senden“; mit
+     * Adressbuch (Funktion „Adressbuch“) auch Verteiler und Vorschläge.
      *
-     * @return list<TagsInput>
+     * @return list<mixed>
      */
     public static function adressFelder(): array
     {
+        $user = Filament::auth()->user();
+        $adressbuch = Adressbuch::zugriff($user);
         $feld = fn (string $name, string $label, string $hilfe, int $max) => TagsInput::make($name)->label($label)
             ->placeholder('Adresse eingeben, Enter')
             ->splitKeys(['Tab', ',', ';', ' '])
+            ->suggestions(fn () => Adressbuch::vorschlaege($user))
             ->nestedRecursiveRules(['email:rfc'])
             ->rules(['array', 'max:'.$max])
             ->helperText($hilfe);
+        $verteiler = fn (string $name, string $label) => Select::make($name)->label($label)
+            ->options(fn () => Adressbuch::verteilerOptionen($user))
+            ->multiple()->searchable()->visible($adressbuch)
+            ->helperText('Alle Kontakte der gewählten Verteiler werden zusätzlich eingeladen.');
 
         return [
             $feld('moderation_emails', 'Moderation', 'Bekommen den Moderator-Link (öffnet den Raum ohne Anmeldung) und den Teilnahme-Link.', 10),
+            $verteiler('moderation_verteiler', 'Moderation aus Verteilern'),
             $feld('teilnehmende_emails', 'Teilnehmende', 'Bekommen nur den Teilnahme-Link. Mehrere Adressen mit Komma oder Leerzeichen einfügen.', 200),
+            $verteiler('teilnehmende_verteiler', 'Teilnehmende aus Verteilern'),
         ];
     }
 

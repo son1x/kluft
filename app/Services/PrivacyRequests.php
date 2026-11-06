@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\AdressbuchKontakt;
 use App\Models\ContactMessage;
 use App\Models\DatenabgleichZeile;
 use App\Models\Datenmeldung;
@@ -36,7 +37,7 @@ class PrivacyRequests
     public function __construct(private EventRegistrations $registrations) {}
 
     /**
-     * @return array{registrations: Collection<int, EventRegistration>, people: Collection<int, Person>, users: Collection<int, User>, messages: Collection<int, ContactMessage>, bestellungen: Collection<int, Bestellung>, umfragen: Collection<int, UmfrageAntwort>, gewinnspiel: Collection<int, UmfrageGewinnspiel>, datenmeldungen: Collection<int, Datenmeldung>, queued: int}
+     * @return array{registrations: Collection<int, EventRegistration>, people: Collection<int, Person>, users: Collection<int, User>, messages: Collection<int, ContactMessage>, bestellungen: Collection<int, Bestellung>, umfragen: Collection<int, UmfrageAntwort>, gewinnspiel: Collection<int, UmfrageGewinnspiel>, datenmeldungen: Collection<int, Datenmeldung>, adressbuch: Collection<int, AdressbuchKontakt>, queued: int}
      */
     public function find(string $email): array
     {
@@ -60,6 +61,10 @@ class PrivacyRequests
             // NaMi-Datenabgleich: Mail des Mitglieds oder der Erziehungsberechtigten.
             'datenmeldungen' => Schema::hasTable('datenmeldungen')
                 ? Datenmeldung::query()->where('email_hash', Datenmeldung::hash($email))->orWhere('email_eltern_hash', Datenmeldung::hash($email))->orderByDesc('id')->get()
+                : new EloquentCollection,
+            // Adressbuch (Kontakte, auch Externe), samt Verteilern.
+            'adressbuch' => Schema::hasTable('adressbuch_kontakte')
+                ? AdressbuchKontakt::query()->where('email', $email)->with('verteiler')->get()
                 : new EloquentCollection,
             'queued' => $this->queueEntries($email)->count(),
         ];
@@ -148,6 +153,10 @@ class PrivacyRequests
                 'angaben' => (array) $m->daten,
                 'loeschung_spaetestens' => ($m->bestaetigt_am ?? $m->created_at)->copy()->addMonths(6)->toDateString(),
             ])->values()->all(),
+            'adressbuch' => $found['adressbuch']->map(fn (AdressbuchKontakt $k) => [
+                'name' => $k->name, 'email' => $k->email, 'organisation' => $k->organisation, 'notiz' => $k->notiz,
+                'verteiler' => $k->verteiler->pluck('name')->all(), 'angelegt' => $k->created_at?->toDateString(),
+            ])->values()->all(),
             'mails_in_warteschlange' => $found['queued'],
             'hinweise' => array_values(array_filter([
                 Features::newsletter() ? config('dpsg.newsletter.name').' (Newsletter): Die Adressen liegen nur beim Versanddienst Brevo, nicht im CMS. Auskunft/Löschung dort.' : null,
@@ -179,7 +188,7 @@ class PrivacyRequests
      * automatisch gelöscht (Rollen/Audit) – das geht unter „Benutzer“.
      * Frei werdende Plätze kommender Veranstaltungen rücken nach.
      *
-     * @return array{registrations: int, people: int, messages: int, bestellungen: int, umfragen: int, datenmeldungen: int, queued: int}
+     * @return array{registrations: int, people: int, messages: int, bestellungen: int, umfragen: int, datenmeldungen: int, adressbuch: int, queued: int}
      */
     public function delete(string $email): array
     {
@@ -203,12 +212,15 @@ class PrivacyRequests
             $found['datenmeldungen']->each->delete();
         }
 
+        // Adressbuch: Kontakt samt Zugehörigkeit zu Verteilern.
+        $found['adressbuch']->each->delete();
+
         $queued = $this->queueEntries($email);
         DB::table('jobs')->whereIn('id', $queued->where('table', 'jobs')->pluck('id'))->delete();
         DB::table('failed_jobs')->whereIn('id', $queued->where('table', 'failed_jobs')->pluck('id'))->delete();
 
         return ['registrations' => $found['registrations']->count(), 'people' => $found['people']->count(), 'messages' => $found['messages']->count(),
-            'bestellungen' => $found['bestellungen']->count(), 'umfragen' => $found['umfragen']->count() + $found['gewinnspiel']->count(), 'datenmeldungen' => $found['datenmeldungen']->count(), 'queued' => $queued->count()];
+            'bestellungen' => $found['bestellungen']->count(), 'umfragen' => $found['umfragen']->count() + $found['gewinnspiel']->count(), 'datenmeldungen' => $found['datenmeldungen']->count(), 'adressbuch' => $found['adressbuch']->count(), 'queued' => $queued->count()];
     }
 
     /**

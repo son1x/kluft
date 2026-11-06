@@ -98,6 +98,7 @@ return [
         'nachrichten' => true,
         'umfragen' => true,
         'videokonferenzen' => true,
+        'adressbuch' => true,
     ],
 
     // Download-Seite unter „Diözesanverband“ (s. config/dpsg.php).

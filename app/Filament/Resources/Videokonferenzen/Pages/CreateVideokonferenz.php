@@ -16,8 +16,10 @@ class CreateVideokonferenz extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $data['user_id'] = Filament::auth()->id();
-        $data['moderation_emails'] = Einladungen::bereinigen($data['moderation_emails'] ?? []) ?: null;
-        $data['teilnehmende_emails'] = Einladungen::bereinigen($data['teilnehmende_emails'] ?? []) ?: null;
+        $adressen = Einladungen::ausFormular($data, Filament::auth()->user());
+        $data['moderation_emails'] = $adressen['moderation'] ?: null;
+        $data['teilnehmende_emails'] = $adressen['teilnehmende'] ?: null;
+        unset($data['moderation_verteiler'], $data['teilnehmende_verteiler']);
 
         return $data;
     }

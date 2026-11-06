@@ -35,6 +35,19 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-07 – Haupt → Stammes, Bezirk: Adressbuch (gemeinsamer Kern)
+Status: offen
+
+Neue Funktion `adressbuch` (ab Ausbaustufe 3, Standard aus, beim DV an), siehe `docs/adressbuch.md`.
+- **Neu:**
+  - Migration `2026_11_07_110000` mit drei Tabellen `adressbuch_*`;
+  - Models `AdressbuchKontakt`, `AdressbuchVerteiler`;
+  - `App\Support\Adressbuch`;
+  - Resources `AdressbuchKontaktResource` (`/admin/adressbuch`) und `AdressbuchVerteilerResource` (`/admin/verteiler`).
+- **Datenschutzauskunft:** `PrivacyRequests::find/export/delete` erfassen jetzt auch `adressbuch`. Das Ergebnis von `delete()` hat den zusätzlichen Schlüssel `adressbuch`.
+- **AdminSmokeTest** schaltet die Funktion ein.
+- **Videokonferenzen:** `adressFelder()` bietet Verteiler und Vorschläge an, wenn das Adressbuch an ist.
+
 ### 2026-11-07 – Haupt → Stammes, Bezirk: Videokonferenzen mit Einladungsmails (gemeinsamer Kern)
 Status: offen
 

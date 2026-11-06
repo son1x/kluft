@@ -79,6 +79,14 @@
             </x-filament::section>
         @endif
 
+        @if ($found['adressbuch']->isNotEmpty())
+            <x-filament::section heading="Adressbuch ({{ $found['adressbuch']->count() }})" description="Kontakt im Adressbuch, z. B. für Einladungen. Löschen entfernt ihn auch aus allen Verteilern.">
+                @foreach ($found['adressbuch'] as $kontakt)
+                    <p style="font-size: .875rem;">{{ $kontakt->anzeige() }}@if ($kontakt->verteiler->isNotEmpty()) – Verteiler: {{ $kontakt->verteiler->pluck('name')->implode(', ') }}@endif</p>
+                @endforeach
+            </x-filament::section>
+        @endif
+
         <x-filament::section heading="Weitere Stellen">
             <ul style="font-size: .875rem; list-style: disc; padding-left: 1.25rem;">
                 <li>Mails in der Warteschlange an diese Adresse: {{ $found['queued'] }}</li>

@@ -243,6 +243,7 @@ return [
             ['status' => 'done', 'title' => 'Konferenzen im Backend terminieren', 'note' => 'Verband & Kontakt → Videokonferenzen (ab Diözesanleitung): Titel und Beginn, Raumname mit Zufallsanhang, Teilnahme-Link und Einladungstext zum Kopieren, Moderator-Link (JWT, bis Ende des Folgetags), eigene Konferenzen bzw. alle für die Verwaltung. docs/videokonferenzen.md.'],
             ['status' => 'done', 'title' => 'Einladungen per E-Mail', 'note' => 'Moderation bekommt Moderator- und Teilnahme-Link, Teilnehmende nur den Teilnahme-Link; je Person eine Mail mit Kalendereintrag, Antwort an die anlegende Person; Nachladen auf der Detailseite; Adressen verschlüsselt, nach 7 Tagen gelöscht.'],
             ['status' => 'done', 'title' => 'Secret JITSI_SECRET einrichten und live testen', 'note' => 'Secret im Environment dv-trier gesetzt, Links funktionieren (07.11.2026). Beim Livegang auch im Environment dv-trier-live setzen.'],
+            ['status' => 'done', 'title' => 'Adressbuch mit Verteilern', 'note' => 'Verband & Kontakt → Adressbuch und Verteiler (Funktion „Adressbuch“): Kontakte auch für Externe, Verteiler gemeinsam oder nur für mich, Adressen einfügen (Outlook, Excel) und kopieren (Bcc), Auswahl bei den Videokonferenz-Einladungen, Datenschutzauskunft. docs/adressbuch.md.'],
             ['status' => 'later', 'title' => 'An Veranstaltungen hängen, wiederkehrende Termine', 'note' => 'Bei Bedarf: Teilnahme-Link in die Bestätigungsmail einer Veranstaltung, wöchentliche Termine.'],
         ],
         'Diözesanlager' => [

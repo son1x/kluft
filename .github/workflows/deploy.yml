@@ -47,6 +47,7 @@ on:
         type: choice
         options:
           - dv-trier
+          - dv-trier-live
           - saar-hochwald
           - roden
         required: true
@@ -87,7 +88,10 @@ jobs:
     runs-on: ${{ inputs.runner == 'nas' && fromJSON('["self-hosted","nas"]') || 'ubuntu-24.04' }}
     environment: ${{ inputs.instanz || 'dv-trier' }}
     env:
-      KLUFT_INSTANZ: ${{ inputs.instanz || 'dv-trier' }}
+      # Environment dv-trier-live (www.dpsg-trier.de, docs/livegang.md) nutzt
+      # den Instanz-Ordner dv-trier; nur Zielordner, Datenbank und Adressen
+      # kommen aus seinem Environment.
+      KLUFT_INSTANZ: ${{ inputs.instanz == 'dv-trier-live' && 'dv-trier' || inputs.instanz || 'dv-trier' }}
       PHP_BIN: ${{ vars.PHP_BIN || secrets.PHP_BIN || '/usr/bin/php' }}
       NUR_PRUEFEN: ${{ inputs.nur_pruefen && 'true' || 'false' }}
       # setup-php auf einem eigenen Runner (installiert PHP dann per apt).
@@ -201,6 +205,10 @@ jobs:
       - name: .env der Instanz erzeugen
         env:
           APP_URL: ${{ vars.APP_URL || secrets.APP_URL }}
+          # Testsystem (docs/livegang.md): leer = aus, offen = Band + noindex,
+          # geschlossen = zusätzlich nur nach Anmeldung. KLUFT_LIVE_URL = Ziel des Hinweises.
+          KLUFT_TESTSYSTEM: ${{ vars.KLUFT_TESTSYSTEM }}
+          KLUFT_LIVE_URL: ${{ vars.KLUFT_LIVE_URL }}
           APP_ENV_VALUE: ${{ vars.APP_ENV || secrets.APP_ENV || 'local' }}
           APP_NAME_VAR: ${{ vars.APP_NAME || secrets.APP_NAME }}
           MAIL_FROM_ADDRESS: ${{ vars.MAIL_FROM_ADDRESS || secrets.MAIL_FROM_ADDRESS }}
@@ -305,6 +313,8 @@ jobs:
           KLUFT_INSTANZ=${KLUFT_INSTANZ}
           KLUFT_REVISION=${GITHUB_SHA}
           KLUFT_REPOSITORY_URL=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}
+          KLUFT_TESTSYSTEM=$(trim "$KLUFT_TESTSYSTEM")
+          KLUFT_LIVE_URL=$(trim "$KLUFT_LIVE_URL")
           APP_NAME="${APP_NAME}"
           APP_ENV=${APP_ENV_VALUE}
           APP_KEY=${APP_KEY}
@@ -383,7 +393,7 @@ jobs:
           key: ${{ steps.mapkey.outputs.key }}
           # Fallback auf den letzten Stand: liegt die passende Datei schon
           # darin, entfällt der Neuaufbau.
-          restore-keys: map-data-${{ inputs.instanz || 'dv-trier' }}-
+          restore-keys: map-data-${{ env.KLUFT_INSTANZ }}-
 
       - name: Kartendatei vorhanden?
         id: mapfile

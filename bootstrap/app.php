@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\LegacyRedirects;
 use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\TestsystemSchutz;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -17,6 +18,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(SecurityHeaders::class);
         // Alte Adressen (WordPress) per 301 auf die neuen (F-MIG-05).
         $middleware->append(LegacyRedirects::class);
+        // Testsystem: noindex, im Modus „geschlossen“ nur nach Anmeldung (docs/livegang.md).
+        $middleware->web(append: TestsystemSchutz::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

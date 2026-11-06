@@ -6,6 +6,7 @@ use App\Filament\AvatarProviders\InitialsAvatarProvider;
 use App\Filament\Resources\Gruppierungen\Pages\CreateGruppierung;
 use App\Filament\Resources\Gruppierungen\Pages\EditGruppierung;
 use App\Support\Features;
+use App\Support\Testsystem;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -91,6 +92,11 @@ class AdminPanelProvider extends PanelProvider
                 PanelsRenderHook::HEAD_END,
                 fn (): string => Blade::render("@vite('resources/js/map.js')"),
                 scopes: [CreateGruppierung::class, EditGruppierung::class],
+            )
+            // Testsystem (docs/livegang.md): Band oben im Backend, damit niemand hier Inhalte pflegt.
+            ->renderHook(
+                PanelsRenderHook::BODY_START,
+                fn (): string => Testsystem::aktiv() ? view('kluft.testsystem-band')->render() : '',
             )
             // Unten auf jeder Backend-Seite: Kluft-Logo, Name und Git-Revision.
             ->renderHook(

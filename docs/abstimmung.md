@@ -35,6 +35,17 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-06 – Haupt → Stammes, Bezirk: Testsystem-Schalter, Live-Ziel dv-trier-live (gemeinsamer Kern)
+Status: offen
+
+- **Middleware `TestsystemSchutz`** (Web-Gruppe), `App\Support\Testsystem`, config `kluft.testsystem`/`kluft.live_url`.
+  - Ohne Variable `KLUFT_TESTSYSTEM` ändert sich nichts.
+  - `offen` zeigt das Band und setzt noindex.
+  - `geschlossen` leitet Gäste auf `/admin/login`. Backend, Anmeldung und Status bleiben frei.
+- **Backend:** Render-Hook `BODY_START` für das Band.
+- **deploy.yml:** Option `dv-trier-live`, die `KLUFT_INSTANZ=dv-trier` setzt. Neue Variablen `KLUFT_TESTSYSTEM` und `KLUFT_LIVE_URL` werden in die `.env` geschrieben. Ebenso gibt es `dv-trier-live` in `server-check.yml`.
+- **Livegang DV am 21.11.:** Weg B (Plesk-Kopie), siehe `docs/livegang.md`.
+
 ### 2026-11-05 – Haupt → Stammes, Bezirk: Personen mit mehreren Fachbereichen (gemeinsamer Kern)
 Status: offen
 

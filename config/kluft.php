@@ -8,6 +8,11 @@
 
 return [
 
+    // Testsystem (docs/livegang.md): leer = aus, „offen“ = Band und noindex,
+    // „geschlossen“ = zusätzlich nur nach Anmeldung. live_url = Ziel des Hinweises.
+    'testsystem' => env('KLUFT_TESTSYSTEM', ''),
+    'live_url' => env('KLUFT_LIVE_URL'),
+
     'updates' => [
         // off = keine Updates über Kluft selbst (Deploy per GitHub)
         // manual = verfügbare Updates anzeigen, Installation per Knopf

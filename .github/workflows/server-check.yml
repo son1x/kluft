@@ -12,6 +12,7 @@ on:
         type: choice
         options:
           - dv-trier
+          - dv-trier-live
           - saar-hochwald
           - roden
         required: true

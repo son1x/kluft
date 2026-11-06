@@ -1,67 +1,134 @@
 # Livegang www.dpsg-trier.de
 
-**Termin:** Totensonntag, 22. November 2026 (Umschalten am Abend des 21. oder
-am 22.11.). Meilenstein „Livegang“ in der Roadmap (`/roadmap`).
+**Termin:** Samstag, 21. November 2026 (Umschalten am 21., spätestens Totensonntag 22.11.). Meilenstein „Livegang“ in der Roadmap (`/roadmap`).
 
-## Entscheidungen (26.10.2026)
+## Entscheidungen
 
-- **Inhalte:** Die Live-Website startet mit allen Inhalten und Einstellungen
-  aus test.dpsg-trier.de (Seiten, Beiträge, Personen, Veranstaltungen,
-  Kalender, Mediathek, Funktionsschalter, Benutzer und Rollen).
-- **Test bleibt:** test.dpsg-trier.de läuft weiter als Testsystem, deutlich
-  gekennzeichnet bzw. geschlossen. Dort werden neue Funktionen ausprobiert.
-  Inhalte werden nach dem Livegang nur noch auf Live gepflegt.
-- **Weg:** der erprobte Deploy über GitHub Actions. Das Update-System
-  (`docs/updates.md`) ist für Stammes-Installationen gedacht und wird erst
-  danach an einem Stamm erprobt.
+- **26.10.2026:**
+  - Die Live-Website startet mit allen Inhalten und Einstellungen aus test.dpsg-trier.de.
+  - test.dpsg-trier.de bleibt als Testsystem, deutlich gekennzeichnet bzw. geschlossen.
+  - Nach dem Livegang werden Inhalte nur noch auf Live gepflegt.
+- **06.11.2026, Weg B:** **Kopie mit Plesk** in einen neuen Ordner mit eigener Datenbank, dazu ein eigenes GitHub-Environment `dv-trier-live` mit neuem Deploy-Pfad.
+  - Grund: Die Ordner sollen danach einheitlich heißen. Live liegt in `www.dpsg-trier.de`, Test in `test.dpsg-trier.de`, die alte Seite in `alt.dpsg-trier.de`.
+  - Kein eigener Kopier-Workflow und kein Update-System.
 
-## Aufbau
+## Aufbau nachher
 
-| | Test | Live |
-|---|---|---|
-| Adresse | test.dpsg-trier.de | www.dpsg-trier.de (Probelauf: neu.dpsg-trier.de) |
-| GitHub-Environment | `dv-trier` | `dv-trier-live` |
-| Ordner und Datenbank | wie bisher | neu, eigener Ordner und eigene MariaDB |
-| Mails | an die Testadresse (außer Test-Empfänger*innen) | an die echten Empfänger*innen |
-| Suchmaschinen | ausgesperrt | erlaubt |
-| Hinweis | Band „Testsystem“ auf jeder Seite, auf Wunsch nur nach Anmeldung | – |
+| | Test | Live | Alte Seite |
+|---|---|---|---|
+| Adresse | test.dpsg-trier.de | www.dpsg-trier.de (Probelauf: neu.dpsg-trier.de) | alt.dpsg-trier.de |
+| Ordner in Plesk | `test.dpsg-trier.de` (wie bisher) | `www.dpsg-trier.de` (neu) | `alt.dpsg-trier.de` (Kopie von `httpdocs`) |
+| Dokumentstamm | `test.dpsg-trier.de/public` | `www.dpsg-trier.de/public` | `alt.dpsg-trier.de` |
+| Datenbank | wie bisher | neu, eigener Benutzer | WordPress wie bisher |
+| GitHub-Environment | `dv-trier` | `dv-trier-live` | – |
+| Mails | an die Testadresse (außer Test-Empfänger*innen) | an die echten Empfänger*innen | – |
+| Kennzeichnung | `KLUFT_TESTSYSTEM=geschlossen`: gelbes Band, noindex, nur nach Anmeldung | keine | Passwortschutz oder noindex |
 
-Beide nutzen den Instanz-Ordner `instanzen/dv-trier`. Unterschiede kommen nur
-aus den Secrets und Variablen des Environments.
+Beide Kluft-Installationen nutzen den Instanz-Ordner `instanzen/dv-trier`. Der Deploy für das Environment `dv-trier-live` setzt `KLUFT_INSTANZ=dv-trier`. Unterschiede kommen nur aus den Secrets und Variablen der beiden Environments.
+
+## Was die Technik dafür gebaut hat (Stand 06.11.)
+
+- **Deploy auf zwei Ziele:** Actions → Deploy → Instanz `dv-trier` (Test) oder `dv-trier-live` (Live). Ebenso die Server-Prüfung.
+- **Schalter „Testsystem“** (Variable `KLUFT_TESTSYSTEM` im Environment):
+  - leer: aus.
+  - `offen`: gelbes Band „Testsystem“ auf jeder Seite und im Backend, Suchmaschinen ausgesperrt (Meta-Tag und Header).
+  - `geschlossen`: zusätzlich nur nach Anmeldung. Anmeldung, Backend und Systemstatus bleiben erreichbar.
+  - `KLUFT_LIVE_URL` (z. B. `https://www.dpsg-trier.de`) ist das Ziel des Links im Band.
 
 ## Zeitplan
 
 | Bis | Was | Wer |
 |---|---|---|
-| 1.11. | Webspace und Datenbank für Live, vorläufige Adresse, Environment `dv-trier-live`, Entra-URIs (Roadmap „Livegang 1–3“) | Projektleitung |
-| 8.11. | Deploy auf zwei Ziele, Workflow „Test → Live übernehmen“, Kennzeichnung des Testsystems | Technik |
-| 15.11. | Inhalte fertig (WordPress-Beiträge, Impressum, Personen, Fachbereiche, Bolivien), Datenschutzerklärung (Roadmap „Livegang 4“) | Redaktion |
-| ~18.11. | Probelauf auf neu.dpsg-trier.de mit Kopie der Inhalte | beide |
-| 21./22.11. | Umschalten (unten) | beide |
+| 13.11. | Ordner, Datenbank, Subdomain neu.dpsg-trier.de (Roadmap „Livegang 1“) | Projektleitung |
+| 13.11. | Environment `dv-trier-live` und Entra-Adressen (Roadmap „Livegang 2–3“) | Projektleitung |
+| 15.11. | Inhalte fertig, Datenschutzerklärung (Roadmap „Livegang 4“) | Redaktion |
+| ~18.11. | **Probelauf:** Kopie nach neu.dpsg-trier.de, Deploy, Prüfen (unten) | beide |
+| 21.11. | **Umschalten** (unten) | beide |
 
-## Ablauf am Livetag
+## Vorbereitung (einmalig)
 
-1. **Redaktionsstopp auf Test:** ab dem verabredeten Zeitpunkt keine
-   Änderungen mehr auf test.dpsg-trier.de.
-2. **Sichern:** Backup von Test und der alten WordPress-Seite (Plesk).
-3. **Übernehmen:** Workflow „Test → Live übernehmen“ (Datenbank und
-   Dateien, mit Anpassungen für Live).
-4. **Domain:** In Plesk dpsg-trier.de und www auf den Live-Ordner zeigen
-   lassen, Let’s-Encrypt-Zertifikat. Im Environment `dv-trier-live`
-   APP_URL auf https://www.dpsg-trier.de, dann Deploy „Live“.
-5. **Prüfen:**
-   - Startseite und `/api/status`;
+1. **Ordner und Datenbank in Plesk** (Abo dpsg-trier.de):
+   - Subdomain `neu.dpsg-trier.de` mit dem Ordner `www.dpsg-trier.de` anlegen, Dokumentstamm `www.dpsg-trier.de/public`, Let’s Encrypt. PHP-Version und -Einstellungen wie bei Test.
+   - Neue MariaDB-Datenbank (utf8mb4) mit eigenem Benutzer, z. B. `dpsg_live`.
+2. **Environment `dv-trier-live`:**
+   - Am einfachsten mit `scripts/environment-anlegen.sh dv-trier-live <ordner>` (Vorlagen in `docs/environment-vorlage/`), sonst auf github.com unter Settings → Environments.
+   - Die Werte sind dieselben wie bei `dv-trier`, mit folgenden Ausnahmen:
+
+   | Name | Live |
+   |---|---|
+   | `SSH_TARGET_DIR` | absoluter Pfad des Ordners `www.dpsg-trier.de` |
+   | `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` | die neue Datenbank |
+   | `APP_URL` (Variable) | Probelauf `https://neu.dpsg-trier.de`, am Livetag `https://www.dpsg-trier.de` |
+   | `MAIL_TEST_REDIRECT_TO`, `MAIL_TEST_ALLOWLIST` | Probelauf wie bei Test (keine echten Mails), am Livetag **löschen** |
+   | `KLUFT_TESTSYSTEM` (Variable) | Probelauf `offen`, am Livetag **löschen** |
+   | `BACKUP_WEBDAV_URL` | **eigener** Zielordner, sonst überschreiben sich die Sicherungen von Test und Live |
+   | `MONITOR_URL` (Variable) | am Livetag `https://www.dpsg-trier.de` |
+
+   - Secrets nie in Chat oder Mail. Die Werte stehen im Passwortmanager oder in der `.env` von Test auf dem Server.
+3. **Entra:** In der App-Registrierung unter Authentifizierung zwei Umleitungs-URIs ergänzen:
+   - `https://neu.dpsg-trier.de/auth/entra/callback`
+   - `https://www.dpsg-trier.de/auth/entra/callback`
+
+## Kopieren (Probelauf und Livetag gleich)
+
+1. **Datenbank:**
+   - Plesk → Datenbanken → Test-Datenbank → Exportieren.
+   - Den Dump in die Live-Datenbank importieren. Beim zweiten Mal die Live-Datenbank vorher leeren.
+2. **Dateien:** Plesk → test.dpsg-trier.de → „Website kopieren“, oder im Dateimanager den **ganzen** Ordner nach `www.dpsg-trier.de` kopieren. Wichtig sind:
+   - `storage/app/private/app.key`, der Schlüssel für verschlüsselte Daten (Umfrage-Antworten, Zuschuss- und NaMi-Daten, Notfall-Login). Ohne ihn sind diese Daten auf Live unlesbar.
+   - `public/uploads/` (Mediathek, Dokumente) und `storage/app/`.
+   - Die `.env` wird beim Deploy ersetzt und muss nicht angepasst werden.
+3. **Sofort danach Deploy `dv-trier-live`.** Bis dahin zeigt die kopierte `.env` noch auf die Test-Datenbank. Deshalb:
+   - die Adresse vorher nicht aufrufen,
+   - noch keinen Cronjob für den neuen Ordner anlegen.
+4. **Cronjob** für den neuen Ordner in Plesk anlegen (wie bei Test: `php artisan schedule:run` jede Minute), erst nach dem Deploy.
+
+**Probelauf (~18.11.) prüfen:**
+- Startseite, `/status` und das Backend mit Microsoft-Anmeldung
+- Mediathek-Bilder, ein Umfrage-Ergebnis (verschlüsselte Daten lesbar?)
+- Kontaktformular (geht an die Testadresse)
+- eine alte WordPress-Adresse (Weiterleitung)
+- Bolivien, Beraten und Scoutergy
+
+## Ablauf am Livetag (21.11.)
+
+1. **Redaktionsstopp auf Test** ab einer verabredeten Uhrzeit, an alle Redakteur*innen schicken.
+2. **Sichern:** Plesk-Backup von Test und der WordPress-Seite.
+3. **Alte Seite umbenennen:**
+   - Subdomain `alt.dpsg-trier.de` mit dem Ordner `alt.dpsg-trier.de` anlegen.
+   - Die WordPress-Seite mit dem WP Toolkit dorthin **klonen**. Das Klonen passt die Adressen in WordPress (`home`, `siteurl`) mit an.
+   - Danach Passwortschutz oder „noindex“ setzen.
+4. **Aufräumen auf Test**, nach dem Redaktionsstopp und vor dem Kopieren. Dort ist die Mail-Umleitung noch aktiv, und auf Live landet nichts davon.
+   - Backend → Verwaltung → E-Mail-Versand: Warteschlange leeren.
+   - Testanmeldungen, Testzahlungen und Testbestellungen löschen.
+   - Testbenutzer ohne Funktion entfernen.
+5. **Kopieren** wie oben: Datenbank, Dateien. Vorher im Environment `dv-trier-live`:
+   - `APP_URL` auf `https://www.dpsg-trier.de`;
+   - `MAIL_TEST_REDIRECT_TO`, `MAIL_TEST_ALLOWLIST` und `KLUFT_TESTSYSTEM` löschen.
+6. **Deploy `dv-trier-live`**, danach den Cronjob anlegen. Ab jetzt gehen Mails an echte Empfänger*innen.
+7. **Domain umstellen:**
+   - Plesk → dpsg-trier.de → Hosting-Einstellungen: Dokumentstamm auf `www.dpsg-trier.de/public`.
+   - Let’s-Encrypt-Zertifikat für dpsg-trier.de und www.
+   - Die Subdomain neu.dpsg-trier.de entfernen.
+8. **Prüfen:**
+   - Startseite, `/status`;
    - Anmeldung mit Microsoft 365;
    - Kontaktformular mit echter Mail;
-   - eine alte WordPress-Adresse (Weiterleitung);
+   - eine alte WordPress-Adresse;
    - Systemstatus im Backend.
-6. **Danach:**
-   - bolivienpartnerschaft.de und beraten-online.de als Aliasse;
-   - MONITOR_URL im Environment auf www.dpsg-trier.de;
-   - Cronjob und Backups der Live-Website prüfen;
-   - alte WordPress-Seite abschalten, sobald alles läuft.
-7. **Testsystem schließen:** Schalter für das Testsystem setzen (Band,
-   noindex, auf Wunsch nur nach Anmeldung).
+9. **Test schließen:**
+   - Im Environment `dv-trier` die Variablen `KLUFT_TESTSYSTEM=geschlossen` und `KLUFT_LIVE_URL=https://www.dpsg-trier.de` setzen.
+   - Danach Deploy `dv-trier`.
+10. **Danach:**
+    - `MONITOR_URL` im Environment `dv-trier-live` setzen. `dv-trier-live` kommt zu Monitoring und Web-Checks (Technik).
+    - Backups der Live-Website prüfen.
+    - bolivienpartnerschaft.de und beraten-online.de auf Live umstellen.
+    - Die alte Seite abschalten, sobald alles läuft.
 
-**Zurück:** Klappt etwas nicht, zeigt die Domain wieder auf die alte
-WordPress-Seite. Test und die Sicherung bleiben unverändert.
+**Zurück, wenn etwas schiefgeht:** In Plesk den Dokumentstamm von dpsg-trier.de wieder auf `httpdocs` stellen, dort liegt die WordPress-Seite unverändert. Test und die Sicherungen bleiben unberührt.
+
+## Ab dem 22.11.
+
+- Inhalte nur noch auf www.dpsg-trier.de pflegen.
+- Deploys: `dv-trier-live` für die Website. `dv-trier` nur, wenn eine neue Funktion vorher ausprobiert werden soll.
+- Test bekommt bei Bedarf eine frische Kopie von Live, auf demselben Weg in umgekehrter Richtung.

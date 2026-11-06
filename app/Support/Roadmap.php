@@ -292,14 +292,14 @@ class Roadmap
                 'key' => 'live-webspace',
                 'phase' => 'Livegang',
                 'title' => 'Livegang 1/5: Webspace und Datenbank für www.dpsg-trier.de anlegen',
-                'detail' => 'In Plesk einen eigenen Ordner für die Live-Website anlegen (nicht der von test.dpsg-trier.de und nicht der der alten WordPress-Seite) und eine neue, leere MariaDB-Datenbank (utf8mb4) mit eigenem Benutzer. Zum Probelauf bis ca. 18.11. eine vorläufige Adresse wie neu.dpsg-trier.de auf diesen Ordner zeigen lassen (mit Let’s-Encrypt-Zertifikat). Ordnerpfad und Datenbankname an die Technik geben (keine Passwörter in Chat oder Mail). Details: docs/livegang.md.',
+                'detail' => 'In Plesk (Abo dpsg-trier.de) die Subdomain neu.dpsg-trier.de mit dem Ordner www.dpsg-trier.de anlegen (Dokumentstamm www.dpsg-trier.de/public, Let’s Encrypt, PHP wie bei Test) und eine neue, leere MariaDB-Datenbank (utf8mb4) mit eigenem Benutzer. Ordnerpfad und Datenbankname an die Technik geben (keine Passwörter in Chat oder Mail). Details: docs/livegang.md.',
                 'done' => null,
             ],
             [
                 'key' => 'live-environment',
                 'phase' => 'Livegang',
                 'title' => 'Livegang 2/5: GitHub-Environment „dv-trier-live“ anlegen',
-                'detail' => 'Repository → Settings → Environments → „New environment“: dv-trier-live. Secrets wie bei dv-trier, aber mit SSH_TARGET_DIR und DB_* der Live-Website, APP_URL zunächst die vorläufige Adresse (am Livetag https://www.dpsg-trier.de). MAIL_TEST_REDIRECT_TO und MAIL_TEST_ALLOWLIST hier NICHT anlegen – auf der Live-Website gehen Mails an die echten Empfänger*innen. Die Testumgebung dv-trier bleibt, wie sie ist.',
+                'detail' => 'Repository → Settings → Environments → „New environment“: dv-trier-live. Secrets wie bei dv-trier, aber mit SSH_TARGET_DIR und DB_* der Live-Website, APP_URL zunächst die vorläufige Adresse (am Livetag https://www.dpsg-trier.de). Für den Probelauf MAIL_TEST_REDIRECT_TO/MAIL_TEST_ALLOWLIST wie bei Test und die Variable KLUFT_TESTSYSTEM=offen setzen, am Livetag löschen. BACKUP_WEBDAV_URL mit eigenem Zielordner. Tabelle in docs/livegang.md. Die Testumgebung dv-trier bleibt, wie sie ist.',
                 'done' => null,
             ],
             [
@@ -319,8 +319,8 @@ class Roadmap
             [
                 'key' => 'live-umschalten',
                 'phase' => 'Livegang',
-                'title' => 'Livegang 5/5: Umschalten am 21./22.11.',
-                'detail' => 'Mit der Technik abgestimmt: alte WordPress-Seite sichern, Domain dpsg-trier.de und www in Plesk auf den Live-Ordner zeigen lassen, Zertifikat ausstellen, APP_URL im Environment dv-trier-live auf https://www.dpsg-trier.de, letzte Übernahme der Inhalte aus Test und Deploy. Danach bolivienpartnerschaft.de und beraten-online.de als Aliasse. Ablauf Schritt für Schritt in docs/livegang.md.',
+                'title' => 'Livegang 5/5: Umschalten am 21.11.',
+                'detail' => 'Mit der Technik abgestimmt: Redaktionsstopp auf Test, Backups, WordPress mit dem WP Toolkit nach alt.dpsg-trier.de klonen, Test aufräumen, Datenbank und Ordner mit Plesk nach www.dpsg-trier.de kopieren, Deploy dv-trier-live, Cronjob, Dokumentstamm von dpsg-trier.de auf www.dpsg-trier.de/public, Zertifikat, Test schließen (KLUFT_TESTSYSTEM). Danach bolivienpartnerschaft.de und beraten-online.de als Aliasse. Ablauf Schritt für Schritt in docs/livegang.md.',
                 'done' => null,
             ],
         ];

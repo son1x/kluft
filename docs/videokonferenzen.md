@@ -13,6 +13,26 @@ Im Backend unter **Verband & Kontakt → Videokonferenzen** legt man eine Konfer
 
 Grundlage ist die Projektdokumentation der Jitsi-Installation, Kapitel 8 (Aufbau, Prosody-Konfiguration, Token-Spezifikation).
 
+## Einladungen per E-Mail
+
+Im Formular stehen zwei Felder für E-Mail-Adressen; mehrere Adressen lassen sich mit Komma, Leerzeichen oder Enter einfügen.
+
+| Feld | Bekommt | Höchstens |
+|---|---|---|
+| **Moderation** | Moderator-Link (mit Gültigkeit), Teilnahme-Link, Hinweis „nicht weitergeben“ | 10 |
+| **Teilnehmende** | nur den Teilnahme-Link und den Hinweis, dass die Konferenz mit der Moderation beginnt | 200 |
+
+- **Beim Anlegen** gehen die Mails automatisch raus: an jede Adresse eine eigene Mail, niemand sieht die anderen Adressen.
+  - Wer unter Moderation steht, bekommt keine zweite Mail als Teilnehmer*in.
+  - Antworten gehen an die Person, die die Konferenz angelegt hat.
+- **Kalendereintrag:** Jede Mail hat einen Termin (`.ics`) mit Beginn, Dauer (Feld „Dauer“, Standard 60 Minuten) und Teilnahme-Link im Anhang, nie mit Moderator-Link.
+- **Nachladen:** Auf der Detailseite schickt „Einladungen senden“ weitere Einladungen. Nur die neuen Adressen eintragen; wer in der Liste steht, bekommt die Mail auch erneut.
+- **Versand** über die Warteschlange (Brevo-Tageslimit, Wiederholungen). Der Moderator-Link entsteht erst beim Versand, die Warteschlange ist verschlüsselt.
+- **Testsystem:** Auf test.dpsg-trier.de gehen Mails an die Testadresse, außer an freigeschaltete Test-Empfänger*innen (Verwaltung → E-Mail-Versand).
+- **Datenschutz:**
+  - Die Adressen liegen verschlüsselt in der Datenbank und werden **7 Tage nach der Konferenz gelöscht**.
+  - Die Konferenzen selbst werden **nach 12 Monaten gelöscht** (`videokonferenzen:aufraeumen`, täglich 03:55).
+
 ## Rechte
 
 - **Anlegen:** Stufen- und Fachbereichsleitungen (`stufenadmin`, `sektionsadmin`), Vorstand, Verwaltung und Admins, wie bei den Umfragen.
@@ -55,6 +75,7 @@ Grundlage ist die Projektdokumentation der Jitsi-Installation, Kapitel 8 (Aufbau
 
 ## Später (bei Bedarf)
 
-- Konferenz an eine Veranstaltung hängen (Link in der Bestätigungsmail an Teilnehmende).
+- Konferenz an eine Veranstaltung hängen (Teilnehmende der Veranstaltung automatisch einladen).
+- Absage-Mail beim Löschen.
 - Wiederkehrende Termine.
 - Mehrere Moderator-Namen.

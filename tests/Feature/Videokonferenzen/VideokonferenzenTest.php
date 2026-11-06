@@ -5,6 +5,7 @@ namespace Tests\Feature\Videokonferenzen;
 use App\Filament\Resources\Videokonferenzen\Pages\CreateVideokonferenz;
 use App\Filament\Resources\Videokonferenzen\Pages\ListVideokonferenzen;
 use App\Filament\Resources\Videokonferenzen\Pages\ViewVideokonferenz;
+use App\Mail\VideokonferenzMail;
 use App\Models\User;
 use App\Models\Videokonferenz;
 use App\Services\Jitsi\Jitsi;
@@ -13,6 +14,8 @@ use Carbon\CarbonImmutable;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
@@ -159,5 +162,89 @@ class VideokonferenzenTest extends TestCase
             ->fillForm(['titel' => 'Zu spät', 'beginn' => now()->subDays(3)->format('Y-m-d H:i')])
             ->call('create')
             ->assertHasFormErrors(['beginn']);
+    }
+
+    #[TestDox('Anlegen mit Adressen: je Person eine Mail, Moderation mit Token, Teilnehmende ohne; Adressen verschlüsselt')]
+    public function test_einladungen_beim_anlegen(): void
+    {
+        Mail::fake();
+        $anna = $this->user('anna@dpsg-trier.de');
+        $this->actingAs($anna);
+
+        Livewire::test(CreateVideokonferenz::class)
+            ->fillForm([
+                'titel' => 'DAK Wölflinge',
+                'beginn' => now()->addDay()->setTime(19, 0)->format('Y-m-d H:i'),
+                'dauer_minuten' => 90,
+                'moderation_emails' => ['Mod@Example.org'],
+                'teilnehmende_emails' => ['a@example.org', 'b@example.org', 'mod@example.org', 'a@example.org'],
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $k = Videokonferenz::query()->firstOrFail();
+        $this->assertSame(['mod@example.org'], $k->moderation_emails);
+        $this->assertNotNull($k->eingeladen_am);
+        $roh = (string) DB::table('videokonferenzen')->value('teilnehmende_emails');
+        $this->assertStringNotContainsString('example.org', $roh);
+
+        Mail::assertQueued(VideokonferenzMail::class, 3);
+        Mail::assertQueued(VideokonferenzMail::class, fn (VideokonferenzMail $m) => $m->moderation && $m->hasTo('mod@example.org'));
+        Mail::assertQueued(VideokonferenzMail::class, fn (VideokonferenzMail $m) => ! $m->moderation && $m->hasTo('a@example.org'));
+        Mail::assertNotQueued(VideokonferenzMail::class, fn (VideokonferenzMail $m) => ! $m->moderation && $m->hasTo('mod@example.org'));
+    }
+
+    #[TestDox('Mailinhalt: Moderation mit Moderator-Link, Teilnehmende nur mit Teilnahme-Link; Kalendereintrag ohne Token')]
+    public function test_mailinhalt_und_kalender(): void
+    {
+        $anna = $this->user('anna@dpsg-trier.de');
+        $k = Videokonferenz::query()->create(['titel' => 'Vorstand, Sitzung', 'beginn' => now()->addDay()->setTime(19, 0), 'dauer_minuten' => 90, 'user_id' => $anna->id]);
+
+        $mod = (new VideokonferenzMail($k, true))->render();
+        $teil = (new VideokonferenzMail($k, false))->render();
+        $this->assertStringContainsString('?jwt=', $mod);
+        $this->assertStringContainsString('nicht weitergeben', $mod);
+        $this->assertStringNotContainsString('jwt', $teil);
+        $this->assertStringContainsString($k->teilnahmeLink(), $teil);
+        $antwortAn = (new VideokonferenzMail($k))->envelope()->replyTo;
+        $this->assertSame('anna@dpsg-trier.de', $antwortAn[0]->address ?? null);
+
+        $ics = $k->ics();
+        $this->assertStringContainsString('DTSTART:'.$k->beginn->copy()->utc()->format('Ymd\\THis\\Z'), $ics);
+        $this->assertStringContainsString('DTEND:'.$k->beginn->copy()->addMinutes(90)->utc()->format('Ymd\\THis\\Z'), $ics);
+        $this->assertStringContainsString('SUMMARY:Vorstand\\, Sitzung', $ics);
+        $this->assertStringNotContainsString('jwt', $ics);
+        $this->assertCount(1, (new VideokonferenzMail($k))->attachments());
+    }
+
+    #[TestDox('Detailseite: „Einladungen senden“ lädt nach und merkt sich die Adressen')]
+    public function test_nachladen(): void
+    {
+        Mail::fake();
+        $anna = $this->user('anna@dpsg-trier.de');
+        $this->actingAs($anna);
+        $k = Videokonferenz::query()->create(['titel' => 'Leiterrunde', 'beginn' => now()->addDay(), 'user_id' => $anna->id, 'teilnehmende_emails' => ['a@example.org']]);
+
+        Livewire::test(ViewVideokonferenz::class, ['record' => $k->getRouteKey()])
+            ->callAction('einladen', ['moderation_emails' => [], 'teilnehmende_emails' => ['c@example.org']])
+            ->assertHasNoActionErrors();
+
+        Mail::assertQueued(VideokonferenzMail::class, 1);
+        Mail::assertQueued(VideokonferenzMail::class, fn (VideokonferenzMail $m) => $m->hasTo('c@example.org'));
+        $this->assertSame(['a@example.org', 'c@example.org'], $k->fresh()->teilnehmende_emails);
+    }
+
+    #[TestDox('Aufräumen: Adressen 7 Tage nach der Konferenz weg, Konferenzen nach 12 Monaten')]
+    public function test_aufraeumen(): void
+    {
+        $alt = Videokonferenz::query()->create(['titel' => 'Alt', 'beginn' => now()->subDays(8), 'teilnehmende_emails' => ['a@example.org']]);
+        $neu = Videokonferenz::query()->create(['titel' => 'Neu', 'beginn' => now()->subDays(2), 'teilnehmende_emails' => ['b@example.org']]);
+        $uralt = Videokonferenz::query()->create(['titel' => 'Uralt', 'beginn' => now()->subMonths(13)]);
+
+        $this->artisan('videokonferenzen:aufraeumen')->assertSuccessful();
+
+        $this->assertNull($alt->fresh()->teilnehmende_emails);
+        $this->assertSame(['b@example.org'], $neu->fresh()->teilnehmende_emails);
+        $this->assertNull($uralt->fresh());
     }
 }

@@ -13,6 +13,7 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\ViewAction;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
@@ -93,8 +94,33 @@ class VideokonferenzResource extends Resource
                 DateTimePicker::make('beginn')->label('Beginn')->required()->seconds(false)->native(false)
                     ->minDate(now()->subDay()->startOfDay())
                     ->helperText('Der Moderator-Link gilt bis zum Ende des Folgetags.'),
+                TextInput::make('dauer_minuten')->label('Dauer (Minuten)')->numeric()->integer()->minValue(15)->maxValue(720)->default(60)->required()
+                    ->helperText('Für den Kalendereintrag in der Einladung.'),
             ]),
+            Section::make('Einladungen per E-Mail')->columnSpanFull()
+                ->description('Beim Anlegen geht an jede Adresse eine eigene Mail; niemand sieht die anderen Adressen. Antworten gehen an dich. Die Adressen werden 7 Tage nach der Konferenz gelöscht.')
+                ->components(static::adressFelder()),
         ]);
+    }
+
+    /**
+     * Adressfelder für Formular und Aktion „Einladungen senden“.
+     *
+     * @return list<TagsInput>
+     */
+    public static function adressFelder(): array
+    {
+        $feld = fn (string $name, string $label, string $hilfe, int $max) => TagsInput::make($name)->label($label)
+            ->placeholder('Adresse eingeben, Enter')
+            ->splitKeys(['Tab', ',', ';', ' '])
+            ->nestedRecursiveRules(['email:rfc'])
+            ->rules(['array', 'max:'.$max])
+            ->helperText($hilfe);
+
+        return [
+            $feld('moderation_emails', 'Moderation', 'Bekommen den Moderator-Link (öffnet den Raum ohne Anmeldung) und den Teilnahme-Link.', 10),
+            $feld('teilnehmende_emails', 'Teilnehmende', 'Bekommen nur den Teilnahme-Link. Mehrere Adressen mit Komma oder Leerzeichen einfügen.', 200),
+        ];
     }
 
     public static function infolist(Schema $schema): Schema
@@ -106,6 +132,11 @@ class VideokonferenzResource extends Resource
                     ->formatStateUsing(fn ($state) => $state?->copy()->locale('de')->isoFormat('dddd, D. MMMM YYYY, HH:mm').' Uhr'),
                 TextEntry::make('user.name')->label('Angelegt von')->placeholder('–'),
                 TextEntry::make('raum')->label('Raumname')->fontFamily('mono'),
+                TextEntry::make('dauer_minuten')->label('Dauer')->suffix(' Minuten'),
+                TextEntry::make('eingeladen')->label('Einladungen')
+                    ->state(fn (Videokonferenz $record) => $record->eingeladen_am
+                        ? 'zuletzt '.$record->eingeladen_am->format('d.m.Y H:i').' Uhr · Moderation: '.count($record->moderation_emails ?? []).', Teilnehmende: '.count($record->teilnehmende_emails ?? [])
+                        : 'noch keine per Mail'),
             ]),
             Section::make('Für alle Teilnehmenden')->columnSpanFull()->components([
                 TextEntry::make('teilnahme')->label('Teilnahme-Link')

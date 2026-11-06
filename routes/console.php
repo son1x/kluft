@@ -42,6 +42,7 @@ Schedule::command('instagram:refresh-token')->weeklyOn(1, '04:00');
 Schedule::command('instagram:feed')->hourly()->withoutOverlapping(30);
 // Umfragen: Antworten und Gewinnspiel nach Ablauf der Frist löschen (docs/umfragen.md).
 Schedule::command('umfragen:aufraeumen')->dailyAt('03:50');
+Schedule::command('videokonferenzen:aufraeumen')->dailyAt('03:55');
 
 // Backups (Pflichtenheft 10.2, 11.4): täglich 02:00, Wiederherstellungstest
 // wöchentlich.

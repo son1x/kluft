@@ -35,6 +35,16 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-07 – Haupt → Stammes, Bezirk: Videokonferenzen mit Einladungsmails (gemeinsamer Kern)
+Status: offen
+
+- **Migration** `2026_11_07_100000`: Spalten `videokonferenzen.dauer_minuten`, `moderation_emails`/`teilnehmende_emails` (verschlüsselt) und `eingeladen_am`.
+- **Neu:**
+  - `App\Mail\VideokonferenzMail` (Queue, verschlüsselt, ics-Anhang);
+  - `App\Services\Jitsi\Einladungen`;
+  - Befehl `videokonferenzen:aufraeumen` (täglich 03:55).
+- Nur wirksam mit eingeschalteter Funktion `videokonferenzen`.
+
 ### 2026-11-06 – Haupt → Stammes, Bezirk: Videokonferenzen (gemeinsamer Kern)
 Status: offen
 

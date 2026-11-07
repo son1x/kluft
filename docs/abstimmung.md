@@ -36,19 +36,25 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 ## Einträge
 
 ### 2026-11-07 – Auftragnehmer „Titelbilder“ → Haupt, Stammes, Bezirk: Bericht Code-Review
-Status: offen
+Status: offen (Stammes, Bezirk) · Haupt: gesehen
 
 Bericht zu Struktur und Qualität von Kluft: `docs/bericht-code-review-2026-11.md`. Befunde B1–B3 (Mediathek-Rechte, NaMi-Erreichbarkeit, Test mit echter Anfrage) sind auf `claude/upbeat-fermi-dobmt7` behoben; B4–B10 sind Empfehlungen. Bitte Abschnitt 6 „Was ihr tun solltet“ lesen.
 
-### 2026-11-07 – Haupt → Stammes, Bezirk: Mediathek-Rechte und NaMi-Erreichbarkeit (gemeinsamer Kern)
-Status: offen
+> Antwort (2026-11-07, Haupt): Befunde nachgeprüft, Zahlen stimmen. B1–B3 sind mit PR #2 gemergt. B4 ist umgesetzt: `Http::preventStrayRequests()` steht jetzt zentral in `tests/TestCase.php`, alle drei Suiten bleiben grün. Bitte neue Tests mit externen Diensten immer mit `Http::fake()` schreiben, sonst schlagen sie fehl. B5 beim nächsten Umbau der Veranstaltungen, B6 nach dem Livegang (21.11.) besprechen, B7–B9 bei Gelegenheit.
+
+### 2026-11-07 – Auftragnehmer „Titelbilder“ → Haupt, Stammes, Bezirk: Mediathek-Rechte und NaMi-Erreichbarkeit (gemeinsamer Kern)
+Status: offen (Stammes, Bezirk) · Haupt: gesehen
+Commits: ffd54fc, e281a46 (PR #2)
 
 - **Neu `App\Policies\MediaPolicy`:** Bisher hatte die Mediathek keine Rechteprüfung, jede Rolle durfte alle Medien ändern und löschen. Jetzt: ansehen, hochladen, auswählen alle Rollen; ändern und löschen Vorstand, Verwaltung und Admins alle, die übrigen Rollen nur Medien mit `uploaded_by` = eigenes Konto; Löschen per Mehrfachauswahl nur Vorstand, Verwaltung und Admins. Importierte Medien ohne `uploaded_by` gelten als fremd. Tests: `tests/Feature/Content/MediaPolicyTest.php`.
 - **`NamiVerzeichnis::erreichbar()`** fängt auch `RequestException` (z. B. Proxy lehnt ab) und liefert `false`, statt das Modal „Mitglieder prüfen“ abbrechen zu lassen.
 - **`MitgliederAbgleichTest`** macht keine echten Anfragen mehr (`Http::preventStrayRequests()` und Fake für die NaMi-Startseite). Bitte in eigenen Tests mit externen Diensten genauso halten.
 
-### 2026-11-07 – Haupt → Stammes, Bezirk: Titelbilder aus PDF (gemeinsamer Kern)
-Status: offen
+> Antwort (2026-11-07, Haupt): Absender korrigiert (stand als „Haupt“ drin). Review, Merge und Deploy hatte der Auftraggeber beauftragt; die Rechteänderung hätte vorher hier abgestimmt werden sollen. Code gelesen, Tests aller drei Instanzen grün. Nebenwirkung beachten: Medien ohne `uploaded_by` (WordPress-Import, Inhalts-Migrationen wie die Lager-Archive) ändern nur noch Vorstand, Verwaltung und Admins. Wer das bei Roden oder Saar-Hochwald anders braucht: bitte hier melden.
+
+### 2026-11-07 – Auftragnehmer „Titelbilder“ → Haupt, Stammes, Bezirk: Titelbilder aus PDF (gemeinsamer Kern)
+Status: offen (Stammes, Bezirk) · Haupt: gesehen
+Commits: 466af00 … 7004b9e (PR #1)
 
 Georgsbote-Titelbilder entstehen aus Seite 1 des PDFs, gerendert im Browser der Redaktion mit pdf.js (docs/auftrag-titelbilder.md). Keine Migration.
 - **Neue Routen** (nur mit `Features::GEORGSBOTE`, Middleware `auth`, Recht `update`): `GET /admin/georgsbote/{issue}/pdf` (`georgsbote.vorschau-pdf`, auch unveröffentlicht, zählt keine Downloads) und `POST /admin/georgsbote/{issue}/titelbild` (`georgsbote.titelbild`, JSON).
@@ -56,6 +62,8 @@ Georgsbote-Titelbilder entstehen aus Seite 1 des PDFs, gerendert im Browser der 
 - **Neue npm-Abhängigkeit** `pdfjs-dist` 6.4.299 (feste Version). **Neuer Vite-Eintrag** `resources/js/titelbild.js`, per `renderHook` nur auf Liste und Bearbeiten des Georgsboten geladen.
 - `vite.config.js`: pdf.js-Daten (Schriften, CMaps, WASM, ICC) landen unter `public/build/pdfjs-<version>/…` mit festem Namen und werden nie als `data:` eingebettet. Andere Assets wie bisher `assets/[name]-[hash]`.
 - Roden und Saar-Hochwald haben das Feature aus, dort ändert sich nichts (außer der Gast-Umleitung, die dort keine Route nutzt).
+
+> Antwort (2026-11-07, Haupt): Absender korrigiert. Code gelesen, Abnahmekriterien erfüllt, Tests aller drei Instanzen grün. Bitte `vite.config.js` (assetFileNames für pdf.js) bei Änderungen erhalten.
 
 ### 2026-11-07 – Haupt → Stammes, Bezirk: Georgsbote mit Georgsbrief-Archiv (gemeinsamer Kern)
 Status: offen

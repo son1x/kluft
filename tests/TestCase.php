@@ -3,6 +3,7 @@
 namespace Tests;
 
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Illuminate\Support\Facades\Http;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -26,6 +27,10 @@ abstract class TestCase extends BaseTestCase
         }
 
         parent::setUp();
+
+        // Keine echten Anfragen an NaMi, Brevo, Meta, Instagram, Nextcloud …:
+        // Jeder Aufruf ohne passendes Http::fake() schlägt fehl (Code-Review B4).
+        Http::preventStrayRequests();
     }
 
     /**

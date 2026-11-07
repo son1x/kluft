@@ -67,10 +67,10 @@ erschwert Wartung spürbar, **niedrig** = Verbesserung.
 
 | ID | Prio | Befund | Status |
 |---|---|---|---|
-| B1 | hoch | Mediathek ohne Rechteprüfung | **behoben** (`ffd54fc`) |
-| B2 | hoch | NaMi-Erreichbarkeit lässt Modal abbrechen | **behoben** (`e281a46`) |
-| B3 | mittel | `MitgliederAbgleichTest` macht echte HTTP-Anfragen | **behoben** (`e281a46`) |
-| B4 | mittel | Tests insgesamt nicht gegen echte Anfragen abgesichert | offen |
+| B1 | hoch | Mediathek ohne Rechteprüfung | **behoben** (`ffd54fc`, PR #2) |
+| B2 | hoch | NaMi-Erreichbarkeit lässt Modal abbrechen | **behoben** (`e281a46`, PR #2) |
+| B3 | mittel | `MitgliederAbgleichTest` macht echte HTTP-Anfragen | **behoben** (`e281a46`, PR #2) |
+| B4 | mittel | Tests insgesamt nicht gegen echte Anfragen abgesichert | **umgesetzt** (Haupt, `tests/TestCase.php`) |
 | B5 | mittel | Zu große Filament-Klassen | offen |
 | B6 | mittel | Grenze `Support` / `Services` unscharf, viel statischer Code | offen |
 | B7 | niedrig | Keine Unit-Tests für reine Rechenlogik | offen |
@@ -78,9 +78,8 @@ erschwert Wartung spürbar, **niedrig** = Verbesserung.
 | B9 | niedrig | Larastan-Baseline und Stufe | offen |
 | B10 | niedrig | Routen hängen beim Laden an `Features::enabled` | bewusst so, nur Hinweis |
 
-Die Fehlerbehebungen B1 bis B3 liegen auf `claude/upbeat-fermi-dobmt7` und
-sind **noch nicht** nach `claude/kluft-instanzen` gemergt (Stand dieses
-Berichts).
+Nachtrag (07.11.2026, Haupt): B1 bis B3 sind mit son1x/kluft#2 nach
+`claude/kluft-instanzen` gemergt, B4 ist dort umgesetzt.
 
 ### B1 – Mediathek ohne Rechteprüfung (behoben)
 

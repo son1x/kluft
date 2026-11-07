@@ -2,9 +2,12 @@
 
 namespace App\Filament\Resources\GeorgsboteIssues\Schemas;
 
+use App\Models\GeorgsboteIssue;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
@@ -20,6 +23,13 @@ class GeorgsboteIssueForm
             Section::make('Ausgabe')
                 ->columns(3)
                 ->components([
+                    Select::make('art')
+                        ->label('Art')
+                        ->options([GeorgsboteIssue::BOTE => 'Georgsbote (Heft)', GeorgsboteIssue::BRIEF => 'Georgsbrief (Newsletter)'])
+                        ->default(GeorgsboteIssue::BOTE)
+                        ->selectablePlaceholder(false)
+                        ->live()
+                        ->required(),
                     TextInput::make('year')
                         ->label('Jahrgang')
                         ->numeric()
@@ -28,17 +38,24 @@ class GeorgsboteIssueForm
                         ->default(now()->year)
                         ->required(),
                     TextInput::make('issue_no')
-                        ->label('Ausgabe Nr.')
+                        ->label(fn (Get $get) => $get('art') === GeorgsboteIssue::BRIEF ? 'Monat (1–12)' : 'Ausgabe im Jahrgang')
                         ->numeric()
                         ->minValue(1)
-                        ->maxValue(99)
+                        ->maxValue(fn (Get $get) => $get('art') === GeorgsboteIssue::BRIEF ? 12 : 99)
                         ->required()
-                        ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule, Get $get) => $rule->where('year', $get('year')))
+                        ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule, Get $get) => $rule->where('year', $get('year'))->where('art', $get('art') ?: GeorgsboteIssue::BOTE))
                         ->validationMessages(['unique' => 'Diese Ausgabe gibt es für den Jahrgang schon.']),
                     TextInput::make('title')
                         ->label('Titel / Schwerpunkt')
                         ->required()
-                        ->maxLength(255),
+                        ->maxLength(255)
+                        ->columnSpan(2),
+                    Textarea::make('inhalt')
+                        ->label('Inhalt (kurz)')
+                        ->rows(3)
+                        ->maxLength(2000)
+                        ->helperText('Erscheint im Archiv unter der Ausgabe und ist durchsuchbar. Namen nur, wenn ihre Veröffentlichung geklärt ist.')
+                        ->columnSpan(2),
                     FileUpload::make('pdf_path')
                         ->label('PDF')
                         ->disk('local')

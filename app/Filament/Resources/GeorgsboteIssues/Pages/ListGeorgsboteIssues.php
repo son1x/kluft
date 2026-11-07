@@ -5,12 +5,15 @@ namespace App\Filament\Resources\GeorgsboteIssues\Pages;
 use App\Filament\Resources\GeorgsboteIssues\GeorgsboteIssueResource;
 use App\Models\GeorgsboteIssue;
 use App\Support\AuditLogger;
+use App\Support\GeorgsboteArchiv;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\FileUpload;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Schemas\Components\Tabs\Tab;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Storage;
 
 class ListGeorgsboteIssues extends ListRecords
@@ -31,7 +34,7 @@ class ListGeorgsboteIssues extends ListRecords
                 ->color('gray')
                 ->visible(fn () => GeorgsboteIssueResource::canCreate())
                 ->modalHeading('Alte Jahrgänge auf einmal hochladen')
-                ->modalDescription('Jahrgang und Ausgabe werden aus dem Dateinamen gelesen, z. B. „Georgsbote_2019_2.pdf“, „GB 3-2018.pdf“ oder „2017-04 Georgsbote.pdf“. Alle Ausgaben kommen offline ins Archiv – Titel, Personenbezug und Veröffentlichung danach je Ausgabe prüfen.')
+                ->modalDescription('Jahrgang und Ausgabe werden aus dem Dateinamen gelesen, z. B. „Georgsbote_2019_2.pdf“ (2. Ausgabe im Jahrgang 2019) oder „Georgsbrief_2019_02.pdf“ (Georgsbrief Februar 2019). Titel und Inhalt kommen aus der Archivliste, soweit vorhanden. Alle Ausgaben kommen offline ins Archiv – Personenbezug und Veröffentlichung danach je Ausgabe prüfen.')
                 ->schema([
                     FileUpload::make('files')
                         ->label('PDF-Dateien')
@@ -47,7 +50,33 @@ class ListGeorgsboteIssues extends ListRecords
                 ])
                 ->modalSubmitActionLabel('Hochladen')
                 ->action(fn (array $data) => $this->importFiles($data['files'] ?? [], $data['names'] ?? [])),
+            Action::make('archivliste')
+                ->label('Infos aus der Archivliste übernehmen')
+                ->icon('heroicon-o-list-bullet')
+                ->color('gray')
+                ->visible(fn () => GeorgsboteArchiv::vorhanden() && GeorgsboteIssueResource::canCreate())
+                ->requiresConfirmation()
+                ->modalDescription('Setzt Titel (nur wo noch der Vorgabe-Titel steht) und Kurzinhalt (nur wo er leer ist) aus der Archivliste. Im Backend Geändertes bleibt.')
+                ->action(function () {
+                    $n = GeorgsboteIssue::query()->get()->filter(fn (GeorgsboteIssue $issue) => GeorgsboteArchiv::anwenden($issue))->count();
+                    Notification::make()->title("{$n} Ausgabe(n) ergänzt")->success()->send();
+                }),
             CreateAction::make(),
+        ];
+    }
+
+    /**
+     * @return array<string, Tab>
+     */
+    public function getTabs(): array
+    {
+        return [
+            'bote' => Tab::make('Georgsbote')
+                ->badge(fn () => GeorgsboteIssue::query()->where('art', GeorgsboteIssue::BOTE)->count())
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('art', GeorgsboteIssue::BOTE)),
+            'brief' => Tab::make('Georgsbrief')
+                ->badge(fn () => GeorgsboteIssue::query()->where('art', GeorgsboteIssue::BRIEF)->count())
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('art', GeorgsboteIssue::BRIEF)),
         ];
     }
 
@@ -63,16 +92,18 @@ class ListGeorgsboteIssues extends ListRecords
         $skipped = [];
         foreach ($paths as $path) {
             $name = $names[$path] ?? basename($path);
-            $guess = GeorgsboteIssue::guessFromFilename($name);
+            $guess = GeorgsboteIssue::erkennen($name);
 
             if (! $guess) {
-                $skipped[] = "{$name} (Jahrgang/Ausgabe nicht erkannt)";
-            } elseif (GeorgsboteIssue::query()->where($guess)->exists()) {
-                $skipped[] = "{$name} (Ausgabe {$guess['issue_no']}/{$guess['year']} gibt es schon)";
+                $skipped[] = "{$name} (Jahrgang/Ausgabe bzw. Monat nicht erkannt)";
+            } elseif ($vorhanden = GeorgsboteIssue::query()->where($guess)->first()) {
+                $skipped[] = "{$name} ({$vorhanden->label()} gibt es schon)";
             } else {
+                $archiv = GeorgsboteArchiv::eintrag($guess['art'], $guess['year'], $guess['issue_no']);
                 $issue = GeorgsboteIssue::query()->create([
                     ...$guess,
-                    'title' => "Georgsbote {$guess['issue_no']}/{$guess['year']}",
+                    'title' => $archiv['title'] ?? GeorgsboteIssue::standardTitel($guess['art'], $guess['year'], $guess['issue_no']),
+                    'inhalt' => $archiv['inhalt'] ?? null,
                     'pdf_path' => $path,
                     'published' => false,
                     'privacy_checked' => false,
@@ -90,7 +121,7 @@ class ListGeorgsboteIssues extends ListRecords
         Notification::make()
             ->title(count($created).' Ausgabe(n) angelegt (offline)')
             ->body(collect([
-                $created ? 'Angelegt: '.implode(', ', $created).'. Bitte Titel und Personenbezug prüfen, dann veröffentlichen.' : null,
+                $created ? 'Angelegt: '.implode(', ', $created).'. Bitte Titel, Inhalt und Personenbezug prüfen, dann veröffentlichen.' : null,
                 $skipped ? 'Übersprungen: '.implode('; ', $skipped).'.' : null,
             ])->filter()->implode("\n\n"))
             ->color($skipped ? 'warning' : 'success')

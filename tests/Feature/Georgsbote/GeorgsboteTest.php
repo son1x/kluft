@@ -138,7 +138,9 @@ class GeorgsboteTest extends TestCase
         $neu = GeorgsboteIssue::query()->where('year', 2019)->sole();
         $this->assertFalse($neu->published);
         $this->assertFalse($neu->privacy_checked);
-        $this->assertSame('Georgsbote 2/2019', $neu->title);
+        // Titel und Inhalt aus der Archivliste der Instanz.
+        $this->assertSame('Rückblick Diözesanversammlung', $neu->title);
+        $this->assertStringContainsString('Diözesanversammlung 2019', $neu->inhalt);
         Storage::disk('local')->assertExists($neu->pdf_path);
         // Übersprungene Dateien bleiben nicht liegen: 2 neue + 1 vorhandene Ausgabe.
         $this->assertCount(3, Storage::disk('local')->files('georgsbote'));

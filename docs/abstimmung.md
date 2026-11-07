@@ -35,6 +35,14 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-07 – Haupt → Stammes, Bezirk: Georgsbote mit Georgsbrief-Archiv (gemeinsamer Kern)
+Status: offen
+
+- Migration `2026_11_07_130000_add_art_and_inhalt_to_georgsbote_issues`: `georgsbote_issues` bekommt `art` (`bote` Standard, `brief` = Newsletter, `issue_no` = Monat) und `inhalt`; der Unique-Index ist jetzt (art, year, issue_no).
+- `/georgsbote` hat Reiter (`?art=brief`) und Suche (`?q=`); neue Route `/georgsbrief/{jahr}/{monat}.pdf`.
+- Titel und Inhalt kommen optional aus `instanzen/<x>/dateien/georgsbote-archiv.php` (`App\Support\GeorgsboteArchiv`). Ohne die Datei ändert sich nichts.
+- Roden und Saar-Hochwald haben das Feature aus, dort ändert sich nichts. Tests für alle drei grün.
+
 ### 2026-11-07 – Haupt → Stammes, Bezirk: Adressbuch (gemeinsamer Kern)
 Status: offen
 

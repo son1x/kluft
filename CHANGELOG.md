@@ -6,6 +6,7 @@ Admins. Kurz und aus Sicht der Redaktion schreiben.
 
 ## 0.9.0
 
+- Georgsbote: Kurzinhalt je Ausgabe (im Archiv sichtbar und durchsuchbar), zweiter Reiter „Georgsbrief“ für den Newsletter als PDF (Monat statt Ausgabe); beim Hochladen mehrerer PDFs erkennt Kluft „Georgsbrief_2019_02.pdf“ und übernimmt Titel und Inhalt aus der Archivliste der Instanz.
 - Erste Version mit Updates über Kluft selbst (Verwaltung → Updates).
 - Redaktion ohne Microsoft 365: Anmeldung per E-Mail-Code, Zugänge für Personen oder Rollen, NaMi-Prüfung.
 - Startseite mit Titelbild der Website, auf Wunsch zufällig wechselnd.

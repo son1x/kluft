@@ -314,6 +314,8 @@ Priorität: **M** = Muss, **S** = Soll, **K** = Kann. Phase 1 = MVP, Phase 2 = s
 | F-GB-03 | **Veröffentlichungsprüfung**: Checkliste/Hinweis, dass Personenbezug (Fotos, Namen, Adressen) geklärt ist, bevor eine Ausgabe online geht; Möglichkeit, einzelne Ausgaben nicht zu veröffentlichen | M |
 | F-GB-04 | Altjahrgänge: Import per Bulk-Upload | S |
 | F-GB-05 | PDFs mit sprechendem, nicht erratbarem Pfad; Download-Zähler optional **ohne** Personenbezug | K |
+| F-GB-06 | Kurzinhalt je Ausgabe, im Archiv sichtbar und durchsuchbar; Titel und Inhalt optional aus einer Archivliste der Instanz (umgesetzt 11/2026) | S |
+| F-GB-07 | Georgsbrief-Archiv: Newsletter-Ausgaben als PDF nach Jahr und Monat, eigener Reiter, gleiche Veröffentlichungsprüfung (umgesetzt 11/2026) | S |
 
 **Newsletter-Anmeldung**
 | ID | Anforderung | Prio |

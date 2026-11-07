@@ -178,6 +178,9 @@ if (Features::enabled(Features::GEORGSBOTE)) {
     Route::get('/georgsbote/{jahr}/{ausgabe}.pdf', [GeorgsboteController::class, 'pdf'])
         ->whereNumber(['jahr', 'ausgabe'])
         ->name('georgsbote.pdf');
+    Route::get('/georgsbrief/{jahr}/{monat}.pdf', [GeorgsboteController::class, 'brief'])
+        ->whereNumber(['jahr', 'monat'])
+        ->name('georgsbrief.pdf');
 }
 
 // Download-Seite (Methoden, Formulare, Arbeitshilfen).

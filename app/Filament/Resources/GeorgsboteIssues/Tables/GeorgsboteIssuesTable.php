@@ -15,8 +15,9 @@ class GeorgsboteIssuesTable
         return $table
             ->columns([
                 TextColumn::make('year')->label('Jahrgang')->sortable(),
-                TextColumn::make('issue_no')->label('Nr.')->sortable(),
-                TextColumn::make('title')->label('Titel')->searchable(),
+                TextColumn::make('issue_no')->label('Nr./Monat')->sortable(),
+                TextColumn::make('title')->label('Titel')->searchable(['title', 'inhalt'])
+                    ->description(fn ($record) => str((string) $record->inhalt)->limit(90)->toString() ?: null),
                 IconColumn::make('privacy_checked')->label('Geprüft')->boolean(),
                 IconColumn::make('published')->label('Veröffentlicht')->boolean(),
                 TextColumn::make('downloads')->label('Abrufe')->numeric()->sortable(),

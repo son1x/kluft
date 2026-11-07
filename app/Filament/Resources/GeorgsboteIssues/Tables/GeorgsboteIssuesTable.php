@@ -4,6 +4,7 @@ namespace App\Filament\Resources\GeorgsboteIssues\Tables;
 
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
@@ -14,6 +15,11 @@ class GeorgsboteIssuesTable
     {
         return $table
             ->columns([
+                // Titelbild nur bei Georgsboten (Georgsbriefe haben keins).
+                ImageColumn::make('cover_path')->label('Titel')
+                    ->disk('public')
+                    ->imageHeight(64)
+                    ->visible(fn ($livewire) => ($livewire->activeTab ?? 'bote') !== 'brief'),
                 TextColumn::make('year')->label('Jahrgang')->sortable(),
                 TextColumn::make('issue_no')->label('Nr./Monat')->sortable(),
                 TextColumn::make('title')->label('Titel')->searchable(['title', 'inhalt'])

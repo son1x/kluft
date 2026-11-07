@@ -24,6 +24,7 @@ use App\Http\Controllers\Public\ShopController;
 use App\Http\Controllers\Public\StatusController;
 use App\Http\Controllers\Public\UmfrageController;
 use App\Http\Controllers\Public\WhatsAppController;
+use App\Http\Controllers\Redaktion\GeorgsboteTitelbildController;
 use App\Http\Controllers\Webhooks\WhatsAppWebhookController;
 use App\Http\Middleware\Ausbaustufe;
 use App\Support\Ausbau;
@@ -181,6 +182,15 @@ if (Features::enabled(Features::GEORGSBOTE)) {
     Route::get('/georgsbrief/{jahr}/{monat}.pdf', [GeorgsboteController::class, 'brief'])
         ->whereNumber(['jahr', 'monat'])
         ->name('georgsbrief.pdf');
+
+    // Titelbilder aus Seite 1 des PDFs (F-GB-01): PDF für den Renderer im
+    // Browser der Redaktion, auch unveröffentlicht, und Upload des Bildes.
+    Route::middleware('auth')->prefix('/admin/georgsbote/{issue}')->whereNumber('issue')->group(function () {
+        Route::get('/pdf', [GeorgsboteTitelbildController::class, 'pdf'])->name('georgsbote.vorschau-pdf');
+        Route::post('/titelbild', [GeorgsboteTitelbildController::class, 'store'])
+            ->middleware('throttle:120,1')
+            ->name('georgsbote.titelbild');
+    });
 }
 
 // Download-Seite (Methoden, Formulare, Arbeitshilfen).

@@ -309,7 +309,7 @@ Priorität: **M** = Muss, **S** = Soll, **K** = Kann. Phase 1 = MVP, Phase 2 = s
 **Archiv**
 | ID | Anforderung | Prio |
 |---|---|:-:|
-| F-GB-01 | Archivseite: PDF-Ausgaben nach Jahrgang/Ausgabe, Titelbild (automatisch aus Seite 1 erzeugt oder hochgeladen) | M |
+| F-GB-01 | Archivseite: PDF-Ausgaben nach Jahrgang/Ausgabe, Titelbild (automatisch aus Seite 1 erzeugt oder hochgeladen; „automatisch aus Seite 1 erzeugt“ umgesetzt 11/2026, im Browser der Redaktion mit pdf.js) | M |
 | F-GB-02 | Backend: Upload von PDF, Metadaten (Jahr, Ausgabe, Titel), Veröffentlichungsdatum | M |
 | F-GB-03 | **Veröffentlichungsprüfung**: Checkliste/Hinweis, dass Personenbezug (Fotos, Namen, Adressen) geklärt ist, bevor eine Ausgabe online geht; Möglichkeit, einzelne Ausgaben nicht zu veröffentlichen | M |
 | F-GB-04 | Altjahrgänge: Import per Bulk-Upload | S |

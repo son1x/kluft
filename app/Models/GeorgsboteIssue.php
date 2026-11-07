@@ -112,6 +112,34 @@ class GeorgsboteIssue extends Model
         return null;
     }
 
+    /**
+     * Georgsboten (nicht Georgsbriefe) mit PDF, aber ohne Titelbild.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopeOhneTitelbild(Builder $query): Builder
+    {
+        return $query->where('art', self::BOTE)
+            ->whereNotNull('pdf_path')->where('pdf_path', '!=', '')
+            ->where(fn (Builder $q) => $q->whereNull('cover_path')->orWhere('cover_path', ''));
+    }
+
+    /**
+     * Auftrag für den Renderer im Browser (resources/js/titelbild.js).
+     *
+     * @return array{id: int, label: string, pdfUrl: string, uploadUrl: string}
+     */
+    public function titelbildAuftrag(): array
+    {
+        return [
+            'id' => $this->id,
+            'label' => $this->label(),
+            'pdfUrl' => route('georgsbote.vorschau-pdf', $this),
+            'uploadUrl' => route('georgsbote.titelbild', $this),
+        ];
+    }
+
     public function coverUrl(): ?string
     {
         return $this->cover_path ? Storage::disk('public')->url($this->cover_path) : null;

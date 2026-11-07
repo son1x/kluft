@@ -25,6 +25,7 @@
         "@protomaps/basemaps": "^5.7.2",
         "alpinejs": "^3.17.4",
         "maplibre-gl": "^6.11.2",
+        "pdfjs-dist": "6.4.299",
         "pmtiles": "^4.5.0"
     },
     "overrides": {

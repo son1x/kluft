@@ -51,7 +51,7 @@
                                     @unless ($brief)
                                         <div class="flex aspect-[3/4] w-24 shrink-0 items-center justify-center self-start overflow-hidden bg-dpsg-hellbeige">
                                             @if ($cover = $ausgabe->coverUrl())
-                                                <img src="{{ $cover }}" alt="" class="h-full w-full object-cover" loading="lazy" />
+                                                <img src="{{ $cover }}" alt="" width="96" height="128" class="h-full w-full object-cover object-top" loading="lazy" decoding="async" />
                                             @else
                                                 <span class="px-2 text-center font-serif text-sm font-bold text-dpsg-blau">Georgsbote<br />{{ $ausgabe->issue_no }}/{{ $ausgabe->year }}</span>
                                             @endif

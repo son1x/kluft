@@ -20,6 +20,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(LegacyRedirects::class);
         // Testsystem: noindex, im Modus „geschlossen“ nur nach Anmeldung (docs/livegang.md).
         $middleware->web(append: TestsystemSchutz::class);
+        // Gäste auf Routen mit „auth“ zur Anmeldung der Redaktion (Filament
+        // leitet von dort zu Entra ID bzw. zum E-Mail-Code weiter).
+        $middleware->redirectGuestsTo('/admin/login');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

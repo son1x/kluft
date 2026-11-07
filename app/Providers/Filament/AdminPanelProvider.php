@@ -3,6 +3,8 @@
 namespace App\Providers\Filament;
 
 use App\Filament\AvatarProviders\InitialsAvatarProvider;
+use App\Filament\Resources\GeorgsboteIssues\Pages\EditGeorgsboteIssue;
+use App\Filament\Resources\GeorgsboteIssues\Pages\ListGeorgsboteIssues;
 use App\Filament\Resources\Gruppierungen\Pages\CreateGruppierung;
 use App\Filament\Resources\Gruppierungen\Pages\EditGruppierung;
 use App\Support\Features;
@@ -92,6 +94,12 @@ class AdminPanelProvider extends PanelProvider
                 PanelsRenderHook::HEAD_END,
                 fn (): string => Blade::render("@vite('resources/js/map.js')"),
                 scopes: [CreateGruppierung::class, EditGruppierung::class],
+            )
+            // Titelbilder der Georgsboten aus Seite 1 des PDFs (pdf.js im Browser).
+            ->renderHook(
+                PanelsRenderHook::HEAD_END,
+                fn (): string => Features::enabled(Features::GEORGSBOTE) ? Blade::render("@vite('resources/js/titelbild.js')") : '',
+                scopes: [ListGeorgsboteIssues::class, EditGeorgsboteIssue::class],
             )
             // Testsystem (docs/livegang.md): Band oben im Backend, damit niemand hier Inhalte pflegt.
             ->renderHook(

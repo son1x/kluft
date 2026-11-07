@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\GeorgsboteIssues\Pages;
 
 use App\Filament\Resources\GeorgsboteIssues\GeorgsboteIssueResource;
+use App\Filament\Resources\GeorgsboteIssues\Pages\Concerns\MeldetTitelbilder;
 use App\Models\GeorgsboteIssue;
 use App\Support\AuditLogger;
 use App\Support\GeorgsboteArchiv;
@@ -15,9 +16,12 @@ use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Attributes\On;
 
 class ListGeorgsboteIssues extends ListRecords
 {
+    use MeldetTitelbilder;
+
     protected static string $resource = GeorgsboteIssueResource::class;
 
     protected function getHeaderActions(): array
@@ -61,8 +65,29 @@ class ListGeorgsboteIssues extends ListRecords
                     $n = GeorgsboteIssue::query()->get()->filter(fn (GeorgsboteIssue $issue) => GeorgsboteArchiv::anwenden($issue))->count();
                     Notification::make()->title("{$n} Ausgabe(n) ergänzt")->success()->send();
                 }),
+            Action::make('titelbilder')
+                ->label('Titelbilder erzeugen')
+                ->icon('heroicon-o-photo')
+                ->color('gray')
+                ->visible(fn () => GeorgsboteIssueResource::canCreate() && GeorgsboteIssue::query()->ohneTitelbild()->exists())
+                ->modalHeading('Titelbilder aus Seite 1 der PDFs erzeugen')
+                ->modalContent(fn () => view('filament.georgsbote.titelbilder', [
+                    'ausgaben' => GeorgsboteIssue::query()->ohneTitelbild()
+                        ->orderByDesc('year')->orderByDesc('issue_no')->get()
+                        ->map(fn (GeorgsboteIssue $issue) => $issue->titelbildAuftrag())->all(),
+                    'ueberschreiben' => false,
+                ]))
+                ->modalSubmitAction(false)
+                ->modalCancelActionLabel('Schließen'),
             CreateAction::make(),
         ];
+    }
+
+    /** Knopf „Titelbilder jetzt erzeugen“ in der Meldung nach dem Hochladen. */
+    #[On('titelbilder-oeffnen')]
+    public function titelbilderOeffnen(): void
+    {
+        $this->mountAction('titelbilder');
     }
 
     /** Kleinste der Grenzen: 50 MB im Formular, PHP upload_max_filesize und post_max_size. */
@@ -110,6 +135,7 @@ class ListGeorgsboteIssues extends ListRecords
 
         $created = [];
         $skipped = [];
+        $neueBoten = 0;
         foreach ($paths as $path) {
             $name = $names[$path] ?? basename($path);
             $guess = GeorgsboteIssue::erkennen($name);
@@ -129,6 +155,7 @@ class ListGeorgsboteIssues extends ListRecords
                     'privacy_checked' => false,
                 ]);
                 $created[] = $issue->label();
+                $neueBoten += $issue->istBrief() ? 0 : 1;
 
                 continue;
             }
@@ -138,6 +165,8 @@ class ListGeorgsboteIssues extends ListRecords
 
         AuditLogger::log('georgsbote.bulk_upload:'.count($created), Filament::auth()->user());
 
+        $ohneTitelbild = $neueBoten > 0 && GeorgsboteIssue::query()->ohneTitelbild()->exists();
+
         Notification::make()
             ->title(count($created).' Ausgabe(n) angelegt (offline)')
             ->body(collect([
@@ -145,6 +174,13 @@ class ListGeorgsboteIssues extends ListRecords
                 $skipped ? 'Übersprungen: '.implode('; ', $skipped).'.' : null,
             ])->filter()->implode("\n\n"))
             ->color($skipped ? 'warning' : 'success')
+            ->actions($ohneTitelbild ? [
+                Action::make('titelbilder')
+                    ->label('Titelbilder jetzt erzeugen')
+                    ->button()
+                    ->dispatch('titelbilder-oeffnen')
+                    ->close(),
+            ] : [])
             ->persistent()
             ->send();
     }

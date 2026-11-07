@@ -35,6 +35,44 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-07 – Auftragnehmer Mailversand → Haupt, Stammes, Bezirk: Echte Mails auf Live-Seiten ohne Test-Umleitung (gemeinsamer Kern)
+Status: offen
+Branch: `fix/mailversand-live`
+
+**Was passiert ist:** Bei Roden (live) sind zwei echte Anfragen aus dem Kontaktformular vom 23.10.2026 nicht im Postfach angekommen. Sie stehen im Nachrichten-Eingang, dort sogar mit „zugestellt“. Wahrscheinlichste Ursache (der Server selbst war nicht einsehbar): Auf dem Server steht `MAIL_MAILER=log`, alle Mails landen nur im Server-Protokoll.
+
+**Warum:** Der Deploy setzte `MAIL_MAILER=smtp` nur, wenn Brevo-Zugang **und** `MAIL_TEST_REDIRECT_TO` gesetzt waren, sonst `log`. Das war eine Sicherheitssperre aus der Testphase (F-MAIL-06): Ein halb eingerichtetes Testsystem sollte nie echte Personen anschreiben. Damals war jede Instanz ein Testsystem. Ein Gegenstück für Live-Seiten gab es nie:
+- Roden hat keine Umleitung (laut `docs/roden.md` „fehlt noch“), also nur Log. Mit Umleitung wären die Mails an die Testadresse statt an kontakt@ gegangen.
+- Beim DV-Livegang wäre dasselbe passiert: `docs/livegang.md` sagte, am Livetag `MAIL_TEST_REDIRECT_TO` löschen. Danach hätte www.dpsg-trier.de gar keine Mails mehr verschickt.
+- Es fiel nicht auf: „zugestellt“ heißt in Kluft nur „in die Warteschlange gelegt“, `/status` meldete „Mails: ok“ (nur die Warteschlange wurde geprüft), und „E-Mail-Versand“ zeigte den Log-Modus nicht an.
+
+**Was sich ändert:**
+- Neues Skript `scripts/mailer-waehlen.sh`, aufgerufen in `deploy.yml`. Sicher per Voreinstellung:
+
+  | Brevo-SMTP | Umleitung | `KLUFT_TESTSYSTEM` | `KLUFT_MAIL_LIVE` | Ergebnis |
+  |---|---|---|---|---|
+  | fehlt | – | – | – | nur Log |
+  | da | gesetzt | – | – | an die Testadresse (wie bisher) |
+  | da | leer | gesetzt | – | nur Log |
+  | da | leer | leer | `ja` | **echte Mails** |
+  | da | leer | leer | leer | nur Log |
+
+  Absichtlich nicht „kein Testsystem = live“: Das Environment `dv-trier` (test.dpsg-trier.de) bekommt `KLUFT_TESTSYSTEM` laut `docs/livegang.md` erst am Livetag. Echte Mails ohne Umleitung gibt es deshalb nur mit ausdrücklichem `KLUFT_MAIL_LIVE=ja`.
+- Bei „nur Log“ schreibt der Deploy eine `::warning::` ins Protokoll, `/status` warnt beim E-Mail-Versand (betrifft auch das Monitoring), und Verwaltung → E-Mail-Versand zeigt oben „Mails werden nicht verschickt“.
+- Doku: `docs/deploy.md` (neuer Abschnitt „Mail“, Variable `KLUFT_MAIL_LIVE`), `docs/livegang.md` (am Livetag `KLUFT_MAIL_LIVE=ja` setzen), `docs/environment-vorlage/`.
+- Tests: `tests/Feature/Mail/MailerWahlTest.php` (alle Fälle des Skripts, Status, Backend-Hinweis).
+
+**Was zu tun ist:**
+- **Stammes-Sitzung / Roden:**
+  1. In Brevo die Absender-Domain dpsg-roden.de bestätigen, falls noch offen.
+  2. Im Environment `roden` die Variable `KLUFT_MAIL_LIVE=ja` setzen; `MAIL_TEST_REDIRECT_TO` und `MAIL_TEST_ALLOWLIST` leer lassen bzw. löschen.
+  3. Nach dem Merge deployen und prüfen: Protokoll zeigt „Mailer: smtp“, unter „E-Mail-Versand“ kein Warnhinweis.
+  4. Testnachricht über das Kontaktformular schicken.
+
+  Mails, die bisher „zugestellt“ wurden, sind nicht nachträglich zu verschicken; die beiden offenen Anfragen bitte direkt aus dem Eingang beantworten („Per Mail antworten“). `docs/roden.md` („Fehlt noch“, „Offene Punkte 3“) entsprechend anpassen.
+- **Haupt-Sitzung / DV:** test.dpsg-trier.de ändert sich nicht (Umleitung bleibt). Für den Livegang ist `docs/livegang.md` angepasst.
+- **Bezirks-Sitzung / Saar-Hochwald:** bei Livegang wie Roden `KLUFT_MAIL_LIVE=ja`; vorher prüfen, ob dort Mails ankommen sollen.
+
 ### 2026-11-07 – Haupt → Stammes, Bezirk: Cookie-Banner ohne „Statistik“ (gemeinsamer Kern)
 Status: offen
 

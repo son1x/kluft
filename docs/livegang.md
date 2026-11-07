@@ -61,6 +61,7 @@ Beide Kluft-Installationen nutzen den Instanz-Ordner `instanzen/dv-trier`. Der D
    | `APP_URL` (Variable) | Probelauf `https://neu.dpsg-trier.de`, am Livetag `https://www.dpsg-trier.de` |
    | `MAIL_TEST_REDIRECT_TO`, `MAIL_TEST_ALLOWLIST` | Probelauf wie bei Test (keine echten Mails), am Livetag **löschen** |
    | `KLUFT_TESTSYSTEM` (Variable) | Probelauf `offen`, am Livetag **löschen** |
+   | `KLUFT_MAIL_LIVE` (Variable) | Probelauf nicht setzen, am Livetag `ja` (sonst gehen ohne Umleitung keine Mails raus, docs/deploy.md „Mail“) |
    | `BACKUP_WEBDAV_URL` | **eigener** Zielordner, sonst überschreiben sich die Sicherungen von Test und Live |
    | `MONITOR_URL` (Variable) | am Livetag `https://www.dpsg-trier.de` |
 
@@ -104,8 +105,9 @@ Beide Kluft-Installationen nutzen den Instanz-Ordner `instanzen/dv-trier`. Der D
    - Testbenutzer ohne Funktion entfernen.
 5. **Kopieren** wie oben: Datenbank, Dateien. Vorher im Environment `dv-trier-live`:
    - `APP_URL` auf `https://www.dpsg-trier.de`;
-   - `MAIL_TEST_REDIRECT_TO`, `MAIL_TEST_ALLOWLIST` und `KLUFT_TESTSYSTEM` löschen.
-6. **Deploy `dv-trier-live`**, danach den Cronjob anlegen. Ab jetzt gehen Mails an echte Empfänger*innen.
+   - `MAIL_TEST_REDIRECT_TO`, `MAIL_TEST_ALLOWLIST` und `KLUFT_TESTSYSTEM` löschen;
+   - Variable `KLUFT_MAIL_LIVE=ja` setzen.
+6. **Deploy `dv-trier-live`**, danach den Cronjob anlegen. Ab jetzt gehen Mails an echte Empfänger*innen. Prüfen: Das Deploy-Protokoll zeigt „Mailer: smtp“ und keine Warnung zu Mails; Backend → Verwaltung → E-Mail-Versand zeigt keinen Hinweis „Mails werden nicht verschickt“.
 7. **Domain umstellen:**
    - Plesk → dpsg-trier.de → Hosting-Einstellungen: Dokumentstamm auf `www.dpsg-trier.de/public`.
    - Let’s-Encrypt-Zertifikat für dpsg-trier.de und www.

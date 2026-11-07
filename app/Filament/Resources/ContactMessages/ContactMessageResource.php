@@ -186,7 +186,7 @@ class ContactMessageResource extends Resource
             TextColumn::make('status')->label('Status')->badge()
                 ->formatStateUsing(fn (string $state) => ContactMessage::STATUSES[$state] ?? $state)
                 ->color(fn (string $state) => match ($state) {
-                    'neu' => 'danger', 'in_bearbeitung' => 'warning', default => 'success',
+                    'neu' => 'danger', 'in_bearbeitung' => 'warning', 'spam' => 'gray', default => 'success',
                 })
                 ->description(fn (ContactMessage $record) => $record->bearbeitet_am
                     ? $record->bearbeitet_am->format('d.m.Y').($record->bearbeiter ? ', '.$record->bearbeiter->name : '') : null),
@@ -212,6 +212,15 @@ class ContactMessageResource extends Resource
                     Action::make('antworten')->label('Per Mail antworten')->icon('heroicon-o-envelope')
                         ->url(self::mailto($record)),
                 ]),
+            // Spamverdacht (docs/nachrichten.md): doch zustellen.
+            Action::make('keinSpam')
+                ->label('Kein Spam – zustellen')
+                ->icon('heroicon-o-paper-airplane')
+                ->color('success')
+                ->visible(fn (ContactMessage $record) => $record->status === 'spam')
+                ->requiresConfirmation()
+                ->modalDescription(fn (ContactMessage $record) => 'Die Nachricht geht jetzt per Mail an: '.implode(', ', $record->empfaenger).'.')
+                ->action(fn (ContactMessage $record) => self::keinSpam($record)),
             ActionGroup::make([
                 // Falls etwas schiefging (Mail nur protokolliert, fehlgeschlagen, falsche Person).
                 Action::make('erneutSenden')->label('Erneut senden')->icon('heroicon-o-arrow-path')
@@ -261,6 +270,15 @@ class ContactMessageResource extends Resource
         AuditLogger::log('nachricht.'.$status, Filament::auth()->user(), ContactMessage::class, $record->id, request());
     }
 
+    /** Zurückgehaltene Nachricht (Spamverdacht) doch an die zuständige Person mailen. */
+    public static function keinSpam(ContactMessage $record): void
+    {
+        abort_unless(self::darf($record) && $record->status === 'spam', 403);
+
+        $record->fill(['status' => 'neu', 'notiz' => null, 'bearbeitet_von' => Filament::auth()->id(), 'bearbeitet_am' => now()]);
+        self::senden($record, 'kein_spam', $record->empfaenger);
+    }
+
     /**
      * Erneut senden oder weiterleiten: über die Warteschlange, im Verlauf
      * festgehalten, ehrliche Meldung bei Mailer „log“.
@@ -288,7 +306,11 @@ class ContactMessageResource extends Resource
         $record->save();
         AuditLogger::log('nachricht.'.$art.':'.$ergebnis, $user, ContactMessage::class, $record->id, request());
 
-        $wort = $art === 'weitergeleitet' ? 'Weitergeleitet' : 'Erneut gesendet';
+        $wort = match ($art) {
+            'weitergeleitet' => 'Weitergeleitet',
+            'kein_spam' => 'Zugestellt',
+            default => 'Erneut gesendet',
+        };
         $notification = match ($ergebnis) {
             'mail' => Notification::make()->title($wort.' an '.implode(', ', $an))->success(),
             'log' => Notification::make()->title('Nicht verschickt')->body('Mails werden derzeit nur ins Server-Protokoll geschrieben. Unter Verwaltung → E-Mail-Versand steht, was zu tun ist.')->warning()->persistent(),

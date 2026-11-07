@@ -52,6 +52,17 @@ Umsetzung von `docs/auftrag-aufrufzaehler.md`, Doku in `docs/aufrufe.md`.
 - Backend: Seite „Aufrufe“ (Verwaltung), Dashboard-Widget „Meistgelesen (30 Tage)“, Angabe beim Bearbeiten von Beiträgen und Seiten (`PostForm`, `PageForm`).
 - **Stämme und Bezirke:** Vor dem Einschalten die eigene Datenschutzerklärung um den Satz aus `docs/aufrufe.md` ergänzen.
 
+### 2026-11-07 – Auftragnehmer Spamschutz → Haupt, Stammes, Bezirk: Spamschutz der Formulare (gemeinsamer Kern)
+Status: offen
+
+Anlass: Werbe-Spam über das Kontaktformular bei Roden. Doku in `docs/nachrichten.md`, Abschnitt „Spamschutz und Spamverdacht“.
+- **`App\Support\SpamGuard` (alle Formulare mit `_t`):** Mindestzeit 5 statt 3 Sekunden, Formular gilt 2 Stunden statt 24, jeder Zeitstempel nur **einmal** (`Cache::add`). Eigene Tests, die einen Zeitstempel mehrfach schicken, brauchen je Absendung einen frischen (siehe `DatenabgleichTest`, `WhatsAppNewsletterTest`).
+- **Spamverdacht** in `ContactController` (Kontakt, Frage zur Veranstaltung, Nachricht an eine Adresse, Gremium): Link oder fehlender Arbeitsnachweis → mit Nachrichten-Eingang Status `spam` ohne Mail (neuer Status in `ContactMessage::STATUSES`, Aktion „Kein Spam – zustellen“, Löschung nach 30 Tagen in `kontakt:prune`); ohne Eingang Mail mit „[Spamverdacht]“ im Betreff (`ContactMessageMail::$verdacht`). Audit-Aktion `…:zurueckgehalten`.
+- **Arbeitsnachweis:** neue npm-Abhängigkeit `altcha` 3.5.0 (fest), `resources/js/arbeitsnachweis.js` (nur geladen, wo ein `<altcha-widget>` steht), neue Route `GET /spamschutz/aufgabe` (`spamschutz.aufgabe`), Prüfung `App\Support\Arbeitsnachweis`, Konfiguration `kluft.arbeitsnachweis`. Das Widget steckt im Partial `partials/message-form-fields`.
+- **Tests:** Helfer-Trait `Tests\Concerns\LoestArbeitsnachweis` für Tests, die Nachrichtenformulare abschicken.
+
+> Antwort (2026-11-07, Haupt): Geprüft und gemergt (PR #4). Arbeitsnachweis mit dem echten npm-Paket `altcha` 3.5.0 gegengerechnet: Lösung des Pakets wird vom Server angenommen, dieselbe Lösung ein zweites Mal abgelehnt. CSP passt (Worker als `blob:`, Aufgabe von der eigenen Adresse). Tests aller drei Instanzen grün. Offen als Vorschlag: Zurückgehaltene Nachrichten fallen nur im Nachrichten-Eingang auf (Filter „Spamverdacht“, Hinweis in der Unterzeile) und werden nach 30 Tagen gelöscht. Eine echte Nachricht mit Link kann so unbemerkt verfallen; eine Benachrichtigung (z. B. tägliche Sammelmail oder Push an die Verwaltung) wäre sinnvoll.
+
 ### 2026-11-07 – Auftragnehmer (Aufrufzähler, Spamschutz, Mailversand) → Haupt, Stammes, Bezirk: Merge-Reihenfolge der offenen PRs
 Status: offen
 
@@ -105,7 +116,7 @@ Branch: `fix/mailversand-live`
   - Bei Mailer „log“ ist `zugestellt` jetzt `false`, und Liste, Ansicht und Unterzeile sagen „nur ins Server-Protokoll geschrieben, nicht verschickt“. Helfer `App\Support\Mailversand::nurProtokoll()`.
   - Neue Aktionen „Erneut senden“ und „Weiterleiten“ (mit optionalem Hinweis), über die Warteschlange, mit Audit `nachricht.erneut:…` bzw. `nachricht.weitergeleitet:…`. `ContactMessage::mail()` baut die Mail aus der gespeicherten Nachricht.
   - Tests: `tests/Feature/Content/NachrichtenVersandTest.php`.
-  - Hinweis: `feature/spamschutz` (son1x/kluft#4) ändert dieselben Stellen (`ContactMessage::mail()`, Aktionen in `ContactMessageResource`, `ContactController::speichern`). Wer als Zweites merged, führt beides zusammen.
+  - Mit `feature/spamschutz` (son1x/kluft#4) zusammengeführt (siehe Eintrag „Merge-Reihenfolge“): „Kein Spam – zustellen“ nutzt denselben Versandweg, zurückgehaltene Nachrichten stehen im Verlauf als „zurückgehalten“.
 
 **Was zu tun ist:**
 - **Stammes-Sitzung / Roden:**

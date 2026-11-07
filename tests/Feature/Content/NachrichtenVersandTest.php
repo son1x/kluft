@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\TestDox;
+use Tests\Concerns\LoestArbeitsnachweis;
 use Tests\TestCase;
 
 /**
@@ -25,6 +26,7 @@ use Tests\TestCase;
  */
 class NachrichtenVersandTest extends TestCase
 {
+    use LoestArbeitsnachweis;
     use RefreshDatabase;
 
     protected function setUp(): void
@@ -41,7 +43,7 @@ class NachrichtenVersandTest extends TestCase
     {
         $this->post('/kontakt', [
             'thema' => 'biber', 'name' => 'Erika Muster', 'email' => 'erika@example.org', 'betreff' => 'Schnupperstunde',
-            'nachricht' => 'Darf meine Tochter zur Schnupperstunde kommen?', '_t' => Crypt::encryptString((string) now()->subSeconds(20)->timestamp),
+            'nachricht' => 'Darf meine Tochter zur Schnupperstunde kommen?', '_t' => Crypt::encryptString((string) now()->subSeconds(20)->timestamp), 'altcha' => $this->arbeitsnachweis(),
         ])->assertSessionHas('kontakt_status', 'gesendet');
 
         return ContactMessage::query()->latest('id')->firstOrFail();

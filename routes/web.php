@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\BreakGlassAuthController;
 use App\Http\Controllers\Auth\CodeLoginController;
 use App\Http\Controllers\Auth\EntraAuthController;
+use App\Http\Controllers\Public\ArbeitsnachweisController;
 use App\Http\Controllers\Public\CalendarController;
 use App\Http\Controllers\Public\CertificateController;
 use App\Http\Controllers\Public\ContactController;
@@ -217,6 +218,11 @@ if (Features::newsletter()) {
 foreach (config('dpsg.redirects') as $from => $to) {
     Route::redirect($from, $to, 301);
 }
+
+// Aufgabe für den Arbeitsnachweis der Nachrichtenformulare (docs/nachrichten.md).
+Route::get('/spamschutz/aufgabe', ArbeitsnachweisController::class)
+    ->middleware('throttle:30,1')
+    ->name('spamschutz.aufgabe');
 
 // Kontaktformular (F-CMS-09); das Formular steht auf der CMS-Seite „kontakt“.
 Route::post('/kontakt', [ContactController::class, 'send'])

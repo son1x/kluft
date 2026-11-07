@@ -8,6 +8,7 @@ Admins. Kurz und aus Sicht der Redaktion schreiben.
 
 - Aufrufe: Anzeige „Gezählt seit …“ und Knopf „Alle Zähler löschen“ für Admins (Livegang: Statistik beginnt bei null).
 - Seitenaufrufe zählen (Funktion „Seitenaufrufe zählen“): Verwaltung → Aufrufe zeigt, welche Seiten, Beiträge und Veranstaltungen wie oft aufgerufen werden, das Dashboard die meistgelesenen; beim Bearbeiten eines Beitrags oder einer Seite steht „Aufrufe: 30 Tage …, gesamt …“. Gezählt wird ohne IP-Adresse, Cookie oder Skript, ohne Bots und ohne angemeldete Redaktion.
+- Kontaktformulare besser gegen Spam geschützt: Jedes Formular gilt nur einmal und zwei Stunden, dazu eine unsichtbare Rechenaufgabe im Browser (ohne Captcha, ohne Drittanbieter). Verdächtige Nachrichten (mit Link oder ohne Rechenaufgabe) gehen nicht mehr per Mail raus, sondern warten im Nachrichten-Eingang unter „Spamverdacht“; „Kein Spam – zustellen“ schickt sie doch. Ohne Nachrichten-Eingang steht „[Spamverdacht]“ im Betreff.
 - Nachrichten-Eingang: „Erneut senden“ und „Weiterleiten“ (an eine andere Adresse, mit Hinweis), mit Verlauf unter „Ansehen“. Gehen Mails nur ins Server-Protokoll, steht das bei der Nachricht statt „zugestellt“.
 - E-Mail-Versand: Live-Websites verschicken Mails jetzt auch ohne Test-Umleitung (Einstellung „KLUFT_MAIL_LIVE“). Gehen Mails nur ins Server-Protokoll, steht das deutlich unter Verwaltung → E-Mail-Versand und auf der Statusseite.
 - Datenschutz-Einstellungen ohne die Auswahl „Statistik“, weil Kluft keine Statistik erhebt.

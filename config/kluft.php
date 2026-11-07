@@ -13,6 +13,15 @@ return [
     'testsystem' => env('KLUFT_TESTSYSTEM', ''),
     'live_url' => env('KLUFT_LIVE_URL'),
 
+    // Arbeitsnachweis in den Nachrichtenformularen (App\Support\Arbeitsnachweis,
+    // docs/nachrichten.md): PBKDF2-Durchläufe je Versuch und Anfang des
+    // Schlüssels (Hex). Im Mittel 16^Länge Versuche; „00“ mit 5000 dauert im
+    // Browser etwa eine Sekunde.
+    'arbeitsnachweis' => [
+        'kosten' => (int) env('KLUFT_ARBEITSNACHWEIS_KOSTEN', 5000),
+        'praefix' => env('KLUFT_ARBEITSNACHWEIS_PRAEFIX', '00'),
+    ],
+
     'updates' => [
         // off = keine Updates über Kluft selbst (Deploy per GitHub)
         // manual = verfügbare Updates anzeigen, Installation per Knopf

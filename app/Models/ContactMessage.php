@@ -29,14 +29,15 @@ use Illuminate\Support\Carbon;
  */
 class ContactMessage extends Model
 {
-    public const STATUSES = ['neu' => 'neu', 'in_bearbeitung' => 'in Bearbeitung', 'erledigt' => 'erledigt'];
+    // „spam“: zurückgehalten wegen Spamverdacht, nicht gemailt (App\Support\Spamverdacht).
+    public const STATUSES = ['neu' => 'neu', 'in_bearbeitung' => 'in Bearbeitung', 'erledigt' => 'erledigt', 'spam' => 'Spamverdacht'];
 
     public const ARTEN = ['kontakt' => 'Kontaktformular', 'veranstaltung' => 'Frage zur Veranstaltung', 'direkt' => 'Nachricht an eine Adresse', 'gremium' => 'Nachricht an ein Gremium'];
 
     /** Ergebnis eines Versands: verschickt, nur ins Server-Protokoll, fehlgeschlagen. */
-    public const ERGEBNISSE = ['mail' => 'verschickt', 'log' => 'nur ins Server-Protokoll geschrieben, nicht verschickt', 'fehler' => 'fehlgeschlagen'];
+    public const ERGEBNISSE = ['mail' => 'verschickt', 'log' => 'nur ins Server-Protokoll geschrieben, nicht verschickt', 'fehler' => 'fehlgeschlagen', 'zurueckgehalten' => 'zurückgehalten (Spamverdacht), nicht verschickt'];
 
-    public const VERSAND_ARTEN = ['eingang' => 'Eingang', 'erneut' => 'Erneut gesendet', 'weitergeleitet' => 'Weitergeleitet'];
+    public const VERSAND_ARTEN = ['eingang' => 'Eingang', 'erneut' => 'Erneut gesendet', 'weitergeleitet' => 'Weitergeleitet', 'kein_spam' => 'Kein Spam – zugestellt'];
 
     protected $fillable = ['art', 'contact_topic_id', 'event_id', 'thema', 'name', 'email', 'betreff', 'nachricht', 'empfaenger', 'zugestellt',
         'versand', 'status', 'bearbeitet_von', 'bearbeitet_am', 'notiz'];

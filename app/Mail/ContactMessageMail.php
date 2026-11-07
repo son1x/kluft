@@ -30,6 +30,8 @@ class ContactMessageMail extends Mailable implements ShouldBeEncrypted, ShouldQu
         public ?string $subjectLine,
         public string $body,
         public ?string $context = null,
+        // Spamverdacht ohne Nachrichten-Eingang: Kennzeichnung im Betreff zum Filtern.
+        public bool $verdacht = false,
     ) {}
 
     public function envelope(): Envelope
@@ -38,7 +40,7 @@ class ContactMessageMail extends Mailable implements ShouldBeEncrypted, ShouldQu
 
         return new Envelope(
             replyTo: [new Address($this->senderEmail, $this->senderName)],
-            subject: Str::limit($this->topic.': '.$subject, 150),
+            subject: ($this->verdacht ? '[Spamverdacht] ' : '').Str::limit($this->topic.': '.$subject, 150),
         );
     }
 

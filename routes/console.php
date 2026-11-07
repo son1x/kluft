@@ -19,6 +19,9 @@ Schedule::command('registrations:purge')->dailyAt('03:00');
 // Audit-Log nach 12 Monaten bereinigen (Pflichtenheft 8.2, 11.4).
 Schedule::command('audit:prune')->dailyAt('03:30');
 
+// Seitenaufrufe nach 25 Monaten löschen (docs/aufrufe.md).
+Schedule::command('aufrufe:aufraeumen')->dailyAt('03:40');
+
 // Mail-Warteschlange (F-MAIL-05, Pflichtenheft 3/156): ohne Daemon – der
 // Cronjob startet jede Minute einen Worker, der die Schlange abarbeitet und
 // sich dann beendet. Fehlgeschlagene Mails nach 14 Tagen verwerfen.

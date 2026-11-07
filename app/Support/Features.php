@@ -66,6 +66,8 @@ class Features
 
     public const ADRESSBUCH = 'adressbuch';
 
+    public const AUFRUFE = 'aufrufe';
+
     private const CACHE_KEY = 'features.schalter';
 
     /**
@@ -83,6 +85,7 @@ class Features
         self::GEORGSBOTE => ['ab' => 5, 'bereich' => 'Website', 'label' => 'Zeitschriften-Archiv', 'text' => 'Archiv der Verbandszeitschrift als PDF (beim DV: Georgsbote).', 'standard' => false],
         self::RECHTSTRAEGER => ['ab' => 5, 'bereich' => 'Website', 'label' => 'Schaubild Rechtsträger', 'text' => 'Schaubild auf der Seite „Rechtsträger“.', 'standard' => false],
         self::TITELBILD_WECHSEL => ['bereich' => 'Website', 'label' => 'Titelbild wechselt zufällig', 'text' => 'Die Startseite zeigt bei jedem Aufruf eines der Titelbilder: das der Seite „start“ und die der Instanz. Aus: immer das der Seite „start“, sonst das erste der Instanz.', 'standard' => true],
+        self::AUFRUFE => ['bereich' => 'Website', 'label' => 'Seitenaufrufe zählen', 'text' => 'Zählt Aufrufe öffentlicher Seiten je Tag, ohne IP-Adresse, Cookie oder Skript; Übersicht im Backend (Verwaltung → Aufrufe). Vor dem Einschalten die Datenschutzerklärung um einen Satz ergänzen (docs/aufrufe.md).', 'standard' => false],
         self::ROADMAP => ['ab' => 5, 'bereich' => 'Website', 'label' => 'Roadmap', 'text' => 'Öffentliche Seite /roadmap mit dem Projektstand.', 'standard' => false],
         self::TEILNEHMENDE_EINTRAGEN => ['ab' => 4, 'bereich' => 'Veranstaltungen', 'label' => 'Teilnehmende von Hand eintragen', 'text' => 'Einzeln oder als Liste (Excel, CSV) unter „Teilnehmende“.', 'standard' => true],
         self::GAESTE => ['ab' => 4, 'bereich' => 'Veranstaltungen', 'label' => 'Gäste aus anderen Verbänden', 'text' => 'Ankreuzfeld „Gast aus einem anderen Diözesanverband oder Verband“ unter „Stamm / Bezirk / Verband“.', 'standard' => true],

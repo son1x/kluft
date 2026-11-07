@@ -7,6 +7,7 @@ use App\Filament\Resources\ContactMessages\Pages\ListContactMessages;
 use App\Filament\Resources\Events\Pages\EditEvent;
 use App\Filament\Resources\Events\RelationManagers\QuestionsRelationManager;
 use App\Mail\ContactMessageMail;
+use App\Models\AuditLog;
 use App\Models\ContactMessage;
 use App\Models\ContactTopic;
 use App\Models\Event;
@@ -61,6 +62,57 @@ class NachrichtenEingangTest extends TestCase
         $user->roleAssignments()->create(['role' => $role, 'scope_type' => 'global', 'scope_key' => null]);
 
         return $user->fresh();
+    }
+
+    #[TestDox('Spamverdacht (Link): keine Mail, Nachricht wartet im Eingang als „Spamverdacht“ mit Grund; Absender*in sieht „gesendet“')]
+    public function test_spamverdacht_zurueckgehalten(): void
+    {
+        $this->senden(['name' => 'Larrygub', 'email' => 'shop@example.com', 'nachricht' => 'Bis zu 83% Rabatt auf Koffer-Sets! https://koffer.example']);
+
+        Mail::assertNothingQueued();
+        $m = ContactMessage::query()->sole();
+        $this->assertSame(['spam', false, 'Spamverdacht: Link in der Nachricht'], [$m->status, $m->zugestellt, $m->notiz]);
+        $this->assertSame(['bolivien@example.org'], $m->empfaenger);
+        $this->assertTrue(AuditLog::query()->where('action', 'kontakt:zurueckgehalten:bolivien')->exists());
+
+        // Ohne Link wie bisher: Mail und Eingang.
+        $this->senden();
+        Mail::assertQueuedCount(1);
+    }
+
+    #[TestDox('Backend: Spamverdacht nicht in der Standardansicht, Hinweis mit Anzahl, „Kein Spam – zustellen“ mailt doch')]
+    public function test_spamverdacht_im_backend(): void
+    {
+        $this->senden(['nachricht' => 'Unser Lager-Bericht steht hier: www.stamm-beispiel.example/lager']);
+        $this->senden();
+        $spam = ContactMessage::query()->where('status', 'spam')->sole();
+        Mail::assertQueuedCount(1);
+
+        $this->actingAs($this->user('verwaltung'));
+        Livewire::test(ListContactMessages::class)
+            ->assertCanNotSeeTableRecords([$spam])
+            ->assertSee('1 Nachricht mit Spamverdacht wurden nicht gemailt')
+            ->filterTable('status', ['spam'])
+            ->assertCanSeeTableRecords([$spam])
+            ->callTableAction('keinSpam', $spam)
+            ->assertNotified('Zugestellt');
+
+        Mail::assertQueuedCount(2);
+        Mail::assertQueued(ContactMessageMail::class, fn (ContactMessageMail $mail) => $mail->hasTo('bolivien@example.org') && str_contains($mail->body, 'Lager-Bericht') && ! $mail->verdacht);
+        $this->assertSame(['neu', true, null], [$spam->fresh()->status, $spam->fresh()->zugestellt, $spam->fresh()->notiz]);
+        // Jetzt zählt sie als neue Nachricht mit.
+        $this->assertSame('2', ContactMessageResource::getNavigationBadge());
+    }
+
+    #[TestDox('Spamverdacht wird nach 30 Tagen gelöscht, andere Nachrichten erst nach der Aufbewahrungsfrist')]
+    public function test_spamverdacht_frist(): void
+    {
+        $this->senden(['nachricht' => 'Angebot https://koffer.example']);
+        $this->senden();
+        $this->travel(31)->days();
+        $this->artisan('kontakt:prune')->assertSuccessful();
+
+        $this->assertSame(['neu'], ContactMessage::query()->pluck('status')->all());
     }
 
     #[TestDox('Nachricht geht per Mail an den Empfänger und liegt verschlüsselt im Eingang; Formular weist auf die Speicherung hin')]

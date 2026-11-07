@@ -37,6 +37,35 @@ unter den Formularen passt sich von selbst an.
 - Ist die Mail an die zuständige Person fehlgeschlagen, kommt die Nachricht
   trotzdem an (Kreuz in der Spalte „Mail“) – dann bitte selbst weitergeben.
 
+## Spamschutz und Spamverdacht
+
+Alle Formulare (Kontakt, Frage zur Veranstaltung, Nachricht an eine Adresse,
+Gremium) haben ohne Captcha und ohne Drittanbieter:
+
+- ein unsichtbares Feld, das nur Bots ausfüllen,
+- eine Zeitfalle: Wer schneller als 5 Sekunden absendet, ist ein Bot; ein
+  Formular gilt 2 Stunden und **jede Anzeige nur für eine Absendung**
+  (Spam-Programme, die ein Formular einmal laden und immer wieder schicken,
+  kommen nicht durch),
+- ein Rate-Limit je IP-Adresse.
+
+Das wird still verworfen, Absender*innen sehen trotzdem „gesendet“.
+
+**Spamverdacht** (Link in Nachricht, Betreff oder Name) wird **nicht
+verworfen**, damit keine echte Nachricht verloren geht:
+
+- **Mit Nachrichten-Eingang:** keine Mail; die Nachricht liegt im Eingang mit
+  Status „Spamverdacht“ und dem Grund in der Notiz. Die Standardansicht zeigt
+  sie nicht, die Unterzeile nennt die Anzahl (Filter „Status“ →
+  Spamverdacht). **„Kein Spam – zustellen“** mailt sie doch an die
+  zuständige Person und setzt sie auf „neu“. Spamverdacht wird nach
+  **30 Tagen** gelöscht.
+- **Ohne Nachrichten-Eingang:** Die Mail geht raus, mit „[Spamverdacht]“ am
+  Anfang des Betreffs; im Postfach lässt sich danach filtern.
+
+Echte Nachrichten mit Link (z. B. „unser Bericht steht unter …“) landen
+also ebenfalls unter Spamverdacht. Bitte die Liste ab und zu ansehen.
+
 ## E-Mail-Adressen öffnen ein Formular
 
 Funktion **„E-Mail-Adressen öffnen ein Formular“** (Verwaltung → Funktionen, Standard aus):

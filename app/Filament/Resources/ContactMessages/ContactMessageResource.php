@@ -15,6 +15,7 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Textarea;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
@@ -24,7 +25,9 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\HtmlString;
+use Throwable;
 use UnitEnum;
 
 /**
@@ -173,7 +176,7 @@ class ContactMessageResource extends Resource
             TextColumn::make('status')->label('Status')->badge()
                 ->formatStateUsing(fn (string $state) => ContactMessage::STATUSES[$state] ?? $state)
                 ->color(fn (string $state) => match ($state) {
-                    'neu' => 'danger', 'in_bearbeitung' => 'warning', default => 'success',
+                    'neu' => 'danger', 'in_bearbeitung' => 'warning', 'spam' => 'gray', default => 'success',
                 })
                 ->description(fn (ContactMessage $record) => $record->bearbeitet_am
                     ? $record->bearbeitet_am->format('d.m.Y').($record->bearbeiter ? ', '.$record->bearbeiter->name : '') : null),
@@ -199,6 +202,15 @@ class ContactMessageResource extends Resource
                     Action::make('antworten')->label('Per Mail antworten')->icon('heroicon-o-envelope')
                         ->url(self::mailto($record)),
                 ]),
+            // Spamverdacht (docs/nachrichten.md): doch zustellen.
+            Action::make('keinSpam')
+                ->label('Kein Spam – zustellen')
+                ->icon('heroicon-o-paper-airplane')
+                ->color('success')
+                ->visible(fn (ContactMessage $record) => $record->status === 'spam')
+                ->requiresConfirmation()
+                ->modalDescription(fn (ContactMessage $record) => 'Die Nachricht geht jetzt per Mail an: '.implode(', ', $record->empfaenger).'.')
+                ->action(fn (ContactMessage $record) => self::keinSpam($record)),
             ActionGroup::make([
                 Action::make('inBearbeitung')->label('In Bearbeitung')->icon('heroicon-o-clock')
                     ->visible(fn (ContactMessage $record) => $record->status !== 'in_bearbeitung')
@@ -227,6 +239,27 @@ class ContactMessageResource extends Resource
             'bearbeitet_am' => now(),
         ] + ($notiz !== null ? ['notiz' => trim($notiz) ?: null] : []))->save();
         AuditLogger::log('nachricht.'.$status, Filament::auth()->user(), ContactMessage::class, $record->id, request());
+    }
+
+    /** Zurückgehaltene Nachricht doch per Mail zustellen und in den Eingang übernehmen. */
+    public static function keinSpam(ContactMessage $record): void
+    {
+        abort_unless(self::darf($record) && $record->status === 'spam', 403);
+
+        try {
+            Mail::to($record->empfaenger)->send($record->mail());
+            $zugestellt = true;
+        } catch (Throwable) {
+            $zugestellt = false;
+        }
+
+        $record->fill(['status' => 'neu', 'zugestellt' => $zugestellt, 'notiz' => null, 'bearbeitet_von' => Filament::auth()->id(), 'bearbeitet_am' => now()])->save();
+        AuditLogger::log('nachricht.kein_spam', Filament::auth()->user(), ContactMessage::class, $record->id, request());
+
+        Notification::make()
+            ->title($zugestellt ? 'Zugestellt' : 'Mail fehlgeschlagen – bitte selbst weitergeben')
+            ->color($zugestellt ? 'success' : 'warning')
+            ->send();
     }
 
     private static function mailto(ContactMessage $record): string

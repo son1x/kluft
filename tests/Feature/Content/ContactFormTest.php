@@ -181,6 +181,18 @@ class ContactFormTest extends TestCase
         Mail::assertQueuedCount(1);
     }
 
+    #[TestDox('Spamverdacht ohne Nachrichten-Eingang: Mail geht raus, mit „[Spamverdacht]“ im Betreff zum Filtern')]
+    public function test_spamverdacht_ohne_eingang(): void
+    {
+        $this->send(['nachricht' => 'Exklusiver Räumungsverkauf: https://koffer.example'])->assertSessionHas('kontakt_status', 'gesendet');
+        $this->send(['nachricht' => 'Gibt es eine Gruppe für Wölflinge?'])->assertSessionHas('kontakt_status', 'gesendet');
+
+        $betreffe = Mail::queued(ContactMessageMail::class)->map(fn (ContactMessageMail $mail) => $mail->envelope()->subject)->all();
+        $this->assertCount(2, $betreffe);
+        $this->assertStringStartsWith('[Spamverdacht] Allgemeine Frage: ', $betreffe[0]);
+        $this->assertStringStartsWith('Allgemeine Frage: ', $betreffe[1]);
+    }
+
     #[TestDox('Ein über zwei Stunden offenes Formular wird mit Hinweis zurückgegeben, Eingaben bleiben erhalten')]
     public function test_expired_form_keeps_input(): void
     {

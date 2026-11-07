@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Mail\ContactMessageMail;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -27,7 +28,8 @@ use Illuminate\Support\Carbon;
  */
 class ContactMessage extends Model
 {
-    public const STATUSES = ['neu' => 'neu', 'in_bearbeitung' => 'in Bearbeitung', 'erledigt' => 'erledigt'];
+    // „spam“: zurückgehalten wegen Spamverdacht, nicht gemailt (App\Support\Spamverdacht).
+    public const STATUSES = ['neu' => 'neu', 'in_bearbeitung' => 'in Bearbeitung', 'erledigt' => 'erledigt', 'spam' => 'Spamverdacht'];
 
     public const ARTEN = ['kontakt' => 'Kontaktformular', 'veranstaltung' => 'Frage zur Veranstaltung', 'direkt' => 'Nachricht an eine Adresse', 'gremium' => 'Nachricht an ein Gremium'];
 
@@ -53,6 +55,19 @@ class ContactMessage extends Model
     public function bearbeiter(): BelongsTo
     {
         return $this->belongsTo(User::class, 'bearbeitet_von');
+    }
+
+    /** Mail wie beim Absenden, z. B. um eine zurückgehaltene Nachricht doch zuzustellen. */
+    public function mail(): ContactMessageMail
+    {
+        return new ContactMessageMail(
+            topic: $this->art === 'veranstaltung' ? 'Frage zur Veranstaltung' : $this->thema,
+            senderName: $this->name,
+            senderEmail: $this->email,
+            subjectLine: $this->betreff,
+            body: $this->nachricht,
+            context: $this->event ? $this->event->title.' ('.$this->event->dateLabel().') – '.route('events.show', $this->event->slug) : null,
+        );
     }
 
     /** Wie lange Nachrichten aufbewahrt werden. */

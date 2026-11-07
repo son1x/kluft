@@ -12,6 +12,7 @@ use App\Support\AuditLogger;
 use App\Support\Features;
 use App\Support\Mailformular;
 use App\Support\SpamGuard;
+use App\Support\Spamverdacht;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -46,20 +47,19 @@ class ContactController extends Controller
         $topic = $topics->firstWhere('slug', $data['thema'] ?? null);
         $recipients = $topic?->recipients() ?? [ContactTopic::fallbackEmail()];
 
-        $ok = $this->deliver($recipients, new ContactMessageMail(
+        $ergebnis = $this->zustellen([
+            'art' => 'kontakt', 'contact_topic_id' => $topic?->id, 'thema' => $topic->label ?? 'Kontaktformular',
+            'betreff' => $data['betreff'] ?? null,
+        ], $data, $recipients, new ContactMessageMail(
             topic: $topic->label ?? 'Kontaktformular',
             senderName: $data['name'],
             senderEmail: $data['email'],
             subjectLine: $data['betreff'] ?? null,
             body: $data['nachricht'],
         ));
-        // Im Eingang gespeichert gilt die Nachricht als angekommen, auch wenn die Mail hakt.
-        $ok = $this->speichern([
-            'art' => 'kontakt', 'contact_topic_id' => $topic?->id, 'thema' => $topic->label ?? 'Kontaktformular',
-            'betreff' => $data['betreff'] ?? null,
-        ], $data, $recipients, $ok) || $ok;
+        $ok = $ergebnis !== 'fehler';
 
-        AuditLogger::log('kontakt:'.($ok ? 'gesendet' : 'fehler').':'.($topic->slug ?? 'ohne-thema'), request: $request);
+        AuditLogger::log('kontakt:'.$ergebnis.':'.($topic->slug ?? 'ohne-thema'), request: $request);
 
         return $ok ? $back('gesendet') : back()->withInput()->with('kontakt_status', 'fehler');
     }
@@ -77,7 +77,10 @@ class ContactController extends Controller
         $data = $request->validateWithBag('frage', $this->messageRules(), $this->messages());
 
         $recipients = [filled($event->contact_email) ? $event->contact_email : ContactTopic::fallbackEmail()];
-        $ok = $this->deliver($recipients, new ContactMessageMail(
+        $ergebnis = $this->zustellen([
+            'art' => 'veranstaltung', 'event_id' => $event->id, 'thema' => mb_substr($event->title.' ('.$event->dateLabel().')', 0, 200),
+            'betreff' => mb_substr($event->title, 0, 150),
+        ], $data, $recipients, new ContactMessageMail(
             topic: 'Frage zur Veranstaltung',
             senderName: $data['name'],
             senderEmail: $data['email'],
@@ -85,12 +88,9 @@ class ContactController extends Controller
             body: $data['nachricht'],
             context: $event->title.' ('.$event->dateLabel().') – '.route('events.show', $event->slug),
         ));
-        $ok = $this->speichern([
-            'art' => 'veranstaltung', 'event_id' => $event->id, 'thema' => mb_substr($event->title.' ('.$event->dateLabel().')', 0, 200),
-            'betreff' => mb_substr($event->title, 0, 150),
-        ], $data, $recipients, $ok) || $ok;
+        $ok = $ergebnis !== 'fehler';
 
-        AuditLogger::log('veranstaltung.frage:'.($ok ? 'gesendet' : 'fehler'), subjectType: 'event', subjectId: $event->id, request: $request);
+        AuditLogger::log('veranstaltung.frage:'.$ergebnis, subjectType: 'event', subjectId: $event->id, request: $request);
 
         return $ok ? $back('gesendet') : back()->withInput()->with('frage_status', 'fehler')->withFragment('frage');
     }
@@ -123,18 +123,18 @@ class ContactController extends Controller
         $an = Mailformular::empfaenger($email);
         $recipients = [$email];
 
-        $ok = $this->deliver($recipients, new ContactMessageMail(
+        $ergebnis = $this->zustellen([
+            'art' => 'direkt', 'thema' => mb_substr('An '.$an['name'], 0, 200), 'betreff' => $data['betreff'] ?? null,
+        ], $data, $recipients, new ContactMessageMail(
             topic: 'Nachricht über die Website',
             senderName: $data['name'],
             senderEmail: $data['email'],
             subjectLine: $data['betreff'] ?? null,
             body: $data['nachricht'],
         ));
-        $ok = $this->speichern([
-            'art' => 'direkt', 'thema' => mb_substr('An '.$an['name'], 0, 200), 'betreff' => $data['betreff'] ?? null,
-        ], $data, $recipients, $ok) || $ok;
+        $ok = $ergebnis !== 'fehler';
 
-        AuditLogger::log('kontakt.direkt:'.($ok ? 'gesendet' : 'fehler'), request: $request);
+        AuditLogger::log('kontakt.direkt:'.$ergebnis, request: $request);
 
         return $ok ? $back('gesendet') : back()->withInput()->with('kontakt_status', 'fehler');
     }
@@ -165,16 +165,16 @@ class ContactController extends Controller
         $recipients = $an->map(fn (Person $p) => mb_strtolower((string) $p->publicEmail()))->unique()->values()->all();
         $thema = $data['an'] === 'alle' ? 'An alle: '.$label : 'An '.$an->first()?->name.' ('.$label.')';
 
-        $ok = $this->deliver($recipients, new ContactMessageMail(
+        $ergebnis = $this->zustellen(['art' => 'gremium', 'thema' => mb_substr($thema, 0, 200), 'betreff' => $data['betreff'] ?? null], $data, $recipients, new ContactMessageMail(
             topic: $thema,
             senderName: $data['name'],
             senderEmail: $data['email'],
             subjectLine: $data['betreff'] ?? null,
             body: $data['nachricht'],
         ));
-        $ok = $this->speichern(['art' => 'gremium', 'thema' => mb_substr($thema, 0, 200), 'betreff' => $data['betreff'] ?? null], $data, $recipients, $ok) || $ok;
+        $ok = $ergebnis !== 'fehler';
 
-        AuditLogger::log('kontakt.gremium:'.$gremium.':'.($ok ? 'gesendet' : 'fehler'), request: $request);
+        AuditLogger::log('kontakt.gremium:'.$gremium.':'.$ergebnis, request: $request);
 
         return $ok ? $back('gesendet') : redirect()->to(url('/'.$seite).'#gremium-kontakt')->withInput()->with('gremium_status', 'fehler');
     }
@@ -208,6 +208,32 @@ class ContactController extends Controller
             'nachricht.min' => 'Die Nachricht ist etwas kurz – magst du noch ein paar Worte ergänzen?',
             'nachricht.max' => 'Die Nachricht darf höchstens 5000 Zeichen lang sein.',
         ];
+    }
+
+    /**
+     * Zustellen per Mail und in den Nachrichten-Eingang. Bei Spamverdacht
+     * (App\Support\Spamverdacht) wird die Nachricht mit Eingang nur dort
+     * zurückgehalten, ohne Mail; ohne Eingang geht sie mit „[Spamverdacht]“
+     * im Betreff per Mail raus. Absender*innen sehen in jedem Fall „gesendet“.
+     *
+     * @param  array<string, mixed>  $werte
+     * @param  array<string, mixed>  $data
+     * @param  list<string>  $recipients
+     * @return 'gesendet'|'zurueckgehalten'|'fehler'
+     */
+    private function zustellen(array $werte, array $data, array $recipients, ContactMessageMail $mail): string
+    {
+        $grund = Spamverdacht::grund($data);
+        if ($grund !== null && $this->speichern($werte + ['status' => 'spam', 'notiz' => 'Spamverdacht: '.$grund], $data, $recipients, false)) {
+            return 'zurueckgehalten';
+        }
+
+        $mail->verdacht = $grund !== null;
+        $ok = $this->deliver($recipients, $mail);
+        // Im Eingang gespeichert gilt die Nachricht als angekommen, auch wenn die Mail hakt.
+        $ok = $this->speichern($werte, $data, $recipients, $ok) || $ok;
+
+        return $ok ? 'gesendet' : 'fehler';
     }
 
     /**

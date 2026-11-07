@@ -299,7 +299,7 @@ class Roadmap
                 'key' => 'live-environment',
                 'phase' => 'Livegang',
                 'title' => 'Livegang 2/5: GitHub-Environment „dv-trier-live“ anlegen',
-                'detail' => 'Repository → Settings → Environments → „New environment“: dv-trier-live. Secrets wie bei dv-trier, aber mit SSH_TARGET_DIR und DB_* der Live-Website, APP_URL zunächst die vorläufige Adresse (am Livetag https://www.dpsg-trier.de). Für den Probelauf MAIL_TEST_REDIRECT_TO/MAIL_TEST_ALLOWLIST wie bei Test und die Variable KLUFT_TESTSYSTEM=offen setzen, am Livetag löschen. BACKUP_WEBDAV_URL mit eigenem Zielordner. Tabelle in docs/livegang.md. Die Testumgebung dv-trier bleibt, wie sie ist.',
+                'detail' => 'Repository → Settings → Environments → „New environment“: dv-trier-live. Secrets wie bei dv-trier, aber mit SSH_TARGET_DIR und DB_* der Live-Website, APP_URL zunächst die vorläufige Adresse (am Livetag https://www.dpsg-trier.de). Für den Probelauf MAIL_TEST_REDIRECT_TO/MAIL_TEST_ALLOWLIST wie bei Test und die Variable KLUFT_TESTSYSTEM=offen setzen, am Livetag löschen. Die Variable KLUFT_MAIL_LIVE für den Probelauf nicht anlegen, am Livetag auf „ja“ setzen – ohne sie verschickt die Live-Seite keine Mails (docs/deploy.md „Mail“). BACKUP_WEBDAV_URL mit eigenem Zielordner. Tabelle in docs/livegang.md. Die Testumgebung dv-trier bleibt, wie sie ist.',
                 'done' => null,
             ],
             [
@@ -313,14 +313,14 @@ class Roadmap
                 'key' => 'live-datenschutz',
                 'phase' => 'Livegang',
                 'title' => 'Livegang 4/5: Datenschutzerklärung und Impressum für den Livegang prüfen',
-                'detail' => 'Datenschutzerklärung um Nachrichten-Eingang, Umfragen (anonym als Standard, Gewinnspiel getrennt) und die Instagram-Einblendung (Bilder lokal, kein Embed) ergänzen; Impressum vervollständigen (siehe „Rechtsträger und Impressum“). Die Technik liefert auf Wunsch einen Textvorschlag.',
+                'detail' => 'Neue Datenschutzerklärung (abgestimmte Fassung von dpsg-trier.de, ergänzt um Anmeldungen, Umfragen, Nachrichten-Eingang, Einbettungen, Aufrufzähler) liegt auf Test. Neue Abschnitte mit dem Betrieblichen Datenschutz abstimmen; klären: Verantwortlicher (dpsg trevirensis gGmbH oder Landesamt St. Georg e. V., wie im Impressum), Funktionsadresse des Datenschutzbeauftragten, Hosting bei netcup. Impressum vervollständigen (siehe „Rechtsträger und Impressum“).',
                 'done' => null,
             ],
             [
                 'key' => 'live-umschalten',
                 'phase' => 'Livegang',
                 'title' => 'Livegang 5/5: Umschalten am 21.11.',
-                'detail' => 'Mit der Technik abgestimmt: Redaktionsstopp auf Test, Backups, WordPress mit dem WP Toolkit nach alt.dpsg-trier.de klonen, Test aufräumen, Datenbank und Ordner mit Plesk nach www.dpsg-trier.de kopieren, Deploy dv-trier-live, Cronjob, Dokumentstamm von dpsg-trier.de auf www.dpsg-trier.de/public, Zertifikat, Test schließen (KLUFT_TESTSYSTEM). Danach bolivienpartnerschaft.de und beraten-online.de als Aliasse. Ablauf Schritt für Schritt in docs/livegang.md.',
+                'detail' => 'Mit der Technik abgestimmt: Redaktionsstopp auf Test, Backups, WordPress mit dem WP Toolkit nach alt.dpsg-trier.de klonen, Test aufräumen, Datenbank und Ordner mit Plesk nach www.dpsg-trier.de kopieren, vorher in dv-trier-live KLUFT_MAIL_LIVE=ja setzen und MAIL_TEST_REDIRECT_TO, MAIL_TEST_ALLOWLIST und KLUFT_TESTSYSTEM löschen, Deploy dv-trier-live (Protokoll muss „Mailer: smtp“ zeigen), Cronjob, Dokumentstamm von dpsg-trier.de auf www.dpsg-trier.de/public, Zertifikat, Statistik unter Verwaltung → Aufrufe auf null setzen, Test schließen (KLUFT_TESTSYSTEM). Danach bolivienpartnerschaft.de und beraten-online.de als Aliasse. Ablauf Schritt für Schritt in docs/livegang.md.',
                 'done' => null,
             ],
         ];

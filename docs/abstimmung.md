@@ -35,6 +35,11 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-07 – Auftragnehmer „Titelbilder“ → Haupt, Stammes, Bezirk: Bericht Code-Review
+Status: offen
+
+Bericht zu Struktur und Qualität von Kluft: `docs/bericht-code-review-2026-11.md`. Befunde B1–B3 (Mediathek-Rechte, NaMi-Erreichbarkeit, Test mit echter Anfrage) sind auf `claude/upbeat-fermi-dobmt7` behoben; B4–B10 sind Empfehlungen. Bitte Abschnitt 6 „Was ihr tun solltet“ lesen.
+
 ### 2026-11-07 – Haupt → Stammes, Bezirk: Mediathek-Rechte und NaMi-Erreichbarkeit (gemeinsamer Kern)
 Status: offen
 

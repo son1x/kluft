@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Testing\TestResponse;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\TestDox;
+use Tests\Concerns\LoestArbeitsnachweis;
 use Tests\TestCase;
 
 /**
@@ -27,6 +28,7 @@ use Tests\TestCase;
  */
 class ContactFormTest extends TestCase
 {
+    use LoestArbeitsnachweis;
     use RefreshDatabase;
 
     protected function setUp(): void
@@ -56,6 +58,7 @@ class ContactFormTest extends TestCase
             'betreff' => 'Gruppenstunde',
             'nachricht' => 'Gibt es in Wittlich eine Wölflingsgruppe?',
             '_t' => $this->token(),
+            'altcha' => $this->arbeitsnachweis(),
             ...$input,
         ]);
     }
@@ -166,7 +169,7 @@ class ContactFormTest extends TestCase
         Mail::assertQueuedCount(1);
 
         // Ein frisch geladenes Formular geht wieder.
-        $this->send(['_t' => $this->token()])->assertSessionHas('kontakt_status', 'gesendet');
+        $this->send(['_t' => $this->token(), 'altcha' => $this->arbeitsnachweis()])->assertSessionHas('kontakt_status', 'gesendet');
         Mail::assertQueuedCount(2);
     }
 
@@ -240,7 +243,7 @@ class ContactFormTest extends TestCase
 
         $this->get('/veranstaltungen/woelflingstag')->assertOk()->assertSee('Frage an Lena Lange schreiben');
 
-        $this->post('/veranstaltungen/woelflingstag/frage', ['name' => 'Erika', 'email' => 'erika@example.org', 'nachricht' => 'Gibt es vegetarisches Essen?', '_t' => $this->token()])
+        $this->post('/veranstaltungen/woelflingstag/frage', ['name' => 'Erika', 'email' => 'erika@example.org', 'nachricht' => 'Gibt es vegetarisches Essen?', '_t' => $this->token(), 'altcha' => $this->arbeitsnachweis()])
             ->assertRedirect('/veranstaltungen/woelflingstag#frage');
         Mail::assertQueued(ContactMessageMail::class, function (ContactMessageMail $mail) {
             $mail->assertHasSubject('Frage zur Veranstaltung: Wölflingstag');
@@ -251,7 +254,7 @@ class ContactFormTest extends TestCase
         $this->assertTrue(AuditLog::query()->where('action', 'veranstaltung.frage:gesendet')->where('subject_id', $event->id)->exists());
 
         $this->from('/veranstaltungen/woelflingstag')
-            ->post('/veranstaltungen/woelflingstag/frage', ['name' => 'Erika', 'email' => '', 'nachricht' => 'Hallo, eine Frage', '_t' => $this->token()])
+            ->post('/veranstaltungen/woelflingstag/frage', ['name' => 'Erika', 'email' => '', 'nachricht' => 'Hallo, eine Frage', '_t' => $this->token(), 'altcha' => $this->arbeitsnachweis()])
             ->assertSessionHasErrorsIn('frage', ['email']);
         $this->get('/veranstaltungen/woelflingstag')->assertDontSee('Bitte prüfe deine Angaben.')->assertSee('<details class="mt-4 bg-white p-5 shadow-md"  open', false);
     }

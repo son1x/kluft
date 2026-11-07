@@ -47,7 +47,7 @@ class ContactController extends Controller
         $topic = $topics->firstWhere('slug', $data['thema'] ?? null);
         $recipients = $topic?->recipients() ?? [ContactTopic::fallbackEmail()];
 
-        $ergebnis = $this->zustellen([
+        $ergebnis = $this->zustellen($request, [
             'art' => 'kontakt', 'contact_topic_id' => $topic?->id, 'thema' => $topic->label ?? 'Kontaktformular',
             'betreff' => $data['betreff'] ?? null,
         ], $data, $recipients, new ContactMessageMail(
@@ -77,7 +77,7 @@ class ContactController extends Controller
         $data = $request->validateWithBag('frage', $this->messageRules(), $this->messages());
 
         $recipients = [filled($event->contact_email) ? $event->contact_email : ContactTopic::fallbackEmail()];
-        $ergebnis = $this->zustellen([
+        $ergebnis = $this->zustellen($request, [
             'art' => 'veranstaltung', 'event_id' => $event->id, 'thema' => mb_substr($event->title.' ('.$event->dateLabel().')', 0, 200),
             'betreff' => mb_substr($event->title, 0, 150),
         ], $data, $recipients, new ContactMessageMail(
@@ -123,7 +123,7 @@ class ContactController extends Controller
         $an = Mailformular::empfaenger($email);
         $recipients = [$email];
 
-        $ergebnis = $this->zustellen([
+        $ergebnis = $this->zustellen($request, [
             'art' => 'direkt', 'thema' => mb_substr('An '.$an['name'], 0, 200), 'betreff' => $data['betreff'] ?? null,
         ], $data, $recipients, new ContactMessageMail(
             topic: 'Nachricht über die Website',
@@ -165,7 +165,7 @@ class ContactController extends Controller
         $recipients = $an->map(fn (Person $p) => mb_strtolower((string) $p->publicEmail()))->unique()->values()->all();
         $thema = $data['an'] === 'alle' ? 'An alle: '.$label : 'An '.$an->first()?->name.' ('.$label.')';
 
-        $ergebnis = $this->zustellen(['art' => 'gremium', 'thema' => mb_substr($thema, 0, 200), 'betreff' => $data['betreff'] ?? null], $data, $recipients, new ContactMessageMail(
+        $ergebnis = $this->zustellen($request, ['art' => 'gremium', 'thema' => mb_substr($thema, 0, 200), 'betreff' => $data['betreff'] ?? null], $data, $recipients, new ContactMessageMail(
             topic: $thema,
             senderName: $data['name'],
             senderEmail: $data['email'],
@@ -221,9 +221,10 @@ class ContactController extends Controller
      * @param  list<string>  $recipients
      * @return 'gesendet'|'zurueckgehalten'|'fehler'
      */
-    private function zustellen(array $werte, array $data, array $recipients, ContactMessageMail $mail): string
+    private function zustellen(Request $request, array $werte, array $data, array $recipients, ContactMessageMail $mail): string
     {
-        $grund = Spamverdacht::grund($data);
+        $nachweis = $request->input('altcha');
+        $grund = Spamverdacht::grund($data, is_string($nachweis) ? $nachweis : null);
         if ($grund !== null && $this->speichern($werte + ['status' => 'spam', 'notiz' => 'Spamverdacht: '.$grund], $data, $recipients, false)) {
             return 'zurueckgehalten';
         }

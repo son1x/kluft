@@ -8,6 +8,9 @@
 <div class="hidden" aria-hidden="true">
     <label>Website <input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
 </div>
+{{-- Arbeitsnachweis (selbst gehostet, docs/nachrichten.md): rechnet unsichtbar im Hintergrund,
+     sobald jemand ins Formular klickt. Ohne JavaScript wird die Nachricht als Spamverdacht zurückgehalten. --}}
+<altcha-widget challenge="{{ route('spamschutz.aufgabe') }}" auto="onfocus" display="invisible" language="de" name="altcha"></altcha-widget>
 <div class="grid gap-4 sm:grid-cols-2">
     <div>
         <label for="{{ $p }}-name" class="block text-sm font-bold">Dein Name</label>

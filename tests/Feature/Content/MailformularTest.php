@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Testing\TestResponse;
 use PHPUnit\Framework\Attributes\TestDox;
+use Tests\Concerns\LoestArbeitsnachweis;
 use Tests\TestCase;
 
 /**
@@ -20,6 +21,7 @@ use Tests\TestCase;
  */
 class MailformularTest extends TestCase
 {
+    use LoestArbeitsnachweis;
     use RefreshDatabase;
 
     protected function setUp(): void
@@ -33,7 +35,7 @@ class MailformularTest extends TestCase
     {
         return $this->post('/nachricht', [
             'an' => $an, 'name' => 'Erika Muster', 'email' => 'erika@example.org', 'betreff' => 'Gruppenstunde',
-            'nachricht' => 'Darf mein Kind mal reinschnuppern?', '_t' => Crypt::encryptString((string) now()->subSeconds(20)->timestamp), ...$input,
+            'nachricht' => 'Darf mein Kind mal reinschnuppern?', '_t' => Crypt::encryptString((string) now()->subSeconds(20)->timestamp), 'altcha' => $this->arbeitsnachweis(), ...$input,
         ]);
     }
 

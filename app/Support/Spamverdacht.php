@@ -16,18 +16,25 @@ class Spamverdacht
     private const LINK = '#(https?://|www\.)\S#i';
 
     /**
-     * Grund des Verdachts oder null.
+     * Grund des Verdachts oder null: Link in Nachricht, Betreff oder Name;
+     * fehlender oder ungültiger Arbeitsnachweis (Feld „altcha“, z. B. ohne
+     * JavaScript oder von einem Spam-Programm).
      *
      * @param  array<string, mixed>  $data  geprüfte Formulardaten (name, betreff, nachricht)
      */
-    public static function grund(array $data): ?string
+    public static function grund(array $data, ?string $arbeitsnachweis): ?string
     {
+        $gruende = [];
         foreach (['nachricht', 'betreff', 'name'] as $feld) {
             if (preg_match(self::LINK, (string) ($data[$feld] ?? ''))) {
-                return 'Link in der Nachricht';
+                $gruende[] = 'Link in der Nachricht';
+                break;
             }
         }
+        if (! Arbeitsnachweis::gueltig($arbeitsnachweis)) {
+            $gruende[] = 'ohne Arbeitsnachweis';
+        }
 
-        return null;
+        return $gruende ? implode(', ', $gruende) : null;
     }
 }

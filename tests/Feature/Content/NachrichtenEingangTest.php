@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\TestDox;
+use Tests\Concerns\LoestArbeitsnachweis;
 use Tests\TestCase;
 
 /**
@@ -31,6 +32,7 @@ use Tests\TestCase;
  */
 class NachrichtenEingangTest extends TestCase
 {
+    use LoestArbeitsnachweis;
     use RefreshDatabase;
 
     protected function setUp(): void
@@ -52,7 +54,7 @@ class NachrichtenEingangTest extends TestCase
     {
         $this->post('/kontakt', [
             'thema' => 'bolivien', 'name' => 'Erika Muster', 'email' => 'Erika@Example.org', 'betreff' => 'Partnerschaft',
-            'nachricht' => 'Wie kann unser Stamm mitmachen? 4711', '_t' => $this->token(), ...$input,
+            'nachricht' => 'Wie kann unser Stamm mitmachen? 4711', '_t' => $this->token(), 'altcha' => $this->arbeitsnachweis(), ...$input,
         ])->assertSessionHas('kontakt_status', 'gesendet');
     }
 
@@ -145,7 +147,7 @@ class NachrichtenEingangTest extends TestCase
             'title' => 'Wölflingstag', 'slug' => 'woelflingstag', 'location' => 'Trier', 'status' => 'open',
             'starts_at' => now()->addMonth()->setTime(10, 0), 'ends_at' => now()->addMonth()->setTime(17, 0), 'contact_email' => 'woelflinge@example.org',
         ]);
-        $this->post('/veranstaltungen/woelflingstag/frage', ['name' => 'Erika', 'email' => 'erika@example.org', 'nachricht' => 'Gibt es vegetarisches Essen?', '_t' => $this->token()]);
+        $this->post('/veranstaltungen/woelflingstag/frage', ['name' => 'Erika', 'email' => 'erika@example.org', 'nachricht' => 'Gibt es vegetarisches Essen?', '_t' => $this->token(), 'altcha' => $this->arbeitsnachweis()]);
 
         $m = ContactMessage::query()->sole();
         $this->assertSame(['veranstaltung', $event->id, 'Wölflingstag', ['woelflinge@example.org']], [$m->art, $m->event_id, $m->betreff, $m->empfaenger]);
@@ -210,7 +212,7 @@ class NachrichtenEingangTest extends TestCase
         $woelflingstag = $termin('woelflingstag', 'woelflinge');
         $termin('roverhajk', 'rover');
         foreach (['woelflingstag', 'roverhajk'] as $slug) {
-            $this->post('/veranstaltungen/'.$slug.'/frage', ['name' => 'Erika', 'email' => 'erika@example.org', 'nachricht' => 'Frage zu '.$slug.' bitte', '_t' => $this->token()]);
+            $this->post('/veranstaltungen/'.$slug.'/frage', ['name' => 'Erika', 'email' => 'erika@example.org', 'nachricht' => 'Frage zu '.$slug.' bitte', '_t' => $this->token(), 'altcha' => $this->arbeitsnachweis()]);
         }
         $this->senden();
         [$frageW, $frageR] = [ContactMessage::query()->where('event_id', $woelflingstag->id)->sole(), ContactMessage::query()->where('betreff', 'Roverhajk')->sole()];

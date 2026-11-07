@@ -11,3 +11,8 @@ Alpine.data('zweiKlick', zweiKlick);
 Alpine.data('shopBestellung', shopBestellung);
 Alpine.data('umfrage', umfrage);
 Alpine.start();
+
+// Arbeitsnachweis in Nachrichtenformularen (docs/nachrichten.md), nur laden, wo es eins gibt.
+if (document.querySelector('altcha-widget')) {
+    import('./arbeitsnachweis');
+}

@@ -51,6 +51,7 @@ Diese Werte dürfen auch als Secret eingetragen sein; der Deploy nimmt die Varia
 | `APP_ENV` | nein | Standard `local` (wie bisher beim DV) |
 | `PHP_BIN` | nein | Standard `/usr/bin/php`; auf Plesk z. B. `/opt/plesk/php/8.3/bin/php` |
 | `MONITOR_URL` | nein | Adresse für Monitoring (alle 6 Stunden) und Web-Checks (montags); ohne sie werden beide übersprungen |
+| `KLUFT_MAIL_LIVE` | auf Live-Seiten | `ja`: echte Mails an die echten Empfänger ohne Test-Umleitung (siehe „Mail“ unten). Auf Testsystemen nicht setzen |
 
 ### Secrets (Environment secrets)
 
@@ -60,13 +61,32 @@ Diese Werte dürfen auch als Secret eingetragen sein; der Deploy nimmt die Varia
 | Upload | `FTP_SERVER`, `FTP_USERNAME`, `FTP_PASSWORD`, `FTP_SERVER_DIR` | Webspace mit SFTP-Passwort. **Ohne `FTP_PASSWORD`** (vServer) wird per SFTP mit dem SSH-Schlüssel hochgeladen; Host, Benutzer und Ziel kommen dann aus `SSH_*`. |
 | Datenbank | `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` | MariaDB (utf8mb4); ohne sie SQLite |
 | Anmeldung | `ENTRA_CLIENT_ID`, `ENTRA_CLIENT_SECRET`, `ENTRA_TENANT_ID` | Microsoft 365 (optional) |
-| Mail | `BREVO_SMTP_LOGIN`, `BREVO_SMTP_KEY`, `MAIL_TEST_REDIRECT_TO`, `MAIL_TEST_ALLOWLIST` | Echte Mails nur mit SMTP-Zugang **und** Test-Umleitung |
+| Mail | `BREVO_SMTP_LOGIN`, `BREVO_SMTP_KEY`, `MAIL_TEST_REDIRECT_TO`, `MAIL_TEST_ALLOWLIST` | Siehe „Mail“ unten |
 | Newsletter | `BREVO_API_KEY`, `BREVO_NEWSLETTER_LIST_ID`, `BREVO_DOI_TEMPLATE_ID` | optional |
 | Backup | `BACKUP_PASSWORD`, `BACKUP_WEBDAV_URL`, `BACKUP_WEBDAV_USER`, `BACKUP_WEBDAV_PASSWORD` | Passwort zusätzlich offline aufbewahren |
 | Push | `NTFY_SERVER`, `NTFY_TOKEN` | optional |
 | WhatsApp | `WHATSAPP_MODE`, `WHATSAPP_CHANNEL_URL`, `WHATSAPP_TEST_ALLOWLIST` | Standard aus |
 | Kalender | `NEXTCLOUD_ALLOWED_HOSTS` | optional |
 | Mitglieder | `MITGLIEDER_DRIVER`, `NAMI_AUTH`, `NAMI_USER`, `NAMI_PASSWORD`, `HITOBITO_URL`, `HITOBITO_TOKEN`, `HITOBITO_MEMBER_NUMBER_ATTRIBUTE` | Standard aus; für NaMi 2 mit persönlicher Anmeldung genügt `MITGLIEDER_DRIVER=nami`, siehe docs/mitgliederabgleich.md |
+
+### Mail
+
+Welcher Mailer in die `.env` kommt, entscheidet `scripts/mailer-waehlen.sh`
+(sicher per Voreinstellung, F-MAIL-06):
+
+| Brevo-SMTP (`BREVO_SMTP_*`) | `MAIL_TEST_REDIRECT_TO` | `KLUFT_TESTSYSTEM` | `KLUFT_MAIL_LIVE` | Ergebnis |
+|---|---|---|---|---|
+| fehlt | – | – | – | nur Log |
+| da | gesetzt | – | – | Mails an die Testadresse (außer Freigabeliste) |
+| da | leer | gesetzt | – | nur Log (Testsystem ohne Umleitung) |
+| da | leer | leer | `ja` | **echte Mails** (Live-Seite) |
+| da | leer | leer | leer | nur Log |
+
+„Nur Log“ heißt: Nichts verlässt den Server. Der Deploy schreibt dann eine
+Warnung ins Protokoll, `/status` meldet beim E-Mail-Versand eine Warnung, und
+im Backend unter Verwaltung → E-Mail-Versand steht „Mails werden nicht
+verschickt“. Bis 07.11.2026 gab es nur die Zeile mit Test-Umleitung; ohne sie
+gingen auch Live-Seiten (Roden) nur ins Log.
 
 Secrets nie ins Repository oder in einen Chat. Was dort einmal stand, gilt als kompromittiert.
 

@@ -190,4 +190,15 @@ class GeorgsbriefArchivTest extends TestCase
             ->call('create')
             ->assertHasFormErrors(['issue_no']);
     }
+
+    #[TestDox('Uploads bis 50 MB; deutsche Fehlermeldung statt „validation.max.file“')]
+    public function test_uploadgrenze_und_meldung(): void
+    {
+        $this->assertContains('max:51200', config('livewire.temporary_file_upload.rules'));
+        $this->assertLessThanOrEqual(50, ListGeorgsboteIssues::grenzeMb());
+        $this->assertGreaterThan(0, ListGeorgsboteIssues::grenzeMb());
+
+        app()->setLocale('de');
+        $this->assertSame('Datei darf höchstens 12288 Kilobyte groß sein.', __('validation.max.file', ['attribute' => 'Datei', 'max' => 12288]));
+    }
 }

@@ -34,7 +34,7 @@ class ListGeorgsboteIssues extends ListRecords
                 ->color('gray')
                 ->visible(fn () => GeorgsboteIssueResource::canCreate())
                 ->modalHeading('Alte Jahrgänge auf einmal hochladen')
-                ->modalDescription('Jahrgang und Ausgabe werden aus dem Dateinamen gelesen, z. B. „Georgsbote_2019_2.pdf“ (2. Ausgabe im Jahrgang 2019) oder „Georgsbrief_2019_02.pdf“ (Georgsbrief Februar 2019). Titel und Inhalt kommen aus der Archivliste, soweit vorhanden. Alle Ausgaben kommen offline ins Archiv – Personenbezug und Veröffentlichung danach je Ausgabe prüfen.')
+                ->modalDescription('Jahrgang und Ausgabe werden aus dem Dateinamen gelesen, z. B. „Georgsbote_2019_2.pdf“ (2. Ausgabe im Jahrgang 2019) oder „Georgsbrief_2019_02.pdf“ (Georgsbrief Februar 2019). Titel und Inhalt kommen aus der Archivliste, soweit vorhanden. Alle Ausgaben kommen offline ins Archiv – Personenbezug und Veröffentlichung danach je Ausgabe prüfen. Größe je Datei: bis '.self::grenzeMb().' MB.')
                 ->schema([
                     FileUpload::make('files')
                         ->label('PDF-Dateien')
@@ -63,6 +63,26 @@ class ListGeorgsboteIssues extends ListRecords
                 }),
             CreateAction::make(),
         ];
+    }
+
+    /** Kleinste der Grenzen: 50 MB im Formular, PHP upload_max_filesize und post_max_size. */
+    public static function grenzeMb(): int
+    {
+        $mb = function (string $wert): int {
+            $wert = trim($wert);
+            $zahl = (float) $wert;
+
+            return (int) match (strtolower(substr($wert, -1))) {
+                'g' => $zahl * 1024,
+                'k' => $zahl / 1024,
+                'm' => $zahl,
+                default => $zahl / 1024 / 1024,
+            };
+        };
+
+        $grenzen = array_filter([50, $mb((string) ini_get('upload_max_filesize')), $mb((string) ini_get('post_max_size'))], fn (int $g) => $g > 0);
+
+        return min($grenzen);
     }
 
     /**

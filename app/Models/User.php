@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Support\AuditLogger;
 use App\Support\Features;
+use App\Support\MailEvents;
 use App\Support\PushEvents;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
@@ -18,6 +19,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $last_login_at
  * @property string|null $ntfy_topic
  * @property list<string>|null $ntfy_events
+ * @property list<string>|null $mail_events
  * @property string|null $nami_user
  * @property string|null $nami_password
  * @property Carbon|null $nami_checked_at
@@ -51,6 +53,7 @@ class User extends Authenticatable implements FilamentUser
         'last_login_at',
         'ntfy_topic',
         'ntfy_events',
+        'mail_events',
         'login',
         'kind',
         'member_number',
@@ -95,6 +98,7 @@ class User extends Authenticatable implements FilamentUser
             'totp_secret' => 'encrypted',
             'ntfy_topic' => 'encrypted',
             'ntfy_events' => 'array',
+            'mail_events' => 'array',
             'nami_user' => 'encrypted',
             'nami_password' => 'encrypted',
             'nami_checked_at' => 'datetime',
@@ -205,6 +209,19 @@ class User extends Authenticatable implements FilamentUser
             && filled($this->ntfy_topic)
             && in_array($event, $this->ntfy_events ?? [], true)
             && array_key_exists($event, PushEvents::availableFor($this));
+    }
+
+    /**
+     * Ob die Person diesen Hinweis per Mail will (App\Support\MailEvents);
+     * ohne eigene Auswahl gilt die Voreinstellung.
+     */
+    public function wantsMail(string $event): bool
+    {
+        $gewaehlt = $this->mail_events ?? MailEvents::STANDARD;
+
+        return $this->status === 'active'
+            && in_array($event, $gewaehlt, true)
+            && array_key_exists($event, MailEvents::availableFor($this));
     }
 
     /** Persönlicher NaMi-Zugang im Profil gespeichert (verschlüsselt). */

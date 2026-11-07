@@ -61,6 +61,9 @@ Schedule::command('whatsapp:prune')->dailyAt('03:50');
 // Nachrichten-Eingang: gespeicherte Kontaktnachrichten nach der Frist löschen.
 Schedule::command('kontakt:prune')->dailyAt('03:55');
 
+// Zurückgehaltene Nachrichten (Spamverdacht) einmal täglich an die Verwaltung melden (Mail/Push nach Wahl).
+Schedule::command('nachrichten:spamverdacht-melden')->dailyAt('08:05');
+
 // Sammelbestellung: Zahlungserinnerung am Vortag des Bestelldatums, Hinweis
 // am Bestelldatum, Löschfristen (docs/pflichtenheft-sammelbestellung.md).
 Schedule::command('sammelbestellung:taeglich')->dailyAt('08:10');

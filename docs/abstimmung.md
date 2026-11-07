@@ -35,6 +35,14 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-08 – Haupt → Stammes, Bezirk: Hinweis bei Spamverdacht (gemeinsamer Kern)
+Status: offen
+
+- Neue Spalte `users.mail_events` (JSON, Migration `2026_11_08_100000`); `null` = Voreinstellung aus `App\Support\MailEvents` (Spamverdacht per Mail an). `User::wantsMail()` als Gegenstück zu `wantsPush()`.
+- Neues Push-Ereignis `PushEvents::SPAMVERDACHT`, nur für die Verwaltung und nur mit Nachrichten-Eingang.
+- Neuer Scheduler-Befehl `nachrichten:spamverdacht-melden` täglich 08:05 (`SpamverdachtNotification`, ohne Personendaten).
+- Im Nachrichten-Eingang die Aktion „Benachrichtigung“ (Mail und/oder Push je Person). Doku: `docs/nachrichten.md`.
+
 ### 2026-11-07 – Haupt → Stammes, Bezirk: Aufrufzähler gemergt, Zurücksetzen (gemeinsamer Kern)
 Status: offen
 

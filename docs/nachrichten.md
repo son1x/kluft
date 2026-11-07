@@ -90,6 +90,17 @@ JavaScript). Die Gründe stehen in der Notiz.
 Echte Nachrichten mit Link (z. B. „unser Bericht steht unter …“) landen
 also ebenfalls unter Spamverdacht. Bitte die Liste ab und zu ansehen.
 
+### Benachrichtigung bei Spamverdacht
+
+Damit zurückgehaltene Nachrichten nicht unbemerkt nach 30 Tagen verfallen, meldet Kluft jeden Morgen um 8:05 Uhr, wenn seit dem letzten Mal neue Nachrichten mit Spamverdacht dazugekommen sind (`nachrichten:spamverdacht-melden`). Ohne neue Fälle kommt nichts.
+
+- **Wer:** Verwaltung und Admins, also alle, die den ganzen Eingang sehen.
+- **Wie:** Jede Person wählt im Nachrichten-Eingang unter **„Benachrichtigung“**:
+  - per Mail (Voreinstellung an),
+  - als Push-Nachricht (setzt „Mein Konto → Meine Push-Nachrichten“ voraus; dort steht der Punkt ebenfalls),
+  - beides oder keins.
+- **Inhalt:** nur die Anzahl, das Löschdatum der ältesten und ein Link auf den gefilterten Eingang. Keine Namen, Adressen oder Texte, weil der Push-Dienst ein Dritter ist.
+
 ## E-Mail-Adressen öffnen ein Formular
 
 Funktion **„E-Mail-Adressen öffnen ein Formular“** (Verwaltung → Funktionen, Standard aus):

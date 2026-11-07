@@ -67,6 +67,7 @@ class MailQueue extends Page
                     'error' => MailQueueEntry::shortError($row->exception),
                 ]),
             'dailyLimit' => (int) config('mail.daily_limit'),
+            'nurLog' => config('mail.default') === 'log',
             'testUmleitung' => filled(config('mail.test_redirect_to')),
             'testSecret' => TestRecipientFilter::ausSecret(),
             'testBackend' => TestRecipientFilter::ausBackend(),

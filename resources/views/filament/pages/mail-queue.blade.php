@@ -1,4 +1,16 @@
 <x-filament-panels::page>
+    @if ($nurLog)
+        {{-- Mailer „log“: nichts verlässt den Server (docs/deploy.md „Mail“). --}}
+        <x-filament::section heading="Mails werden nicht verschickt" icon="heroicon-o-exclamation-triangle" icon-color="danger">
+            <p style="font-size: .875rem; color: var(--danger-600);">
+                Diese Website schreibt Mails nur ins Server-Protokoll (Mailer „log“). Anmeldebestätigungen, Anmeldecodes und Nachrichten aus dem Kontaktformular kommen nicht an, auch wenn im Nachrichten-Eingang „zugestellt“ steht.
+            </p>
+            <p style="margin-top: .5rem; font-size: .875rem;">
+                Live-Seite: im GitHub-Environment die Variable <code>KLUFT_MAIL_LIVE=ja</code> setzen (dazu die Secrets <code>BREVO_SMTP_LOGIN</code> und <code>BREVO_SMTP_KEY</code>) und neu deployen. Testsystem: das Secret <code>MAIL_TEST_REDIRECT_TO</code> setzen.
+            </p>
+        </x-filament::section>
+    @endif
+
     <x-filament::section heading="Warteschlange" description="Transaktionsmails (Anmeldungen, Kontaktformular, Dokumente) gehen über die Warteschlange raus: Der Cronjob verschickt sie jede Minute. Bei Fehlern versucht das System es bis zu fünfmal mit wachsendem Abstand.">
         <p style="font-size: .875rem;">
             <strong>{{ $pending }}</strong> {{ $pending === 1 ? 'Mail wartet' : 'Mails warten' }} auf den Versand

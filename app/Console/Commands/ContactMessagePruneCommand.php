@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\ContactMessage;
+use App\Support\Spamverdacht;
 use Illuminate\Console\Command;
 
 /**
@@ -19,6 +20,8 @@ class ContactMessagePruneCommand extends Command
     public function handle(): int
     {
         $n = ContactMessage::query()->where('created_at', '<', now()->subMonths(ContactMessage::aufbewahrungMonate()))->delete();
+        // Spamverdacht, der nicht zugestellt wurde, schon nach 30 Tagen.
+        $n += ContactMessage::query()->where('status', 'spam')->where('created_at', '<', now()->subDays(Spamverdacht::TAGE))->delete();
         $this->info("Gelöscht: {$n} Nachrichten.");
 
         return self::SUCCESS;

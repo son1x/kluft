@@ -7,7 +7,22 @@
     <dt class="font-medium text-gray-500">Thema</dt>
     <dd>{{ $nachricht->thema }} ({{ \App\Models\ContactMessage::ARTEN[$nachricht->art] ?? $nachricht->art }})</dd>
     <dt class="font-medium text-gray-500">Zugestellt an</dt>
-    <dd>{{ implode(', ', $nachricht->empfaenger) }}@unless ($nachricht->zugestellt) – <strong>Mail fehlgeschlagen</strong>@endunless</dd>
+    <dd>{{ implode(', ', $nachricht->empfaenger) }}@if ($nachricht->letztesErgebnis() === 'log') – <strong>nur ins Server-Protokoll geschrieben, nicht verschickt</strong>@elseif (! $nachricht->zugestellt) – <strong>Mail fehlgeschlagen</strong>@endif</dd>
+    @if (count($nachricht->versand ?? []) > 1 || $nachricht->letztesErgebnis() === 'log')
+        <dt class="font-medium text-gray-500">Versand</dt>
+        <dd>
+            <ul>
+                @foreach ($nachricht->versand as $eintrag)
+                    <li>
+                        {{ \Illuminate\Support\Carbon::parse($eintrag['am'])->timezone(config('app.timezone'))->format('d.m.Y H:i') }}:
+                        {{ \App\Models\ContactMessage::VERSAND_ARTEN[$eintrag['art']] ?? $eintrag['art'] }}
+                        an {{ implode(', ', $eintrag['an']) }}
+                        – {{ \App\Models\ContactMessage::ERGEBNISSE[$eintrag['ergebnis']] ?? $eintrag['ergebnis'] }}@if ($eintrag['von'] ?? null) ({{ $eintrag['von'] }})@endif
+                    </li>
+                @endforeach
+            </ul>
+        </dd>
+    @endif
     @if ($nachricht->notiz)
         <dt class="font-medium text-gray-500">Notiz</dt>
         <dd>{{ $nachricht->notiz }}</dd>

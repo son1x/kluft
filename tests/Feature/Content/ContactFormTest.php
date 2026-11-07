@@ -17,15 +17,18 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Testing\TestResponse;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\TestDox;
+use Tests\Concerns\LoestArbeitsnachweis;
 use Tests\TestCase;
 
 /**
  * Kontaktformular und Frage zur Veranstaltung (F-CMS-09): nur Mailversand,
- * keine Speicherung, Spamschutz per Honeypot, Zeitfalle und Rate-Limit.
+ * keine Speicherung, Spamschutz per Honeypot, Zeitfalle (mindestens 5 Sekunden,
+ * höchstens 2 Stunden, jeder Zeitstempel nur einmal) und Rate-Limit.
  * Mit Nachrichten-Eingang: NachrichtenEingangTest.
  */
 class ContactFormTest extends TestCase
 {
+    use LoestArbeitsnachweis;
     use RefreshDatabase;
 
     protected function setUp(): void
@@ -55,6 +58,7 @@ class ContactFormTest extends TestCase
             'betreff' => 'Gruppenstunde',
             'nachricht' => 'Gibt es in Wittlich eine Wölflingsgruppe?',
             '_t' => $this->token(),
+            'altcha' => $this->arbeitsnachweis(),
             ...$input,
         ]);
     }
@@ -143,10 +147,59 @@ class ContactFormTest extends TestCase
         Mail::assertNothingQueued();
     }
 
-    #[TestDox('Ein tagelang offenes Formular wird mit Hinweis zurückgegeben, Eingaben bleiben erhalten')]
+    #[TestDox('Zeitfalle: unter 5 Sekunden verworfen, ab 5 Sekunden angenommen')]
+    public function test_mindestzeit_fuenf_sekunden(): void
+    {
+        $this->send(['_t' => $this->token(4)])->assertSessionHas('kontakt_status', 'gesendet');
+        Mail::assertNothingQueued();
+
+        $this->send(['_t' => $this->token(5)])->assertSessionHas('kontakt_status', 'gesendet');
+        Mail::assertQueuedCount(1);
+    }
+
+    #[TestDox('Ein Zeitstempel gilt nur einmal: wiederholtes Absenden (auch von anderen IP-Adressen) wird still verworfen')]
+    public function test_zeitstempel_nur_einmal(): void
+    {
+        $token = $this->token();
+        foreach (range(1, 4) as $i) {
+            $this->withServerVariables(['REMOTE_ADDR' => '198.51.100.'.$i])
+                ->send(['_t' => $token, 'email' => "absender{$i}@example.org"])
+                ->assertSessionHas('kontakt_status', 'gesendet');
+        }
+        Mail::assertQueuedCount(1);
+
+        // Ein frisch geladenes Formular geht wieder.
+        $this->send(['_t' => $this->token(), 'altcha' => $this->arbeitsnachweis()])->assertSessionHas('kontakt_status', 'gesendet');
+        Mail::assertQueuedCount(2);
+    }
+
+    #[TestDox('Nach einem Fehler zeigt das Formular einen frischen Zeitstempel; damit geht die korrigierte Nachricht durch')]
+    public function test_nach_fehler_frischer_zeitstempel(): void
+    {
+        $this->from('/kontakt')->send(['email' => ''])->assertSessionHasErrors('email');
+        preg_match('/name="_t" value="([^"]+)"/', $this->get('/kontakt')->getContent(), $treffer);
+        $this->travel(6)->seconds();
+
+        $this->send(['_t' => html_entity_decode($treffer[1])])->assertSessionHas('kontakt_status', 'gesendet');
+        Mail::assertQueuedCount(1);
+    }
+
+    #[TestDox('Spamverdacht ohne Nachrichten-Eingang: Mail geht raus, mit „[Spamverdacht]“ im Betreff zum Filtern')]
+    public function test_spamverdacht_ohne_eingang(): void
+    {
+        $this->send(['nachricht' => 'Exklusiver Räumungsverkauf: https://koffer.example'])->assertSessionHas('kontakt_status', 'gesendet');
+        $this->send(['nachricht' => 'Gibt es eine Gruppe für Wölflinge?'])->assertSessionHas('kontakt_status', 'gesendet');
+
+        $betreffe = Mail::queued(ContactMessageMail::class)->map(fn (ContactMessageMail $mail) => $mail->envelope()->subject)->all();
+        $this->assertCount(2, $betreffe);
+        $this->assertStringStartsWith('[Spamverdacht] Allgemeine Frage: ', $betreffe[0]);
+        $this->assertStringStartsWith('Allgemeine Frage: ', $betreffe[1]);
+    }
+
+    #[TestDox('Ein über zwei Stunden offenes Formular wird mit Hinweis zurückgegeben, Eingaben bleiben erhalten')]
     public function test_expired_form_keeps_input(): void
     {
-        $this->from('/kontakt')->send(['_t' => $this->token(2 * 86400)])
+        $this->from('/kontakt')->send(['_t' => $this->token(2 * 3600 + 1)])
             ->assertRedirect('/kontakt')
             ->assertSessionHas('kontakt_status', 'abgelaufen')
             ->assertSessionHasInput('nachricht');
@@ -190,7 +243,7 @@ class ContactFormTest extends TestCase
 
         $this->get('/veranstaltungen/woelflingstag')->assertOk()->assertSee('Frage an Lena Lange schreiben');
 
-        $this->post('/veranstaltungen/woelflingstag/frage', ['name' => 'Erika', 'email' => 'erika@example.org', 'nachricht' => 'Gibt es vegetarisches Essen?', '_t' => $this->token()])
+        $this->post('/veranstaltungen/woelflingstag/frage', ['name' => 'Erika', 'email' => 'erika@example.org', 'nachricht' => 'Gibt es vegetarisches Essen?', '_t' => $this->token(), 'altcha' => $this->arbeitsnachweis()])
             ->assertRedirect('/veranstaltungen/woelflingstag#frage');
         Mail::assertQueued(ContactMessageMail::class, function (ContactMessageMail $mail) {
             $mail->assertHasSubject('Frage zur Veranstaltung: Wölflingstag');
@@ -201,7 +254,7 @@ class ContactFormTest extends TestCase
         $this->assertTrue(AuditLog::query()->where('action', 'veranstaltung.frage:gesendet')->where('subject_id', $event->id)->exists());
 
         $this->from('/veranstaltungen/woelflingstag')
-            ->post('/veranstaltungen/woelflingstag/frage', ['name' => 'Erika', 'email' => '', 'nachricht' => 'Hallo, eine Frage', '_t' => $this->token()])
+            ->post('/veranstaltungen/woelflingstag/frage', ['name' => 'Erika', 'email' => '', 'nachricht' => 'Hallo, eine Frage', '_t' => $this->token(), 'altcha' => $this->arbeitsnachweis()])
             ->assertSessionHasErrorsIn('frage', ['email']);
         $this->get('/veranstaltungen/woelflingstag')->assertDontSee('Bitte prüfe deine Angaben.')->assertSee('<details class="mt-4 bg-white p-5 shadow-md"  open', false);
     }

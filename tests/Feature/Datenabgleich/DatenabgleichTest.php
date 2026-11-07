@@ -158,11 +158,16 @@ class DatenabgleichTest extends TestCase
     #[TestDox('Formular: ohne Mail-Adresse der ausfüllenden Person und ohne Einwilligung keine Meldung')]
     public function test_formular_pflichtangaben(): void
     {
-        $token = SpamGuard::token();
-        $this->travel(5)->seconds();
-        $this->post('/meine-daten', $this->formular(['_t' => $token, 'email_eltern' => '']))->assertSessionHasErrors('email_eltern');
-        $this->post('/meine-daten', $this->formular(['_t' => $token, 'einwilligung' => null]))->assertSessionHasErrors('einwilligung');
-        $this->post('/meine-daten', $this->formular(['_t' => $token, 'rolle' => 'mitglied']))->assertSessionHasErrors('email');
+        // Je Absendung ein frischer Zeitstempel, wie beim Neuladen nach einem Fehler.
+        $frisch = function (): string {
+            $token = SpamGuard::token();
+            $this->travel(5)->seconds();
+
+            return $token;
+        };
+        $this->post('/meine-daten', $this->formular(['_t' => $frisch(), 'email_eltern' => '']))->assertSessionHasErrors('email_eltern');
+        $this->post('/meine-daten', $this->formular(['_t' => $frisch(), 'einwilligung' => null]))->assertSessionHasErrors('einwilligung');
+        $this->post('/meine-daten', $this->formular(['_t' => $frisch(), 'rolle' => 'mitglied']))->assertSessionHasErrors('email');
         $this->assertSame(0, Datenmeldung::query()->count());
         Mail::assertNothingQueued();
     }

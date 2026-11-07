@@ -209,6 +209,9 @@ jobs:
           # geschlossen = zusätzlich nur nach Anmeldung. KLUFT_LIVE_URL = Ziel des Hinweises.
           KLUFT_TESTSYSTEM: ${{ vars.KLUFT_TESTSYSTEM }}
           KLUFT_LIVE_URL: ${{ vars.KLUFT_LIVE_URL }}
+          # Live-Seite: echte Mails ohne Test-Umleitung nur mit KLUFT_MAIL_LIVE=ja
+          # (scripts/mailer-waehlen.sh, docs/deploy.md „Mail“).
+          KLUFT_MAIL_LIVE: ${{ vars.KLUFT_MAIL_LIVE || secrets.KLUFT_MAIL_LIVE }}
           # Videokonferenzen (docs/videokonferenzen.md): gleiches Secret wie Prosody/jitsi-openid.
           JITSI_URL: ${{ vars.JITSI_URL }}
           JITSI_SECRET: ${{ secrets.JITSI_SECRET }}
@@ -296,14 +299,14 @@ jobs:
           else
             DB_BLOCK="DB_CONNECTION=sqlite"
           fi
-          # Echte Mails nur mit Brevo-SMTP-Zugang UND Test-Umleitung
-          # (F-MAIL-06): in der Testphase bekommt niemand außer der
-          # Testadresse Post. Sonst landen Mails nur im Log.
-          if [ -n "$BREVO_SMTP_LOGIN" ] && [ -n "$BREVO_SMTP_KEY" ] && [ -n "$MAIL_TEST_REDIRECT_TO" ]; then
-            MAIL_MAILER=smtp
-          else
-            MAIL_MAILER=log
-          fi
+          # Mailer (F-MAIL-06, scripts/mailer-waehlen.sh): mit Test-Umleitung
+          # an die Testadresse, auf Live-Seiten mit KLUFT_MAIL_LIVE=ja an die
+          # echten Empfänger, sonst nur ins Log (mit Warnung im Protokoll).
+          MAILER_WAHL="$(bash scripts/mailer-waehlen.sh)"
+          MAIL_MAILER="$(printf '%s\n' "$MAILER_WAHL" | sed -n 1p)"
+          MAILER_HINWEIS="$(printf '%s\n' "$MAILER_WAHL" | sed -n 2p)"
+          if [ -n "$MAILER_HINWEIS" ]; then echo "::warning::${MAILER_HINWEIS}"; fi
+          echo "Mailer: ${MAIL_MAILER}"
           # Platzhalter: der echte, dauerhafte Schlüssel wird erst auf dem
           # Server eingesetzt (s. "vendor/ auf dem Server entpacken").
           APP_KEY="base64:$(openssl rand -base64 32)"

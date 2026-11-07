@@ -45,6 +45,57 @@ Umsetzung von `docs/auftrag-aufrufzaehler.md`, Doku in `docs/aufrufe.md`.
 - **Neuer Scheduler-Befehl** `aufrufe:aufraeumen` täglich 03:40 (löscht Zähler älter als 25 Monate).
 - Backend: Seite „Aufrufe“ (Verwaltung), Dashboard-Widget „Meistgelesen (30 Tage)“, Angabe beim Bearbeiten von Beiträgen und Seiten (`PostForm`, `PageForm`).
 - **Stämme und Bezirke:** Vor dem Einschalten die eigene Datenschutzerklärung um den Satz aus `docs/aufrufe.md` ergänzen.
+### 2026-11-07 – Auftragnehmer Spamschutz → Haupt, Stammes, Bezirk: Spamschutz der Formulare (gemeinsamer Kern)
+Status: offen
+
+Anlass: Werbe-Spam über das Kontaktformular bei Roden. Doku in `docs/nachrichten.md`, Abschnitt „Spamschutz und Spamverdacht“.
+- **`App\Support\SpamGuard` (alle Formulare mit `_t`):** Mindestzeit 5 statt 3 Sekunden, Formular gilt 2 Stunden statt 24, jeder Zeitstempel nur **einmal** (`Cache::add`). Eigene Tests, die einen Zeitstempel mehrfach schicken, brauchen je Absendung einen frischen (siehe `DatenabgleichTest`, `WhatsAppNewsletterTest`).
+- **Spamverdacht** in `ContactController` (Kontakt, Frage zur Veranstaltung, Nachricht an eine Adresse, Gremium): Link oder fehlender Arbeitsnachweis → mit Nachrichten-Eingang Status `spam` ohne Mail (neuer Status in `ContactMessage::STATUSES`, Aktion „Kein Spam – zustellen“, Löschung nach 30 Tagen in `kontakt:prune`); ohne Eingang Mail mit „[Spamverdacht]“ im Betreff (`ContactMessageMail::$verdacht`). Audit-Aktion `…:zurueckgehalten`.
+- **Arbeitsnachweis:** neue npm-Abhängigkeit `altcha` 3.5.0 (fest), `resources/js/arbeitsnachweis.js` (nur geladen, wo ein `<altcha-widget>` steht), neue Route `GET /spamschutz/aufgabe` (`spamschutz.aufgabe`), Prüfung `App\Support\Arbeitsnachweis`, Konfiguration `kluft.arbeitsnachweis`. Das Widget steckt im Partial `partials/message-form-fields`.
+- **Tests:** Helfer-Trait `Tests\Concerns\LoestArbeitsnachweis` für Tests, die Nachrichtenformulare abschicken.
+### 2026-11-07 – Auftragnehmer Mailversand → Haupt, Stammes, Bezirk: Echte Mails auf Live-Seiten ohne Test-Umleitung (gemeinsamer Kern)
+Status: offen
+Branch: `fix/mailversand-live`
+
+**Was passiert ist:** Bei Roden (live) sind zwei echte Anfragen aus dem Kontaktformular vom 23.10.2026 nicht im Postfach angekommen. Sie stehen im Nachrichten-Eingang, dort sogar mit „zugestellt“. Wahrscheinlichste Ursache (der Server selbst war nicht einsehbar): Auf dem Server steht `MAIL_MAILER=log`, alle Mails landen nur im Server-Protokoll.
+
+**Warum:** Der Deploy setzte `MAIL_MAILER=smtp` nur, wenn Brevo-Zugang **und** `MAIL_TEST_REDIRECT_TO` gesetzt waren, sonst `log`. Das war eine Sicherheitssperre aus der Testphase (F-MAIL-06): Ein halb eingerichtetes Testsystem sollte nie echte Personen anschreiben. Damals war jede Instanz ein Testsystem. Ein Gegenstück für Live-Seiten gab es nie:
+- Roden hat keine Umleitung (laut `docs/roden.md` „fehlt noch“), also nur Log. Mit Umleitung wären die Mails an die Testadresse statt an kontakt@ gegangen.
+- Beim DV-Livegang wäre dasselbe passiert: `docs/livegang.md` sagte, am Livetag `MAIL_TEST_REDIRECT_TO` löschen. Danach hätte www.dpsg-trier.de gar keine Mails mehr verschickt.
+- Es fiel nicht auf: „zugestellt“ heißt in Kluft nur „in die Warteschlange gelegt“, `/status` meldete „Mails: ok“ (nur die Warteschlange wurde geprüft), und „E-Mail-Versand“ zeigte den Log-Modus nicht an.
+
+**Was sich ändert:**
+- Neues Skript `scripts/mailer-waehlen.sh`, aufgerufen in `deploy.yml`. Sicher per Voreinstellung:
+
+  | Brevo-SMTP | Umleitung | `KLUFT_TESTSYSTEM` | `KLUFT_MAIL_LIVE` | Ergebnis |
+  |---|---|---|---|---|
+  | fehlt | – | – | – | nur Log |
+  | da | gesetzt | – | – | an die Testadresse (wie bisher) |
+  | da | leer | gesetzt | – | nur Log |
+  | da | leer | leer | `ja` | **echte Mails** |
+  | da | leer | leer | leer | nur Log |
+
+  Absichtlich nicht „kein Testsystem = live“: Das Environment `dv-trier` (test.dpsg-trier.de) bekommt `KLUFT_TESTSYSTEM` laut `docs/livegang.md` erst am Livetag. Echte Mails ohne Umleitung gibt es deshalb nur mit ausdrücklichem `KLUFT_MAIL_LIVE=ja`.
+- Bei „nur Log“ schreibt der Deploy eine `::warning::` ins Protokoll, `/status` warnt beim E-Mail-Versand (betrifft auch das Monitoring), und Verwaltung → E-Mail-Versand zeigt oben „Mails werden nicht verschickt“.
+- Doku: `docs/deploy.md` (neuer Abschnitt „Mail“, Variable `KLUFT_MAIL_LIVE`), `docs/livegang.md` (am Livetag `KLUFT_MAIL_LIVE=ja` setzen), `docs/environment-vorlage/`.
+- Tests: `tests/Feature/Mail/MailerWahlTest.php` (alle Fälle des Skripts, Status, Backend-Hinweis).
+- **Nachrichten-Eingang ehrlich und mit Weiterleiten** (Wunsch des Nutzers):
+  - Neue Spalte `contact_messages.versand` (JSON, Migration `2026_11_07_160000`): Verlauf je Versand mit `art` (eingang, erneut, weitergeleitet), `an`, `ergebnis` (mail, log, fehler), `am`, `von`.
+  - Bei Mailer „log“ ist `zugestellt` jetzt `false`, und Liste, Ansicht und Unterzeile sagen „nur ins Server-Protokoll geschrieben, nicht verschickt“. Helfer `App\Support\Mailversand::nurProtokoll()`.
+  - Neue Aktionen „Erneut senden“ und „Weiterleiten“ (mit optionalem Hinweis), über die Warteschlange, mit Audit `nachricht.erneut:…` bzw. `nachricht.weitergeleitet:…`. `ContactMessage::mail()` baut die Mail aus der gespeicherten Nachricht.
+  - Tests: `tests/Feature/Content/NachrichtenVersandTest.php`.
+  - Mit `feature/spamschutz` (son1x/kluft#4) zusammengeführt (siehe Eintrag „Merge-Reihenfolge“): „Kein Spam – zustellen“ nutzt denselben Versandweg, zurückgehaltene Nachrichten stehen im Verlauf als „zurückgehalten“.
+
+**Was zu tun ist:**
+- **Stammes-Sitzung / Roden:**
+  1. In Brevo die Absender-Domain dpsg-roden.de bestätigen, falls noch offen.
+  2. Im Environment `roden` die Variable `KLUFT_MAIL_LIVE=ja` setzen; `MAIL_TEST_REDIRECT_TO` und `MAIL_TEST_ALLOWLIST` leer lassen bzw. löschen.
+  3. Nach dem Merge deployen und prüfen: Protokoll zeigt „Mailer: smtp“, unter „E-Mail-Versand“ kein Warnhinweis.
+  4. Testnachricht über das Kontaktformular schicken.
+
+  Mails, die bisher „zugestellt“ wurden, gehen nicht von selbst raus. Nach dem Deploy lassen sie sich mit „Weiterleiten“ bzw. „Erneut senden“ zustellen; die beiden offenen Anfragen bitte trotzdem gleich direkt beantworten („Per Mail antworten“). `docs/roden.md` („Fehlt noch“, „Offene Punkte 3“) entsprechend anpassen.
+- **Haupt-Sitzung / DV:** test.dpsg-trier.de ändert sich nicht (Umleitung bleibt). Für den Livegang ist `docs/livegang.md` angepasst.
+- **Bezirks-Sitzung / Saar-Hochwald:** bei Livegang wie Roden `KLUFT_MAIL_LIVE=ja`; vorher prüfen, ob dort Mails ankommen sollen.
 
 ### 2026-11-07 – Haupt → Stammes, Bezirk: Cookie-Banner ohne „Statistik“ (gemeinsamer Kern)
 Status: offen

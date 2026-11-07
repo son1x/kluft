@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Testing\TestResponse;
 use PHPUnit\Framework\Attributes\TestDox;
+use Tests\Concerns\LoestArbeitsnachweis;
 use Tests\TestCase;
 
 /**
@@ -20,6 +21,7 @@ use Tests\TestCase;
  */
 class GremiumKontaktTest extends TestCase
 {
+    use LoestArbeitsnachweis;
     use RefreshDatabase;
 
     private Person $vorstand;
@@ -46,7 +48,7 @@ class GremiumKontaktTest extends TestCase
     {
         return $this->from('/leitungsseite')->post('/gremium/leitung/nachricht', [
             'an' => $an, 'name' => 'Erika Muster', 'email' => 'erika@example.org', 'betreff' => 'Frage',
-            'nachricht' => 'Wie kann ich mitarbeiten?', '_t' => Crypt::encryptString((string) now()->subSeconds(20)->timestamp), ...$input,
+            'nachricht' => 'Wie kann ich mitarbeiten?', '_t' => Crypt::encryptString((string) now()->subSeconds(20)->timestamp), 'altcha' => $this->arbeitsnachweis(), ...$input,
         ]);
     }
 

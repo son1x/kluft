@@ -5,6 +5,8 @@ namespace App\Filament\Resources\Posts\Schemas;
 use App\Models\Event;
 use App\Models\Post;
 use App\Policies\PostPolicy;
+use App\Support\Aufrufe;
+use App\Support\Features;
 use App\Support\RoleCatalog;
 use App\Support\Websites;
 use Filament\Facades\Filament;
@@ -49,6 +51,12 @@ class PostForm
             Section::make()
                 ->columns(2)
                 ->components([
+                    // Seitenaufrufe ohne Personenbezug (docs/aufrufe.md): ob der Beitrag gelesen wird.
+                    Placeholder::make('aufrufe')
+                        ->hiddenLabel()
+                        ->content(fn (?Post $record) => Aufrufe::angabe('/aktuelles/'.$record?->slug))
+                        ->visible(fn (?Post $record) => $record?->exists && Features::enabled(Features::AUFRUFE))
+                        ->columnSpan(2),
                     TextInput::make('title')
                         ->label('Titel')
                         ->required()

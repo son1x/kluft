@@ -2,9 +2,13 @@
 
 namespace App\Filament\Resources\Pages\Schemas;
 
+use App\Models\Page;
+use App\Support\Aufrufe;
+use App\Support\Features;
 use App\Support\RoleCatalog;
 use App\Support\Websites;
 use Filament\Facades\Filament;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -22,6 +26,12 @@ class PageForm
             Section::make()
                 ->columns(2)
                 ->components([
+                    // Seitenaufrufe ohne Personenbezug (docs/aufrufe.md).
+                    Placeholder::make('aufrufe')
+                        ->hiddenLabel()
+                        ->content(fn (?Page $record) => Aufrufe::angabe(self::pfad($record)))
+                        ->visible(fn (?Page $record) => $record?->exists && Features::enabled(Features::AUFRUFE))
+                        ->columnSpan(2),
                     TextInput::make('title')
                         ->label('Titel')
                         ->required()
@@ -164,5 +174,11 @@ class PageForm
         }
 
         return $options;
+    }
+
+    /** Öffentlicher Pfad der Seite; die Seite „start“ ist die Startseite. */
+    private static function pfad(?Page $record): string
+    {
+        return $record?->slug === 'start' ? '/' : '/'.$record?->slug;
     }
 }

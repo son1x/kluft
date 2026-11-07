@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Mail\TestRecipientFilter;
 use App\Support\AuditLogger;
 use App\Support\MailQueueEntry;
+use App\Support\Mailversand;
 use BackedEnum;
 use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
@@ -67,6 +68,7 @@ class MailQueue extends Page
                     'error' => MailQueueEntry::shortError($row->exception),
                 ]),
             'dailyLimit' => (int) config('mail.daily_limit'),
+            'nurLog' => Mailversand::nurProtokoll(),
             'testUmleitung' => filled(config('mail.test_redirect_to')),
             'testSecret' => TestRecipientFilter::ausSecret(),
             'testBackend' => TestRecipientFilter::ausBackend(),

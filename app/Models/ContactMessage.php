@@ -21,6 +21,7 @@ use Illuminate\Support\Carbon;
  * @property string $nachricht
  * @property list<string> $empfaenger
  * @property bool $zugestellt
+ * @property ?list<array{art: string, an: list<string>, ergebnis: string, am: string, von: ?string}> $versand
  * @property string $status
  * @property ?Carbon $bearbeitet_am
  * @property ?string $notiz
@@ -33,12 +34,17 @@ class ContactMessage extends Model
 
     public const ARTEN = ['kontakt' => 'Kontaktformular', 'veranstaltung' => 'Frage zur Veranstaltung', 'direkt' => 'Nachricht an eine Adresse', 'gremium' => 'Nachricht an ein Gremium'];
 
+    /** Ergebnis eines Versands: verschickt, nur ins Server-Protokoll, fehlgeschlagen. */
+    public const ERGEBNISSE = ['mail' => 'verschickt', 'log' => 'nur ins Server-Protokoll geschrieben, nicht verschickt', 'fehler' => 'fehlgeschlagen', 'zurueckgehalten' => 'zurückgehalten (Spamverdacht), nicht verschickt'];
+
+    public const VERSAND_ARTEN = ['eingang' => 'Eingang', 'erneut' => 'Erneut gesendet', 'weitergeleitet' => 'Weitergeleitet', 'kein_spam' => 'Kein Spam – zugestellt'];
+
     protected $fillable = ['art', 'contact_topic_id', 'event_id', 'thema', 'name', 'email', 'betreff', 'nachricht', 'empfaenger', 'zugestellt',
-        'status', 'bearbeitet_von', 'bearbeitet_am', 'notiz'];
+        'versand', 'status', 'bearbeitet_von', 'bearbeitet_am', 'notiz'];
 
     protected function casts(): array
     {
-        return ['nachricht' => 'encrypted', 'empfaenger' => 'array', 'zugestellt' => 'boolean', 'bearbeitet_am' => 'datetime'];
+        return ['nachricht' => 'encrypted', 'empfaenger' => 'array', 'zugestellt' => 'boolean', 'versand' => 'array', 'bearbeitet_am' => 'datetime'];
     }
 
     /**
@@ -57,17 +63,45 @@ class ContactMessage extends Model
         return $this->belongsTo(User::class, 'bearbeitet_von');
     }
 
-    /** Mail wie beim Absenden, z. B. um eine zurückgehaltene Nachricht doch zuzustellen. */
-    public function mail(): ContactMessageMail
+    /**
+     * Mail wie beim Absenden (Antwort geht an die Absender*in), z. B. zum
+     * erneuten Senden oder Weiterleiten; optional mit Hinweis obenan.
+     */
+    public function mail(?string $hinweis = null): ContactMessageMail
     {
+        $kontext = array_filter([
+            $hinweis,
+            $this->event ? $this->event->title.' ('.$this->event->dateLabel().') – '.route('events.show', $this->event->slug) : null,
+        ]);
+
         return new ContactMessageMail(
             topic: $this->art === 'veranstaltung' ? 'Frage zur Veranstaltung' : $this->thema,
             senderName: $this->name,
             senderEmail: $this->email,
             subjectLine: $this->betreff,
             body: $this->nachricht,
-            context: $this->event ? $this->event->title.' ('.$this->event->dateLabel().') – '.route('events.show', $this->event->slug) : null,
+            context: $kontext ? implode("\n", $kontext) : null,
         );
+    }
+
+    /**
+     * Versand im Verlauf festhalten.
+     *
+     * @param  list<string>  $an
+     */
+    public function versandEintragen(string $art, array $an, string $ergebnis, ?string $von = null): void
+    {
+        $this->versand = [...$this->versand ?? [], [
+            'art' => $art, 'an' => $an, 'ergebnis' => $ergebnis, 'am' => now()->toIso8601String(), 'von' => $von,
+        ]];
+    }
+
+    /** Ergebnis des letzten Versands („mail“, „log“, „fehler“) oder null bei älteren Nachrichten. */
+    public function letztesErgebnis(): ?string
+    {
+        $versand = $this->versand ?? [];
+
+        return $versand === [] ? null : (string) end($versand)['ergebnis'];
     }
 
     /** Wie lange Nachrichten aufbewahrt werden. */

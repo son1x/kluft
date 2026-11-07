@@ -74,6 +74,8 @@ class NachrichtenEingangTest extends TestCase
         Mail::assertNothingQueued();
         $m = ContactMessage::query()->sole();
         $this->assertSame(['spam', false, 'Spamverdacht: Link in der Nachricht'], [$m->status, $m->zugestellt, $m->notiz]);
+        // Im Versand-Verlauf: zurückgehalten, nicht „fehlgeschlagen“.
+        $this->assertSame(['eingang', 'zurueckgehalten'], [$m->versand[0]['art'], $m->letztesErgebnis()]);
         $this->assertSame(['bolivien@example.org'], $m->empfaenger);
         $this->assertTrue(AuditLog::query()->where('action', 'kontakt:zurueckgehalten:bolivien')->exists());
 
@@ -97,11 +99,12 @@ class NachrichtenEingangTest extends TestCase
             ->filterTable('status', ['spam'])
             ->assertCanSeeTableRecords([$spam])
             ->callTableAction('keinSpam', $spam)
-            ->assertNotified('Zugestellt');
+            ->assertNotified('Zugestellt an bolivien@example.org');
 
         Mail::assertQueuedCount(2);
         Mail::assertQueued(ContactMessageMail::class, fn (ContactMessageMail $mail) => $mail->hasTo('bolivien@example.org') && str_contains($mail->body, 'Lager-Bericht') && ! $mail->verdacht);
         $this->assertSame(['neu', true, null], [$spam->fresh()->status, $spam->fresh()->zugestellt, $spam->fresh()->notiz]);
+        $this->assertSame([['eingang', 'zurueckgehalten'], ['kein_spam', 'mail']], array_map(fn (array $v) => [$v['art'], $v['ergebnis']], $spam->fresh()->versand));
         // Jetzt zählt sie als neue Nachricht mit.
         $this->assertSame('2', ContactMessageResource::getNavigationBadge());
     }

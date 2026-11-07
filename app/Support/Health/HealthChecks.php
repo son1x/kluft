@@ -10,6 +10,7 @@ use App\Services\Backup\BackupService;
 use App\Services\Instagram\InstagramClient;
 use App\Services\Mitglieder\NamiVerzeichnis;
 use App\Services\WhatsApp\WhatsAppSettings;
+use App\Support\Mailversand;
 use App\Support\Roadmap;
 use App\Support\WhatsAppMode;
 use Illuminate\Support\Carbon;
@@ -111,6 +112,10 @@ class HealthChecks
 
         if ($pending > 0 && $oldest !== null && $oldest < now()->subMinutes(15)->timestamp) {
             return [self::FAIL, "{$pending} Mail(s) warten seit über 15 Minuten."];
+        }
+        // Mailer „log“ (docs/deploy.md „Mail“): Die Warteschlange läuft, aber nichts verlässt den Server.
+        if (Mailversand::nurProtokoll()) {
+            return [self::WARN, 'Mails werden nur protokolliert, nicht verschickt (Mailer „log“).'];
         }
         if ($failed > 0) {
             return [self::WARN, "{$failed} Mail(s) fehlgeschlagen – im Backend unter „E-Mail-Versand“ prüfen."];

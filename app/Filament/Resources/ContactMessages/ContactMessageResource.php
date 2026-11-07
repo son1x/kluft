@@ -4,9 +4,11 @@ namespace App\Filament\Resources\ContactMessages;
 
 use App\Filament\Resources\ContactMessages\Pages\ListContactMessages;
 use App\Models\ContactMessage;
+use App\Models\ContactTopic;
 use App\Models\User;
 use App\Support\AuditLogger;
 use App\Support\Features;
+use App\Support\Mailversand;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
@@ -15,6 +17,7 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
@@ -172,7 +175,14 @@ class ContactMessageResource extends Resource
             TextColumn::make('empfaenger')->label('Zugestellt an')->wrap()->toggleable()
                 ->state(fn (ContactMessage $record) => implode(', ', $record->empfaenger)),
             IconColumn::make('zugestellt')->label('Mail')->boolean()
-                ->tooltip(fn (ContactMessage $record) => $record->zugestellt ? 'Per Mail zugestellt' : 'Mail fehlgeschlagen – bitte selbst weitergeben'),
+                // Mailer „log“: nicht verschickt, aber auch kein Fehler beim Versand.
+                ->icon(fn (ContactMessage $record) => $record->letztesErgebnis() === 'log' ? 'heroicon-o-exclamation-triangle' : null)
+                ->color(fn (ContactMessage $record) => $record->letztesErgebnis() === 'log' ? 'warning' : null)
+                ->tooltip(fn (ContactMessage $record) => match (true) {
+                    $record->letztesErgebnis() === 'log' => 'Nur ins Server-Protokoll geschrieben, nicht verschickt – bitte weiterleiten, sobald Mails wieder rausgehen',
+                    $record->zugestellt => 'Per Mail zugestellt',
+                    default => 'Mail fehlgeschlagen – bitte erneut senden oder weiterleiten',
+                }),
             TextColumn::make('status')->label('Status')->badge()
                 ->formatStateUsing(fn (string $state) => ContactMessage::STATUSES[$state] ?? $state)
                 ->color(fn (string $state) => match ($state) {
@@ -212,6 +222,25 @@ class ContactMessageResource extends Resource
                 ->modalDescription(fn (ContactMessage $record) => 'Die Nachricht geht jetzt per Mail an: '.implode(', ', $record->empfaenger).'.')
                 ->action(fn (ContactMessage $record) => self::keinSpam($record)),
             ActionGroup::make([
+                // Falls etwas schiefging (Mail nur protokolliert, fehlgeschlagen, falsche Person).
+                Action::make('erneutSenden')->label('Erneut senden')->icon('heroicon-o-arrow-path')
+                    ->requiresConfirmation()
+                    ->modalHeading('Erneut senden')
+                    ->modalDescription(fn (ContactMessage $record) => 'Die Nachricht geht noch einmal per Mail an: '.implode(', ', $record->empfaenger).'. Antworten gehen direkt an die Absender*in.'
+                        .(Mailversand::nurProtokoll() ? ' Achtung: Mails werden derzeit nur ins Server-Protokoll geschrieben (Verwaltung → E-Mail-Versand).' : ''))
+                    ->action(fn (ContactMessage $record) => self::senden($record, 'erneut', $record->empfaenger)),
+                Action::make('weiterleiten')->label('Weiterleiten')->icon('heroicon-o-arrow-uturn-right')
+                    ->modalHeading('Weiterleiten')
+                    ->modalDescription(fn () => 'Die Nachricht geht per Mail an die angegebene Adresse; Antworten gehen direkt an die Absender*in.'
+                        .(Mailversand::nurProtokoll() ? ' Achtung: Mails werden derzeit nur ins Server-Protokoll geschrieben (Verwaltung → E-Mail-Versand).' : ''))
+                    ->schema([
+                        TextInput::make('an')->label('An')->email()->required()->maxLength(254)
+                            ->datalist(fn () => self::adressVorschlaege())
+                            ->helperText('z. B. die Ansprechperson der Stufe oder Veranstaltung'),
+                        Textarea::make('hinweis')->label('Hinweis an die Empfänger*in (optional)')->maxLength(500)->rows(2),
+                    ])
+                    ->modalSubmitActionLabel('Weiterleiten')
+                    ->action(fn (ContactMessage $record, array $data) => self::senden($record, 'weitergeleitet', [mb_strtolower(trim((string) $data['an']))], $data['hinweis'] ?? null)),
                 Action::make('inBearbeitung')->label('In Bearbeitung')->icon('heroicon-o-clock')
                     ->visible(fn (ContactMessage $record) => $record->status !== 'in_bearbeitung')
                     ->action(fn (ContactMessage $record) => self::status($record, 'in_bearbeitung')),
@@ -241,25 +270,64 @@ class ContactMessageResource extends Resource
         AuditLogger::log('nachricht.'.$status, Filament::auth()->user(), ContactMessage::class, $record->id, request());
     }
 
-    /** Zurückgehaltene Nachricht doch per Mail zustellen und in den Eingang übernehmen. */
+    /** Zurückgehaltene Nachricht (Spamverdacht) doch an die zuständige Person mailen. */
     public static function keinSpam(ContactMessage $record): void
     {
         abort_unless(self::darf($record) && $record->status === 'spam', 403);
 
+        $record->fill(['status' => 'neu', 'notiz' => null, 'bearbeitet_von' => Filament::auth()->id(), 'bearbeitet_am' => now()]);
+        self::senden($record, 'kein_spam', $record->empfaenger);
+    }
+
+    /**
+     * Erneut senden oder weiterleiten: über die Warteschlange, im Verlauf
+     * festgehalten, ehrliche Meldung bei Mailer „log“.
+     *
+     * @param  list<string>  $an
+     */
+    public static function senden(ContactMessage $record, string $art, array $an, ?string $hinweis = null): string
+    {
+        abort_unless(self::darf($record) && $an !== [], 403);
+        $user = Filament::auth()->user();
+        $hinweis = filled($hinweis) ? 'Weitergeleitet von '.($user->name ?? 'der Redaktion').': '.trim((string) $hinweis) : null;
+
         try {
-            Mail::to($record->empfaenger)->send($record->mail());
-            $zugestellt = true;
+            Mail::to($an)->send($record->mail($hinweis));
+            $ergebnis = Mailversand::nurProtokoll() ? 'log' : 'mail';
         } catch (Throwable) {
-            $zugestellt = false;
+            $ergebnis = 'fehler';
         }
 
-        $record->fill(['status' => 'neu', 'zugestellt' => $zugestellt, 'notiz' => null, 'bearbeitet_von' => Filament::auth()->id(), 'bearbeitet_am' => now()])->save();
-        AuditLogger::log('nachricht.kein_spam', Filament::auth()->user(), ContactMessage::class, $record->id, request());
+        $record->versandEintragen($art, $an, $ergebnis, $user?->name);
+        // Angekommen ist sie, sobald ein Versand geklappt hat; ein späterer Fehler ändert daran nichts.
+        if ($ergebnis === 'mail') {
+            $record->zugestellt = true;
+        }
+        $record->save();
+        AuditLogger::log('nachricht.'.$art.':'.$ergebnis, $user, ContactMessage::class, $record->id, request());
 
-        Notification::make()
-            ->title($zugestellt ? 'Zugestellt' : 'Mail fehlgeschlagen – bitte selbst weitergeben')
-            ->color($zugestellt ? 'success' : 'warning')
-            ->send();
+        $wort = match ($art) {
+            'weitergeleitet' => 'Weitergeleitet',
+            'kein_spam' => 'Zugestellt',
+            default => 'Erneut gesendet',
+        };
+        $notification = match ($ergebnis) {
+            'mail' => Notification::make()->title($wort.' an '.implode(', ', $an))->success(),
+            'log' => Notification::make()->title('Nicht verschickt')->body('Mails werden derzeit nur ins Server-Protokoll geschrieben. Unter Verwaltung → E-Mail-Versand steht, was zu tun ist.')->warning()->persistent(),
+            default => Notification::make()->title('Mail fehlgeschlagen')->body('Bitte später erneut versuchen.')->danger(),
+        };
+        $notification->send();
+
+        return $ergebnis;
+    }
+
+    /** @return list<string> Adressen der Kontaktthemen als Vorschläge beim Weiterleiten. */
+    private static function adressVorschlaege(): array
+    {
+        return ContactTopic::query()->active()->get()
+            ->flatMap(fn (ContactTopic $topic) => $topic->recipients())
+            ->push(ContactTopic::fallbackEmail())
+            ->filter()->map(fn ($adresse) => mb_strtolower((string) $adresse))->unique()->sort()->values()->all();
     }
 
     private static function mailto(ContactMessage $record): string

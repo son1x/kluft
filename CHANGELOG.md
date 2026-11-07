@@ -7,6 +7,8 @@ Admins. Kurz und aus Sicht der Redaktion schreiben.
 ## 0.9.0
 
 - Kontaktformulare besser gegen Spam geschützt: Jedes Formular gilt nur einmal und zwei Stunden, dazu eine unsichtbare Rechenaufgabe im Browser (ohne Captcha, ohne Drittanbieter). Verdächtige Nachrichten (mit Link oder ohne Rechenaufgabe) gehen nicht mehr per Mail raus, sondern warten im Nachrichten-Eingang unter „Spamverdacht“; „Kein Spam – zustellen“ schickt sie doch. Ohne Nachrichten-Eingang steht „[Spamverdacht]“ im Betreff.
+- Nachrichten-Eingang: „Erneut senden“ und „Weiterleiten“ (an eine andere Adresse, mit Hinweis), mit Verlauf unter „Ansehen“. Gehen Mails nur ins Server-Protokoll, steht das bei der Nachricht statt „zugestellt“.
+- E-Mail-Versand: Live-Websites verschicken Mails jetzt auch ohne Test-Umleitung (Einstellung „KLUFT_MAIL_LIVE“). Gehen Mails nur ins Server-Protokoll, steht das deutlich unter Verwaltung → E-Mail-Versand und auf der Statusseite.
 - Datenschutz-Einstellungen ohne die Auswahl „Statistik“, weil Kluft keine Statistik erhebt.
 - DV Trier: Datenschutzerklärung auf Grundlage der abgestimmten Fassung von dpsg-trier.de, ergänzt um Anmeldungen, Umfragen, Nachrichten-Eingang, Videokonferenzen, Einbettungen und Löschfristen.
 - Mediathek: Autor*innen, Stufen- und Sektionsadmins bearbeiten und löschen nur noch ihre eigenen Uploads; Vorstand und Verwaltung weiterhin alle. Hochladen und Auswählen bleibt für alle.

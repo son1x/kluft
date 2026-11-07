@@ -11,6 +11,7 @@ use App\Models\Person;
 use App\Support\AuditLogger;
 use App\Support\Features;
 use App\Support\Mailformular;
+use App\Support\Mailversand;
 use App\Support\SpamGuard;
 use App\Support\Spamverdacht;
 use Illuminate\Http\RedirectResponse;
@@ -249,11 +250,20 @@ class ContactController extends Controller
         if (! Features::enabled(Features::NACHRICHTEN)) {
             return false;
         }
+        // Spamverdacht: bewusst nicht gemailt. Mailer „log“: angenommen, aber nicht verschickt.
+        $ergebnis = match (true) {
+            ($werte['status'] ?? null) === 'spam' => 'zurueckgehalten',
+            ! $zugestellt => 'fehler',
+            Mailversand::nurProtokoll() => 'log',
+            default => 'mail',
+        };
         try {
-            ContactMessage::query()->create($werte + [
+            $nachricht = new ContactMessage($werte + [
                 'name' => $data['name'], 'email' => mb_strtolower((string) $data['email']), 'nachricht' => $data['nachricht'],
-                'empfaenger' => $recipients, 'zugestellt' => $zugestellt,
+                'empfaenger' => $recipients, 'zugestellt' => $ergebnis === 'mail',
             ]);
+            $nachricht->versandEintragen('eingang', $recipients, $ergebnis);
+            $nachricht->save();
 
             return true;
         } catch (Throwable $e) {

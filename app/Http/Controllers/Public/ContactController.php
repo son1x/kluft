@@ -11,6 +11,7 @@ use App\Models\Person;
 use App\Support\AuditLogger;
 use App\Support\Features;
 use App\Support\Mailformular;
+use App\Support\Mailversand;
 use App\Support\SpamGuard;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -222,11 +223,15 @@ class ContactController extends Controller
         if (! Features::enabled(Features::NACHRICHTEN)) {
             return false;
         }
+        // Mailer „log“: angenommen, aber nicht verschickt – so steht es auch im Eingang.
+        $ergebnis = ! $zugestellt ? 'fehler' : (Mailversand::nurProtokoll() ? 'log' : 'mail');
         try {
-            ContactMessage::query()->create($werte + [
+            $nachricht = new ContactMessage($werte + [
                 'name' => $data['name'], 'email' => mb_strtolower((string) $data['email']), 'nachricht' => $data['nachricht'],
-                'empfaenger' => $recipients, 'zugestellt' => $zugestellt,
+                'empfaenger' => $recipients, 'zugestellt' => $ergebnis === 'mail',
             ]);
+            $nachricht->versandEintragen('eingang', $recipients, $ergebnis);
+            $nachricht->save();
 
             return true;
         } catch (Throwable $e) {

@@ -99,6 +99,8 @@ return [
         'umfragen' => true,
         'videokonferenzen' => true,
         'adressbuch' => false, // zurückgestellt (07.11.2026), docs/adressbuch.md
+        // Seitenaufrufe ohne Personenbezug; Datenschutzerklärung ist ergänzt (docs/aufrufe.md).
+        'aufrufe' => true,
     ],
 
     // Download-Seite unter „Diözesanverband“ (s. config/dpsg.php).

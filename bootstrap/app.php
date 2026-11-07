@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\AufrufZaehlen;
 use App\Http\Middleware\LegacyRedirects;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\TestsystemSchutz;
@@ -20,6 +21,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(LegacyRedirects::class);
         // Testsystem: noindex, im Modus „geschlossen“ nur nach Anmeldung (docs/livegang.md).
         $middleware->web(append: TestsystemSchutz::class);
+        // Seitenaufrufe ohne Personenbezug zählen (Funktion „aufrufe“, docs/aufrufe.md).
+        $middleware->web(append: AufrufZaehlen::class);
         // Gäste auf Routen mit „auth“ zur Anmeldung der Redaktion (Filament
         // leitet von dort zu Entra ID bzw. zum E-Mail-Code weiter).
         $middleware->redirectGuestsTo('/admin/login');

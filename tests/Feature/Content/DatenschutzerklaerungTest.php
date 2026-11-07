@@ -27,7 +27,7 @@ class DatenschutzerklaerungTest extends TestCase
     {
         $text = RequiredPagesSeeder::datenschutz();
 
-        foreach (['§ 6 Abs. 1 lit. b KDG', 'TDDDG', 'netcup', 'Brevo GmbH', 'Recht auf Unterrichtung (§ 21 KDG)', 'Überdiözesane Aufsichtsstelle', 'Anmeldung zu Veranstaltungen', 'Umfragen', 'youtube-nocookie.com', 'nach 6 Monaten'] as $teil) {
+        foreach (['§ 6 Abs. 1 lit. b KDG', 'TDDDG', 'netcup', 'Brevo GmbH', 'Recht auf Unterrichtung (§ 21 KDG)', 'Überdiözesane Aufsichtsstelle', 'Anmeldung zu Veranstaltungen', 'Umfragen', 'youtube-nocookie.com', 'nach 6 Monaten', 'zählt die Website Seitenaufrufe', '„Do Not Track“', 'nach 25 Monaten gelöscht'] as $teil) {
             $this->assertStringContainsString($teil, $text);
         }
         foreach (['TODO', 'Privacy Shield', 'Telemediengesetz', 'Matomo', 'AWStats'] as $alt) {
@@ -50,6 +50,28 @@ class DatenschutzerklaerungTest extends TestCase
         $this->assertSame('<p>Von Hand angepasst.</p>', $seite->fresh()->body);
 
         $this->get('/datenschutz')->assertOk()->assertSee('Von Hand angepasst.');
+    }
+
+    #[TestDox('Migration Seitenaufrufe: ersetzt den Absatz zur Webanalyse nur, wenn er noch wörtlich dasteht')]
+    public function test_migration_seitenaufrufe(): void
+    {
+        $migration = require base_path('instanzen/dv-trier/migrations/2026_11_07_150100_datenschutz_seitenaufrufe.php');
+        $alt = '<h2>II. Bereitstellung</h2>'.$migration::ALT.'<h2>III. Cookies</h2>';
+        $seite = Page::query()->create(['slug' => 'datenschutz', 'title' => 'Datenschutzerklärung', 'status' => 'published', 'published_at' => now(), 'body' => $alt]);
+
+        $migration->up();
+        $body = $seite->fresh()->body;
+        $this->assertStringContainsString('zählt die Website Seitenaufrufe', $body);
+        $this->assertStringNotContainsString('Wir setzen keine Werkzeuge zur Webanalyse', $body);
+        $this->assertStringStartsWith('<h2>II. Bereitstellung</h2>', $body);
+        $this->assertStringEndsWith('<h2>III. Cookies</h2>', $body);
+        $this->assertStringContainsString($migration::NEU, RequiredPagesSeeder::datenschutz());
+
+        // Im Backend leicht geänderter Absatz: nichts tun.
+        $angepasst = str_replace('Reichweitenmessung', 'Reichweitenmessung (Stand 2026)', $alt);
+        $seite->update(['body' => $angepasst]);
+        $migration->up();
+        $this->assertSame($angepasst, $seite->fresh()->body);
     }
 
     #[TestDox('Seite zeigt Überschriften und Listen der neuen Fassung')]

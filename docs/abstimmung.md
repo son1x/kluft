@@ -35,6 +35,17 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-07 – Auftragnehmer Aufrufzähler → Haupt, Stammes, Bezirk: Seitenaufrufe zählen (gemeinsamer Kern)
+Status: offen
+
+Umsetzung von `docs/auftrag-aufrufzaehler.md`, Doku in `docs/aufrufe.md`.
+- **Neue Tabelle** `seitenaufrufe` (nur `datum`, `pfad`, `aufrufe`; eindeutig `datum`+`pfad`, Index auf `pfad`), Migration `2026_11_07_150000_create_seitenaufrufe_table`, Model `App\Models\Seitenaufruf`.
+- **Neue Middleware in der `web`-Gruppe:** `App\Http\Middleware\AufrufZaehlen` (nach `TestsystemSchutz`). Zählt nur mit Schalter an; schreibt per `defer()` nach der Antwort.
+- **Neuer Schalter** `Features::AUFRUFE` (`aufrufe`), Standard aus. Beim DV in `instanzen/dv-trier/config.php` an, bei Roden und Saar-Hochwald aus: dort wird nichts gezählt und nichts angezeigt.
+- **Neuer Scheduler-Befehl** `aufrufe:aufraeumen` täglich 03:40 (löscht Zähler älter als 25 Monate).
+- Backend: Seite „Aufrufe“ (Verwaltung), Dashboard-Widget „Meistgelesen (30 Tage)“, Angabe beim Bearbeiten von Beiträgen und Seiten (`PostForm`, `PageForm`).
+- **Stämme und Bezirke:** Vor dem Einschalten die eigene Datenschutzerklärung um den Satz aus `docs/aufrufe.md` ergänzen.
+
 ### 2026-11-07 – Haupt → Stammes, Bezirk: Cookie-Banner ohne „Statistik“ (gemeinsamer Kern)
 Status: offen
 

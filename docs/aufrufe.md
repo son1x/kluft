@@ -95,3 +95,12 @@ einfügen.
 | Backend | `app/Filament/Pages/Aufrufe.php`, `app/Filament/Widgets/AufrufeVerlauf.php`, `app/Filament/Widgets/Meistgelesen.php` |
 | Aufräumen | `app/Console/Commands/AufrufeAufraeumenCommand.php`, `routes/console.php` |
 | Tests | `tests/Feature/Aufrufe/AufrufeTest.php` |
+
+## Zurücksetzen (Livegang)
+
+Beim Livegang wird die Datenbank von Test nach Live kopiert, die Zähler kämen also mit. Deshalb nach den Prüfungen am Livetag:
+
+- Backend → Verwaltung → Aufrufe → **„Alle Zähler löschen“** (nur Admins, mit Rückfrage, steht im Audit-Log), oder
+- auf dem Server `php artisan aufrufe:zuruecksetzen --force`.
+
+Oben auf der Seite „Aufrufe“ steht immer, seit wann gezählt wird, bzw. „Noch keine Aufrufe gezählt (0).“ Daran sieht man, dass das Zurücksetzen geklappt hat (Schritt 9 in `docs/livegang.md`).

@@ -89,6 +89,7 @@ Beide Kluft-Installationen nutzen den Instanz-Ordner `instanzen/dv-trier`. Der D
 - Kontaktformular (geht an die Testadresse)
 - eine alte WordPress-Adresse (Weiterleitung)
 - Bolivien, Beraten und Scoutergy
+- Backend → Verwaltung → Aufrufe: „Alle Zähler löschen“ ausprobieren, danach steht dort „Noch keine Aufrufe gezählt (0).“
 
 ## Ablauf am Livetag (21.11.)
 
@@ -116,10 +117,13 @@ Beide Kluft-Installationen nutzen den Instanz-Ordner `instanzen/dv-trier`. Der D
    - Kontaktformular mit echter Mail;
    - eine alte WordPress-Adresse;
    - Systemstatus im Backend.
-9. **Test schließen:**
+9. **Statistik auf null setzen**, erst nach den Prüfungen, weil die Datenbank samt Testaufrufen von Test kommt und auch die Prüfaufrufe mitzählen würden:
+   - Backend → Verwaltung → Aufrufe → „Alle Zähler löschen“ (nur Admins). Alternativ auf dem Server `php artisan aufrufe:zuruecksetzen --force`.
+   - **Prüfen:** Oben auf der Seite steht „Noch keine Aufrufe gezählt (0).“ Nach dem ersten Besuch von außen steht dort „Gezählt seit 21.11.2026“.
+10. **Test schließen:**
    - Im Environment `dv-trier` die Variablen `KLUFT_TESTSYSTEM=geschlossen` und `KLUFT_LIVE_URL=https://www.dpsg-trier.de` setzen.
    - Danach Deploy `dv-trier`.
-10. **Danach:**
+11. **Danach:**
     - `MONITOR_URL` im Environment `dv-trier-live` setzen. `dv-trier-live` kommt zu Monitoring und Web-Checks (Technik).
     - Backups der Live-Website prüfen.
     - bolivienpartnerschaft.de und beraten-online.de auf Live umstellen.

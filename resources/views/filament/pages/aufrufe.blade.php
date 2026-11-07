@@ -2,9 +2,17 @@
 <x-filament-panels::page>
     <x-filament::section>
         <div class="flex flex-wrap items-end justify-between gap-4">
-            <p class="text-sm">
-                Gezählt werden Aufrufe ohne Bots und ohne angemeldete Redaktion. Es werden keine Daten über Besucher*innen gespeichert.
-            </p>
+            <div class="text-sm">
+                <p>Gezählt werden Aufrufe ohne Bots und ohne angemeldete Redaktion. Es werden keine Daten über Besucher*innen gespeichert.</p>
+                @php($seit = \App\Support\Aufrufe::seit())
+                <p class="mt-1 font-medium">
+                    @if ($seit)
+                        Gezählt seit {{ $seit->format('d.m.Y') }}: {{ number_format(\App\Support\Aufrufe::gesamt(), 0, ',', '.') }} Aufrufe insgesamt.
+                    @else
+                        Noch keine Aufrufe gezählt (0).
+                    @endif
+                </p>
+            </div>
             <label class="text-sm" style="min-width: 14rem">
                 <x-filament::input.wrapper>
                     <x-filament::input.select wire:model.live="zeitraum" aria-label="Zeitraum">

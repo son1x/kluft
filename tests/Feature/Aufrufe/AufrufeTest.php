@@ -290,4 +290,31 @@ class AufrufeTest extends TestCase
 
         $this->get('/ueber-uns')->assertOk()->assertSee('Über uns');
     }
+
+    #[TestDox('Livegang: Zähler zurücksetzen per Befehl und Knopf (nur Admins); Seite zeigt danach 0')]
+    public function test_zuruecksetzen(): void
+    {
+        Seitenaufruf::query()->insert([
+            ['datum' => today()->subDays(3)->toDateString(), 'pfad' => '/', 'aufrufe' => 40],
+            ['datum' => today()->toDateString(), 'pfad' => '/aktuelles', 'aufrufe' => 2],
+        ]);
+        $this->assertSame(42, Aufrufe::gesamt());
+        $this->assertSame(today()->subDays(3)->toDateString(), Aufrufe::seit()->toDateString());
+
+        $this->artisan('aufrufe:zuruecksetzen', ['--force' => true])->assertSuccessful();
+        $this->assertSame(0, Aufrufe::gesamt());
+        $this->assertNull(Aufrufe::seit());
+
+        Seitenaufruf::query()->insert(['datum' => today()->toDateString(), 'pfad' => '/', 'aufrufe' => 5]);
+        Filament::setCurrentPanel('admin');
+
+        $this->actingAs($this->user('verwaltung'));
+        Livewire::test(AufrufeSeite::class)->assertActionHidden('zuruecksetzen');
+
+        $this->actingAs($this->user('admin'));
+        $this->get('/admin/aufrufe')->assertOk()->assertSee('5 Aufrufe insgesamt');
+        Livewire::test(AufrufeSeite::class)->callAction('zuruecksetzen')->assertNotified();
+        $this->assertSame(0, Seitenaufruf::query()->count());
+        $this->get('/admin/aufrufe')->assertOk()->assertSee('Noch keine Aufrufe gezählt (0).');
+    }
 }

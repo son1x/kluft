@@ -49,6 +49,20 @@ class Aufrufe
         return mb_substr(mb_strtolower($pfad), 0, 255);
     }
 
+    /** Erster gezählter Tag oder null, wenn noch nichts gezählt ist (z. B. nach dem Zurücksetzen). */
+    public static function seit(): ?Carbon
+    {
+        $datum = Seitenaufruf::query()->min('datum');
+
+        return $datum ? Carbon::parse($datum) : null;
+    }
+
+    /** Alle gezählten Aufrufe seit Beginn. */
+    public static function gesamt(): int
+    {
+        return (int) Seitenaufruf::query()->sum('aufrufe');
+    }
+
     /** Zähler für Pfad und Tag um eins erhöhen (MariaDB und SQLite). */
     public static function erhoehen(string $pfad, string $datum): void
     {

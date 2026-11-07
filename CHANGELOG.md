@@ -6,6 +6,7 @@ Admins. Kurz und aus Sicht der Redaktion schreiben.
 
 ## 0.9.0
 
+- Aufrufe: Anzeige „Gezählt seit …“ und Knopf „Alle Zähler löschen“ für Admins (Livegang: Statistik beginnt bei null).
 - Seitenaufrufe zählen (Funktion „Seitenaufrufe zählen“): Verwaltung → Aufrufe zeigt, welche Seiten, Beiträge und Veranstaltungen wie oft aufgerufen werden, das Dashboard die meistgelesenen; beim Bearbeiten eines Beitrags oder einer Seite steht „Aufrufe: 30 Tage …, gesamt …“. Gezählt wird ohne IP-Adresse, Cookie oder Skript, ohne Bots und ohne angemeldete Redaktion.
 - Datenschutz-Einstellungen ohne die Auswahl „Statistik“, weil Kluft keine Statistik erhebt.
 - DV Trier: Datenschutzerklärung auf Grundlage der abgestimmten Fassung von dpsg-trier.de, ergänzt um Anmeldungen, Umfragen, Nachrichten-Eingang, Videokonferenzen, Einbettungen und Löschfristen.

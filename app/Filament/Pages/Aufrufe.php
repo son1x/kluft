@@ -3,9 +3,12 @@
 namespace App\Filament\Pages;
 
 use App\Models\Seitenaufruf;
+use App\Support\AuditLogger;
 use App\Support\Aufrufe as AufrufeZaehler;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Facades\Filament;
+use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
@@ -48,6 +51,29 @@ class Aufrufe extends Page implements HasTable
     public static function canAccess(): bool
     {
         return AufrufeZaehler::zugriff(Filament::auth()->user());
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            // Nach dem Kopieren von Test auf Live (docs/livegang.md): Statistik beginnt bei null.
+            Action::make('zuruecksetzen')
+                ->label('Alle Zähler löschen')
+                ->icon('heroicon-o-trash')
+                ->color('danger')
+                ->visible(fn () => (bool) Filament::auth()->user()?->isAdmin())
+                ->requiresConfirmation()
+                ->modalHeading('Alle Zähler löschen?')
+                ->modalDescription('Löscht alle gezählten Seitenaufrufe. Die Statistik beginnt danach bei null. Gedacht für den Livegang, wenn die Datenbank vom Testsystem kopiert wurde.')
+                ->modalSubmitActionLabel('Alle löschen')
+                ->action(function () {
+                    abort_unless((bool) Filament::auth()->user()?->isAdmin(), 403);
+                    $geloescht = Seitenaufruf::query()->delete();
+                    AuditLogger::log('aufrufe.zuruecksetzen:'.$geloescht, Filament::auth()->user());
+                    $this->resetTable();
+                    Notification::make()->title('Alle Zähler gelöscht')->body('Gezählte Aufrufe jetzt: '.AufrufeZaehler::gesamt().'.')->success()->send();
+                }),
+        ];
     }
 
     public function updatedZeitraum(): void

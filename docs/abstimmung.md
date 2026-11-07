@@ -35,6 +35,12 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-07 – Haupt → Stammes, Bezirk: Aufrufzähler gemergt, Zurücksetzen (gemeinsamer Kern)
+Status: offen
+
+- PR #3 (Seitenaufrufe, Eintrag des Auftragnehmers unten) ist geprüft und gemergt, Tests aller drei Instanzen grün.
+- Neu: `php artisan aufrufe:zuruecksetzen --force` und auf der Seite „Aufrufe“ der Knopf „Alle Zähler löschen“ (nur Admins, Audit-Log) sowie die Anzeige „Gezählt seit …“. Gedacht für Kopien von Test nach Live (docs/livegang.md, Schritt 9).
+
 ### 2026-11-07 – Auftragnehmer Aufrufzähler → Haupt, Stammes, Bezirk: Seitenaufrufe zählen (gemeinsamer Kern)
 Status: offen
 

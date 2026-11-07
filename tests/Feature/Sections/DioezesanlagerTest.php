@@ -147,4 +147,30 @@ class DioezesanlagerTest extends TestCase
         $this->get('/bolivien')->assertOk()->assertDontSee('lager-scoutergy')->assertDontSee('liegt zurück');
         $this->get('/bolivien-projekt')->assertOk()->assertSee('fach-internationales')->assertDontSee('lager-');
     }
+
+    #[TestDox('Weitere Archive: Schongse, futurscout, Scoutgames mit eigenem Aussehen, Übersicht nach Jahr')]
+    public function test_weitere_archive(): void
+    {
+        $this->migrieren();
+        (require base_path('instanzen/dv-trier/migrations/2026_11_07_120000_dioezesanlager_archiv_2004_2011_2020.php'))->up();
+
+        $this->assertSame(['scoutergy', 'scoutgames', 'futurscout', 'schongse'], array_keys(Lager::alle()));
+        foreach (['schongse' => 'Das Weltdorf', 'futurscout' => 'abheben zu neuen Planeten', 'scoutgames' => 'Pfadfinder spielen (immer noch) gern'] as $key => $motto) {
+            $this->get('/'.$key)->assertOk()
+                ->assertSee('class="flex-1 lager lager-'.$key.'"', false)
+                ->assertSee($motto)
+                ->assertSee('liegt zurück');
+        }
+        $this->get('/schongse-programm')->assertOk()->assertSee('Kontinentetag')->assertSee('lager-schongse', false);
+
+        // Keine Kontaktdaten der damaligen Teams.
+        $texte = Page::query()->whereIn('section', ['schongse', 'futurscout', 'scoutgames'])->pluck('body')->implode('');
+        $this->assertDoesNotMatchRegularExpression('/@|Tel\.|\d{4,5}\/\d/', $texte);
+
+        $uebersicht = $this->get('/dioezesanlager')->assertOk()->getContent();
+        $positionen = array_map(fn ($t) => strpos($uebersicht, $t), ['Scoutergy!', 'Scoutgames 2020', 'futurscout 2011', 'Schongse 2004']);
+        $sortiert = $positionen;
+        sort($sortiert);
+        $this->assertSame($sortiert, $positionen);
+    }
 }

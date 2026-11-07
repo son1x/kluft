@@ -22,6 +22,10 @@
 @import '@fontsource/figtree/400.css';
 @import '@fontsource/figtree/600.css';
 @import '@fontsource/figtree/800.css';
+/* Überschriften weiterer Diözesanlager: Schongse 2004, futurscout 2011, Scoutgames 2020 */
+@import '@fontsource/comic-neue/700.css';
+@import '@fontsource/orbitron/700.css';
+@import '@fontsource/russo-one/400.css';
 
 /*
  * DPSG-Design-Tokens (Corporate Design der DPSG, Stand April 2026),
@@ -225,7 +229,7 @@ code { overflow-wrap: anywhere; }
     .lager :is(h1, h2, h3, h4) { font-weight: 600; color: var(--lager-kopf); }
 }
 .lager { font-family: var(--lager-schrift); }
-.lager :is(h1, h2, h3, h4) { font-family: var(--lager-schrift); line-height: 1.1; letter-spacing: -0.02em; }
+.lager :is(h1, h2, h3, h4) { font-family: var(--lager-titelschrift, var(--lager-schrift)); line-height: 1.1; letter-spacing: -0.02em; }
 .lager .prose { --tw-prose-body: var(--lager-text); --tw-prose-headings: var(--lager-kopf); --tw-prose-links: var(--lager-akzent-text); --tw-prose-bold: var(--lager-kopf); --tw-prose-quote-borders: var(--lager-akzent); }
 .lager .prose table { font-size: 1rem; }
 .lager .prose details { margin: 0.75rem 0; border: 1px solid var(--lager-rand); border-radius: 1rem; background: #fff; padding: 0.75rem 1.25rem; }
@@ -266,3 +270,70 @@ a.lager-karte:hover, a.lager-karte:focus-visible { transform: translateY(-3px); 
         radial-gradient(20% 20% at 82% 77%, #0039ff3d 1%, transparent 99%),
         radial-gradient(40% 40% at 89% 61%, #5800ff4a 1%, transparent 99%);
 }
+
+/* Schongse 2004 – „Das Weltdorf“: Farben der Kontinente aus dem Logo,
+   Rot der Schrift als Akzent (Weiß darauf 5,9 : 1), Überschriften wie
+   von Hand geschrieben. */
+.lager-schongse {
+    --lager-schrift: 'Carlito', Calibri, Arial, sans-serif;
+    --lager-titelschrift: 'Comic Neue', 'Carlito', sans-serif;
+    --lager-text: #1c1f26;
+    --lager-kopf: #1a3a8f;
+    --lager-flaeche: #eef7fb;
+    --lager-rand: #c9dde8;
+    --lager-schatten: #1a3a8f22;
+    --lager-radius: 18px;
+    --lager-akzent: #c8102e;
+    --lager-akzent-ink: #fff;
+    --lager-akzent-text: #b50e29;
+    --lager-wolken:
+        radial-gradient(18% 24% at 6% 30%, #f3920033 1%, transparent 99%),
+        radial-gradient(16% 22% at 22% 80%, #2e8b3a2e 1%, transparent 99%),
+        radial-gradient(26% 30% at 70% 30%, #1f4fd82b 1%, transparent 99%),
+        radial-gradient(14% 20% at 88% 78%, #ffd40040 1%, transparent 99%),
+        radial-gradient(40% 50% at 80% 55%, #bfe6f5aa 1%, transparent 99%);
+}
+.lager-schongse :is(h1, h2, h3, h4) { letter-spacing: 0; }
+
+/* futurscout 2011 – „abheben zu neuen Planeten“: Grün des Schriftzugs,
+   Sternenhimmel als feines Punktraster, Überschriften im Raumfahrt-Stil. */
+.lager-futurscout {
+    --lager-schrift: 'Carlito', Calibri, Arial, sans-serif;
+    --lager-titelschrift: 'Orbitron', 'Carlito', sans-serif;
+    --lager-text: #1b2420;
+    --lager-kopf: #12301a;
+    --lager-flaeche: #f1f7ee;
+    --lager-rand: #cfe0c6;
+    --lager-schatten: #2f6b1a26;
+    --lager-radius: 6px;
+    --lager-akzent: #2f6b1a;
+    --lager-akzent-ink: #fff;
+    --lager-akzent-text: #2b6118;
+    --lager-wolken:
+        radial-gradient(circle at 1px 1px, #12301a33 1px, transparent 1.5px) 0 0 / 22px 22px,
+        radial-gradient(30% 45% at 85% 40%, #7cc04e3d 1%, transparent 99%),
+        radial-gradient(22% 35% at 10% 70%, #1c6d8a2b 1%, transparent 99%),
+        radial-gradient(12% 18% at 60% 85%, #d9e84a33 1%, transparent 99%);
+}
+.lager-futurscout :is(h1, h2, h3, h4) { letter-spacing: 0.01em; }
+
+/* Scoutgames 2020 – digitale Spiele an Pfingsten: Orange des Plakats,
+   Rot und Blau des Wappens; kantige Überschriften wie das Logo. */
+.lager-scoutgames {
+    --lager-schrift: 'Carlito', Calibri, Arial, sans-serif;
+    --lager-titelschrift: 'Russo One', 'Carlito', sans-serif;
+    --lager-text: #1d1d1b;
+    --lager-kopf: #1d1d1b;
+    --lager-flaeche: #fff4ea;
+    --lager-rand: #f2d3b8;
+    --lager-schatten: #b03a0026;
+    --lager-radius: 10px;
+    --lager-akzent: #b03a00;
+    --lager-akzent-ink: #fff;
+    --lager-akzent-text: #a33600;
+    --lager-wolken:
+        radial-gradient(30% 45% at 85% 45%, #f07d0040 1%, transparent 99%),
+        radial-gradient(18% 30% at 8% 30%, #c4161c26 1%, transparent 99%),
+        radial-gradient(16% 28% at 30% 85%, #1f4e9e26 1%, transparent 99%);
+}
+.lager-scoutgames :is(h1, h2, h3, h4) { letter-spacing: 0; }

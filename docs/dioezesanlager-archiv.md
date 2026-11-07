@@ -112,6 +112,22 @@ Die Lagerseite zeigt automatisch: Kopfbereich mit Eckdaten und Logo, Lager-Navig
 
 ---
 
+## 3a. Schongse 2004, futurscout 2011, Scoutgames 2020 (07.11.2026)
+
+Material aus dem Aktenplan als ZIP: Zusammenfassung, Logos, Flyer, Einladungen, PFAZ-Artikel, Beilage zum DL-Bericht 2008. Umsetzung in `instanzen/dv-trier/migrations/2026_11_07_120000_dioezesanlager_archiv_2004_2011_2020.php`, Logos in `instanzen/dv-trier/public/images/<lager>/`.
+
+| Lager | Seiten | Aussehen |
+|---|---|---|
+| Schongse 2004 – „Das Weltdorf“ | `/schongse` (Idee, Zahlen, Anmeldestand nach Stufen, Vorbereitung), `/schongse-programm` (Tagesplan laut Flyer April 2004) | Kontinentfarben aus dem Logo, Rot als Akzent, Überschriften in Comic Neue |
+| futurscout 2011 – „abheben zu neuen Planeten“ | `/futurscout` (Beschlüsse, Idee mit Planeten und Bezirksdörfern, Themen, Programm, Vorbereitung) | Grün des Schriftzugs, Sternenraster, Überschriften in Orbitron |
+| Scoutgames 2020 – digital an Pfingsten | `/scoutgames` (Programm laut Plakat) | Orange des Plakats, Überschriften in Russo One |
+
+**Bewusst nicht übernommen:**
+- Die Flyer und Einladungen als PDF. Sie enthalten private Namen, Telefonnummern und Mailadressen der damaligen Teams; übernommen sind nur Programm und Zahlen.
+- Das Scoutgames-Plakat (Name und Mailadresse darauf).
+
+**Offen:** Das Scoutgames-Archiv kam unvollständig an (ZIP abgeschnitten): Der Bericht als PDF ist unlesbar, und die Zusammenfassung fehlt. Mit einer vollständigen Datei lässt sich die Seite ergänzen.
+
 ## 4. Später: Domain scoutergy.de
 
 1. DNS von scoutergy.de und www.scoutergy.de auf den Kluft-Webspace zeigen lassen (wie bolivienpartnerschaft.de) und das Zertifikat einrichten.

@@ -23,6 +23,7 @@ Admins. Kurz und aus Sicht der Redaktion schreiben.
 - Videokonferenzen: Einladungen per E-Mail an Moderation (mit Moderator-Link) und Teilnehmende (nur Teilnahme-Link), je Person eine Mail mit Kalendereintrag; Nachladen auf der Detailseite; Adressen werden 7 Tage nach der Konferenz gelöscht.
 - Testsystem kennzeichnen (Variable KLUFT_TESTSYSTEM): gelbes Band auf Website und im Backend, Suchmaschinen ausgesperrt, auf Wunsch nur nach Anmeldung; Deploy und Server-Prüfung auch für das Live-Ziel dv-trier-live.
 - Personen: Ansprechperson für mehrere Fachbereiche (Mehrfachauswahl); die Person erscheint auf jeder gewählten Fachbereichsseite, in der Übersicht und bei den passenden Kontaktthemen.
+- DV Trier: Diözesanlager-Archiv um Schongse 2004, futurscout 2011 und Scoutgames 2020 erweitert, jeweils mit eigenem Aussehen.
 - DV Trier: Rubrik „Diözesanlager“ unter „Diözesanverband“; jedes Lager mit eigenem Aussehen im Inhaltsbereich. Erstes Archiv: „Scoutergy“ (FroLeiLa 2023) mit Video, Programm, häufigen Fragen und Beiträgen von scoutergy.de.
 - Umfragen: anlegen, kopieren, Vorlagen, bedingte Fragen, Kommentar je Frage, Zugangscode, Nachfrage an Teilnehmende einer Veranstaltung, Gewinnspiel getrennt von den Antworten, Auswertung mit Balken und Einzelantworten, PDF (A4) und Excel, Löschfristen (docs/umfragen.md).
 - Instagram-Einblendung: neueste Beiträge eigener Konten auf Startseite und Fachbereichen oberhalb von „Aktuelles“, Bilder lokal gespiegelt, kein Embed (docs/instagram.md).

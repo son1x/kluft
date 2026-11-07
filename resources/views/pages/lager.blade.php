@@ -35,9 +35,10 @@
                     @php($c = $item['config'])
                     @php($lagerKlasse = \App\Support\Lager::klasse($item['key']))
                     <article @class([$lagerKlasse, 'group relative flex flex-col overflow-hidden', 'lager-karte' => $lagerKlasse !== '', 'rounded-lg bg-white shadow-md' => $lagerKlasse === ''])>
-                        <div @class(['flex items-center gap-6 p-6', 'lager-wolken' => $lagerKlasse !== '', 'bg-dpsg-hellbeige' => $lagerKlasse === ''])>
+                        @php($breit = ($c['logo_size'][0] ?? 1) > 2 * ($c['logo_size'][1] ?? 1))
+                        <div @class(['flex gap-6 p-6', 'items-center' => ! $breit, 'flex-col items-start gap-4' => $breit, 'lager-wolken' => $lagerKlasse !== '', 'bg-dpsg-hellbeige' => $lagerKlasse === ''])>
                             @if ($c['logo'] ?? null)
-                                <picture class="block w-24 shrink-0">
+                                <picture @class(['block shrink-0', 'w-24' => ! $breit, 'w-60 rounded-md bg-white p-2 shadow-sm' => $breit])>
                                     <source type="image/webp" srcset="{{ asset($c['logo'].'.webp') }}" />
                                     <img src="{{ asset($c['logo'].'.png') }}" alt="" width="{{ $c['logo_size'][0] ?? 480 }}" height="{{ $c['logo_size'][1] ?? 665 }}" loading="lazy" class="h-auto w-full" />
                                 </picture>
@@ -53,7 +54,7 @@
                                 @if ($c['titel'] ?? null)<p class="mt-1 font-semibold">{{ $c['titel'] }}</p>@endif
                             </div>
                         </div>
-                        <dl class="grid flex-1 gap-x-6 gap-y-2 p-6 text-sm sm:grid-cols-[auto_1fr]">
+                        <dl class="grid flex-1 content-start gap-x-6 gap-y-2 p-6 text-sm sm:grid-cols-[auto_1fr]">
                             @foreach (array_filter(['Wann' => $c['zeitraum'] ?? null, 'Wo' => $c['ort'] ?? null, 'Motto' => $c['motto'] ?? null]) as $label => $wert)
                                 <dt class="font-semibold">{{ $label }}</dt>
                                 <dd>{{ $wert }}</dd>

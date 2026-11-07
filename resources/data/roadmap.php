@@ -250,7 +250,7 @@ return [
             ['status' => 'done', 'title' => 'Rubrik „Diözesanlager“', 'note' => 'Übersicht /dioezesanlager unter „Diözesanverband“. Jedes Lager ist ein eigener Bereich (config sections, kind „Diözesanlager“) mit eigenem Aussehen im Inhaltsbereich; Kopf und Fuß bleiben DPSG. Zurückliegende Lager tragen den Hinweis „Archiv“.'],
             ['status' => 'done', 'title' => 'Archiv „Scoutergy“ (FroLeiLa 2023)', 'note' => 'Aus der WordPress-Sicherung von scoutergy.de: Startseite mit Teaser-Video, Programm mit Programmkacheln, häufige Fragen, Team (nur Aufgaben, ohne Namen und Adressen), sechs Beiträge mit den alten Daten. Design nach der alten Seite (Figtree, Farbwolken), Akzent im Rot der Lagershirts.'],
             ['status' => 'open', 'title' => 'Domain scoutergy.de verbinden', 'note' => 'Domain auf Kluft zeigen lassen und in config sections.scoutergy.domains eintragen; alte Adressen weiterleiten (Liste in docs/dioezesanlager-archiv.md).'],
-            ['status' => 'open', 'title' => 'Weitere vergangene Lager', 'note' => 'Material sammeln nach der Checkliste in docs/dioezesanlager-archiv.md, dann je Lager ein Bereich mit Aussehen und Inhalts-Migration.'],
+            ['status' => 'partial', 'title' => 'Weitere vergangene Lager', 'note' => 'Schongse 2004, futurscout 2011 und Scoutgames 2020 im Archiv, jeweils mit eigenem Aussehen (07.11.2026). Offen: vollständiges Material zu Scoutgames (Bericht, Zusammenfassung), Fotos ohne erkennbare Personen, weitere Lager nach der Checkliste in docs/dioezesanlager-archiv.md.'],
             ['status' => 'later', 'title' => 'Diözesanlager 2027/28', 'note' => 'Neues Lager als Bereich ohne „Archiv“, mit Veranstaltungsanmeldung und Teilnahmebeitrag aus Kluft; eigene Domain möglich.'],
         ],
     ],

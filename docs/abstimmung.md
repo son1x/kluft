@@ -61,6 +61,12 @@ Branch: `fix/mailversand-live`
 - Bei „nur Log“ schreibt der Deploy eine `::warning::` ins Protokoll, `/status` warnt beim E-Mail-Versand (betrifft auch das Monitoring), und Verwaltung → E-Mail-Versand zeigt oben „Mails werden nicht verschickt“.
 - Doku: `docs/deploy.md` (neuer Abschnitt „Mail“, Variable `KLUFT_MAIL_LIVE`), `docs/livegang.md` (am Livetag `KLUFT_MAIL_LIVE=ja` setzen), `docs/environment-vorlage/`.
 - Tests: `tests/Feature/Mail/MailerWahlTest.php` (alle Fälle des Skripts, Status, Backend-Hinweis).
+- **Nachrichten-Eingang ehrlich und mit Weiterleiten** (Wunsch des Nutzers):
+  - Neue Spalte `contact_messages.versand` (JSON, Migration `2026_11_07_160000`): Verlauf je Versand mit `art` (eingang, erneut, weitergeleitet), `an`, `ergebnis` (mail, log, fehler), `am`, `von`.
+  - Bei Mailer „log“ ist `zugestellt` jetzt `false`, und Liste, Ansicht und Unterzeile sagen „nur ins Server-Protokoll geschrieben, nicht verschickt“. Helfer `App\Support\Mailversand::nurProtokoll()`.
+  - Neue Aktionen „Erneut senden“ und „Weiterleiten“ (mit optionalem Hinweis), über die Warteschlange, mit Audit `nachricht.erneut:…` bzw. `nachricht.weitergeleitet:…`. `ContactMessage::mail()` baut die Mail aus der gespeicherten Nachricht.
+  - Tests: `tests/Feature/Content/NachrichtenVersandTest.php`.
+  - Hinweis: `feature/spamschutz` (son1x/kluft#4) ändert dieselben Stellen (`ContactMessage::mail()`, Aktionen in `ContactMessageResource`, `ContactController::speichern`). Wer als Zweites merged, führt beides zusammen.
 
 **Was zu tun ist:**
 - **Stammes-Sitzung / Roden:**
@@ -69,7 +75,7 @@ Branch: `fix/mailversand-live`
   3. Nach dem Merge deployen und prüfen: Protokoll zeigt „Mailer: smtp“, unter „E-Mail-Versand“ kein Warnhinweis.
   4. Testnachricht über das Kontaktformular schicken.
 
-  Mails, die bisher „zugestellt“ wurden, sind nicht nachträglich zu verschicken; die beiden offenen Anfragen bitte direkt aus dem Eingang beantworten („Per Mail antworten“). `docs/roden.md` („Fehlt noch“, „Offene Punkte 3“) entsprechend anpassen.
+  Mails, die bisher „zugestellt“ wurden, gehen nicht von selbst raus. Nach dem Deploy lassen sie sich mit „Weiterleiten“ bzw. „Erneut senden“ zustellen; die beiden offenen Anfragen bitte trotzdem gleich direkt beantworten („Per Mail antworten“). `docs/roden.md` („Fehlt noch“, „Offene Punkte 3“) entsprechend anpassen.
 - **Haupt-Sitzung / DV:** test.dpsg-trier.de ändert sich nicht (Umleitung bleibt). Für den Livegang ist `docs/livegang.md` angepasst.
 - **Bezirks-Sitzung / Saar-Hochwald:** bei Livegang wie Roden `KLUFT_MAIL_LIVE=ja`; vorher prüfen, ob dort Mails ankommen sollen.
 

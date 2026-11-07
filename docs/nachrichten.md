@@ -35,7 +35,20 @@ unter den Formularen passt sich von selbst an.
 - Status: neu → in Bearbeitung → erledigt (mit Notiz, z. B. „beantwortet von
   …“), wieder öffnen, löschen. Mehrere auf einmal erledigen oder löschen.
 - Ist die Mail an die zuständige Person fehlgeschlagen, kommt die Nachricht
-  trotzdem an (Kreuz in der Spalte „Mail“) – dann bitte selbst weitergeben.
+  trotzdem an (Kreuz in der Spalte „Mail“) – dann bitte erneut senden oder
+  weiterleiten.
+- **Nur ins Server-Protokoll** (Mailer „log“, docs/deploy.md „Mail“): Dann
+  verlässt keine Mail den Server. Die Spalte „Mail“ zeigt ein Warndreieck,
+  „Ansehen“ sagt „nur ins Server-Protokoll geschrieben, nicht verschickt“,
+  und die Unterzeile der Liste warnt. Bei Nachrichten von vor dem 07.11.2026
+  ist das nicht erkennbar; dort kann trotzdem „zugestellt“ stehen.
+- **„Erneut senden“** (Menü „⋮“) schickt die Nachricht noch einmal an die
+  ursprünglichen Empfänger. **„Weiterleiten“** schickt sie an eine andere
+  Adresse, optional mit Hinweis („Weitergeleitet von …: …“); Vorschläge sind
+  die Adressen der Kontaktthemen. In beiden Fällen geht „Antworten“ direkt an
+  die Absender*in. Jeder Versand steht mit Datum, Ergebnis und Person unter
+  „Ansehen“ → „Versand“. Gehen Mails gerade nur ins Protokoll, sagt die
+  Meldung „Nicht verschickt“.
 
 ## E-Mail-Adressen öffnen ein Formular
 

@@ -35,6 +35,18 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-07 – Auftragnehmer „Titelbilder“ → Haupt, Stammes, Bezirk: Bericht Code-Review
+Status: offen
+
+Bericht zu Struktur und Qualität von Kluft: `docs/bericht-code-review-2026-11.md`. Befunde B1–B3 (Mediathek-Rechte, NaMi-Erreichbarkeit, Test mit echter Anfrage) sind auf `claude/upbeat-fermi-dobmt7` behoben; B4–B10 sind Empfehlungen. Bitte Abschnitt 6 „Was ihr tun solltet“ lesen.
+
+### 2026-11-07 – Haupt → Stammes, Bezirk: Mediathek-Rechte und NaMi-Erreichbarkeit (gemeinsamer Kern)
+Status: offen
+
+- **Neu `App\Policies\MediaPolicy`:** Bisher hatte die Mediathek keine Rechteprüfung, jede Rolle durfte alle Medien ändern und löschen. Jetzt: ansehen, hochladen, auswählen alle Rollen; ändern und löschen Vorstand, Verwaltung und Admins alle, die übrigen Rollen nur Medien mit `uploaded_by` = eigenes Konto; Löschen per Mehrfachauswahl nur Vorstand, Verwaltung und Admins. Importierte Medien ohne `uploaded_by` gelten als fremd. Tests: `tests/Feature/Content/MediaPolicyTest.php`.
+- **`NamiVerzeichnis::erreichbar()`** fängt auch `RequestException` (z. B. Proxy lehnt ab) und liefert `false`, statt das Modal „Mitglieder prüfen“ abbrechen zu lassen.
+- **`MitgliederAbgleichTest`** macht keine echten Anfragen mehr (`Http::preventStrayRequests()` und Fake für die NaMi-Startseite). Bitte in eigenen Tests mit externen Diensten genauso halten.
+
 ### 2026-11-07 – Haupt → Stammes, Bezirk: Titelbilder aus PDF (gemeinsamer Kern)
 Status: offen
 

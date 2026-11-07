@@ -25,7 +25,10 @@ use App\Support\NamiAmpel;
 use Filament\Facades\Filament;
 use Illuminate\Contracts\Queue\ShouldBeEncrypted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Request;
+use Illuminate\Http\Client\RequestException;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -53,6 +56,10 @@ class MitgliederAbgleichTest extends TestCase
     {
         parent::setUp();
         Mail::fake();
+        // Keine echten Anfragen ins Netz; die Erreichbarkeitsprüfung im
+        // Modal „Mitglieder prüfen“ fragt NaMi direkt an.
+        Http::preventStrayRequests();
+        Http::fake([rtrim((string) config('mitglieder.nami.url'), '/') => Http::response('', 200)]);
         config(['mitglieder.driver' => 'nami', 'mitglieder.nami.auth' => 'konto']);
 
         // Verzeichnis im Speicher: liefert alle Personen mit passendem Nachnamen.
@@ -348,6 +355,16 @@ class MitgliederAbgleichTest extends TestCase
         $table->callTableAction('checkMembers', data: ['alle' => true]);
         $this->assertSame(['mitglied', '2', true], [$lea->fresh()->member_status, $lea->fresh()->member_number, $lea->fresh()->member_manual]);
         $table->assertSee('Nr. 2')->assertSee('von Hand');
+    }
+
+    #[TestDox('NaMi-Erreichbarkeit: Ablehnung unterwegs (z. B. Proxy) und Verbindungsfehler heißen „nicht erreichbar“ statt Fehler')]
+    public function test_nami_erreichbar_faengt_ablehnung_ab(): void
+    {
+        Http::fake(fn () => throw new RequestException(new Response(new \GuzzleHttp\Psr7\Response(403))));
+        $this->assertFalse((new NamiVerzeichnis)->erreichbar());
+
+        Http::fake(fn () => throw new ConnectionException('keine Verbindung'));
+        $this->assertFalse((new NamiVerzeichnis)->erreichbar());
     }
 
     #[TestDox('NaMi 2: Anmeldung, Suche per search-multi, Nicht-Mitglieder und beendete Mitgliedschaften, Neuanmeldung bei abgelaufener Session')]

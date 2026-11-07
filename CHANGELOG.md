@@ -6,6 +6,8 @@ Admins. Kurz und aus Sicht der Redaktion schreiben.
 
 ## 0.9.0
 
+- Mediathek: Autor*innen, Stufen- und Sektionsadmins bearbeiten und löschen nur noch ihre eigenen Uploads; Vorstand und Verwaltung weiterhin alle. Hochladen und Auswählen bleibt für alle.
+- NaMi: Ist NaMi unterwegs gesperrt (z. B. durch einen Proxy), zeigt „Mitglieder prüfen“ jetzt „nicht erreichbar“ statt eines Fehlers.
 - Georgsbote: Titelbilder automatisch aus Seite 1 des PDFs – für alle Ausgaben ohne Titelbild mit „Titelbilder erzeugen“ in der Übersicht, für einzelne Ausgaben mit „Titelbild aus PDF erzeugen“ beim Bearbeiten; ein vorhandenes Titelbild wird nur nach Nachfrage ersetzt.
 - Georgsbote: Kurzinhalt je Ausgabe (im Archiv sichtbar und durchsuchbar), zweiter Reiter „Georgsbrief“ für den Newsletter als PDF (Monat statt Ausgabe); beim Hochladen mehrerer PDFs erkennt Kluft „Georgsbrief_2019_02.pdf“ und übernimmt Titel und Inhalt aus der Archivliste der Instanz.
 - Erste Version mit Updates über Kluft selbst (Verwaltung → Updates).

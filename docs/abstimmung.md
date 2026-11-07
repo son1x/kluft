@@ -35,6 +35,15 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-07 – Auftragnehmer Spamschutz → Haupt, Stammes, Bezirk: Spamschutz der Formulare (gemeinsamer Kern)
+Status: offen
+
+Anlass: Werbe-Spam über das Kontaktformular bei Roden. Doku in `docs/nachrichten.md`, Abschnitt „Spamschutz und Spamverdacht“.
+- **`App\Support\SpamGuard` (alle Formulare mit `_t`):** Mindestzeit 5 statt 3 Sekunden, Formular gilt 2 Stunden statt 24, jeder Zeitstempel nur **einmal** (`Cache::add`). Eigene Tests, die einen Zeitstempel mehrfach schicken, brauchen je Absendung einen frischen (siehe `DatenabgleichTest`, `WhatsAppNewsletterTest`).
+- **Spamverdacht** in `ContactController` (Kontakt, Frage zur Veranstaltung, Nachricht an eine Adresse, Gremium): Link oder fehlender Arbeitsnachweis → mit Nachrichten-Eingang Status `spam` ohne Mail (neuer Status in `ContactMessage::STATUSES`, Aktion „Kein Spam – zustellen“, Löschung nach 30 Tagen in `kontakt:prune`); ohne Eingang Mail mit „[Spamverdacht]“ im Betreff (`ContactMessageMail::$verdacht`). Audit-Aktion `…:zurueckgehalten`.
+- **Arbeitsnachweis:** neue npm-Abhängigkeit `altcha` 3.5.0 (fest), `resources/js/arbeitsnachweis.js` (nur geladen, wo ein `<altcha-widget>` steht), neue Route `GET /spamschutz/aufgabe` (`spamschutz.aufgabe`), Prüfung `App\Support\Arbeitsnachweis`, Konfiguration `kluft.arbeitsnachweis`. Das Widget steckt im Partial `partials/message-form-fields`.
+- **Tests:** Helfer-Trait `Tests\Concerns\LoestArbeitsnachweis` für Tests, die Nachrichtenformulare abschicken.
+
 ### 2026-11-07 – Haupt → Stammes, Bezirk: Cookie-Banner ohne „Statistik“ (gemeinsamer Kern)
 Status: offen
 

@@ -51,8 +51,19 @@ Gremium) haben ohne Captcha und ohne Drittanbieter:
 
 Das wird still verworfen, Absender*innen sehen trotzdem „gesendet“.
 
-**Spamverdacht** (Link in Nachricht, Betreff oder Name) wird **nicht
-verworfen**, damit keine echte Nachricht verloren geht:
+Dazu kommt ein **Arbeitsnachweis** (ALTCHA, selbst gehostet, npm `altcha`):
+Sobald jemand ins Formular klickt, holt der Browser unsichtbar eine Aufgabe
+von `/spamschutz/aufgabe` und rechnet sie aus (etwa eine Sekunde,
+PBKDF2/SHA-256). Kluft prüft die Lösung (`App\Support\Arbeitsnachweis`),
+jede gilt nur einmal. Für Menschen unsichtbar, für Massen-Spam teuer. Keine
+Anfragen an Dritte, kein Cookie. Die Schwierigkeit lässt sich mit
+`KLUFT_ARBEITSNACHWEIS_KOSTEN` (Standard 5000) und
+`KLUFT_ARBEITSNACHWEIS_PRAEFIX` (Standard `00`) einstellen.
+
+**Spamverdacht** wird **nicht verworfen**, damit keine echte Nachricht
+verloren geht. Verdacht besteht bei einem Link in Nachricht, Betreff oder
+Name und bei fehlendem oder ungültigem Arbeitsnachweis (z. B. ohne
+JavaScript). Die Gründe stehen in der Notiz.
 
 - **Mit Nachrichten-Eingang:** keine Mail; die Nachricht liegt im Eingang mit
   Status „Spamverdacht“ und dem Grund in der Notiz. Die Standardansicht zeigt

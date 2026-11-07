@@ -6,6 +6,8 @@ Admins. Kurz und aus Sicht der Redaktion schreiben.
 
 ## 0.9.0
 
+- Datenschutz-Einstellungen ohne die Auswahl „Statistik“, weil Kluft keine Statistik erhebt.
+- DV Trier: Datenschutzerklärung auf Grundlage der abgestimmten Fassung von dpsg-trier.de, ergänzt um Anmeldungen, Umfragen, Nachrichten-Eingang, Videokonferenzen, Einbettungen und Löschfristen.
 - Mediathek: Autor*innen, Stufen- und Sektionsadmins bearbeiten und löschen nur noch ihre eigenen Uploads; Vorstand und Verwaltung weiterhin alle. Hochladen und Auswählen bleibt für alle.
 - NaMi: Ist NaMi unterwegs gesperrt (z. B. durch einen Proxy), zeigt „Mitglieder prüfen“ jetzt „nicht erreichbar“ statt eines Fehlers.
 - Georgsbote: Titelbilder automatisch aus Seite 1 des PDFs – für alle Ausgaben ohne Titelbild mit „Titelbilder erzeugen“ in der Übersicht, für einzelne Ausgaben mit „Titelbild aus PDF erzeugen“ beim Bearbeiten; ein vorhandenes Titelbild wird nur nach Nachfrage ersetzt.

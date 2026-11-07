@@ -54,8 +54,9 @@
     <div class="max-w-4xl mx-auto px-4 py-5 sm:py-6">
         <h2 id="consent-heading" class="font-serif text-lg font-bold mb-2">Datenschutz-Einstellungen</h2>
         <p class="text-sm text-white/85 mb-4">
-            Notwendige Cookies sind für den Betrieb der Seite immer aktiv. Statistik- und
-            Externe-Inhalte-Cookies werden nur mit deiner Einwilligung geladen. Mehr dazu in
+            Notwendige Cookies sind für den Betrieb der Seite immer aktiv. Videos und Karten
+            anderer Anbieter werden nur mit deiner Einwilligung geladen. Eine Statistik oder
+            Reichweitenmessung gibt es nicht. Mehr dazu in
             unserer <a href="{{ url('/datenschutz') }}" class="underline">Datenschutzerklärung</a>.
         </p>
 
@@ -63,10 +64,6 @@
             <label class="flex items-center gap-2 opacity-70">
                 <input type="checkbox" checked disabled class="rounded">
                 Notwendig (immer aktiv)
-            </label>
-            <label class="flex items-center gap-2">
-                <input type="checkbox" x-model="prefs.stats" class="rounded">
-                Statistik (anonymisiert, selbst gehostet)
             </label>
             <label class="flex items-center gap-2">
                 <input type="checkbox" x-model="prefs.external" class="rounded">

@@ -35,6 +35,12 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-07 – Haupt → Stammes, Bezirk: Cookie-Banner ohne „Statistik“ (gemeinsamer Kern)
+Status: offen
+
+- `resources/views/partials/consent-banner.blade.php`: Die Auswahl „Statistik (anonymisiert, selbst gehostet)“ ist entfernt. Kluft hat kein Statistik-Werkzeug, die Auswahl versprach also etwas, das es nicht gibt. Der Text nennt jetzt nur Videos und Karten anderer Anbieter. `prefs.stats` bleibt im gespeicherten Wert, damit alte Einwilligungen gültig bleiben.
+- Prüft bitte, ob eure Datenschutzerklärungen eine Statistik erwähnen. Der DV hat seine neu gefasst (`instanzen/dv-trier/dateien/datenschutz.html`), auf Grundlage des mit dem Betrieblichen Datenschutz abgestimmten Texts. Daran könnt ihr euch orientieren.
+
 ### 2026-11-07 – Auftragnehmer „Titelbilder“ → Haupt, Stammes, Bezirk: Bericht Code-Review
 Status: offen (Stammes, Bezirk) · Haupt: gesehen
 

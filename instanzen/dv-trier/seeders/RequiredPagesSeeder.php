@@ -48,6 +48,12 @@ class RequiredPagesSeeder extends Seeder
         <p>Stufen-Maskottchen und Verbandslogo: offizielles Bildmaterial der DPSG, Quelle dpsg.de. [TODO: Angaben zu eigenem Bildmaterial ergänzen, sobald verwendet.]</p>
         HTML;
 
+    /** Datenschutzerklärung (instanzen/dv-trier/dateien/datenschutz.html, abgestimmte Fassung von dpsg-trier.de, ergänzt). */
+    public static function datenschutz(): string
+    {
+        return (string) file_get_contents(base_path('instanzen/dv-trier/dateien/datenschutz.html'));
+    }
+
     public function run(): void
     {
         $pages = [
@@ -59,50 +65,7 @@ class RequiredPagesSeeder extends Seeder
             [
                 'slug' => 'datenschutz',
                 'title' => 'Datenschutzerklärung',
-                'body' => <<<'HTML'
-                    <p><strong>Hinweis:</strong> Diese Datenschutzerklärung orientiert sich an den Angaben von dpsg-trier.de, ersetzt keine Rechtsberatung und ist vor Veröffentlichung mit der/dem Datenschutzbeauftragten abzustimmen.</p>
-                    <h2>1. Verantwortlicher</h2>
-                    <p>Verantwortlich für die Datenverarbeitung auf dieser Website ist:<br>
-                    DPSG Diözesanverband Trier<br>
-                    Weberbach 71, 54290 Trier<br>
-                    E-Mail: <a href="mailto:info@dpsg-trier.de">info@dpsg-trier.de</a><br>
-                    Telefon: 0651 4 629 829 0</p>
-                    <h2>2. Kirchliche*r Datenschutzbeauftragte*r</h2>
-                    <p>Als kirchliche Einrichtung im Bistum Trier ist für den Diözesanverband Trier zuständig:<br>
-                    Betrieblicher Datenschutz, Bistum Trier<br>
-                    Mustorstraße 2, 54290 Trier<br>
-                    Telefon: 0651 7105-148</p>
-                    <h2>3. Rechtsgrundlage</h2>
-                    <p>Als kirchliche Einrichtung unterliegt diese Website nicht der DSGVO, sondern dem <strong>Gesetz über den Kirchlichen Datenschutz (KDG)</strong> in der vom Bischof von Trier in Kraft gesetzten Fassung sowie ergänzend dem Digitale-Dienste-Gesetz (DDG).</p>
-                    <h2>4. Allgemeines zur Datenverarbeitung</h2>
-                    <p>Personenbezogene Daten werden auf dieser Website weit überwiegend auf freiwilliger Basis erhoben, etwa wenn du uns über das Kontaktformular oder per E-Mail erreichst. Eine Verarbeitung erfolgt nur, soweit dies zur Bereitstellung einer funktionsfähigen Website erforderlich ist oder eine Einwilligung bzw. rechtliche Erlaubnis nach dem KDG vorliegt.</p>
-                    <h2>5. Hosting und Server-Logfiles</h2>
-                    <p>[TODO: Hosting-Anbieter ergänzen.] Beim Aufruf erhebt der Hosting-Anbieter automatisch Informationen in Server-Logfiles, die dein Browser übermittelt (z. B. IP-Adresse, Browsertyp und -version, verwendetes Betriebssystem, aufgerufene Seite, Datum und Uhrzeit des Zugriffs, verweisende Website). Diese Daten dienen der Gewährleistung eines störungsfreien Betriebs und der Sicherheit der Website und werden spätestens nach 7 Tagen gelöscht.</p>
-                    <h2>6. Cookies und Consent</h2>
-                    <p>Diese Website verwendet nur technisch notwendige Cookies ohne Einwilligung. Optionale Kategorien (Statistik, externe Inhalte) werden erst nach deiner Zustimmung aktiv; du kannst deine Auswahl jederzeit über "Datenschutz-Einstellungen" im Footer ändern.</p>
-                    <h2>7. Schriftarten</h2>
-                    <p>Diese Website bindet die Schriftarten Carlito und Arvo selbst gehostet ein. Es findet dabei keine Verbindung zu externen Font-Anbietern statt.</p>
-                    <h2>8. Kontaktaufnahme</h2>
-                    <p>Wenn du uns per E-Mail oder über das Kontaktformular kontaktierst, werden deine Angaben (Name, E-Mail-Adresse, Nachricht) zur Bearbeitung deiner Anfrage gespeichert. Diese Daten geben wir nicht ohne deine Einwilligung weiter und löschen sie, sobald sie für die Beantwortung nicht mehr benötigt werden.</p>
-                    <h2>9. Georgsbote-Newsletter</h2>
-                    <p>Für den Versand des Georgsboten (Newsletter) werden die dafür angegebenen Daten (z. B. E-Mail-Adresse) ausschließlich zu diesem Zweck verwendet und nicht an Dritte weitergegeben. Eine Abmeldung ist jederzeit möglich. [TODO: Details zum Versanddienst (Brevo) und zur Auftragsverarbeitung ergänzen.]</p>
-                    <h2>10. Deine Rechte nach dem KDG</h2>
-                    <ul>
-                    <li>Recht auf Widerruf einer erteilten Einwilligung (§ 8 KDG)</li>
-                    <li>Recht auf Auskunft über deine gespeicherten Daten (§ 17 KDG)</li>
-                    <li>Recht auf Berichtigung, Löschung oder Einschränkung der Verarbeitung (§§ 18–20 KDG)</li>
-                    <li>Recht auf Datenübertragbarkeit (§ 22 KDG)</li>
-                    <li>Widerspruchsrecht gegen die Verarbeitung (§ 23 KDG)</li>
-                    <li>Recht auf Beschwerde bei der zuständigen Aufsichtsbehörde</li>
-                    </ul>
-                    <p>Wende dich für die Ausübung dieser Rechte an die oben genannte Kontaktadresse.</p>
-                    <h2>11. Beschwerderecht bei der Aufsichtsbehörde</h2>
-                    <p>Als kirchliche Stelle unterliegen wir nicht der Aufsicht der staatlichen Landesdatenschutzbehörden, sondern der:<br>
-                    Überdiözesane Aufsichtsstelle im Datenschutz<br>
-                    Roßmarkt 23, 60311 Frankfurt am Main<br>
-                    Telefon: 069 58 99 755-10<br>
-                    E-Mail: <a href="mailto:info@kdsz-ffm.de">info@kdsz-ffm.de</a></p>
-                    HTML,
+                'body' => self::datenschutz(),
             ],
             [
                 'slug' => 'kontakt',

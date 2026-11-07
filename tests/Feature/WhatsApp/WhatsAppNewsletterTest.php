@@ -214,12 +214,17 @@ class WhatsAppNewsletterTest extends TestCase
         $this->connect();
         config(['whatsapp.form_doi' => true]);
         WhatsAppTemplate::query()->create(['name' => 'dpsg_doi_v1', 'language' => 'de', 'category' => 'UTILITY', 'purpose' => 'doi', 'status' => 'APPROVED', 'components' => [['type' => 'BODY', 'text' => 'Bitte mit START bestätigen.']]]);
-        $token = SpamGuard::token();
-        $this->travel(5)->seconds();
+        // Je Absendung ein frischer Zeitstempel (jeder gilt nur einmal).
+        $frisch = function (): string {
+            $token = SpamGuard::token();
+            $this->travel(5)->seconds();
 
-        $form = ['_t' => $token, 'nummer' => '0151 12345678', 'alter' => '1', 'einwilligung' => '1'];
-        $this->post('/whatsapp', $form)->assertRedirect();
-        $this->post('/whatsapp', $form)->assertRedirect();
+            return $token;
+        };
+
+        $form = ['nummer' => '0151 12345678', 'alter' => '1', 'einwilligung' => '1'];
+        $this->post('/whatsapp', ['_t' => $frisch(), ...$form])->assertRedirect();
+        $this->post('/whatsapp', ['_t' => $frisch(), ...$form])->assertRedirect();
 
         $this->assertSame('pending', WhatsAppSubscriber::query()->sole()->status);
         $this->assertCount(1, $this->sent());
@@ -229,7 +234,7 @@ class WhatsAppNewsletterTest extends TestCase
         $this->assertSame('active', WhatsAppSubscriber::query()->sole()->status);
         $this->assertSame('form', WhatsAppSubscriber::query()->sole()->source);
 
-        $this->post('/whatsapp', [...$form, 'alter' => null])->assertSessionHasErrors('alter');
+        $this->post('/whatsapp', ['_t' => $frisch(), ...$form, 'alter' => null])->assertSessionHasErrors('alter');
     }
 
     #[TestDox('Aussendung: Vier-Augen-Freigabe, Versand an aktive Abonnent:innen, Status per Webhook, Abbestellung bei Meta wirkt wie STOP')]

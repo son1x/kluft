@@ -8,6 +8,7 @@ use GuzzleHttp\Cookie\CookieJar;
 use GuzzleHttp\Cookie\SetCookie;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -390,7 +391,8 @@ class NamiVerzeichnis implements Mitgliederverzeichnis
     {
         try {
             return $this->http()->get(rtrim((string) config('mitglieder.nami.url'), '/'))->status() < 500;
-        } catch (ConnectionException) {
+        } catch (ConnectionException|RequestException) {
+            // Auch eine Ablehnung unterwegs (z. B. Proxy) heißt: nicht erreichbar.
             return false;
         }
     }

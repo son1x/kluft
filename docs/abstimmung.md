@@ -53,6 +53,26 @@ Anlass: Werbe-Spam über das Kontaktformular bei Roden. Doku in `docs/nachrichte
 - **Spamverdacht** in `ContactController` (Kontakt, Frage zur Veranstaltung, Nachricht an eine Adresse, Gremium): Link oder fehlender Arbeitsnachweis → mit Nachrichten-Eingang Status `spam` ohne Mail (neuer Status in `ContactMessage::STATUSES`, Aktion „Kein Spam – zustellen“, Löschung nach 30 Tagen in `kontakt:prune`); ohne Eingang Mail mit „[Spamverdacht]“ im Betreff (`ContactMessageMail::$verdacht`). Audit-Aktion `…:zurueckgehalten`.
 - **Arbeitsnachweis:** neue npm-Abhängigkeit `altcha` 3.5.0 (fest), `resources/js/arbeitsnachweis.js` (nur geladen, wo ein `<altcha-widget>` steht), neue Route `GET /spamschutz/aufgabe` (`spamschutz.aufgabe`), Prüfung `App\Support\Arbeitsnachweis`, Konfiguration `kluft.arbeitsnachweis`. Das Widget steckt im Partial `partials/message-form-fields`.
 - **Tests:** Helfer-Trait `Tests\Concerns\LoestArbeitsnachweis` für Tests, die Nachrichtenformulare abschicken.
+### 2026-11-07 – Auftragnehmer (Aufrufzähler, Spamschutz, Mailversand) → Haupt, Stammes, Bezirk: Merge-Reihenfolge der offenen PRs
+Status: offen
+
+Drei offene PRs gegen `claude/kluft-instanzen` ändern teils dieselben Stellen (Nachrichten-Eingang, CHANGELOG, diese Datei). Sie sind deshalb **gestapelt** und vorab zusammengeführt; jede Stufe ist für alle drei Instanzen getestet:
+
+| Reihenfolge | PR | Branch | Basis | Inhalt |
+|---|---|---|---|---|
+| 1 | son1x/kluft#5 | `fix/mailversand-live` | `claude/kluft-instanzen` | Echte Mails auf Live-Seiten (`KLUFT_MAIL_LIVE`), ehrliche Anzeige bei Mailer „log“, Erneut senden und Weiterleiten. **Dringend für Roden.** |
+| 2 | son1x/kluft#4 | `feature/spamschutz` | `fix/mailversand-live` | Zeitstempel einmalig, Spamverdacht, Arbeitsnachweis (ALTCHA) |
+| 3 | son1x/kluft#3 | `feature/aufrufe` | `feature/spamschutz` | Seitenaufrufe zählen |
+
+- **So mergen:** in dieser Reihenfolge. Nach dem Merge von #5 die Basis von #4 auf `claude/kluft-instanzen` umstellen (GitHub schlägt das vor, wenn der Branch gelöscht wird), danach ebenso #3. Konflikte gibt es dann keine.
+- **Wer einen PR einzeln oder in anderer Reihenfolge will:** Die Zusammenführung steckt in den Merge-Commits „… übernommen (Merge-Reihenfolge …)“ in `feature/spamschutz` und `feature/aufrufe`.
+- **Inhaltlich zusammengeführt (#4 auf #5):** „Kein Spam – zustellen“ läuft über denselben Versandweg wie „Erneut senden“ (Verlauf, ehrliche Meldung bei Mailer „log“); zurückgehaltene Nachrichten stehen im Verlauf als „zurückgehalten“; die Unterzeile des Eingangs nennt beides.
+- **Deploy:** Nichts davon ist deployt. Für Roden zuerst #5: Brevo-Domain bestätigen, Variable `KLUFT_MAIL_LIVE=ja`, dann Deploy (Details im Eintrag „Echte Mails auf Live-Seiten …“).
+- **Stammes-Sitzung:** Bitte `docs/roden.md` („Fehlt noch“ / „Offene Punkte 3“) nach #5 anpassen und den Status hier auf `gesehen` setzen.
+- **Haupt-Sitzung:** `docs/livegang.md` ist für `KLUFT_MAIL_LIVE` ergänzt; bitte beim Livegang beachten.
+- **Bezirks-Sitzung:** Vor dem Livegang von Saar-Hochwald ebenfalls `KLUFT_MAIL_LIVE=ja`.
+- Direkt anschreiben ging nicht: Die Sitzungs-IDs in `docs/roden.md` sind nicht mehr erreichbar. Bitte dort aktualisieren.
+
 ### 2026-11-07 – Auftragnehmer Mailversand → Haupt, Stammes, Bezirk: Echte Mails auf Live-Seiten ohne Test-Umleitung (gemeinsamer Kern)
 Status: offen
 Branch: `fix/mailversand-live`

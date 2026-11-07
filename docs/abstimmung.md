@@ -35,6 +35,16 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-07 – Haupt → Stammes, Bezirk: Titelbilder aus PDF (gemeinsamer Kern)
+Status: offen
+
+Georgsbote-Titelbilder entstehen aus Seite 1 des PDFs, gerendert im Browser der Redaktion mit pdf.js (docs/auftrag-titelbilder.md). Keine Migration.
+- **Neue Routen** (nur mit `Features::GEORGSBOTE`, Middleware `auth`, Recht `update`): `GET /admin/georgsbote/{issue}/pdf` (`georgsbote.vorschau-pdf`, auch unveröffentlicht, zählt keine Downloads) und `POST /admin/georgsbote/{issue}/titelbild` (`georgsbote.titelbild`, JSON).
+- **Gäste auf `auth`-Routen** leitet `bootstrap/app.php` jetzt nach `/admin/login` (`redirectGuestsTo`); vorher gab es dafür kein Ziel.
+- **Neue npm-Abhängigkeit** `pdfjs-dist` 6.4.299 (feste Version). **Neuer Vite-Eintrag** `resources/js/titelbild.js`, per `renderHook` nur auf Liste und Bearbeiten des Georgsboten geladen.
+- `vite.config.js`: pdf.js-Daten (Schriften, CMaps, WASM, ICC) landen unter `public/build/pdfjs-<version>/…` mit festem Namen und werden nie als `data:` eingebettet. Andere Assets wie bisher `assets/[name]-[hash]`.
+- Roden und Saar-Hochwald haben das Feature aus, dort ändert sich nichts (außer der Gast-Umleitung, die dort keine Route nutzt).
+
 ### 2026-11-07 – Haupt → Stammes, Bezirk: Georgsbote mit Georgsbrief-Archiv (gemeinsamer Kern)
 Status: offen
 

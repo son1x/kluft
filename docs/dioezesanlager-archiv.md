@@ -120,7 +120,7 @@ Material aus dem Aktenplan als ZIP: Zusammenfassung, Logos, Flyer, Einladungen, 
 |---|---|---|
 | Schongse 2004 – „Das Weltdorf“ | `/schongse` (Idee, Zahlen, Anmeldestand nach Stufen, Vorbereitung), `/schongse-programm` (Tagesplan laut Flyer April 2004) | Kontinentfarben aus dem Logo, Rot als Akzent, Überschriften in Comic Neue |
 | futurscout 2011 – „abheben zu neuen Planeten“ | `/futurscout` (Beschlüsse, Idee mit Planeten und Bezirksdörfern, Themen, Programm, Vorbereitung) | Grün des Schriftzugs, Sternenraster, Überschriften in Orbitron |
-| Scoutgames 2020 – digital an Pfingsten | `/scoutgames` (Programm laut Plakat) | Orange des Plakats, Überschriften in Russo One |
+| Scoutgames 2020 – digital an Pfingsten | `/scoutgames` (Programm laut Plakat) | seit 08.11.2026 wie die alte Seite, siehe 3c |
 
 **Bewusst nicht übernommen:**
 - Die Flyer und Einladungen als PDF. Sie enthalten private Namen, Telefonnummern und Mailadressen der damaligen Teams; übernommen sind nur Programm und Zahlen.
@@ -141,6 +141,12 @@ Material aus dem Aktenplan (`01.4.1.9 DiLa 2015`) als ZIP: Zusammenfassung, Logo
 - Preise und Namen von Lieferanten, die Anmeldestatistik nach Stämmen. Aus der Belegung steht nur die Spitze (622 Personen am 27.07.) auf der Seite.
 
 **Offen:** Ein Abschlussbericht oder Fotos vom Lager selbst fehlen. Mit freigegebenen Bildern (ohne erkennbare Kinder oder mit Einwilligung) lässt sich die Seite ergänzen.
+
+## 3c. Scoutgames im Aussehen der alten Seite (08.11.2026)
+
+Vorbild ist die alte Seite scoutgames2020.info (seit 2021 Weiterleitung auf `https://www.iamscout.de/scoutgames2020/`): weißes Blatt auf hellgrauem Grund, Schriftzug „ScoutGames 2020 DIGITAL“, Wappen, marineblauer Balken (#13245C), Rot für Links und Akzente (#BD0926), Arial, eckige Kästen, Wegzeichen „»‹“ vor den Überschriften, unten Zelte auf der Wiese. Die Bilder stammen von der alten Seite des DV (`instanzen/dv-trier/public/images/scoutgames/`: `logo`, `wappen`, `zelte`, `rasen.png`); das Wegzeichen ist als SVG nachgezeichnet.
+
+Neu in der Lager-Konfiguration (auch für andere Lager nutzbar): `wappen` (Zeichen über dem Titel) und `fuss` (Fußbild über die ganze Breite, Wiese als Hintergrund, schließt direkt an die Fußzeile an). Das Laufband ist bei den Scoutgames entfallen, die alte Seite hatte keins.
 
 ## 4. Später: Domain scoutergy.de
 
@@ -164,3 +170,13 @@ Material aus dem Aktenplan (`01.4.1.9 DiLa 2015`) als ZIP: Zusammenfassung, Logo
    | alles andere | `/scoutergy` |
 
    Die Weiterleitungen werden beim Verbinden der Domain eingerichtet (Permalinks der alten Seite: `/%category%/%postname%/`).
+
+## 4b. Später: Domain scoutgames2020.info
+
+Die Domain gehört zur alten Seite und leitet heute auf iamscout.de/scoutgames2020 weiter. Nach dem Livegang:
+
+1. DNS von scoutgames2020.info und www.scoutgames2020.info auf den Kluft-Webspace zeigen lassen, in Plesk als Alias von www.dpsg-trier.de anlegen und das Zertifikat einrichten.
+2. In `instanzen/dv-trier/config.php` beim Lager `scoutgames` `'domains' => ['www.scoutgames2020.info', 'scoutgames2020.info']` eintragen und deployen. Dann zeigt die Domain die Lagerseite direkt, mit Verweis (canonical) auf www.dpsg-trier.de/scoutgames; im Backend erscheint ein eigener Reiter für die Domain.
+3. Die alte Seite `https://www.iamscout.de/scoutgames2020/` (eine einzelne Seite) auf `https://www.scoutgames2020.info/` weiterleiten lassen; das geschieht auf dem Server von iamscout.de, nicht in Kluft.
+
+Erst eintragen, wenn die Domain wirklich auf Kluft zeigt: Vorher würden Links im Backend auf eine Adresse zeigen, die noch die alte Seite liefert.

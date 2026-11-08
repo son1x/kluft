@@ -323,6 +323,13 @@ class Roadmap
                 'detail' => 'Mit der Technik abgestimmt: Redaktionsstopp auf Test, Backups, WordPress mit dem WP Toolkit nach alt.dpsg-trier.de klonen, Test aufräumen, Datenbank und Ordner mit Plesk nach www.dpsg-trier.de kopieren, vorher in dv-trier-live KLUFT_MAIL_LIVE=ja setzen und MAIL_TEST_REDIRECT_TO, MAIL_TEST_ALLOWLIST und KLUFT_TESTSYSTEM löschen, Deploy dv-trier-live (Protokoll muss „Mailer: smtp“ zeigen), Cronjob, Dokumentstamm von dpsg-trier.de auf www.dpsg-trier.de/public, Zertifikat, Statistik unter Verwaltung → Aufrufe auf null setzen, Test schließen (KLUFT_TESTSYSTEM). Danach bolivienpartnerschaft.de und beraten-online.de als Aliasse. Ablauf Schritt für Schritt in docs/livegang.md.',
                 'done' => null,
             ],
+            [
+                'key' => 'domain-scoutgames',
+                'phase' => 'Livegang',
+                'title' => 'Nach dem Livegang: scoutgames2020.info auf die Lagerseite',
+                'detail' => 'Die alte Adresse scoutgames2020.info leitet heute auf iamscout.de/scoutgames2020 weiter. Nach dem 21.11.: DNS von scoutgames2020.info und www.scoutgames2020.info auf den Kluft-Webspace zeigen lassen, in Plesk als Alias von www.dpsg-trier.de anlegen und das Zertifikat einrichten; dann trägt die Technik die Domain beim Lager „scoutgames“ ein und deployt. Die Domain zeigt danach die Lagerseite direkt (mit Verweis auf www.dpsg-trier.de/scoutgames). Die alte Seite unter iamscout.de/scoutgames2020 auf die neue Adresse weiterleiten. Details: docs/dioezesanlager-archiv.md, Abschnitt 4b.',
+                'done' => null,
+            ],
         ];
     }
 

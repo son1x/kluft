@@ -25,7 +25,6 @@
 /* Überschriften weiterer Diözesanlager: Schongse 2004, futurscout 2011, Scoutgames 2020 */
 @import '@fontsource/comic-neue/700.css';
 @import '@fontsource/orbitron/700.css';
-@import '@fontsource/russo-one/400.css';
 
 /*
  * DPSG-Design-Tokens (Corporate Design der DPSG, Stand April 2026),
@@ -245,6 +244,9 @@ a.lager-karte:hover, a.lager-karte:focus-visible { transform: translateY(-3px); 
 .lager-pill-hell { background: #fff; color: var(--lager-kopf); border: 1px solid var(--lager-rand); }
 .lager-button { display: inline-flex; align-items: center; gap: 0.5rem; border-radius: 99px; padding: 0.7rem 1.4rem; font-weight: 600; background: var(--lager-akzent); color: var(--lager-akzent-ink); }
 .lager-button:hover, .lager-button:focus-visible { filter: brightness(0.92); }
+/* Mit Fußbild schließt die Wiese direkt an die Fußzeile an. */
+main:has(> .lager-fuss:last-child) + footer { margin-top: 0; }
+.lager-fuss { display: flex; justify-content: center; padding-top: 1rem; background-repeat: repeat-x; background-position: bottom; background-color: #fff; }
 .lager-laufband { overflow: hidden; white-space: nowrap; background: var(--lager-akzent); color: var(--lager-akzent-ink); font-weight: 800; letter-spacing: 0.02em; }
 .lager-laufband > div { display: inline-block; padding: 0.9rem 0; animation: lager-laufband 40s linear infinite; }
 @keyframes lager-laufband { from { transform: translateX(0); } to { transform: translateX(-50%); } }
@@ -340,23 +342,36 @@ a.lager-karte:hover, a.lager-karte:focus-visible { transform: translateY(-3px); 
 }
 .lager-futurscout :is(h1, h2, h3, h4) { letter-spacing: 0.01em; }
 
-/* Scoutgames 2020 – digitale Spiele an Pfingsten: Orange des Plakats,
-   Rot und Blau des Wappens; kantige Überschriften wie das Logo. */
+/* Scoutgames 2020 – digital an Pfingsten: wie die alte Seite
+   scoutgames2020.info (heute iamscout.de/scoutgames2020): weißes Blatt auf
+   hellgrauem Grund, Marineblau als Balken, Rot für Links und Akzente
+   (Weiß darauf 6,1 : 1), Arial, eckig, Wegzeichen „»‹“ vor den Überschriften,
+   unten Zelte auf der Wiese. */
 .lager-scoutgames {
-    --lager-schrift: 'Carlito', Calibri, Arial, sans-serif;
-    --lager-titelschrift: 'Russo One', 'Carlito', sans-serif;
-    --lager-text: #1d1d1b;
-    --lager-kopf: #1d1d1b;
-    --lager-flaeche: #fff4ea;
-    --lager-rand: #f2d3b8;
-    --lager-schatten: #b03a0026;
-    --lager-radius: 10px;
-    --lager-akzent: #b03a00;
+    --lager-schrift: Arial, Helvetica, sans-serif;
+    --lager-titelschrift: Arial, Helvetica, sans-serif;
+    --lager-text: #000;
+    --lager-kopf: #13245c;
+    --lager-flaeche: #eeeeee;
+    --lager-rand: #c8c8c8;
+    --lager-schatten: transparent;
+    --lager-radius: 0;
+    --lager-akzent: #bd0926;
     --lager-akzent-ink: #fff;
-    --lager-akzent-text: #a33600;
-    --lager-wolken:
-        radial-gradient(30% 45% at 85% 45%, #f07d0040 1%, transparent 99%),
-        radial-gradient(18% 30% at 8% 30%, #c4161c26 1%, transparent 99%),
-        radial-gradient(16% 28% at 30% 85%, #1f4e9e26 1%, transparent 99%);
+    --lager-akzent-text: #bd0926;
+    --lager-wolken: linear-gradient(#fff, #fff);
 }
-.lager-scoutgames :is(h1, h2, h3, h4) { letter-spacing: 0; }
+main.lager-scoutgames { background: #dddddd; }
+.lager-scoutgames.lager-wolken { border-bottom: 12px solid #13245c; }
+.lager-scoutgames :is(h1, h2, h3, h4) { letter-spacing: 0; font-weight: 700; }
+.lager-scoutgames .lager-pill { border-radius: 0; }
+.lager-scoutgames .lager-karte { box-shadow: none; }
+.lager-scoutgames .prose h2 { border-bottom: 1px solid #c8c8c8; padding-bottom: 0.4em; }
+.lager-scoutgames h2::before {
+    content: '';
+    display: inline-block;
+    width: 1.6em;
+    height: 0.8em;
+    margin-right: 0.5em;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 33 16'%3E%3Cpath d='M3 3l5 5-5 5M11 3l5 5-5 5M29 3l-5 5 5 5' fill='none' stroke='%23bd0926' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat left center / contain;
+}

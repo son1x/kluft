@@ -281,10 +281,14 @@ return [
             'zeitraum' => 'Pfingstsamstag, 30. Mai 2020',
             'ort' => 'im Netz (Videokonferenz)',
             'motto' => 'Pfadfinder spielen (immer noch) gern',
-            'laufband' => ['Impulse', 'Spiele', 'Lagerfeuerrunde', 'Pfadfinder spielen (immer noch) gern'],
+            // Aussehen wie die alte Seite scoutgames2020.info (heute iamscout.de/scoutgames2020):
+            // Schriftzug „DIGITAL“, Wappen, Wegzeichen vor Überschriften, Zelte auf der Wiese.
             'logo' => 'instanz/images/scoutgames/logo',
-            'logo_alt' => 'Schriftzug „ScoutGames 2020“ mit Lilie',
-            'logo_size' => [500, 97],
+            'logo_alt' => 'Schriftzug „ScoutGames 2020 – digital“ mit Lilie, www.scoutgames2020.info',
+            'logo_size' => [700, 132],
+            'wappen' => 'instanz/images/scoutgames/wappen',
+            'wappen_size' => [130, 147],
+            'fuss' => ['rasen' => 'instanz/images/scoutgames/rasen.png', 'bild' => 'instanz/images/scoutgames/zelte', 'size' => [544, 288]],
             'domains' => [],
         ],
         'gastfreundschaft' => [

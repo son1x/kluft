@@ -201,4 +201,23 @@ class DioezesanlagerTest extends TestCase
         $this->assertLessThan(strpos($uebersicht, 'futurscout 2011'), strpos($uebersicht, 'Gast&gt;&gt;FREUNDschaft 2015'));
         $this->assertGreaterThan(strpos($uebersicht, 'Scoutgames 2020'), strpos($uebersicht, 'Gast&gt;&gt;FREUNDschaft 2015'));
     }
+
+    #[TestDox('Scoutgames im Aussehen der alten Seite: Schriftzug, Wappen, Zelte unten, kein Laufband')]
+    public function test_scoutgames_wie_alte_seite(): void
+    {
+        $this->migrieren();
+        (require base_path('instanzen/dv-trier/migrations/2026_11_07_120000_dioezesanlager_archiv_2004_2011_2020.php'))->up();
+
+        $this->get('/scoutgames')->assertOk()
+            ->assertSee('instanz/images/scoutgames/wappen.webp', false)
+            ->assertSee('instanz/images/scoutgames/zelte.webp', false)
+            ->assertSee('class="lager-fuss', false)
+            ->assertDontSee('class="lager-laufband', false);
+        foreach (['logo.png', 'logo.webp', 'wappen.png', 'wappen.webp', 'zelte.png', 'zelte.webp', 'rasen.png'] as $datei) {
+            $this->assertFileExists(base_path('instanzen/dv-trier/public/images/scoutgames/'.$datei));
+        }
+
+        // Andere Lager ohne Wappen und Fußbild.
+        $this->get('/futurscout')->assertOk()->assertDontSee('class="lager-fuss', false)->assertSee('class="lager-laufband', false);
+    }
 }

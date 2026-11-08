@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Throwable;
 
@@ -34,7 +35,9 @@ class BrevoCheckCommand extends Command
         };
         $this->line('API-Schlüssel gesetzt: '.($key !== '' ? "ja, {$kind}" : 'NEIN'));
         $this->line('Listen-ID: '.($listId ?: 'NEIN').' · Vorlagen-ID: '.($templateId ?: 'NEIN'));
-        $this->line('Weiterleitung nach Bestätigung: '.(config('services.brevo.doi_redirect_url') ?: route('newsletter.danke')));
+        // Ohne Newsletter-Seite (z. B. Stämme ohne Georgsbrief) gibt es die Danke-Seite nicht.
+        $danke = Route::has('newsletter.danke') ? route('newsletter.danke') : 'keine (diese Website hat keine Newsletter-Seite)';
+        $this->line('Weiterleitung nach Bestätigung: '.(config('services.brevo.doi_redirect_url') ?: $danke));
         if ($key === '') {
             return self::FAILURE;
         }

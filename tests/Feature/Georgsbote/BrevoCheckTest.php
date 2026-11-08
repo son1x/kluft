@@ -3,6 +3,7 @@
 namespace Tests\Feature\Georgsbote;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Route;
 use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
@@ -47,5 +48,20 @@ class BrevoCheckTest extends TestCase
             ->expectsOutputToContain('✗ aktiv')
             ->doesntExpectOutputToContain('a@b.de')
             ->assertFailed();
+    }
+
+    #[TestDox('Ohne eigene Weiterleitung: Danke-Seite, bzw. Hinweis, wenn die Website keine Newsletter-Seite hat')]
+    public function test_ohne_weiterleitung(): void
+    {
+        config(['services.brevo.doi_redirect_url' => null]);
+        Http::fake([
+            '*/account' => Http::response(['email' => 'x@example.org']),
+            '*/contacts/lists/20' => Http::response(['name' => 'Liste', 'uniqueSubscribers' => 1]),
+            '*/smtp/templates/7' => Http::response(['name' => 'DOI', 'isActive' => true, 'htmlContent' => '{{ doubleoptin }}', 'sender' => ['email' => 'info@dpsg-trier.de']]),
+        ]);
+
+        $this->artisan('brevo:check')
+            ->expectsOutputToContain('Weiterleitung nach Bestätigung: '.(Route::has('newsletter.danke') ? route('newsletter.danke') : 'keine'))
+            ->assertSuccessful();
     }
 }

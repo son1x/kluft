@@ -18,6 +18,13 @@
     <section class="{{ $lagerKlasse }} lager-wolken relative overflow-hidden pt-24 pb-12 md:pt-40 md:pb-16">
         <div class="relative mx-auto grid w-full max-w-6xl items-center gap-10 px-4 md:grid-cols-5">
             <div class="md:col-span-3">
+                @if ($config['wappen'] ?? null)
+                    {{-- Zeichen der alten Lagerseite (z. B. Wappen der Scoutgames) --}}
+                    <picture class="mb-5 block w-20 md:w-24">
+                        <source type="image/webp" srcset="{{ asset($config['wappen'].'.webp') }}" />
+                        <img src="{{ asset($config['wappen'].'.png') }}" alt="" width="{{ $config['wappen_size'][0] ?? 130 }}" height="{{ $config['wappen_size'][1] ?? 147 }}" class="h-auto w-full" />
+                    </picture>
+                @endif
                 <p class="flex flex-wrap gap-2">
                     <span class="lager-pill lager-pill-akzent">{{ $config['kind'] ?? 'Diözesanlager' }} {{ $config['jahr'] ?? '' }}</span>
                     @if ($config['archiv'] ?? false)
@@ -108,6 +115,16 @@
             </section>
         @endif
     </div>
+
+    @if ($fuss = $config['fuss'] ?? null)
+        {{-- Fußbild der alten Lagerseite (z. B. Zelte auf der Wiese bei den Scoutgames) --}}
+        <div class="lager-fuss mt-20" aria-hidden="true" style="background-image: url('{{ asset($fuss['rasen']) }}')">
+            <picture class="block w-full max-w-[544px]">
+                <source type="image/webp" srcset="{{ asset($fuss['bild'].'.webp') }}" />
+                <img src="{{ asset($fuss['bild'].'.png') }}" alt="" width="{{ $fuss['size'][0] ?? 544 }}" height="{{ $fuss['size'][1] ?? 288 }}" loading="lazy" class="h-auto w-full" />
+            </picture>
+        </div>
+    @endif
 
     @if ($laufband = $config['laufband'] ?? null)
         {{-- Laufband wie auf der alten Seite; Text doppelt für die Endlosschleife --}}

@@ -93,4 +93,30 @@ class Page extends Model
         return $query->where('status', 'published')
             ->where('published_at', '<=', now());
     }
+
+    /**
+     * Vorstandsseiten (Pflichtenheft 5.4): die Seite des Gremiums „leitung“
+     * (config dpsg.gremien.leitung.page, z. B. „dioezesanleitung“ oder
+     * „stammesvorstand“) und ihre Unterseiten. Die pflegt der Vorstand.
+     *
+     * @return list<int>
+     */
+    public static function vorstandsseitenIds(): array
+    {
+        $slug = config('dpsg.gremien.leitung.page');
+        $ids = $slug ? self::query()->where('slug', $slug)->pluck('id')->all() : [];
+        $ebene = $ids;
+        // Unterseiten, höchstens fünf Ebenen tief.
+        for ($i = 0; $i < 5 && $ebene !== []; $i++) {
+            $ebene = array_values(array_diff(self::query()->whereIn('parent_id', $ebene)->pluck('id')->all(), $ids));
+            $ids = [...$ids, ...$ebene];
+        }
+
+        return array_map('intval', $ids);
+    }
+
+    public function istVorstandsseite(): bool
+    {
+        return $this->exists && in_array((int) $this->id, self::vorstandsseitenIds(), true);
+    }
 }

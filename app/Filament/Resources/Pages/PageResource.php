@@ -42,13 +42,15 @@ class PageResource extends Resource
         $query = parent::getEloquentQuery();
         $user = Filament::auth()->user();
 
-        if (! $user || $user->isVerwaltung() || $user->hasRole('vorstand')) {
+        if (! $user || $user->isVerwaltung()) {
             return $query;
         }
 
+        // Stufen-/Sektionsadmins: ihre Seiten; Vorstand: die Vorstandsseiten.
         return $query->where(fn (Builder $q) => $q
             ->whereIn('stage', $user->scopeKeysFor('stufenadmin'))
-            ->orWhereIn('section', $user->scopeKeysFor('sektionsadmin')));
+            ->orWhereIn('section', $user->scopeKeysFor('sektionsadmin'))
+            ->when($user->hasRole('vorstand'), fn (Builder $q) => $q->orWhereIn('id', Page::vorstandsseitenIds())));
     }
 
     public static function form(Schema $schema): Schema

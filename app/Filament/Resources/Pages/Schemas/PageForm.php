@@ -48,11 +48,14 @@ class PageForm
                         ->required()
                         ->unique(ignoreRecord: true)
                         ->alphaDash()
+                        // Die Vorstandsseite hängt am Slug (config dpsg.gremien.leitung.page).
+                        ->disabled(fn (?Page $record) => self::nurVorstandsseite($record))
                         ->helperText('Erreichbar unter /{slug}'),
 
                     Select::make('parent_id')
                         ->label('Übergeordnete Seite')
                         ->relationship('parent', 'title')
+                        ->disabled(fn (?Page $record) => self::nurVorstandsseite($record))
                         ->searchable()
                         ->preload(),
 
@@ -61,7 +64,7 @@ class PageForm
                         ->options(fn () => self::stageOptions())
                         ->native(false)
                         ->visible(fn () => self::stageOptions() !== [])
-                        ->required(fn (Get $get) => ! self::isGlobal() && self::sectionOptions() === [])
+                        ->required(fn (Get $get, ?Page $record) => ! self::isGlobal() && ! self::nurVorstandsseite($record) && self::sectionOptions() === [])
                         ->helperText('Nur setzen, wenn diese Seite zu einer bestimmten Stufe gehört.'),
 
                     Select::make('section')
@@ -69,12 +72,12 @@ class PageForm
                         ->options(fn () => self::sectionOptions())
                         ->native(false)
                         ->visible(fn () => self::sectionOptions() !== [])
-                        ->required(fn (Get $get) => ! self::isGlobal() && blank($get('stage')))
+                        ->required(fn (Get $get, ?Page $record) => ! self::isGlobal() && ! self::nurVorstandsseite($record) && blank($get('stage')))
                         ->helperText('Seiten eines Fachbereichs erscheinen in dessen Navigation. Fachbereiche mit eigener Domain (in Klammern) sind zugleich eine eigene Website.'),
 
                     Select::make('status')
                         ->label('Status')
-                        ->options(self::statusOptions())
+                        ->options(fn (?Page $record) => self::statusOptions($record))
                         ->default('draft')
                         ->native(false)
                         ->required(),
@@ -127,6 +130,12 @@ class PageForm
         return (bool) Filament::auth()->user()?->isVerwaltung();
     }
 
+    /** Vorstand ohne Verwaltungsrechte bearbeitet eine Vorstandsseite. */
+    private static function nurVorstandsseite(?Page $record): bool
+    {
+        return ! self::isGlobal() && (bool) Filament::auth()->user()?->hasRole('vorstand') && (bool) $record?->istVorstandsseite();
+    }
+
     /**
      * Verwaltung: alle Stufen; Stufenadmins nur die eigenen.
      *
@@ -160,7 +169,7 @@ class PageForm
      *
      * @return array<string, string>
      */
-    private static function statusOptions(): array
+    private static function statusOptions(?Page $record = null): array
     {
         $options = [
             'draft' => 'Entwurf',
@@ -169,7 +178,8 @@ class PageForm
 
         $user = Filament::auth()->user();
 
-        if ($user && ($user->isVerwaltung())) {
+        // Vorstand: Vorstandsseiten direkt veröffentlichen (wie News freigeben, 5.4).
+        if ($user && ($user->isVerwaltung() || self::nurVorstandsseite($record))) {
             $options['published'] = 'Veröffentlicht';
         }
 

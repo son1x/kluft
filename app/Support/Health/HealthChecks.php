@@ -4,10 +4,8 @@ namespace App\Support\Health;
 
 use App\Models\Calendar;
 use App\Models\InstagramKonto;
-use App\Models\IntegrationToken;
 use App\Models\WhatsAppCampaign;
 use App\Services\Backup\BackupService;
-use App\Services\Instagram\InstagramClient;
 use App\Services\Mitglieder\NamiVerzeichnis;
 use App\Services\WhatsApp\WhatsAppSettings;
 use App\Support\Mailversand;
@@ -46,8 +44,8 @@ class HealthChecks
             'mails' => ['E-Mail-Versand', fn () => $this->mailQueue()],
             'backups' => ['Backups', fn () => $this->backups()],
             'kalender' => ['Kalender-Abgleich (Nextcloud)', fn () => $this->calendars()],
-            'instagram' => ['Instagram-Anbindung', fn () => $this->instagram()],
-            'instagram_feed' => ['Instagram-Einblendung', fn () => $this->instagramFeed()],
+            'instagram' => ['Instagram: Teilen', fn () => $this->instagram()],
+            'instagram_feed' => ['Instagram: Einblendung', fn () => $this->instagramFeed()],
         ];
         if (config('mitglieder.driver') === 'nami') {
             $checks['nami'] = ['Mitgliederverwaltung (NaMi)', fn () => $this->nami()];
@@ -163,15 +161,15 @@ class HealthChecks
     /** @return array{0: string, 1: string} */
     private function instagram(): array
     {
-        $token = IntegrationToken::for(InstagramClient::PROVIDER);
-        if (! $token) {
-            return [self::OFF, 'Noch nicht eingerichtet – es fehlt das Instagram-Konto (siehe Roadmap).'];
+        $konto = InstagramKonto::zumTeilen();
+        if (! $konto) {
+            return [self::OFF, 'Noch nicht eingerichtet – kein Instagram-Konto zum Teilen (Verwaltung → Instagram-Konten).'];
         }
-        if ($token->expires_at !== null && $token->expires_at->lt(now()->addDays(7))) {
-            return [self::WARN, 'Zugang läuft am '.$token->expires_at->format('d.m.Y').' ab.'];
+        if ($konto->token_ablauf !== null && $konto->token_ablauf->lt(now()->addDays(7))) {
+            return [self::WARN, 'Zugang läuft am '.$konto->token_ablauf->format('d.m.Y').' ab.'];
         }
 
-        return $token->last_error ? [self::WARN, 'Letzte Erneuerung mit Fehler.'] : [self::OK, 'Verbunden.'];
+        return $konto->fehler ? [self::WARN, 'Letzter Fehler: '.$konto->fehler] : [self::OK, 'Verbunden: '.($konto->benutzername ? '@'.$konto->benutzername : $konto->name).'.'];
     }
 
     /**
@@ -189,7 +187,7 @@ class HealthChecks
 
         return $gestoert->isEmpty()
             ? [self::OK, $konten->count().' Konto/Konten aktuell.']
-            : [self::WARN, 'Abruf gestört: '.$gestoert->pluck('name')->implode(', ').' (Verwaltung → Instagram-Einblendung).'];
+            : [self::WARN, 'Abruf gestört: '.$gestoert->pluck('name')->implode(', ').' (Verwaltung → Instagram-Konten).'];
     }
 
     /** @return array{0: string, 1: string} */

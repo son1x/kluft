@@ -2,15 +2,17 @@
 
 namespace Tests\Feature\Instagram;
 
-use App\Filament\Pages\Integrations;
+use App\Filament\Resources\InstagramKonten\Pages\CreateInstagramKonto;
+use App\Filament\Resources\InstagramKonten\Pages\EditInstagramKonto;
 use App\Filament\Resources\Posts\Pages\EditPost;
 use App\Models\AuditLog;
-use App\Models\IntegrationToken;
+use App\Models\InstagramKonto;
 use App\Models\Media;
 use App\Models\Post;
 use App\Models\SocialPost;
 use App\Models\User;
 use App\Notifications\InstagramTokenProblemNotification;
+use App\Services\Instagram\InstagramClient;
 use App\Services\Instagram\InstagramImage;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -47,11 +49,11 @@ class InstagramTest extends TestCase
         return $user->fresh();
     }
 
-    private function connect(): IntegrationToken
+    private function connect(array $attrs = []): InstagramKonto
     {
-        return IntegrationToken::query()->create([
-            'provider' => 'instagram', 'account_id' => '1789', 'account_name' => 'dpsgtrier',
-            'access_token' => 'IGAA-geheim', 'expires_at' => now()->addDays(50), 'refreshed_at' => now()->subDays(10),
+        return InstagramKonto::query()->create([
+            'name' => 'DPSG Trier', 'benutzername' => 'dpsgtrier', 'ig_user_id' => '1789', 'access_token' => 'IGAA-geheim',
+            'token_ablauf' => now()->addDays(50), 'token_erneuert' => now()->subDays(10), 'orte' => [], 'aktiv' => false, 'teilen' => true, ...$attrs,
         ]);
     }
 
@@ -141,7 +143,7 @@ class InstagramTest extends TestCase
         $this->assertSame('failed', $social->status);
         $this->assertStringContainsString('Invalid image aspect ratio', $social->error);
         $this->assertStringNotContainsString('IGAA-geheim', $social->error);
-        $this->assertStringNotContainsString('IGAA-geheim', (string) DB::table('integration_tokens')->value('access_token'));
+        $this->assertStringNotContainsString('IGAA-geheim', (string) DB::table('instagram_konten')->value('access_token'));
     }
 
     #[TestDox('Nur Berechtigte können teilen, und nur wenn alles bereit ist')]
@@ -168,52 +170,100 @@ class InstagramTest extends TestCase
         $this->assertSame(0, SocialPost::query()->count());
     }
 
-    #[TestDox('Nur Admins hinterlegen den Instagram-Zugang; er wird geprüft')]
-    public function test_only_admins_manage_the_token_and_it_is_validated(): void
+    #[TestDox('Konto zum Teilen: nur Admins, Token muss veröffentlichen dürfen, nur ein Konto teilt')]
+    public function test_konto_zum_teilen(): void
     {
-        $this->actingAs($this->user('buero@dpsg-trier.de', 'verwaltung'))->get('/admin/integrations')->assertForbidden();
+        $this->actingAs($this->user('buero@dpsg-trier.de', 'verwaltung'))->get('/admin/instagram-konten')->assertForbidden();
+        $this->actingAs($this->user('technik@dpsg-trier.de', 'admin'));
 
-        $admin = $this->user('technik@dpsg-trier.de', 'admin');
-        $this->actingAs($admin)->get('/admin/integrations')->assertOk()->assertSee('Noch nicht verbunden');
+        Http::fake([
+            self::API.'/me*' => Http::response(['user_id' => '1789', 'username' => 'dpsgtrier']),
+            self::API.'/1789/content_publishing_limit*' => Http::sequence()
+                ->push(['error' => ['message' => 'Insufficient permission']], 403)
+                ->push(['data' => [['quota_usage' => 0]]])
+                ->push(['data' => [['quota_usage' => 0]]]),
+            self::API.'/me/media*' => Http::response(['data' => []]),
+        ]);
 
-        Http::fake([self::API.'/me*' => Http::sequence()
-            ->push(['error' => ['message' => 'Invalid OAuth access token']], 400)
-            ->push(['user_id' => '1789', 'username' => 'dpsgtrier'])]);
+        // Nur Einblendungs-Recht: mit Haken „teilen“ abgelehnt.
+        Livewire::test(CreateInstagramKonto::class)
+            ->fillForm(['name' => 'DPSG Trier', 'access_token' => 'IGAA-basic', 'anzahl' => 8, 'teilen' => true])
+            ->call('create')
+            ->assertNotified('Dieses Token darf nicht veröffentlichen');
+        $this->assertSame(0, InstagramKonto::query()->count());
 
-        Livewire::test(Integrations::class)->fillForm(['access_token' => 'falsch'])->call('saveInstagram')
-            ->assertNotified('Token wurde nicht gespeichert');
-        $this->assertNull(IntegrationToken::for('instagram'));
+        Livewire::test(CreateInstagramKonto::class)
+            ->fillForm(['name' => 'DPSG Trier', 'access_token' => 'IGAA-geheim', 'anzahl' => 8, 'teilen' => true])
+            ->call('create')
+            ->assertHasNoFormErrors();
+        $konto = InstagramKonto::zumTeilen();
+        $this->assertSame(['1789', 'IGAA-geheim'], [$konto->ig_user_id, $konto->access_token]);
+        $this->assertTrue(app(InstagramClient::class)->isConfigured());
+        $this->get('/admin/instagram-konten')->assertOk()->assertSee('DPSG Trier')->assertDontSee('IGAA-geheim');
 
-        Livewire::test(Integrations::class)->fillForm(['access_token' => 'IGAA-geheim'])->call('saveInstagram')
-            ->assertNotified('Instagram verbunden: @dpsgtrier');
-        $token = IntegrationToken::for('instagram');
-        $this->assertSame('1789', $token->account_id);
-        $this->assertSame('IGAA-geheim', $token->access_token);
-        $this->get('/admin/integrations')->assertSee('@dpsgtrier')->assertDontSee('IGAA-geheim');
+        // Haken wandert; Speichern ohne neues Token prüft nur ein neu teilendes Konto.
+        $zweit = InstagramKonto::query()->create(['name' => 'Bolivien', 'ig_user_id' => '1789', 'access_token' => 'IGAA-geheim', 'orte' => [], 'aktiv' => false]);
+        Livewire::test(EditInstagramKonto::class, ['record' => $zweit->getRouteKey()])
+            ->fillForm(['teilen' => true])
+            ->call('save')
+            ->assertHasNoFormErrors();
+        $this->assertSame($zweit->id, InstagramKonto::zumTeilen()->id);
+        $this->assertFalse($konto->fresh()->teilen);
     }
 
-    #[TestDox('Zugang wird verlängert; bei Problemen werden Admins benachrichtigt')]
+    #[TestDox('Zugang wird verlängert, auch für ein Konto nur zum Teilen; bei Problemen werden Admins benachrichtigt')]
     public function test_token_refresh_and_admin_alert_on_failure(): void
     {
         Notification::fake();
         $admin = $this->user('technik@dpsg-trier.de', 'admin');
-        $this->connect();
+        $this->connect(['token_ablauf' => now()->addDays(10)]);
 
         Http::fake(['graph.instagram.com/refresh_access_token*' => Http::sequence()
             ->push(['access_token' => 'IGAA-neu', 'token_type' => 'bearer', 'expires_in' => 5184000])
             ->push(['error' => ['message' => 'Session has expired']], 400)]);
 
         $this->artisan('instagram:refresh-token')->assertSuccessful();
-        $token = IntegrationToken::for('instagram');
-        $this->assertSame('IGAA-neu', $token->access_token);
-        $this->assertTrue($token->expires_at->between(now()->addDays(59), now()->addDays(61)));
+        $konto = InstagramKonto::zumTeilen();
+        $this->assertSame('IGAA-neu', $konto->access_token);
+        $this->assertTrue($konto->token_ablauf->between(now()->addDays(59), now()->addDays(61)));
 
-        // Jünger als 24 h: kein Aufruf ohne --force.
-        $this->artisan('instagram:refresh-token')->assertSuccessful();
+        // Jünger als 24 h: kein Aufruf, auch nicht mit --force.
+        $this->artisan('instagram:refresh-token --force')->assertSuccessful();
         Http::assertSentCount(1);
 
+        $this->travel(2)->days();
         $this->artisan('instagram:refresh-token --force')->assertFailed();
-        $this->assertStringContainsString('Session has expired', IntegrationToken::for('instagram')->last_error);
+        $this->assertStringContainsString('Session has expired', (string) InstagramKonto::zumTeilen()->fehler);
         Notification::assertSentTo($admin, InstagramTokenProblemNotification::class);
+    }
+
+    #[TestDox('Migration: Token aus „Integrationen“ landet beim passenden Instagram-Konto bzw. in einem neuen Konto nur zum Teilen')]
+    public function test_migration_uebernimmt_token(): void
+    {
+        $migration = require base_path('database/migrations/2026_11_09_120000_instagram_teilen_in_konten.php');
+        $alt = fn (string $id) => DB::table('integration_tokens')->insert([
+            'provider' => 'instagram', 'account_id' => $id, 'account_name' => 'dpsgtrier',
+            'access_token' => encrypt('IGAA-teilen', false), 'expires_at' => now()->addDays(30), 'refreshed_at' => now(), 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        $nochmal = function () use ($migration) {
+            $migration->down();
+            $migration->up();
+        };
+
+        // Kein vorhandenes Konto: neues Konto nur zum Teilen.
+        $alt('1789');
+        $nochmal();
+        $konto = InstagramKonto::zumTeilen();
+        $this->assertSame(['@dpsgtrier', '1789', 'IGAA-teilen', false, []], [$konto->name, $konto->ig_user_id, $konto->access_token, $konto->aktiv, $konto->orte]);
+        $this->assertSame(0, DB::table('integration_tokens')->where('provider', 'instagram')->count());
+
+        // Konto schon in der Einblendung: bekommt Haken und Token.
+        $konto->delete();
+        $eingeblendet = InstagramKonto::query()->create(['name' => 'DPSG Trier', 'ig_user_id' => '1789', 'access_token' => 'IGAA-basic', 'orte' => ['startseite']]);
+        $alt('1789');
+        $nochmal();
+        $eingeblendet->refresh();
+        $this->assertSame([true, 'IGAA-teilen', true], [$eingeblendet->teilen, $eingeblendet->access_token, $eingeblendet->aktiv]);
+        $this->assertSame(1, InstagramKonto::query()->count());
     }
 }

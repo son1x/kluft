@@ -17,7 +17,10 @@ class EditInstagramKonto extends EditRecord
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        return $this->zugangPruefen($data);
+        /** @var InstagramKonto $konto */
+        $konto = $this->getRecord();
+
+        return $this->zugangPruefen($data, $konto);
     }
 
     protected function afterSave(): void

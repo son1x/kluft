@@ -285,7 +285,7 @@ class Roadmap
                 'key' => 'instagram-zugang',
                 'phase' => '1d',
                 'title' => 'Instagram-Zugang vorbereiten',
-                'detail' => 'Instagram als Business- oder Creator-Konto einrichten, in einer Meta-App „Instagram API mit Instagram-Login“ hinzufügen (Berechtigung instagram_business_content_publish), ein Long-Lived-Token erzeugen und im Backend unter „Integrationen“ eintragen.',
+                'detail' => 'Instagram als Business- oder Creator-Konto einrichten, in einer Meta-App „Instagram API mit Instagram-Login“ hinzufügen (Berechtigung instagram_business_content_publish), ein Long-Lived-Token erzeugen und im Backend unter „Verwaltung → Instagram-Konten“ mit „Zum Teilen verwenden“ eintragen.',
                 'done' => app(InstagramClient::class)->isConfigured(),
             ],
             [

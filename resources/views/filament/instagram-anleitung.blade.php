@@ -1,4 +1,4 @@
-{{-- Anleitung: Instagram-Zugangstoken für die Einblendung erzeugen (docs/instagram.md). --}}
+{{-- Anleitung: Instagram-Zugangstoken für Einblendung und Teilen erzeugen (docs/instagram.md). --}}
 @php($link = 'font-semibold text-primary-600 underline dark:text-primary-400')
 <div class="space-y-5 text-sm leading-relaxed">
     <p>Das Token erzeugst du einmal bei Meta (Facebook). Du brauchst dafür etwa 15 Minuten und die Zugangsdaten des Instagram-Kontos. Kluft verlängert das Token danach selbst.</p>
@@ -38,6 +38,7 @@
                 <li>Im Fenster mit dem Instagram-Konto anmelden und den Zugriff erlauben.</li>
                 <li>Danach steht das Konto in der Liste; daneben <em>Token generieren</em> (Generate token), noch einmal bestätigen.</li>
                 <li>Das Token kopieren: eine lange Zeichenkette, die mit <code>IG</code> beginnt.</li>
+                <li><strong>Zum Teilen</strong> (Website-Beiträge auf diesem Konto veröffentlichen) muss beim Erlauben auch „Inhalte veröffentlichen“ (<code>instagram_business_content_publish</code>) angehakt sein. Nur zum Einblenden reicht das Standard-Recht.</li>
                 <li>Schritt 3 „Webhooks konfigurieren“ und alles danach (App-Prüfung, Business-Verifizierung) brauchst du nicht.</li>
             </ul>
         </li>
@@ -45,7 +46,8 @@
             <strong>In Kluft eintragen:</strong> Hier auf dieser Seite <em>Neu</em>:
             <ul class="mt-1 list-disc space-y-1 ps-5">
                 <li>Anzeigename eintragen und das Token einfügen;</li>
-                <li>bei „Anzeigen auf“ die Startseite und/oder Fachbereiche ankreuzen;</li>
+                <li>bei „Einblenden auf“ die Startseite und/oder Fachbereiche ankreuzen;</li>
+                <li>soll Kluft Website-Beiträge auf diesem Konto teilen: „Zum Teilen verwenden“ einschalten;</li>
                 <li>speichern.</li>
             </ul>
             Kluft prüft das Token und holt sofort die ersten Beiträge.

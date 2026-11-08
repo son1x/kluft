@@ -81,9 +81,9 @@ return [
         'doi_redirect_url' => env('BREVO_DOI_REDIRECT_URL'),
     ],
 
-    // Instagram API mit Instagram-Login (F-IG). Das Zugangstoken wird nicht
-    // hier, sondern verschlüsselt in `integration_tokens` gespeichert und im
-    // Backend unter „Integrationen“ eingetragen.
+    // Instagram API mit Instagram-Login (F-IG). Die Zugangstokens werden nicht
+    // hier, sondern verschlüsselt in `instagram_konten` gespeichert und im
+    // Backend unter „Verwaltung → Instagram-Konten“ eingetragen.
     'instagram' => [
         'graph_url' => 'https://graph.instagram.com',
         'version' => env('INSTAGRAM_GRAPH_VERSION', 'v23.0'),

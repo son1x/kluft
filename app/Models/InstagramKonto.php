@@ -8,9 +8,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
- * Eigenes Instagram-Konto, dessen neueste Beiträge auf der Website
- * erscheinen (docs/instagram.md). Das Token wird verschlüsselt gespeichert
- * und nie an den Browser ausgeliefert.
+ * Eigenes Instagram-Konto (docs/instagram.md): Seine neuesten Beiträge
+ * erscheinen auf der Website („aktiv“ + Orte), und höchstens ein Konto dient
+ * zum Teilen von Website-Beiträgen („teilen“). Das Token wird verschlüsselt
+ * gespeichert und nie an den Browser ausgeliefert.
  *
  * @property int $id
  * @property string $name
@@ -21,6 +22,8 @@ use Illuminate\Support\Carbon;
  * @property list<string>|null $orte
  * @property int $anzahl
  * @property bool $aktiv
+ * @property bool $teilen
+ * @property ?string $ig_user_id
  * @property ?Carbon $abgerufen_am
  * @property ?string $fehler
  */
@@ -28,7 +31,7 @@ class InstagramKonto extends Model
 {
     protected $table = 'instagram_konten';
 
-    protected $fillable = ['name', 'benutzername', 'ig_user_id', 'access_token', 'token_ablauf', 'token_erneuert', 'orte', 'anzahl', 'aktiv', 'abgerufen_am', 'fehler'];
+    protected $fillable = ['name', 'benutzername', 'ig_user_id', 'access_token', 'token_ablauf', 'token_erneuert', 'orte', 'anzahl', 'aktiv', 'teilen', 'abgerufen_am', 'fehler'];
 
     protected $hidden = ['access_token'];
 
@@ -41,6 +44,7 @@ class InstagramKonto extends Model
             'orte' => 'array',
             'anzahl' => 'integer',
             'aktiv' => 'boolean',
+            'teilen' => 'boolean',
             'abgerufen_am' => 'datetime',
         ];
     }
@@ -68,6 +72,18 @@ class InstagramKonto extends Model
     {
         // Über die Models löschen, damit auch die Bilddateien verschwinden.
         static::deleting(fn (self $konto) => $konto->beitraege()->get()->each->delete());
+        // Nur ein Konto teilt: Wer den Haken setzt, nimmt ihn den anderen.
+        static::saved(function (self $konto) {
+            if ($konto->teilen && ($konto->wasChanged('teilen') || $konto->wasRecentlyCreated)) {
+                self::query()->whereKeyNot($konto->id)->where('teilen', true)->update(['teilen' => false]);
+            }
+        });
+    }
+
+    /** Konto für „Auf Instagram teilen“, falls eingerichtet. */
+    public static function zumTeilen(): ?self
+    {
+        return self::query()->where('teilen', true)->orderBy('id')->first();
     }
 
     public function profilUrl(): ?string

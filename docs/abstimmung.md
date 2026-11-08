@@ -62,6 +62,15 @@ Branch: `feature/mein-konto`
 - **Neu `App\Filament\Pages\MeineBenachrichtigungen`** („Meine Benachrichtigungen“, `/admin/benachrichtigungen`): Hinweise per Mail aus `MailEvents::availableFor()` wählen (schreibt `users.mail_events`, nicht angebotene Einträge bleiben), dazu Stand der Push-Nachrichten mit Knopf zu „Meine Push-Nachrichten“. Sichtbar, wenn es Mail-Hinweise zum Wählen gibt oder die Funktion „Push“ an ist. Die Auswahl im Nachrichten-Eingang („Benachrichtigung“) bleibt und schreibt dieselben Felder.
 - **Geändert:** `RoleCatalog::erklaerung($role)` aus `describe()` herausgelöst; Mail bei neuen Rechten unverändert.
 - **Neue Mail-Hinweise** bitte in `MailEvents::LABELS`/`availableFor()` eintragen, dann erscheinen sie automatisch auf der Seite.
+### 2026-11-09 – Haupt → Stammes, Bezirk: Instagram-Zugänge an einer Stelle (gemeinsamer Kern)
+Status: offen
+Branch: `feature/instagram-konten`
+
+- „Auf Instagram teilen“ nutzt kein eigenes Token mehr (`integration_tokens`, Seite „Integrationen“), sondern das Instagram-Konto mit dem neuen Haken `teilen` in `instagram_konten` (Verwaltung → Instagram-Konten, bisher „Instagram-Einblendung“). Höchstens ein Konto teilt; mit Haken prüft Kluft beim Speichern, ob das Token veröffentlichen darf (`content_publishing_limit`).
+- **Migration** `2026_11_09_120000_instagram_teilen_in_konten`: Spalte `teilen`; ein vorhandenes Instagram-Token aus `integration_tokens` wandert zum Konto mit gleicher `ig_user_id` (Haken + Token) oder in ein neues Konto ohne Einblendung, danach wird der alte Eintrag gelöscht. WhatsApp-Einträge in `integration_tokens` bleiben unberührt.
+- `instagram:refresh-token` verlängert jetzt die Tokens aller eingeblendeten und des teilenden Kontos (ab 20 Tage vor Ablauf, `--force` sofort) und mailt den Admins bei Fehlern. Statusseite: „Instagram: Teilen“ und „Instagram: Einblendung“.
+- **Entfernt:** Seite `App\Filament\Pages\Integrations` (`/admin/integrations`), sie enthielt nur Instagram.
+- **Stämme und Bezirk:** Wer bisher unter „Integrationen“ ein Token hatte, findet es nach dem Deploy unter „Instagram-Konten“. Sonst nichts zu tun.
 
 ### 2026-11-08 – Haupt → Stammes, Bezirk: Zelte unten rechts in der Fußzeile (gemeinsamer Kern)
 Status: offen

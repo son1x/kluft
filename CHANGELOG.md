@@ -10,6 +10,7 @@ Admins. Kurz und aus Sicht der Redaktion schreiben.
 - Der Vorstand pflegt die Vorstandsseite (Seite der Diözesan- bzw. Bezirksleitung oder des Stammesvorstands) und ihre Unterseiten selbst und kann sie veröffentlichen. Andere Seiten sieht er im Backend nicht mehr.
 - Pro-Kopf-Zuschuss der Stadt Saarlouis: Die Liste der Jugendlichen kommt jetzt auf Knopfdruck direkt aus NaMi („Aus NaMi abrufen“), ohne Export-Datei; Anschriften werden in Etappen nachgeladen, gespeichert wird nichts. Der Datei-Upload bleibt als Ausweichweg.
 - Mein Konto: „Meine Rollen und Rechte“ zeigt die eigenen Rollen mit Erklärung, seit wann und von wem; „Meine Benachrichtigungen“ bündelt die Hinweise per Mail (z. B. Spamverdacht) und den Stand der Push-Nachrichten.
+- Instagram: Alle Zugänge stehen jetzt unter „Verwaltung → Instagram-Konten“. Das Konto für „Auf Instagram teilen“ ist dort mit „Zum Teilen verwenden“ markiert; das bisherige Token aus „Integrationen“ wurde übernommen, die Seite „Integrationen“ entfällt. Ein Token, eine Verlängerung, eine Warnung.
 - DV Trier: Scoutgames 2020 als digitaler Ersatz für das wegen Corona ausgefallene Diözesanlager beschrieben.
 - Stämme und Bezirke: In der Fußzeile stehen unten rechts Zelte auf der Wiese, wo beim DV der Newsletter-Hinweis steht.
 - DV Trier: Scoutgames 2020 im Aussehen der alten Seite scoutgames2020.info (Schriftzug, Wappen, Wegzeichen, Zelte auf der Wiese).

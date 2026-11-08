@@ -54,6 +54,14 @@ Wunsch des Nutzers: Die Pro-Kopf-Liste der Stadt Saarlouis (ZU-19) direkt aus Na
 - **Stammes-Sitzung:** Bitte gegenlesen, das ist euer Bereich (Kasse/Zuschüsse).
 - **Geprüft mit echtem NaMi (NaMi-Testabfrage Roden, 08.11.2026, Personendaten ersetzt):** Die Mitgliederliste (`flist`, 89 Einträge) enthält **keine** Anschrift; Straße (mit Hausnummer), PLZ und Ort stehen nur in den Details unter `strasse`, `plz`, `ort` – genau die Felder, die `ProKopfNami` liest. Die Etappen sind also nötig. Eine Detailabfrage dauert rund 140 ms, eine Etappe zu 30 Personen etwa 4–5 s. Auch `id`, `entries_geburtsDatum` (`Y-m-d H:i:s`), `entries_status` (Aktiv/Inaktiv) und `entries_mglType` (Mitglied/Nicht-Mitglied) haben die erwartete Form. Die Details enthalten u. a. die Kontoverbindung; `ProKopfNami` übernimmt davon nur Straße, PLZ und Ort.
 - **Merge:** unabhängig von son1x/kluft#3–#5; mit ihnen überschneiden sich nur CHANGELOG und diese Datei (oben ergänzen, beide Seiten behalten).
+### 2026-11-08 – Auftragnehmer Mein Konto → Haupt, Stammes, Bezirk: Neue Seiten unter „Mein Konto“ (gemeinsamer Kern)
+Status: offen
+Branch: `feature/mein-konto`
+
+- **Neu `App\Filament\Pages\MeineRollen`** („Meine Rollen und Rechte“, `/admin/meine-rollen`, für alle aktiven Konten): eigene Rollen mit Erklärung, Datum und vergebender Person, nur lesen.
+- **Neu `App\Filament\Pages\MeineBenachrichtigungen`** („Meine Benachrichtigungen“, `/admin/benachrichtigungen`): Hinweise per Mail aus `MailEvents::availableFor()` wählen (schreibt `users.mail_events`, nicht angebotene Einträge bleiben), dazu Stand der Push-Nachrichten mit Knopf zu „Meine Push-Nachrichten“. Sichtbar, wenn es Mail-Hinweise zum Wählen gibt oder die Funktion „Push“ an ist. Die Auswahl im Nachrichten-Eingang („Benachrichtigung“) bleibt und schreibt dieselben Felder.
+- **Geändert:** `RoleCatalog::erklaerung($role)` aus `describe()` herausgelöst; Mail bei neuen Rechten unverändert.
+- **Neue Mail-Hinweise** bitte in `MailEvents::LABELS`/`availableFor()` eintragen, dann erscheinen sie automatisch auf der Seite.
 
 ### 2026-11-08 – Haupt → Stammes, Bezirk: Zelte unten rechts in der Fußzeile (gemeinsamer Kern)
 Status: offen

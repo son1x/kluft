@@ -9,6 +9,7 @@ Admins. Kurz und aus Sicht der Redaktion schreiben.
 - Roden: Kimberly und Flavio stehen auf der Seite „Stammesvorstand“ mit ihrer persönlichen Adresse statt vorstand@; die Vorstandsadresse bleibt im Seitentext.
 - Der Vorstand pflegt die Vorstandsseite (Seite der Diözesan- bzw. Bezirksleitung oder des Stammesvorstands) und ihre Unterseiten selbst und kann sie veröffentlichen. Andere Seiten sieht er im Backend nicht mehr.
 - Pro-Kopf-Zuschuss der Stadt Saarlouis: Die Liste der Jugendlichen kommt jetzt auf Knopfdruck direkt aus NaMi („Aus NaMi abrufen“), ohne Export-Datei; Anschriften werden in Etappen nachgeladen, gespeichert wird nichts. Der Datei-Upload bleibt als Ausweichweg.
+- Mein Konto: „Meine Rollen und Rechte“ zeigt die eigenen Rollen mit Erklärung, seit wann und von wem; „Meine Benachrichtigungen“ bündelt die Hinweise per Mail (z. B. Spamverdacht) und den Stand der Push-Nachrichten.
 - DV Trier: Scoutgames 2020 als digitaler Ersatz für das wegen Corona ausgefallene Diözesanlager beschrieben.
 - Stämme und Bezirke: In der Fußzeile stehen unten rechts Zelte auf der Wiese, wo beim DV der Newsletter-Hinweis steht.
 - DV Trier: Scoutgames 2020 im Aussehen der alten Seite scoutgames2020.info (Schriftzug, Wappen, Wegzeichen, Zelte auf der Wiese).

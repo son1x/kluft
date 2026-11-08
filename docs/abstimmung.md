@@ -35,6 +35,15 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-08 – Auftragnehmer Mein Konto → Haupt, Stammes, Bezirk: Neue Seiten unter „Mein Konto“ (gemeinsamer Kern)
+Status: offen
+Branch: `feature/mein-konto`
+
+- **Neu `App\Filament\Pages\MeineRollen`** („Meine Rollen und Rechte“, `/admin/meine-rollen`, für alle aktiven Konten): eigene Rollen mit Erklärung, Datum und vergebender Person, nur lesen.
+- **Neu `App\Filament\Pages\MeineBenachrichtigungen`** („Meine Benachrichtigungen“, `/admin/benachrichtigungen`): Hinweise per Mail aus `MailEvents::availableFor()` wählen (schreibt `users.mail_events`, nicht angebotene Einträge bleiben), dazu Stand der Push-Nachrichten mit Knopf zu „Meine Push-Nachrichten“. Sichtbar, wenn es Mail-Hinweise zum Wählen gibt oder die Funktion „Push“ an ist. Die Auswahl im Nachrichten-Eingang („Benachrichtigung“) bleibt und schreibt dieselben Felder.
+- **Geändert:** `RoleCatalog::erklaerung($role)` aus `describe()` herausgelöst; Mail bei neuen Rechten unverändert.
+- **Neue Mail-Hinweise** bitte in `MailEvents::LABELS`/`availableFor()` eintragen, dann erscheinen sie automatisch auf der Seite.
+
 ### 2026-11-08 – Haupt → Stammes, Bezirk: Zelte unten rechts in der Fußzeile (gemeinsamer Kern)
 Status: offen
 

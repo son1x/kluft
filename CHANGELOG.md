@@ -6,6 +6,7 @@ Admins. Kurz und aus Sicht der Redaktion schreiben.
 
 ## 0.9.0
 
+- Mein Konto: „Meine Rollen und Rechte“ zeigt die eigenen Rollen mit Erklärung, seit wann und von wem; „Meine Benachrichtigungen“ bündelt die Hinweise per Mail (z. B. Spamverdacht) und den Stand der Push-Nachrichten.
 - DV Trier: Scoutgames 2020 als digitaler Ersatz für das wegen Corona ausgefallene Diözesanlager beschrieben.
 - Stämme und Bezirke: In der Fußzeile stehen unten rechts Zelte auf der Wiese, wo beim DV der Newsletter-Hinweis steht.
 - DV Trier: Scoutgames 2020 im Aussehen der alten Seite scoutgames2020.info (Schriftzug, Wappen, Wegzeichen, Zelte auf der Wiese).

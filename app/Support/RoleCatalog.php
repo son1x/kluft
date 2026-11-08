@@ -139,8 +139,15 @@ class RoleCatalog
      */
     public static function describe(string $key): string
     {
-        $role = self::decode($key)['role'];
-        $what = [
+        $what = self::erklaerung(self::decode($key)['role']);
+
+        return (self::all()[$key] ?? $key).($what ? " ({$what})" : '');
+    }
+
+    /** Was eine Rolle darf, in einem Satz (Mail bei neuen Rechten, „Meine Rollen und Rechte“). */
+    public static function erklaerung(string $role): ?string
+    {
+        return [
             'autor' => 'eigene Beiträge schreiben und bearbeiten',
             'stufenadmin' => 'Stufenseite, Beiträge und Veranstaltungen der Stufe pflegen, Autor:innen freischalten',
             'sektionsadmin' => 'Seiten, Beiträge und Veranstaltungen des Bereichs pflegen, Autor:innen freischalten',
@@ -152,8 +159,6 @@ class RoleCatalog
             'admin' => 'Technik: Integrationen und Einstellungen',
             'superadmin' => 'Notfallzugang',
         ][$role] ?? null;
-
-        return (self::all()[$key] ?? $key).($what ? " ({$what})" : '');
     }
 
     /**

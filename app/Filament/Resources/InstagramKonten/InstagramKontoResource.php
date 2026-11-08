@@ -28,8 +28,9 @@ use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
 
 /**
- * Instagram-Einblendung (docs/instagram.md): eigene Konten, deren neueste
- * Beiträge auf Startseite oder Fachbereichen erscheinen. Nur für Admins,
+ * Instagram-Konten (docs/instagram.md): eigene Konten, deren neueste
+ * Beiträge auf Startseite oder Fachbereichen erscheinen, und das Konto für
+ * „Auf Instagram teilen“. Ein Ort für alle Instagram-Tokens. Nur für Admins,
  * weil hier Zugangstokens hinterlegt werden.
  */
 class InstagramKontoResource extends Resource
@@ -42,7 +43,7 @@ class InstagramKontoResource extends Resource
 
     protected static ?string $slug = 'instagram-konten';
 
-    protected static ?string $navigationLabel = 'Instagram-Einblendung';
+    protected static ?string $navigationLabel = 'Instagram-Konten';
 
     protected static ?string $modelLabel = 'Instagram-Konto';
 
@@ -87,9 +88,11 @@ class InstagramKontoResource extends Resource
                         ->columnSpanFull()
                         ->helperText(fn (?InstagramKonto $record) => ($record ? 'Leer lassen, um das gespeicherte Token zu behalten. ' : '')
                             .'Aus der Meta-App (Instagram API mit Instagram-Login). Wie das geht, steht oben unter „Anleitung: Token erzeugen“. Wird verschlüsselt gespeichert, nicht wieder angezeigt und automatisch verlängert.'),
-                    CheckboxList::make('orte')->label('Anzeigen auf')->options(fn () => InstagramKonto::orte())->columns(2)->columnSpanFull()
-                        ->helperText('Oberhalb von „Aktuelles“. Mehrere Konten auf einer Seite werden gemischt, neueste zuerst.'),
-                    Toggle::make('aktiv')->label('Aktiv')->default(true),
+                    CheckboxList::make('orte')->label('Einblenden auf')->options(fn () => InstagramKonto::orte())->columns(2)->columnSpanFull()
+                        ->helperText('Oberhalb von „Aktuelles“. Mehrere Konten auf einer Seite werden gemischt, neueste zuerst. Nichts angehakt: Das Konto wird nicht eingeblendet.'),
+                    Toggle::make('aktiv')->label('Einblendung aktiv')->default(true),
+                    Toggle::make('teilen')->label('Zum Teilen verwenden („Auf Instagram teilen“)')
+                        ->helperText('Website-Beiträge werden auf diesem Konto veröffentlicht. Nur ein Konto kann das; der Haken wandert. Das Token braucht dafür die Berechtigung instagram_business_content_publish, Kluft prüft das beim Speichern.'),
                 ]),
         ]);
     }
@@ -106,12 +109,14 @@ class InstagramKontoResource extends Resource
                 TextColumn::make('abgerufen_am')->label('Zuletzt abgerufen')->since()->placeholder('noch nie')
                     ->description(fn (InstagramKonto $k) => $k->fehler),
                 TextColumn::make('token_ablauf')->label('Token bis')->date('d.m.Y')->placeholder('–'),
-                IconColumn::make('aktiv')->label('Aktiv')->boolean(),
+                IconColumn::make('aktiv')->label('Eingeblendet')->boolean(),
+                IconColumn::make('teilen')->label('Zum Teilen')->boolean()->trueIcon('heroicon-o-share')->falseIcon('heroicon-o-minus')->falseColor('gray'),
             ])
             ->recordActions([
                 Action::make('abrufen')
                     ->label('Jetzt abrufen')
                     ->icon('heroicon-o-arrow-path')
+                    ->visible(fn (InstagramKonto $record) => $record->aktiv)
                     ->action(function (InstagramKonto $record, InstagramFeed $feed) {
                         abort_unless(static::canViewAny(), 403);
                         $anzahl = $feed->abrufen($record);

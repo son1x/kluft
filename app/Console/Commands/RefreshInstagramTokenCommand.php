@@ -2,61 +2,51 @@
 
 namespace App\Console\Commands;
 
-use App\Models\IntegrationToken;
+use App\Models\InstagramKonto;
 use App\Models\User;
 use App\Notifications\InstagramTokenProblemNotification;
-use App\Services\Instagram\InstagramClient;
 use App\Services\Instagram\InstagramException;
+use App\Services\Instagram\InstagramFeed;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Notification;
 
 /**
- * Verlängert das Instagram-Long-Lived-Token (F-IG-04, Scheduler wöchentlich).
- * Instagram erlaubt das erst, wenn das Token mindestens 24 h alt ist.
+ * Verlängert die Instagram-Long-Lived-Tokens aller Instagram-Konten, die
+ * eingeblendet werden oder zum Teilen dienen (F-IG-04, Scheduler
+ * wöchentlich). Instagram erlaubt das erst, wenn das Token mindestens 24 h
+ * alt ist. Schlägt es fehl, bekommen die Admins eine Mail.
  */
 class RefreshInstagramTokenCommand extends Command
 {
-    protected $signature = 'instagram:refresh-token {--force : Auch erneuern, wenn die letzte Erneuerung weniger als 24 h her ist}';
+    protected $signature = 'instagram:refresh-token {--force : Auch erneuern, wenn das Token noch lange gilt}';
 
-    protected $description = 'Erneuert das Instagram-Zugangstoken';
+    protected $description = 'Erneuert die Zugangstokens der Instagram-Konten';
 
-    public function handle(InstagramClient $instagram): int
+    public function handle(InstagramFeed $feed): int
     {
-        $token = $instagram->token();
-
-        if (! $token) {
-            $this->info('Instagram ist nicht verbunden.');
-
-            return self::SUCCESS;
-        }
-
-        if (! $this->option('force') && $token->refreshed_at?->gt(now()->subDay())) {
-            $this->info('Token ist jünger als 24 Stunden.');
+        $konten = InstagramKonto::query()->where(fn ($q) => $q->where('aktiv', true)->orWhere('teilen', true))->orderBy('id')->get();
+        if ($konten->isEmpty()) {
+            $this->info('Kein Instagram-Konto eingerichtet.');
 
             return self::SUCCESS;
         }
 
-        try {
-            $fresh = $instagram->refreshToken();
-            $token->update([
-                'access_token' => $fresh['access_token'],
-                'expires_at' => $fresh['expires_in'] > 0 ? now()->addSeconds($fresh['expires_in']) : now()->addDays(60),
-                'refreshed_at' => now(),
-                'last_error' => null,
-            ]);
-            $this->info('Token erneuert.');
-
-            return self::SUCCESS;
-        } catch (InstagramException $e) {
-            $token->update(['last_error' => $e->getMessage()]);
-            $this->notifyAdmins($token, $e->getMessage());
-            $this->error($e->getMessage());
-
-            return self::FAILURE;
+        $fehler = false;
+        foreach ($konten as $konto) {
+            try {
+                $this->info($konto->name.': '.($feed->tokenErneuern($konto, (bool) $this->option('force')) ? 'Token erneuert.' : 'noch nicht fällig.'));
+            } catch (InstagramException $e) {
+                $konto->forceFill(['fehler' => mb_substr('Token-Erneuerung: '.$e->getMessage(), 0, 500)])->save();
+                $this->notifyAdmins($konto, $e->getMessage());
+                $this->error($konto->name.': '.$e->getMessage());
+                $fehler = true;
+            }
         }
+
+        return $fehler ? self::FAILURE : self::SUCCESS;
     }
 
-    private function notifyAdmins(IntegrationToken $token, string $error): void
+    private function notifyAdmins(InstagramKonto $konto, string $error): void
     {
         $admins = User::query()
             ->where('status', 'active')
@@ -64,7 +54,7 @@ class RefreshInstagramTokenCommand extends Command
             ->get();
 
         try {
-            Notification::send($admins, new InstagramTokenProblemNotification($error, $token->expires_at?->format('d.m.Y')));
+            Notification::send($admins, new InstagramTokenProblemNotification($error, $konto->token_ablauf?->format('d.m.Y'), $konto->name, $konto->teilen));
         } catch (\Throwable $e) {
             report($e);
         }

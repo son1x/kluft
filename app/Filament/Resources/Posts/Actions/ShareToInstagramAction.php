@@ -76,7 +76,7 @@ class ShareToInstagramAction
     public static function blocker(Post $post): ?string
     {
         return match (true) {
-            ! app(InstagramClient::class)->isConfigured() => 'Instagram ist noch nicht verbunden (Backend → Integrationen).',
+            ! app(InstagramClient::class)->isConfigured() => 'Kein Instagram-Konto zum Teilen eingerichtet (Verwaltung → Instagram-Konten, Haken „Zum Teilen verwenden“).',
             $post->cover_media_id === null => 'Für Instagram braucht der Beitrag ein Titelbild.',
             $post->socialPosts()->where('status', 'pending')->where('created_at', '>', now()->subMinutes(10))->exists() => 'Eine Veröffentlichung läuft gerade.',
             default => null,

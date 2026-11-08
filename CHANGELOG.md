@@ -6,6 +6,7 @@ Admins. Kurz und aus Sicht der Redaktion schreiben.
 
 ## 0.9.0
 
+- Instagram: Alle Zugänge stehen jetzt unter „Verwaltung → Instagram-Konten“. Das Konto für „Auf Instagram teilen“ ist dort mit „Zum Teilen verwenden“ markiert; das bisherige Token aus „Integrationen“ wurde übernommen, die Seite „Integrationen“ entfällt. Ein Token, eine Verlängerung, eine Warnung.
 - DV Trier: Scoutgames 2020 als digitaler Ersatz für das wegen Corona ausgefallene Diözesanlager beschrieben.
 - Stämme und Bezirke: In der Fußzeile stehen unten rechts Zelte auf der Wiese, wo beim DV der Newsletter-Hinweis steht.
 - DV Trier: Scoutgames 2020 im Aussehen der alten Seite scoutgames2020.info (Schriftzug, Wappen, Wegzeichen, Zelte auf der Wiese).

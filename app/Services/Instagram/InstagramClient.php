@@ -2,7 +2,7 @@
 
 namespace App\Services\Instagram;
 
-use App\Models\IntegrationToken;
+use App\Models\InstagramKonto;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
@@ -15,18 +15,17 @@ use Illuminate\Support\Facades\Http;
  */
 class InstagramClient
 {
-    public const PROVIDER = 'instagram';
-
-    public function token(): ?IntegrationToken
+    /** Konto für „Auf Instagram teilen“ (Instagram-Konten, Haken „teilen“). */
+    public function token(): ?InstagramKonto
     {
-        return IntegrationToken::for(self::PROVIDER);
+        return InstagramKonto::zumTeilen();
     }
 
     public function isConfigured(): bool
     {
-        $token = $this->token();
+        $konto = $this->token();
 
-        return $token !== null && filled($token->account_id) && ($token->expires_at === null || $token->expires_at->isFuture());
+        return $konto !== null && filled($konto->ig_user_id) && ($konto->token_ablauf === null || $konto->token_ablauf->isFuture());
     }
 
     /**
@@ -44,6 +43,24 @@ class InstagramClient
         }
 
         return ['user_id' => (string) $json['user_id'], 'username' => (string) ($json['username'] ?? '')];
+    }
+
+    /**
+     * Prüft, ob das Token veröffentlichen darf (Berechtigung
+     * instagram_business_content_publish): Nur dann liefert Instagram das
+     * Veröffentlichungs-Kontingent des Kontos.
+     */
+    public function darfVeroeffentlichen(string $accessToken, string $userId): bool
+    {
+        try {
+            $this->send(fn (PendingRequest $http) => $http->get($this->url($userId.'/content_publishing_limit'), [
+                'access_token' => $accessToken,
+            ]));
+
+            return true;
+        } catch (InstagramException) {
+            return false;
+        }
     }
 
     public function createImageContainer(string $imageUrl, string $caption): string
@@ -98,7 +115,7 @@ class InstagramClient
 
     /**
      * Verlängert das Long-Lived-Token (ca. 60 Tage, F-IG-04); ohne Angabe
-     * das Token der Veröffentlichung.
+     * das Token des Kontos zum Teilen.
      *
      * @return array{access_token: string, expires_in: int}
      */
@@ -123,12 +140,12 @@ class InstagramClient
 
     private function accessToken(): string
     {
-        return $this->token()?->access_token ?? throw new InstagramException('Instagram ist nicht verbunden.');
+        return $this->token()?->access_token ?? throw new InstagramException('Kein Instagram-Konto zum Teilen eingerichtet.');
     }
 
     private function accountId(): string
     {
-        return $this->token()?->account_id ?? throw new InstagramException('Instagram ist nicht verbunden.');
+        return $this->token()->ig_user_id ?? throw new InstagramException('Kein Instagram-Konto zum Teilen eingerichtet.');
     }
 
     /**

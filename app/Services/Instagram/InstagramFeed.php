@@ -65,12 +65,19 @@ class InstagramFeed
         }
     }
 
-    /** Long-Lived-Token rechtzeitig verlängern (frühestens 24 h nach dem letzten Mal). */
-    private function tokenErneuern(InstagramKonto $konto): void
+    /**
+     * Long-Lived-Token rechtzeitig verlängern: ab 20 Tage vor Ablauf bzw.
+     * immer mit $erzwingen, aber frühestens 24 h nach dem letzten Mal
+     * (Vorgabe von Instagram). Gilt für eingeblendete Konten und das Konto
+     * zum Teilen; Fehler wirft InstagramException.
+     *
+     * @return bool ob erneuert wurde
+     */
+    public function tokenErneuern(InstagramKonto $konto, bool $erzwingen = false): bool
     {
-        $faellig = $konto->token_ablauf === null || $konto->token_ablauf->lt(now()->addDays(20));
+        $faellig = $erzwingen || $konto->token_ablauf === null || $konto->token_ablauf->lt(now()->addDays(20));
         if (! $faellig || $konto->token_erneuert?->gt(now()->subDay())) {
-            return;
+            return false;
         }
         $neu = $this->client->refreshToken($konto->access_token);
         $konto->forceFill([
@@ -78,6 +85,8 @@ class InstagramFeed
             'token_ablauf' => $neu['expires_in'] > 0 ? now()->addSeconds($neu['expires_in']) : now()->addDays(60),
             'token_erneuert' => now(),
         ])->save();
+
+        return true;
     }
 
     /** Bild laden, auf höchstens 640 px Breite verkleinern und als JPEG ablegen. */

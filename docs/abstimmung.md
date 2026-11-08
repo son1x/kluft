@@ -43,6 +43,17 @@ Branch: `feature/vorstand-seiten`
 - `PagePolicy`: Vorstand darf diese Seiten ansehen und bearbeiten, nicht anlegen oder löschen. `PageResource`: Der Vorstand sieht in der Liste nur noch diese Seiten (bisher alle, aber ohne Bearbeiten).
 - `PageForm`: Für den Vorstand sind Slug und übergeordnete Seite gesperrt (die Seite hängt am Slug), Stufe/Fachbereich nicht Pflicht, Status „Veröffentlicht“ wählbar.
 - Test: `tests/Feature/Content/VorstandsseitenTest.php`.
+### 2026-11-08 – Auftragnehmer Pro-Kopf → Stammes, Haupt: Pro-Kopf-Zuschuss direkt aus NaMi (Stammes-Funktion)
+Status: offen
+Branch: `feature/pro-kopf-nami`
+
+Wunsch des Nutzers: Die Pro-Kopf-Liste der Stadt Saarlouis (ZU-19) direkt aus NaMi statt aus einer Export-Datei, wie im Pflichtenheft vorgesehen.
+- **Neu:** `App\Services\Zuschuss\ProKopfNami` (Liste holen und filtern, Anschriften in Etappen aus `NamiVerzeichnis::mitgliedDetails`). Kopfaktion „Aus NaMi abrufen“ auf `ProKopfZuschussPage` mit Fortschritt; die Seite ruft `weiter()` selbst wieder auf, bis das PDF fertig ist.
+- **Geändert:** `ProKopfListe` hat die Filterregeln jetzt als `ausgelassen()`, dazu `sortiert()` und ein öffentliches `datum()`; Upload und NaMi nutzen dieselben Regeln. Verhalten beim Upload unverändert (bestehender Test grün).
+- **Datenschutz:** Zwischenstand nur verschlüsselt im Cache (`pro-kopf-nami:<user>`, 30 Minuten), nach dem PDF gelöscht; Passwort der persönlichen Anmeldung wird nicht gespeichert. Keine Migration, keine neue Tabelle.
+- **Stammes-Sitzung:** Bitte gegenlesen, das ist euer Bereich (Kasse/Zuschüsse).
+- **Geprüft mit echtem NaMi (NaMi-Testabfrage Roden, 08.11.2026, Personendaten ersetzt):** Die Mitgliederliste (`flist`, 89 Einträge) enthält **keine** Anschrift; Straße (mit Hausnummer), PLZ und Ort stehen nur in den Details unter `strasse`, `plz`, `ort` – genau die Felder, die `ProKopfNami` liest. Die Etappen sind also nötig. Eine Detailabfrage dauert rund 140 ms, eine Etappe zu 30 Personen etwa 4–5 s. Auch `id`, `entries_geburtsDatum` (`Y-m-d H:i:s`), `entries_status` (Aktiv/Inaktiv) und `entries_mglType` (Mitglied/Nicht-Mitglied) haben die erwartete Form. Die Details enthalten u. a. die Kontoverbindung; `ProKopfNami` übernimmt davon nur Straße, PLZ und Ort.
+- **Merge:** unabhängig von son1x/kluft#3–#5; mit ihnen überschneiden sich nur CHANGELOG und diese Datei (oben ergänzen, beide Seiten behalten).
 
 ### 2026-11-08 – Haupt → Stammes, Bezirk: Zelte unten rechts in der Fußzeile (gemeinsamer Kern)
 Status: offen

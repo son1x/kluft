@@ -6,6 +6,7 @@ Admins. Kurz und aus Sicht der Redaktion schreiben.
 
 ## 0.9.0
 
+- Personen: „Rollen-Vorschläge prüfen“ schlägt für Ansprechpersonen eines Fachbereichs Sektionsadmin und für Stufenreferent*innen Stufenadmin vor, sobald ihr Konto verknüpft ist. Die Verwaltung hakt ab, die Person bekommt die übliche Mail.
 - Mein Konto: „Mein Eintrag auf der Website“ – wer von der Verwaltung mit einem Personen-Eintrag verknüpft ist, ändert Vorstellungstext und Foto selbst und erlaubt die Veröffentlichung selbst oder zieht sie zurück. Name, Funktion und Gremium bleiben bei der Verwaltung. Kluft schlägt das passende Konto vor (gleiche E-Mail, sonst gleicher Name); die Verwaltung bestätigt nur noch („Konto-Vorschläge prüfen“).
 - DV Trier: Scoutgames 2020 als digitaler Ersatz für das wegen Corona ausgefallene Diözesanlager beschrieben.
 - Stämme und Bezirke: In der Fußzeile stehen unten rechts Zelte auf der Wiese, wo beim DV der Newsletter-Hinweis steht.

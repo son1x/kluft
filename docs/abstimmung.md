@@ -35,6 +35,15 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-09 – Haupt → Stammes, Bezirk: Rollen-Vorschläge für Ansprechpersonen (gemeinsamer Kern)
+Status: offen
+Branch: `feature/rollen-vorschlag` (setzt auf `feature/mein-eintrag` auf)
+
+- Neu `App\Support\RollenVorschlag`: Für Personen-Einträge mit verknüpftem Konto schlägt Kluft die fehlende Rolle vor. Ansprechperson für einen Fachbereich (`sections`) → Sektionsadmin für den Bereich; Eintrag mit Stufe außerhalb der Arbeitskreise (Stufenreferent*in) → Stufenadmin für die Stufe. Nicht für deaktivierte Konten, Rollen-Zugänge und Konten mit Verwaltungsrechten; nur Rollen, die die angemeldete Person vergeben darf (`RoleCatalog::grantableBy`).
+- Personenliste: „Rollen-Vorschläge prüfen“ (nur bei offenen Vorschlägen), anhaken, „Vergeben“. Die Person bekommt `RolesGrantedNotification` wie beim Vergeben unter „Benutzer“, das Audit-Log schreibt `RoleAssignment` selbst (`role.granted:…`).
+- **Stämme:** Leitende stehen dort im Gremium „dak“ (Leitungsteam einer Stufe) und bekommen keinen Vorschlag, Stämme haben auch keine Fachbereiche. Falls Leitende im Stamm ihre Stufenseite selbst pflegen sollen, bitte melden; dann nehmen wir „dak“ mit Stufe für Stämme dazu.
+- Test: `tests/Feature/People/RollenVorschlagTest.php`.
+
 ### 2026-11-08 – Auftragnehmer Mein Konto → Haupt, Stammes, Bezirk: „Mein Eintrag auf der Website“ (gemeinsamer Kern)
 Status: offen
 Branch: `feature/mein-eintrag`

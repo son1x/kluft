@@ -35,6 +35,11 @@ Gezählt wird ein Aufruf nur, wenn alles zutrifft:
 - kein Bot: User-Agent nicht leer und ohne `bot`, `crawl`, `spider`,
   `curl`, `headless`, `whatsapp` usw. Der User-Agent wird nur geprüft,
   nie gespeichert,
+- echter Seitenaufruf aus einem Browser: `Sec-Fetch-Dest: document`,
+  `Sec-Fetch-Mode: navigate` und eine Spracheinstellung (`Accept-Language`).
+  Das schicken alle aktuellen Browser beim Öffnen einer Seite mit; Crawler,
+  Link-Prüfer und Vorschau-Dienste, die sich als Browser ausgeben, meist
+  nicht. Auch hier wird nichts gespeichert,
 - kein Vorabladen (`Sec-Purpose`/`Purpose: prefetch`),
 - kein Widerspruch: `DNT: 1` (Do Not Track) oder `Sec-GPC: 1` (Global
   Privacy Control) zählen nicht.

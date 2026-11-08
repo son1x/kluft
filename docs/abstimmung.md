@@ -35,6 +35,12 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-08 – Haupt → Stammes, Bezirk: Aufrufzähler nur für echte Browser-Aufrufe (gemeinsamer Kern)
+Status: offen
+
+- `AufrufZaehlen` zählt nur noch mit `Sec-Fetch-Dest: document`, `Sec-Fetch-Mode: navigate` und `Accept-Language`. Anlass: In Roden hatten Startseite und `/kalender` exakt gleich viele Aufrufe, vermutlich Programme mit Browser-Namen. Gespeichert wird weiterhin nur Tag, Pfad, Anzahl.
+- Noch nicht deployt. Nach dem nächsten Roden-Deploy einmal „Alle Zähler löschen“ (Verwaltung → Aufrufe), damit die Zahlen ab dann sauber sind.
+
 ### 2026-11-08 – Haupt → Stammes, Bezirk: Push-Nachrichten in jeder Ausbaustufe (gemeinsamer Kern)
 Status: offen
 

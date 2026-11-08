@@ -35,11 +35,14 @@ class AufrufeTest extends TestCase
 
     private const BROWSER = 'Mozilla/5.0 (X11; Linux x86_64; rv:140.0) Gecko/20100101 Firefox/140.0';
 
+    /** Was ein Browser beim Öffnen einer Seite mitschickt. */
+    private const BROWSER_HEADER = ['User-Agent' => self::BROWSER, 'Sec-Fetch-Dest' => 'document', 'Sec-Fetch-Mode' => 'navigate', 'Accept-Language' => 'de-DE,de;q=0.9'];
+
     protected function setUp(): void
     {
         parent::setUp();
         Features::setzen(Features::AUFRUFE, true);
-        $this->withHeaders(['User-Agent' => self::BROWSER]);
+        $this->withHeaders(self::BROWSER_HEADER);
     }
 
     /** @return array<string, int> Pfad => Aufrufe heute */
@@ -102,7 +105,7 @@ class AufrufeTest extends TestCase
         foreach (['Googlebot/2.1 (+http://www.google.com/bot.html)', 'curl/8.5.0', 'Mozilla/5.0 HeadlessChrome/120', 'WhatsApp/2.23', 'UptimeRobot/2.0', ''] as $agent) {
             $this->withHeaders(['User-Agent' => $agent])->get('/ueber-uns')->assertOk();
         }
-        $this->withHeaders(['User-Agent' => self::BROWSER]);
+        $this->withHeaders(self::BROWSER_HEADER);
         $this->call('HEAD', '/ueber-uns')->assertOk();
         $this->get('/gibt-es-nicht')->assertNotFound();
         $this->get('/alte-seite')->assertRedirect();
@@ -316,5 +319,21 @@ class AufrufeTest extends TestCase
         Livewire::test(AufrufeSeite::class)->callAction('zuruecksetzen')->assertNotified();
         $this->assertSame(0, Seitenaufruf::query()->count());
         $this->get('/admin/aufrufe')->assertOk()->assertSee('Noch keine Aufrufe gezählt (0).');
+    }
+
+    #[TestDox('Nicht gezählt: Programme mit Browser-Namen, aber ohne Browser-Kennzeichen (Sec-Fetch, Sprache)')]
+    public function test_nicht_gezaehlt_ohne_browser_kennzeichen(): void
+    {
+        $this->seite();
+
+        $this->withHeaders(['Sec-Fetch-Dest' => null, 'Sec-Fetch-Mode' => null])->get('/ueber-uns')->assertOk();
+        $this->withHeaders(self::BROWSER_HEADER)->withHeaders(['Accept-Language' => ''])->get('/ueber-uns')->assertOk();
+        // Eingebettet oder per Skript geholt statt als Seite geöffnet.
+        $this->withHeaders(self::BROWSER_HEADER)->withHeaders(['Sec-Fetch-Dest' => 'iframe'])->get('/ueber-uns')->assertOk();
+        $this->withHeaders(self::BROWSER_HEADER)->withHeaders(['Sec-Fetch-Dest' => 'empty', 'Sec-Fetch-Mode' => 'cors'])->get('/ueber-uns')->assertOk();
+        $this->assertSame([], $this->zaehler());
+
+        $this->withHeaders(self::BROWSER_HEADER)->get('/ueber-uns')->assertOk();
+        $this->assertSame(['/ueber-uns' => 1], $this->zaehler());
     }
 }

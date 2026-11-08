@@ -77,6 +77,15 @@ class AufrufZaehlen
             return false;
         }
 
+        // Nur echte Seitenaufrufe aus einem Browser: Browser schicken beim
+        // Öffnen einer Seite „Sec-Fetch-Dest: document“, „Sec-Fetch-Mode:
+        // navigate“ und ihre Spracheinstellung. Crawler und Link-Prüfer, die
+        // sich als Browser ausgeben, lassen das meist weg. Gespeichert wird
+        // davon nichts.
+        if (! $this->browserAufruf($request)) {
+            return false;
+        }
+
         // Angemeldete Redaktion und Teilnehmende („Meine Anmeldungen“) zählen nicht.
         if ($request->user() !== null) {
             return false;
@@ -86,6 +95,13 @@ class AufrufZaehlen
         }
 
         return Features::enabled(Features::AUFRUFE);
+    }
+
+    private function browserAufruf(Request $request): bool
+    {
+        return strtolower((string) $request->headers->get('Sec-Fetch-Dest')) === 'document'
+            && strtolower((string) $request->headers->get('Sec-Fetch-Mode')) === 'navigate'
+            && trim((string) $request->headers->get('Accept-Language')) !== '';
     }
 
     private function oeffentlich(string $pfad): bool

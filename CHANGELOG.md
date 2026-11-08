@@ -6,6 +6,7 @@ Admins. Kurz und aus Sicht der Redaktion schreiben.
 
 ## 0.9.0
 
+- Aufrufe: Gezählt werden nur noch echte Seitenaufrufe aus einem Browser; Programme, die sich als Browser ausgeben, fallen heraus.
 - Push-Nachrichten fürs Handy gibt es jetzt in jeder Ausbaustufe, nicht erst im Vollausbau.
 - Nachrichten-Eingang: täglicher Hinweis, wenn Nachrichten mit Spamverdacht warten, per Mail oder Push nach Wahl („Benachrichtigung“ im Eingang).
 - Aufrufe: Anzeige „Gezählt seit …“ und Knopf „Alle Zähler löschen“ für Admins (Livegang: Statistik beginnt bei null).

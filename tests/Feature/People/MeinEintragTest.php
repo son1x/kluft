@@ -4,9 +4,12 @@ namespace Tests\Feature\People;
 
 use App\Filament\Pages\MeinEintrag;
 use App\Filament\Resources\People\Pages\EditPerson;
+use App\Filament\Resources\People\Pages\ListPeople;
 use App\Models\AuditLog;
 use App\Models\Person;
 use App\Models\User;
+use App\Support\KontoVorschlag;
+use Filament\Actions\Testing\TestAction;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -59,6 +62,64 @@ class MeinEintragTest extends TestCase
 
         $this->assertSame($lea->id, $person->fresh()->user_id);
         $this->assertSame([$person->id], $lea->personen()->pluck('id')->all());
+    }
+
+    #[TestDox('Konto-Vorschlag: gleiche E-Mail (auch UPN, Groß/klein egal), sonst gleicher Name; nur eindeutig, nur aktive Personen-Konten')]
+    public function test_konto_vorschlag(): void
+    {
+        $lea = $this->user('lea@dpsg-trier.de');
+        $max = User::query()->create(['name' => 'Max Muster', 'email' => 'm.muster@example.org', 'upn' => 'Max.Muster@dpsg-trier.de', 'status' => 'active']);
+        $vorschlag = fn (Person $p) => (new KontoVorschlag)->fuer($p);
+
+        $v = $vorschlag($this->person(['email' => 'LEA@dpsg-trier.de']));
+        $this->assertSame([$lea->id, KontoVorschlag::EMAIL], [$v['user']->id ?? null, $v['grund'] ?? null]);
+        $this->assertSame($max->id, $vorschlag($this->person(['name' => 'Jemand', 'email' => 'max.muster@dpsg-trier.de']))['user']->id ?? null);
+        $this->assertSame([$max->id, KontoVorschlag::NAME], [($v = $vorschlag($this->person(['name' => 'max muster', 'email' => 'anders@example.org'])))['user']->id ?? null, $v['grund'] ?? null]);
+        $this->assertNull($vorschlag($this->person(['name' => 'Niemand', 'email' => 'niemand@example.org'])));
+
+        // Schon verknüpft: kein Vorschlag.
+        $this->assertNull($vorschlag($this->person(['email' => 'lea@dpsg-trier.de', 'user_id' => $lea->id])));
+
+        // Zweideutig: Adresse passt zu E-Mail des einen und UPN des anderen Kontos.
+        User::query()->create(['name' => 'Doppelt', 'email' => 'zweit@example.org', 'upn' => 'lea@dpsg-trier.de', 'status' => 'active']);
+        $this->assertNull($vorschlag($this->person(['name' => 'Lea Leitung', 'email' => 'lea@dpsg-trier.de'])));
+
+        // Deaktivierte Konten und Rollen-Zugänge (kein Mensch) zählen nicht.
+        User::query()->create(['name' => 'Alt', 'email' => 'alt@example.org', 'status' => 'disabled']);
+        User::query()->create(['name' => 'Stammesvorstand', 'email' => 'vorstand@example.org', 'status' => 'active', 'kind' => 'rolle']);
+        $this->assertNull($vorschlag($this->person(['name' => 'Alt', 'email' => 'alt@example.org'])));
+        $this->assertNull($vorschlag($this->person(['name' => 'Stammesvorstand', 'email' => 'vorstand@example.org'])));
+    }
+
+    #[TestDox('Konto-Vorschläge prüfen: die Verwaltung hakt ab, nur Angehaktes wird verknüpft, mit Audit-Eintrag; Vorschlag am Feld lässt sich übernehmen')]
+    public function test_vorschlaege_bestaetigen(): void
+    {
+        $lea = $this->user('lea@dpsg-trier.de');
+        $tom = $this->user('tom@dpsg-trier.de');
+        $leaEintrag = $this->person(['email' => 'lea@dpsg-trier.de']);
+        $tomEintrag = $this->person(['name' => 'Tom', 'email' => 'tom@dpsg-trier.de']);
+        $this->actingAs($this->user('buero@dpsg-trier.de', 'verwaltung', 'global'));
+
+        Livewire::test(ListPeople::class)
+            ->assertActionVisible('kontoVorschlaege')
+            ->callAction('kontoVorschlaege', ['personen' => [$leaEintrag->id]])
+            ->assertNotified('1 Eintrag zugeordnet');
+
+        $this->assertSame([$lea->id, null], [$leaEintrag->fresh()->user_id, $tomEintrag->fresh()->user_id]);
+        $this->assertSame(1, AuditLog::query()->where('action', 'person.konto:zugeordnet')->count());
+
+        // Einzeln: „Übernehmen“ am Feld, dann Speichern.
+        Livewire::test(EditPerson::class, ['record' => $tomEintrag->getRouteKey()])
+            ->assertSee('Vorschlag: Tom (tom@dpsg-trier.de), gleiche E-Mail')
+            ->callAction(TestAction::make('kontoUebernehmen')->schemaComponent('user_id'))
+            ->assertFormSet(['user_id' => $tom->id])
+            ->call('save')
+            ->assertHasNoFormErrors();
+        $this->assertSame($tom->id, $tomEintrag->fresh()->user_id);
+        $this->assertSame(2, AuditLog::query()->where('action', 'person.konto:zugeordnet')->count());
+
+        // Nichts mehr vorzuschlagen.
+        Livewire::test(ListPeople::class)->assertActionHidden('kontoVorschlaege');
     }
 
     #[TestDox('Ohne verknüpften Eintrag gibt es die Seite nicht')]

@@ -35,7 +35,7 @@ class Ausbau
         self::GRUPPEN => ['name' => 'Gruppen', 'text' => 'Dazu „Unsere Gruppen“ mit Gruppenstunde und Ort je Gruppe, Stammesvorstand und alle weiteren Seiten (z. B. Heim, Förderverein).'],
         self::TERMINE => ['name' => 'Termine & Aktuelles', 'text' => 'Dazu Kalender, Veranstaltungen (ohne Online-Anmeldung) und Meldungen mit RSS-Feed.'],
         self::ANMELDUNGEN => ['name' => 'Anmeldungen', 'text' => 'Dazu Online-Anmeldung zu Lagern und Aktionen, „Meine Anmeldungen“, NaMi-Abgleich, Teilnahmebescheinigungen.'],
-        self::VOLL => ['name' => 'Vollausbau', 'text' => 'Alle Funktionen, z. B. Downloads, Push-Nachrichten und WhatsApp-Kanal.'],
+        self::VOLL => ['name' => 'Vollausbau', 'text' => 'Alle Funktionen, z. B. Downloads und WhatsApp-Kanal.'],
     ];
 
     private const SCHLUESSEL = 'ausbau';

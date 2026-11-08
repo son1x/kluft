@@ -50,7 +50,9 @@ Zurückschalten blendet nur aus; Inhalte bleiben gespeichert.
 | 2 | Gruppen | dazu „Unsere Gruppen“ mit Gruppenstunde und Ort je Gruppe, Stammesvorstand und alle weiteren Seiten (Heim, Förderverein …) |
 | 3 | Termine & Aktuelles | dazu Kalender, Veranstaltungen (Anmeldung direkt bei der Leitung), Meldungen mit RSS-Feed |
 | 4 | Anmeldungen | dazu Online-Anmeldung, „Meine Anmeldungen“, NaMi-Abgleich, Teilnahmebescheinigungen |
-| 5 | Vollausbau | alle Funktionen, z. B. Downloads und Push-Nachrichten |
+| 5 | Vollausbau | alle Funktionen, z. B. Downloads und WhatsApp-Kanal |
+
+Push-Nachrichten für die Redaktion (ntfy) gibt es in jeder Stufe; sie sind ein Werkzeug fürs Backend, nicht Teil der Website. Abschalten unter Verwaltung → Funktionen.
 
 Was in einer Stufe fehlt, antwortet mit „nicht gefunden“ und verschwindet aus
 den Menüs; schaltbare Funktionen (Verwaltung → Funktionen) wirken erst ab

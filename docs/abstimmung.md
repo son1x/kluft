@@ -35,6 +35,12 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-08 – Haupt → Stammes, Bezirk: Push-Nachrichten in jeder Ausbaustufe (gemeinsamer Kern)
+Status: offen
+
+- `Features::PUSH` hat kein `ab` mehr: Push gibt es ab Stufe 1, nicht erst im Vollausbau. Begründung: Push ist ein freiwilliges Werkzeug fürs Backend (Nachrichten, Spamverdacht, Anmeldungen), unabhängig davon, wie groß die Website nach außen ist. Standard bleibt „an“, abschaltbar unter Verwaltung → Funktionen.
+- Roden (Stufe 4) bekommt damit „Mein Konto → Meine Push-Nachrichten“ und kann z. B. Spamverdacht und Anmeldungen aufs Handy holen. Wirksam mit dem nächsten Deploy (noch nicht deployt). Stammes-Sitzung: gern in `docs/roden.md` erwähnen.
+
 ### 2026-11-08 – Haupt → Stammes, Bezirk: Hinweis bei Spamverdacht (gemeinsamer Kern)
 Status: offen
 

@@ -99,7 +99,11 @@ class AusbauTest extends TestCase
         $this->post('/veranstaltungen/sommerlager/anmeldung', $anmeldung)->assertSessionHasNoErrors()->assertRedirect();
         $this->get('/meine-anmeldungen')->assertOk();
         $this->assertTrue(Features::enabled(Features::TEILNEHMENDE_EINTRAGEN));
-        $this->assertFalse(Features::enabled(Features::PUSH));
+        $this->assertFalse(Features::enabled(Features::DOWNLOADS));
+        // Push ist ein Werkzeug fürs Backend und gibt es in jeder Stufe.
+        $this->assertTrue(Features::enabled(Features::PUSH));
+        Ausbau::setzen(Ausbau::VISITENKARTE);
+        $this->assertTrue(Features::enabled(Features::PUSH));
     }
 
     #[TestDox('Backend: nur Admins stellen die Stufe um; Änderung steht im Protokoll')]

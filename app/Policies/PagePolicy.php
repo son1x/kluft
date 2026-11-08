@@ -7,7 +7,9 @@ use App\Models\User;
 
 /**
  * S. Pflichtenheft 5.4: globale Seiten nur Verwaltung/Admin, Stufen-Seiten
- * zusätzlich vom zuständigen Stufenadmin.
+ * zusätzlich vom zuständigen Stufenadmin, Vorstandsseiten (Seite des
+ * Gremiums „leitung“ und Unterseiten) zusätzlich vom Vorstand. Anlegen und
+ * Löschen bleiben bei Verwaltung bzw. Stufen-/Sektionsadmins.
  */
 class PagePolicy
 {
@@ -50,6 +52,6 @@ class PagePolicy
             return true;
         }
 
-        return false;
+        return $user->hasRole('vorstand') && $page->istVorstandsseite();
     }
 }

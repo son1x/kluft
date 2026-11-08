@@ -35,6 +35,15 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-09 – Haupt → Stammes, Bezirk: Vorstand pflegt die Vorstandsseiten (gemeinsamer Kern)
+Status: offen
+Branch: `feature/vorstand-seiten`
+
+- Pflichtenheft 5.4 und die Rollenbeschreibung sagen „Vorstandsseiten pflegen“, der Code ließ den Vorstand aber keine Seite bearbeiten. Jetzt: `Page::vorstandsseitenIds()` = Seite aus `config('dpsg.gremien.leitung.page')` (DV „dioezesanleitung“, Bezirk „bezirksleitung“, Stamm „stammesvorstand“) plus Unterseiten bis fünf Ebenen.
+- `PagePolicy`: Vorstand darf diese Seiten ansehen und bearbeiten, nicht anlegen oder löschen. `PageResource`: Der Vorstand sieht in der Liste nur noch diese Seiten (bisher alle, aber ohne Bearbeiten).
+- `PageForm`: Für den Vorstand sind Slug und übergeordnete Seite gesperrt (die Seite hängt am Slug), Stufe/Fachbereich nicht Pflicht, Status „Veröffentlicht“ wählbar.
+- Test: `tests/Feature/Content/VorstandsseitenTest.php`.
+
 ### 2026-11-08 – Haupt → Stammes, Bezirk: Zelte unten rechts in der Fußzeile (gemeinsamer Kern)
 Status: offen
 

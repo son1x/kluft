@@ -35,7 +35,7 @@
                     @php($c = $item['config'])
                     @php($lagerKlasse = \App\Support\Lager::klasse($item['key']))
                     <article @class([$lagerKlasse, 'group relative flex flex-col overflow-hidden', 'lager-karte' => $lagerKlasse !== '', 'rounded-lg bg-white shadow-md' => $lagerKlasse === ''])>
-                        @php($breit = ($c['logo_size'][0] ?? 1) > 2 * ($c['logo_size'][1] ?? 1))
+                        @php($breit = ($c['logo_size'][0] ?? 1) > 1.8 * ($c['logo_size'][1] ?? 1))
                         <div @class(['flex gap-6 p-6', 'items-center' => ! $breit, 'flex-col items-start gap-4' => $breit, 'lager-wolken' => $lagerKlasse !== '', 'bg-dpsg-hellbeige' => $lagerKlasse === ''])>
                             @if ($c['logo'] ?? null)
                                 <picture @class(['block shrink-0', 'w-24' => ! $breit, 'w-60 rounded-md bg-white p-2 shadow-sm' => $breit])>

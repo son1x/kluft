@@ -41,7 +41,7 @@
             </div>
             @if ($config['logo'] ?? null)
                 {{-- Hochformatige Logos (Scoutergy, Schongse) frei, breite Schriftzüge (futurscout, Scoutgames) auf einer Karte --}}
-                @php($breit = ($config['logo_size'][0] ?? 1) > 2 * ($config['logo_size'][1] ?? 1))
+                @php($breit = ($config['logo_size'][0] ?? 1) > 1.8 * ($config['logo_size'][1] ?? 1))
                 <picture @class(['mx-auto block md:col-span-2', 'w-36 md:w-64' => ! $breit, 'lager-karte w-full max-w-md p-4' => $breit])>
                     <source type="image/webp" srcset="{{ asset($config['logo'].'.webp') }}" />
                     <img src="{{ asset($config['logo'].'.png') }}" alt="{{ $config['logo_alt'] ?? '' }}" width="{{ $config['logo_size'][0] ?? 480 }}" height="{{ $config['logo_size'][1] ?? 665 }}" loading="eager" @class(['h-auto w-full', 'drop-shadow-xl' => ! $breit]) />

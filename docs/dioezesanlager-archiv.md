@@ -128,6 +128,20 @@ Material aus dem Aktenplan als ZIP: Zusammenfassung, Logos, Flyer, Einladungen, 
 
 **Offen:** Das Scoutgames-Archiv kam unvollständig an (ZIP abgeschnitten): Der Bericht als PDF ist unlesbar, und die Zusammenfassung fehlt. Mit einer vollständigen Datei lässt sich die Seite ergänzen.
 
+## 3b. Gast>>FREUNDschaft 2015 (08.11.2026)
+
+Material aus dem Aktenplan (`01.4.1.9 DiLa 2015`) als ZIP: Zusammenfassung, Logos, Ausschreibung, „Infos rund um das Lager“ (Endfassung 25.06.2015), Lagerregeln, Lageplan, T-Shirt-Entwurf, Fotos vom Gelände. Umsetzung in `instanzen/dv-trier/migrations/2026_11_08_120000_dioezesanlager_archiv_2015.php`, Lagerbild in `instanzen/dv-trier/public/images/gastfreundschaft/`.
+
+| Lager | Seiten | Aussehen |
+|---|---|---|
+| Gast>>FREUNDschaft 2015 – Diözesanzeltlager in Ferschweiler | `/gastfreundschaft` (Idee, Programm, Rund ums Lager, Lagerregeln, Vorbereitung) | Dunkelrot des Mottos als Akzent, Himmelblau und Wiesengrün aus dem Lagerbild; das breite Lagerbild steht über dem Titel |
+
+**Bewusst nicht übernommen:**
+- Ausschreibung und „Infos rund um das Lager“ als PDF: Sie nennen die Mitglieder der Vorbereitungsgruppe. Übernommen sind nur Programm und Angebote.
+- Preise und Namen von Lieferanten, die Anmeldestatistik nach Stämmen. Aus der Belegung steht nur die Spitze (622 Personen am 27.07.) auf der Seite.
+
+**Offen:** Ein Abschlussbericht oder Fotos vom Lager selbst fehlen. Mit freigegebenen Bildern (ohne erkennbare Kinder oder mit Einwilligung) lässt sich die Seite ergänzen.
+
 ## 4. Später: Domain scoutergy.de
 
 1. DNS von scoutergy.de und www.scoutergy.de auf den Kluft-Webspace zeigen lassen (wie bolivienpartnerschaft.de) und das Zertifikat einrichten.

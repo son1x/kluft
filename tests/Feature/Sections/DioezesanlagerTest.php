@@ -154,7 +154,7 @@ class DioezesanlagerTest extends TestCase
         $this->migrieren();
         (require base_path('instanzen/dv-trier/migrations/2026_11_07_120000_dioezesanlager_archiv_2004_2011_2020.php'))->up();
 
-        $this->assertSame(['scoutergy', 'scoutgames', 'futurscout', 'schongse'], array_keys(Lager::alle()));
+        $this->assertSame(['scoutergy', 'scoutgames', 'gastfreundschaft', 'futurscout', 'schongse'], array_keys(Lager::alle()));
         foreach (['schongse' => 'Das Weltdorf', 'futurscout' => 'abheben zu neuen Planeten', 'scoutgames' => 'Pfadfinder spielen (immer noch) gern'] as $key => $motto) {
             $this->get('/'.$key)->assertOk()
                 ->assertSee('class="flex-1 lager lager-'.$key.'"', false)
@@ -172,5 +172,33 @@ class DioezesanlagerTest extends TestCase
         $sortiert = $positionen;
         sort($sortiert);
         $this->assertSame($sortiert, $positionen);
+    }
+
+    #[TestDox('Archiv 2015: Gast>>FREUNDschaft mit eigenem Aussehen, breitem Logo und ohne Namen des Teams')]
+    public function test_archiv_2015(): void
+    {
+        $this->migrieren();
+        (require base_path('instanzen/dv-trier/migrations/2026_11_07_120000_dioezesanlager_archiv_2004_2011_2020.php'))->up();
+        $migration = require base_path('instanzen/dv-trier/migrations/2026_11_08_120000_dioezesanlager_archiv_2015.php');
+        $migration->up();
+        $migration->up();
+
+        $this->assertSame(1, Page::query()->where('slug', 'gastfreundschaft')->count());
+        $this->get('/gastfreundschaft')->assertOk()
+            ->assertSee('class="flex-1 lager lager-gastfreundschaft"', false)
+            ->assertSee('Gast&gt;&gt;FREUNDschaft', false)
+            ->assertSee('Ferschweiler')
+            ->assertSee('Stufentag')
+            ->assertSee('liegt zurück');
+
+        $text = Page::query()->where('slug', 'gastfreundschaft')->value('body');
+        $this->assertDoesNotMatchRegularExpression('/@|Tel\.|\d{4,5}\/\d/', $text);
+        foreach (['Krings', 'Postler', 'Laskewicz', 'Gambalonga', 'Hemgesberg', 'Kimpel', 'Basenach'] as $name) {
+            $this->assertStringNotContainsString($name, $text);
+        }
+
+        $uebersicht = $this->get('/dioezesanlager')->assertOk()->getContent();
+        $this->assertLessThan(strpos($uebersicht, 'futurscout 2011'), strpos($uebersicht, 'Gast&gt;&gt;FREUNDschaft 2015'));
+        $this->assertGreaterThan(strpos($uebersicht, 'Scoutgames 2020'), strpos($uebersicht, 'Gast&gt;&gt;FREUNDschaft 2015'));
     }
 }

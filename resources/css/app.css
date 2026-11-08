@@ -295,6 +295,29 @@ a.lager-karte:hover, a.lager-karte:focus-visible { transform: translateY(-3px); 
 }
 .lager-schongse :is(h1, h2, h3, h4) { letter-spacing: 0; }
 
+/* Gast>>FREUNDschaft 2015 – Diözesanzeltlager in Ferschweiler: Dunkelrot
+   des Mottos als Akzent (Weiß darauf über 10 : 1), Himmelblau und
+   Wiesengrün aus dem Lagerbild, Gelb der Zelte. */
+.lager-gastfreundschaft {
+    --lager-schrift: 'Carlito', Calibri, Arial, sans-serif;
+    --lager-titelschrift: 'Carlito', Calibri, Arial, sans-serif;
+    --lager-text: #1f1d1b;
+    --lager-kopf: #632828;
+    --lager-flaeche: #f1f9f6;
+    --lager-rand: #cfe3d3;
+    --lager-schatten: #5f8a3026;
+    --lager-radius: 10px;
+    --lager-akzent: #632828;
+    --lager-akzent-ink: #fff;
+    --lager-akzent-text: #632828;
+    --lager-wolken:
+        radial-gradient(45% 40% at 20% 20%, #d8f4f5cc 1%, transparent 99%),
+        radial-gradient(30% 25% at 88% 12%, #f2c94c55 1%, transparent 99%),
+        radial-gradient(60% 30% at 50% 100%, #5f8a3033 1%, transparent 99%),
+        radial-gradient(14% 18% at 70% 70%, #dfaa1e33 1%, transparent 99%);
+}
+.lager-gastfreundschaft :is(h1, h2, h3, h4) { font-weight: 700; letter-spacing: 0; }
+
 /* futurscout 2011 – „abheben zu neuen Planeten“: Grün des Schriftzugs,
    Sternenhimmel als feines Punktraster, Überschriften im Raumfahrt-Stil. */
 .lager-futurscout {

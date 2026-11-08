@@ -35,6 +35,12 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-08 – Haupt → Stammes, Bezirk: Zelte unten rechts in der Fußzeile (gemeinsamer Kern)
+Status: offen
+
+- `layouts/app.blade.php`: Ohne Newsletter-Widget (Stämme, Bezirke) steht in der dritten Spalte der Fußzeile unten rechts ein Bild mit Zelten auf der Wiese (`public/images/footer/zelte.*`, aus der alten Scoutgames-Seite des DV). Es steht direkt auf dem blauen Balken, die Wiese läuft seitlich weich aus. Mit Newsletter (DV) bleibt alles wie bisher.
+- Test: `tests/Feature/Content/FooterZelteTest.php`. Wirksam mit dem nächsten Deploy der jeweiligen Instanz.
+
 ### 2026-11-08 – Haupt → Stammes, Bezirk: Aufrufzähler nur für echte Browser-Aufrufe (gemeinsamer Kern)
 Status: offen
 

@@ -299,6 +299,14 @@
                         </span>
                     </a>
                 </div>
+            @else
+                {{-- Ohne Newsletter (Stämme, Bezirke): Zelte auf der Wiese unten rechts, sie stehen auf dem blauen Balken. --}}
+                <div class="-mb-12 flex items-end justify-end" aria-hidden="true">
+                    <picture class="block w-56 md:w-full md:max-w-[300px]">
+                        <source type="image/webp" srcset="{{ asset('images/footer/zelte.webp') }}" />
+                        <img src="{{ asset('images/footer/zelte.png') }}" alt="" width="544" height="288" loading="lazy" class="h-auto w-full [mask-image:linear-gradient(to_right,transparent,#000_25%,#000_88%,transparent)]" />
+                    </picture>
+                </div>
             @endif
         </div>
         <div class="bg-dpsg-blau text-white">

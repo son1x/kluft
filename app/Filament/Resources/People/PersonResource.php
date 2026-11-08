@@ -7,6 +7,7 @@ use App\Filament\Resources\People\Pages\EditPerson;
 use App\Filament\Resources\People\Pages\ListPeople;
 use App\Models\Media;
 use App\Models\Person;
+use App\Models\User;
 use App\Support\Site;
 use App\Support\Zuschuesse;
 use BackedEnum;
@@ -147,6 +148,14 @@ class PersonResource extends Resource
                     Toggle::make('consent')->label('Veröffentlichung mit der Person abgestimmt')
                         ->helperText('Name, Funktion, Text und ggf. Foto erscheinen erst, wenn die Person zugestimmt hat (KDG).'),
                     Toggle::make('active')->label('Aktiv')->default(true),
+                    // Mein Konto → „Mein Eintrag auf der Website“: Text, Foto und Einwilligung selbst pflegen.
+                    Select::make('user_id')->label('Konto der Person (pflegt Text, Foto und Einwilligung selbst)')
+                        ->relationship('user', 'name')
+                        ->getOptionLabelFromRecordUsing(fn (User $record) => $record->name.' ('.$record->email.')')
+                        ->searchable(['name', 'email'])
+                        ->placeholder('– kein Konto –')
+                        ->helperText('Dann kann die Person unter „Mein Konto → Mein Eintrag auf der Website“ ihren Vorstellungstext und ihr Foto selbst ändern und die Veröffentlichung selbst erlauben oder zurückziehen. Name, Funktion und alles andere bleibt hier.')
+                        ->columnSpanFull(),
                 ]),
 
             // Porträt wie bei dpsg-koeln.de: direkt hier hochladen, quadratisch

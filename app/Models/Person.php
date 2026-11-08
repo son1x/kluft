@@ -19,7 +19,7 @@ class Person extends Model
 
     protected $fillable = [
         'gremium', 'section', 'sections', 'subgroup', 'name', 'role', 'stage', 'badge', 'email', 'bio',
-        'photo_media_id', 'consent', 'active', 'sort', 'zuschuss_daten',
+        'photo_media_id', 'consent', 'active', 'sort', 'zuschuss_daten', 'user_id',
     ];
 
     // Nur intern für Zuschussanträge (ZU-06); nie auf der Website oder in Exporten.
@@ -28,6 +28,25 @@ class Person extends Model
     protected function casts(): array
     {
         return ['consent' => 'boolean', 'active' => 'boolean', 'sort' => 'integer', 'sections' => 'array', 'zuschuss_daten' => 'encrypted:array'];
+    }
+
+    /**
+     * Konto, das Text, Foto und Einwilligung selbst pflegt (Mein Konto →
+     * „Mein Eintrag auf der Website“); zugeordnet von der Verwaltung.
+     *
+     * @return BelongsTo<User, $this>
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /** Seite, auf der die Person erscheint, mit Sprungmarke; null, wenn das Gremium keine eigene Seite hat. */
+    public function oeffentlicheUrl(): ?string
+    {
+        $seite = config("dpsg.gremien.{$this->gremium}.page");
+
+        return filled($seite) ? url('/'.$seite).'#'.$this->anchor() : null;
     }
 
     /**

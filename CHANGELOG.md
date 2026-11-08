@@ -6,6 +6,7 @@ Admins. Kurz und aus Sicht der Redaktion schreiben.
 
 ## 0.9.0
 
+- Pro-Kopf-Zuschuss der Stadt Saarlouis: Die Liste der Jugendlichen kommt jetzt auf Knopfdruck direkt aus NaMi („Aus NaMi abrufen“), ohne Export-Datei; Anschriften werden in Etappen nachgeladen, gespeichert wird nichts. Der Datei-Upload bleibt als Ausweichweg.
 - DV Trier: Scoutgames 2020 als digitaler Ersatz für das wegen Corona ausgefallene Diözesanlager beschrieben.
 - Stämme und Bezirke: In der Fußzeile stehen unten rechts Zelte auf der Wiese, wo beim DV der Newsletter-Hinweis steht.
 - DV Trier: Scoutgames 2020 im Aussehen der alten Seite scoutgames2020.info (Schriftzug, Wappen, Wegzeichen, Zelte auf der Wiese).

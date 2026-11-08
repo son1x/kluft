@@ -35,6 +35,17 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-08 – Auftragnehmer Pro-Kopf → Stammes, Haupt: Pro-Kopf-Zuschuss direkt aus NaMi (Stammes-Funktion)
+Status: offen
+Branch: `feature/pro-kopf-nami`
+
+Wunsch des Nutzers: Die Pro-Kopf-Liste der Stadt Saarlouis (ZU-19) direkt aus NaMi statt aus einer Export-Datei, wie im Pflichtenheft vorgesehen.
+- **Neu:** `App\Services\Zuschuss\ProKopfNami` (Liste holen und filtern, Anschriften in Etappen aus `NamiVerzeichnis::mitgliedDetails`). Kopfaktion „Aus NaMi abrufen“ auf `ProKopfZuschussPage` mit Fortschritt; die Seite ruft `weiter()` selbst wieder auf, bis das PDF fertig ist.
+- **Geändert:** `ProKopfListe` hat die Filterregeln jetzt als `ausgelassen()`, dazu `sortiert()` und ein öffentliches `datum()`; Upload und NaMi nutzen dieselben Regeln. Verhalten beim Upload unverändert (bestehender Test grün).
+- **Datenschutz:** Zwischenstand nur verschlüsselt im Cache (`pro-kopf-nami:<user>`, 30 Minuten), nach dem PDF gelöscht; Passwort der persönlichen Anmeldung wird nicht gespeichert. Keine Migration, keine neue Tabelle.
+- **Stammes-Sitzung:** Bitte gegenlesen, das ist euer Bereich (Kasse/Zuschüsse). Ob NaMi die Anschrift auch schon in der Mitgliederliste liefert (dann entfielen die Detailabfragen), ließ sich ohne NaMi-Zugang nicht prüfen; „NaMi-Testabfrage“ zeigt es.
+- **Merge:** unabhängig von son1x/kluft#3–#5; mit ihnen überschneiden sich nur CHANGELOG und diese Datei (oben ergänzen, beide Seiten behalten).
+
 ### 2026-11-08 – Haupt → Stammes, Bezirk: Zelte unten rechts in der Fußzeile (gemeinsamer Kern)
 Status: offen
 

@@ -163,4 +163,30 @@ class RodenTest extends TestCase
         $foto->media->delete();
         File::delete(public_path('uploads/media/stammesvorstand-roden.jpg'));
     }
+
+    #[TestDox('Migration: Vorstand zeigt persönliche Adressen (vorname@) statt vorstand@; selbst eingetragene Adressen bleiben')]
+    public function test_vorstand_persoenliche_adressen(): void
+    {
+        Person::query()->where('gremium', 'leitung')->delete();
+        $kimberly = Person::query()->create(['gremium' => 'leitung', 'name' => 'Kimberly Lamprecht', 'role' => 'Stammesvorstand', 'email' => 'vorstand@dpsg-roden.de', 'consent' => true, 'active' => true, 'sort' => 10]);
+        $flavio = Person::query()->create(['gremium' => 'leitung', 'name' => 'Flavio Russello', 'role' => 'Stammesvorstand', 'email' => 'vorstand@dpsg-roden.de', 'consent' => true, 'active' => true, 'sort' => 20]);
+        $andere = Person::query()->create(['gremium' => 'leitung', 'name' => 'Jemand Anderes', 'email' => 'vorstand@dpsg-roden.de', 'consent' => true, 'active' => true, 'sort' => 30]);
+
+        $migration = require base_path('instanzen/roden/migrations/2026_11_09_090000_roden_vorstand_persoenliche_adressen.php');
+        $migration->up();
+        $migration->up();
+
+        $this->assertSame('kimberly@dpsg-roden.de', $kimberly->fresh()->publicEmail());
+        $this->assertSame('flavio@dpsg-roden.de', $flavio->fresh()->publicEmail());
+        $this->assertSame('vorstand@dpsg-roden.de', $andere->fresh()->publicEmail());
+
+        $this->get('/stammesvorstand')->assertOk()
+            ->assertSee('kimberly@dpsg-roden.de', false)
+            ->assertSee('flavio@dpsg-roden.de', false);
+
+        // Im Backend bewusst eingetragene Adresse wird nicht überschrieben.
+        $kimberly->update(['email' => 'k.lamprecht@example.org']);
+        $migration->up();
+        $this->assertSame('k.lamprecht@example.org', $kimberly->fresh()->email);
+    }
 }

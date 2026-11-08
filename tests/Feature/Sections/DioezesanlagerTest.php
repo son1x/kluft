@@ -220,4 +220,25 @@ class DioezesanlagerTest extends TestCase
         // Andere Lager ohne Wappen und Fußbild.
         $this->get('/futurscout')->assertOk()->assertDontSee('class="lager-fuss', false)->assertSee('class="lager-laufband', false);
     }
+
+    #[TestDox('Scoutgames: Hintergrund als digitaler Ersatz für das ausgefallene Diözesanlager; Bearbeitetes bleibt')]
+    public function test_scoutgames_ersatzveranstaltung(): void
+    {
+        $this->migrieren();
+        (require base_path('instanzen/dv-trier/migrations/2026_11_07_120000_dioezesanlager_archiv_2004_2011_2020.php'))->up();
+        $migration = require base_path('instanzen/dv-trier/migrations/2026_11_08_130000_scoutgames_ersatzveranstaltung.php');
+        $migration->up();
+        $migration->up();
+
+        $this->get('/scoutgames')->assertOk()
+            ->assertSee('Wegen der Corona-Pandemie fiel es aus')
+            ->assertSee('digitale Ersatzveranstaltung')
+            ->assertSee('Digitaler Ersatz für das Diözesanlager 2020');
+        $this->assertSame(1, substr_count((string) Page::query()->where('slug', 'scoutgames')->value('body'), 'Corona'));
+        $this->assertStringContainsString('ausgefallene Diözesanlager', (string) Page::query()->where('slug', 'scoutgames')->value('seo_description'));
+
+        Page::query()->where('slug', 'scoutgames')->update(['body' => '<p>Eigener Text.</p>']);
+        $migration->up();
+        $this->assertSame('<p>Eigener Text.</p>', Page::query()->where('slug', 'scoutgames')->value('body'));
+    }
 }

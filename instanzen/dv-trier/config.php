@@ -277,7 +277,7 @@ return [
             'theme' => 'scoutgames',
             'archiv' => true,
             'jahr' => 2020,
-            'titel' => 'Digitale Scoutgames an Pfingsten 2020',
+            'titel' => 'Digitaler Ersatz für das Diözesanlager 2020',
             'zeitraum' => 'Pfingstsamstag, 30. Mai 2020',
             'ort' => 'im Netz (Videokonferenz)',
             'motto' => 'Pfadfinder spielen (immer noch) gern',

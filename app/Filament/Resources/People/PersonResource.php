@@ -7,9 +7,12 @@ use App\Filament\Resources\People\Pages\EditPerson;
 use App\Filament\Resources\People\Pages\ListPeople;
 use App\Models\Media;
 use App\Models\Person;
+use App\Models\User;
+use App\Support\KontoVorschlag;
 use App\Support\Site;
 use App\Support\Zuschuesse;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\DatePicker;
@@ -23,12 +26,14 @@ use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\HtmlString;
@@ -147,6 +152,22 @@ class PersonResource extends Resource
                     Toggle::make('consent')->label('Veröffentlichung mit der Person abgestimmt')
                         ->helperText('Name, Funktion, Text und ggf. Foto erscheinen erst, wenn die Person zugestimmt hat (KDG).'),
                     Toggle::make('active')->label('Aktiv')->default(true),
+                    // Mein Konto → „Mein Eintrag auf der Website“: Text, Foto und Einwilligung selbst pflegen.
+                    Select::make('user_id')->label('Konto der Person (pflegt Text, Foto und Einwilligung selbst)')
+                        ->relationship('user', 'name')
+                        ->getOptionLabelFromRecordUsing(fn (User $record) => $record->name.' ('.$record->email.')')
+                        ->searchable(['name', 'email'])
+                        ->placeholder('– kein Konto –')
+                        ->helperText('Dann kann die Person unter „Mein Konto → Mein Eintrag auf der Website“ ihren Vorstellungstext und ihr Foto selbst ändern und die Veröffentlichung selbst erlauben oder zurückziehen. Name, Funktion und alles andere bleibt hier.')
+                        // Vorschlag (KontoVorschlag), erst mit „Übernehmen“ und Speichern verknüpft.
+                        ->hint(fn (?Person $record, Get $get) => blank($get('user_id')) && $record && ($v = (new KontoVorschlag)->fuer($record))
+                            ? 'Vorschlag: '.$v['user']->name.' ('.$v['user']->email.'), '.$v['grund'] : null)
+                        ->hintAction(Action::make('kontoUebernehmen')
+                            ->label('Übernehmen')
+                            ->icon('heroicon-o-link')
+                            ->visible(fn (?Person $record, Get $get) => blank($get('user_id')) && $record && (new KontoVorschlag)->fuer($record) !== null)
+                            ->action(fn (?Person $record, Set $set) => $set('user_id', $record ? (new KontoVorschlag)->fuer($record)['user']->id ?? null : null)))
+                        ->columnSpanFull(),
                 ]),
 
             // Porträt wie bei dpsg-koeln.de: direkt hier hochladen, quadratisch
@@ -208,7 +229,11 @@ class PersonResource extends Resource
 
     public static function table(Table $table): Table
     {
+        // Einmal je Tabelle: lädt die Konten nur einmal für alle Zeilen.
+        $vorschlag = new KontoVorschlag;
+
         return $table
+            ->modifyQueryUsing(fn (Builder $query) => $query->with('user'))
             ->columns([
                 TextColumn::make('name')->label('Name')->searchable()->sortable(),
                 TextColumn::make('role')->label('Funktion')->searchable(),
@@ -220,6 +245,12 @@ class PersonResource extends Resource
                     ->state(fn (Person $record) => ($d = (array) $record->zuschuss_daten) && ($d['juleica'] ?? false)
                         ? (filled($d['juleica_bis'] ?? null) ? Carbon::parse($d['juleica_bis'])->format('d.m.Y') : 'ja') : null)
                     ->color(fn (Person $record) => filled($b = ((array) $record->zuschuss_daten)['juleica_bis'] ?? null) && Carbon::parse($b)->lt(now()->addMonths(2)) ? 'danger' : null)
+                    ->placeholder('–'),
+                // Mein Konto → „Mein Eintrag“: verknüpftes Konto oder Vorschlag zum Bestätigen.
+                TextColumn::make('konto')->label('Konto')->toggleable()
+                    ->state(fn (Person $record) => $record->user->name
+                        ?? (($v = $vorschlag->fuer($record)) ? 'Vorschlag: '.$v['user']->name : null))
+                    ->color(fn (Person $record) => $record->user_id ? null : 'warning')
                     ->placeholder('–'),
                 IconColumn::make('consent')->label('Abgestimmt')->boolean(),
                 IconColumn::make('active')->label('Aktiv')->boolean(),

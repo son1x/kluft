@@ -224,6 +224,16 @@ class User extends Authenticatable implements FilamentUser
             && array_key_exists($event, MailEvents::availableFor($this));
     }
 
+    /**
+     * Personen-Einträge auf der Website, die dieses Konto selbst pflegt.
+     *
+     * @return HasMany<Person, $this>
+     */
+    public function personen(): HasMany
+    {
+        return $this->hasMany(Person::class);
+    }
+
     /** Persönlicher NaMi-Zugang im Profil gespeichert (verschlüsselt). */
     public function hasNamiZugang(): bool
     {

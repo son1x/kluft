@@ -71,6 +71,16 @@ Branch: `feature/instagram-konten`
 - `instagram:refresh-token` verlängert jetzt die Tokens aller eingeblendeten und des teilenden Kontos (ab 20 Tage vor Ablauf, `--force` sofort) und mailt den Admins bei Fehlern. Statusseite: „Instagram: Teilen“ und „Instagram: Einblendung“.
 - **Entfernt:** Seite `App\Filament\Pages\Integrations` (`/admin/integrations`), sie enthielt nur Instagram.
 - **Stämme und Bezirk:** Wer bisher unter „Integrationen“ ein Token hatte, findet es nach dem Deploy unter „Instagram-Konten“. Sonst nichts zu tun.
+### 2026-11-08 – Auftragnehmer Mein Konto → Haupt, Stammes, Bezirk: „Mein Eintrag auf der Website“ (gemeinsamer Kern)
+Status: offen
+Branch: `feature/mein-eintrag`
+
+- **Migration** `2026_11_08_100000_add_user_id_to_people`: `people.user_id` (nullable, `nullOnDelete`). Eine Person kann mehrere Einträge haben. `Person::user()`, `User::personen()`, `Person::oeffentlicheUrl()`.
+- **Personenverwaltung:** neues Feld „Konto der Person“; zuordnen darf nur, wer Personen pflegt (Verwaltung).
+- **Konto-Vorschläge (`App\Support\KontoVorschlag`):** Kluft schlägt das passende Konto vor, verknüpft aber nie selbst. Vorrang hat die E-Mail des Eintrags (eingetragen oder nach dem Muster der Instanz gebildet), verglichen mit E-Mail und UPN aktiver Konten (Groß/klein egal); ohne Treffer zählt der gleiche Name. Vorgeschlagen wird nur ein eindeutiges Konto; Rollen-Zugänge (`kind = rolle`) und deaktivierte Konten zählen nicht. Bestätigen: in der Personenliste „Konto-Vorschläge prüfen“ (anhaken, „Zuordnen“) oder im Eintrag „Übernehmen“ am Feld. Neue Spalte „Konto“ (zeigt auch Vorschläge). Audit: `person.konto:zugeordnet` / `person.konto:entfernt`.
+- **Neu `App\Filament\Pages\MeinEintrag`** (`/admin/mein-eintrag`, nur mit verknüpftem Eintrag): Die Person ändert selbst Vorstellungstext, Foto (Bildnachweis und Bestätigung der Bildrechte Pflicht; Upload über `PersonResource::storePortrait`, `uploaded_by` = sie selbst) und ihre Einwilligung (`consent`). Name, Funktion, Gremium, E-Mail, Reihenfolge und „aktiv“ bleiben bei der Verwaltung.
+- **Entscheidungen (bei Bedarf ändern):** Änderungen gelten sofort, ohne Freigabe; jede Änderung steht im Audit-Log (`person.selbst_bearbeitet`, `person.selbst_foto_entfernt`). Die Einwilligung gibt bzw. entzieht die Person selbst; die Verwaltung kann sie weiter in der Personenverwaltung setzen.
+- **Stammes- und Bezirks-Sitzung:** Die Seite erscheint nur, wenn ihr Konten mit Personen-Einträgen verknüpft; sonst ändert sich nichts.
 
 ### 2026-11-08 – Haupt → Stammes, Bezirk: Zelte unten rechts in der Fußzeile (gemeinsamer Kern)
 Status: offen

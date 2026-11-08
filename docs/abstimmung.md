@@ -35,6 +35,14 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-09 – Haupt → Stammes, Bezirk: PRs #6–#12 gemergt, Stufen-/Sektionsadmins veröffentlichen Seiten (gemeinsamer Kern)
+Status: offen
+
+- Gemergt nach Prüfung (Tests aller drei Instanzen grün, zusammen geprüft): #9 Roden-Vorstandsadressen, #10 Vorstand pflegt Vorstandsseiten, #6 Pro-Kopf-Zuschuss aus NaMi, #7 Mein Konto (Rollen, Benachrichtigungen), #12 Instagram-Konten (Seite „Integrationen“ entfällt, altes Token wird übernommen und gelöscht), #8 Mein Eintrag auf der Website, #11 Rollen-Vorschläge. Noch nicht deployt.
+- Entscheidungen des Auftraggebers: Änderungen an „Mein Eintrag“ gelten sofort (ohne Freigabe, alles im Audit-Log).
+- **Neu:** Stufen- und Sektionsadmins dürfen Seiten ihres Bereichs direkt veröffentlichen (Status „Veröffentlicht“ in `PageForm`). Vorher konnten sie eine veröffentlichte Seite nicht speichern (aufgefallen in #10). Test: `tests/Feature/Content/BereichsseitenVeroeffentlichenTest.php`.
+- Offen für die Stammes-Sitzung (#11): Sollen Leitende im Stamm (Gremium „dak“ mit Stufe) einen Rollen-Vorschlag für ihre Stufe bekommen? Bis zur Antwort bleibt es wie gebaut (kein Vorschlag). Ebenso bitte #6 (Pro-Kopf-Zuschuss) gegenlesen.
+
 ### 2026-11-09 – Haupt → Stammes, Bezirk: Vorstand pflegt die Vorstandsseiten (gemeinsamer Kern)
 Status: offen
 Branch: `feature/vorstand-seiten`

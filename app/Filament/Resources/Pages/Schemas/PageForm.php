@@ -178,8 +178,11 @@ class PageForm
 
         $user = Filament::auth()->user();
 
-        // Vorstand: Vorstandsseiten direkt veröffentlichen (wie News freigeben, 5.4).
-        if ($user && ($user->isVerwaltung() || self::nurVorstandsseite($record))) {
+        // Stufen- und Fachbereichsleitungen veröffentlichen die Seiten ihres
+        // Bereichs selbst (wie Beiträge, PostPolicy::publish); welche Seiten das
+        // sind, regeln PagePolicy und PageResource. Vorstand: Vorstandsseiten
+        // direkt veröffentlichen (wie News freigeben, 5.4).
+        if ($user && ($user->isVerwaltung() || $user->hasRole('stufenadmin') || $user->hasRole('sektionsadmin') || self::nurVorstandsseite($record))) {
             $options['published'] = 'Veröffentlicht';
         }
 

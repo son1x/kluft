@@ -6,6 +6,7 @@ Admins. Kurz und aus Sicht der Redaktion schreiben.
 
 ## 0.9.0
 
+- Mein Konto: „Mein Eintrag auf der Website“ – wer von der Verwaltung mit einem Personen-Eintrag verknüpft ist, ändert Vorstellungstext und Foto selbst und erlaubt die Veröffentlichung selbst oder zieht sie zurück. Name, Funktion und Gremium bleiben bei der Verwaltung.
 - DV Trier: Scoutgames 2020 als digitaler Ersatz für das wegen Corona ausgefallene Diözesanlager beschrieben.
 - Stämme und Bezirke: In der Fußzeile stehen unten rechts Zelte auf der Wiese, wo beim DV der Newsletter-Hinweis steht.
 - DV Trier: Scoutgames 2020 im Aussehen der alten Seite scoutgames2020.info (Schriftzug, Wappen, Wegzeichen, Zelte auf der Wiese).

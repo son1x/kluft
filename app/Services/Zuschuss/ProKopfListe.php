@@ -57,22 +57,9 @@ class ProKopfListe
             if (($w['nachname'] ?? '') === '') {
                 continue;
             }
-            $status = mb_strtolower($w['status'] ?? '');
-            $typ = mb_strtolower($w['typ'] ?? '');
-            if (($status !== '' && ! str_contains($status, 'aktiv')) || str_contains($status, 'inaktiv') || str_contains($typ, 'nicht') || str_contains($typ, 'schnupper')) {
-                $ausgelassen['kein_mitglied']++;
-
-                continue;
-            }
             $geburt = self::datum($w['geburtsdatum'] ?? '');
-            if ($geburt === null) {
-                $ausgelassen['ohne_datum']++;
-
-                continue;
-            }
-            // Jugendlich: am Stichtag noch nicht 18.
-            if ($geburt->copy()->addYears(18)->lte($stichtag)) {
-                $ausgelassen['zu_alt']++;
+            if (($grund = self::ausgelassen($w['status'] ?? '', $w['typ'] ?? '', $geburt, $stichtag)) !== null) {
+                $ausgelassen[$grund]++;
 
                 continue;
             }
@@ -85,9 +72,44 @@ class ProKopfListe
                 'geburtsdatum' => $geburt,
             ];
         }
+
+        return ['personen' => self::sortiert($personen), 'ausgelassen' => $ausgelassen, 'fehler' => []];
+    }
+
+    /**
+     * Warum jemand nicht auf die Liste kommt, oder null (aufnehmen): nur
+     * aktive Mitglieder ohne Schnupper- und Nicht-Mitglieder, mit
+     * Geburtsdatum, am Stichtag noch nicht 18. Gilt für Datei und NaMi-Abruf.
+     *
+     * @return 'kein_mitglied'|'ohne_datum'|'zu_alt'|null
+     */
+    public static function ausgelassen(string $status, string $typ, ?Carbon $geburt, Carbon $stichtag): ?string
+    {
+        $status = mb_strtolower($status);
+        $typ = mb_strtolower($typ);
+
+        return match (true) {
+            ($status !== '' && ! str_contains($status, 'aktiv')) || str_contains($status, 'inaktiv') || str_contains($typ, 'nicht') || str_contains($typ, 'schnupper') => 'kein_mitglied',
+            $geburt === null => 'ohne_datum',
+            // Jugendlich: am Stichtag noch nicht 18.
+            $geburt->copy()->addYears(18)->lte($stichtag) => 'zu_alt',
+            default => null,
+        };
+    }
+
+    /**
+     * Nach Nachname und Vorname.
+     *
+     * @template T of array{nachname: string, vorname: string}
+     *
+     * @param  list<T>  $personen
+     * @return list<T>
+     */
+    public static function sortiert(array $personen): array
+    {
         usort($personen, fn (array $a, array $b) => strcoll(mb_strtolower($a['nachname'].' '.$a['vorname']), mb_strtolower($b['nachname'].' '.$b['vorname'])));
 
-        return ['personen' => $personen, 'ausgelassen' => $ausgelassen, 'fehler' => []];
+        return $personen;
     }
 
     private static function spalte(string $kopf): ?string
@@ -108,7 +130,7 @@ class ProKopfListe
         };
     }
 
-    private static function datum(string $wert): ?Carbon
+    public static function datum(string $wert): ?Carbon
     {
         foreach (['Y-m-d', 'd.m.Y', 'd.m.y', 'Y-m-d H:i:s'] as $format) {
             try {

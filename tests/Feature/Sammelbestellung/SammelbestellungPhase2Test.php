@@ -107,6 +107,26 @@ class SammelbestellungPhase2Test extends TestCase
         return $user->fresh();
     }
 
+    #[TestDox('Set ohne feste Grenze: auch mit vielen Teilen (hier 25, davon optionale mit Größe) bestellbar')]
+    public function test_set_ohne_grenze(): void
+    {
+        $set = Set::query()->create(['name' => 'Großes Set', 'freigegeben' => true]);
+        $wahl = [];
+        foreach (range(1, 25) as $i) {
+            $artikel = $this->artikel('Teil '.$i, sprintf('09%05d', $i), $i % 5 === 0 ? ['S' => 1000, 'M' => 1100] : ['' => 100]);
+            $teil = $set->teile()->create(['artikel_id' => $artikel->id, 'menge' => 1, 'optional' => $i > 20, 'sort' => $i]);
+            if ($i % 5 === 0) {
+                $wahl[$teil->id] = ['variante' => $artikel->varianten[1]->id];
+            }
+            // Wie die Bestellseite: für jedes Teil ein Eintrag (25 > die frühere Grenze von 20).
+            $wahl[$teil->id] = ['dabei' => '1', ...($wahl[$teil->id] ?? [])];
+        }
+
+        $bestellung = $this->bestellen([['mitglied' => 'Mia Muster', 'menge' => 1, 'set' => $set->id, 'teile' => $wahl]]);
+        $this->assertCount(25, $bestellung->positionen);
+        $this->assertSame(20 * 100 + 5 * 1100, Zahlung::query()->sole()->betrag_cent);
+    }
+
     #[TestDox('Set: Angebot zeigt es, Bestellung legt je Teil eine Position an (Pflichtteile, Größe, optionales Teil nur angehakt)')]
     public function test_set_bestellen(): void
     {

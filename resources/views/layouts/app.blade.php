@@ -244,9 +244,11 @@
         @yield('content')
     </main>
 
-    @php($contact = config('dpsg.contact'))
     {{-- Schlanker Footer (Rückmeldung Talia): kein zweites Menü, nur
-         Kontakt, Service und der Newsletter. --}}
+         Kontakt, Service und der Newsletter. Anpassbar unter Verwaltung →
+         Fußzeile (App\Support\Fusszeile), sonst Angaben der Instanz. --}}
+    @php($fuss = \App\Support\Fusszeile::anzeigen())
+    @php($contact = $fuss['kontakt'])
     <footer class="mt-20 bg-dpsg-hellbeige text-text">
         <div class="mx-auto grid max-w-6xl gap-10 px-4 py-12 text-sm md:grid-cols-3">
             <div>
@@ -278,13 +280,16 @@
                     </li>
                     <li><a href="{{ url('/admin') }}" class="hover:underline">Redaktions-Login</a></li>
                     <li><a href="{{ url('/status') }}" class="hover:underline">Systemstatus</a></li>
+                    @foreach ($fuss['service'] as $link)
+                        <li><a href="{{ str_starts_with($link['url'], '/') ? url($link['url']) : $link['url'] }}" @unless (str_starts_with($link['url'], '/')) target="_blank" rel="noopener" @endunless class="hover:underline">{{ $link['label'] }}</a></li>
+                    @endforeach
                 </ul>
                 {{-- Mit Newsletter steht „DPSG im Netz“ hier, sonst oben in der dritten Spalte. --}}
-                @if (\App\Support\Features::newsletter())
-                    @include('partials.footer-netz', ['class' => 'mb-3 mt-6'])
+                @if ($fuss['spalte3'] === 'newsletter')
+                    @include('partials.footer-netz', ['class' => 'mb-3 mt-6', 'links' => $fuss['netz']])
                 @endif
             </div>
-            @if (\App\Support\Features::newsletter())
+            @if ($fuss['spalte3'] === 'newsletter')
                 <div>
                     <a href="{{ route('newsletter.index') }}" class="group block overflow-hidden bg-white shadow-sm hover:shadow-md">
                         <span class="block bg-[#eff2f7] px-4 py-3">
@@ -297,17 +302,29 @@
                     </a>
                 </div>
             @else
-                {{-- Ohne Newsletter (Stämme, Bezirke): oben „DPSG im Netz“, darunter Zelte auf der Wiese,
-                     die auf dem blauen Balken stehen. Zelte erst ab md (eigene Spalte); auf dem Handy wären
-                     sie nur Deko unter dem Text. --}}
+                {{-- Ohne Newsletter (Stämme, Bezirke): oben „DPSG im Netz“, darunter Zelte auf der Wiese
+                     bzw. ein eigenes Bild, die auf dem blauen Balken stehen. Bild erst ab md (eigene Spalte);
+                     auf dem Handy wäre es nur Deko unter dem Text. --}}
                 <div class="flex flex-col">
-                    @include('partials.footer-netz', ['class' => 'mb-4'])
-                    <div class="-mb-12 mt-auto hidden items-end justify-end pt-6 md:flex" aria-hidden="true">
-                        <picture class="block w-full max-w-[300px]">
-                            <source type="image/webp" srcset="{{ asset('images/footer/zelte.webp') }}" />
-                            <img src="{{ asset('images/footer/zelte.png') }}" alt="" width="544" height="288" loading="lazy" class="h-auto w-full [mask-image:linear-gradient(to_right,transparent,#000_25%,#000_88%,transparent)]" />
-                        </picture>
-                    </div>
+                    @include('partials.footer-netz', ['class' => 'mb-4', 'links' => $fuss['netz']])
+                    @if ($fuss['spalte3'] === 'zelte')
+                        <div class="-mb-12 mt-auto hidden items-end justify-end pt-6 md:flex" aria-hidden="true">
+                            <picture class="block w-full max-w-[300px]">
+                                <source type="image/webp" srcset="{{ asset('images/footer/zelte.webp') }}" />
+                                <img src="{{ asset('images/footer/zelte.png') }}" alt="" width="544" height="288" loading="lazy" class="h-auto w-full [mask-image:linear-gradient(to_right,transparent,#000_25%,#000_88%,transparent)]" />
+                            </picture>
+                        </div>
+                    @elseif ($fuss['spalte3'] === 'bild' && $fuss['bild'])
+                        <div class="-mb-12 mt-auto hidden items-end justify-end pt-6 md:flex">
+                            @if ($fuss['bild_link'])
+                                <a href="{{ str_starts_with($fuss['bild_link'], '/') ? url($fuss['bild_link']) : $fuss['bild_link'] }}" @unless (str_starts_with($fuss['bild_link'], '/')) target="_blank" rel="noopener" @endunless class="block w-full max-w-[300px]">
+                                    <x-picture :media="$fuss['bild']" sizes="300px" loading="lazy" class="h-auto w-full" />
+                                </a>
+                            @else
+                                <x-picture :media="$fuss['bild']" sizes="300px" loading="lazy" class="block h-auto w-full max-w-[300px]" />
+                            @endif
+                        </div>
+                    @endif
                 </div>
             @endif
         </div>

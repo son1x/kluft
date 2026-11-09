@@ -199,4 +199,12 @@ return array_replace([
     */
     'zuschuss_geber' => ['bistum_trier'],
 
+    /*
+    | Websites, die Anmeldeformulare als iframe einbinden dürfen
+    | (/veranstaltungen/<slug>/einbetten), z. B. die alte Website vor dem
+    | Livegang. Nur Veranstaltungen mit „Vorab extern freigeben“.
+    | Ursprünge mit https://, ohne Pfad.
+    */
+    'einbetten_von' => [],
+
 ], $instanzConfig);

@@ -92,6 +92,35 @@ Beide Kluft-Installationen nutzen den Instanz-Ordner `instanzen/dv-trier`. Der D
 - Bolivien, Beraten und Scoutergy
 - Backend → Verwaltung → Aufrufe: „Alle Zähler löschen“ ausprobieren, danach steht dort „Noch keine Aufrufe gezählt (0).“
 
+## Anmeldungen vor dem Livegang auf der alten Website
+
+Einzelne Anmeldungen laufen schon vor dem 21.11. über test.dpsg-trier.de, z. B. die Wö- und Biber-Weihnachtspostkartenaktion (Anmeldeschluss 23.11.). Am Livetag wird die Test-Datenbank nach Live kopiert, die Anmeldungen kommen also mit.
+
+- **Schalter:** Veranstaltung bearbeiten → „Vorab extern freigeben“. Bei der Weihnachtsaktion setzt ihn eine Migration. Damit:
+  - ist die Veranstaltung auf dem geschlossenen Testsystem ohne Anmeldung erreichbar, ohne gelbes Band, weiter mit noindex. Erreichbar sind die Seite, das Formular, die Links zum Bestätigen und Stornieren, Datenschutz und Impressum;
+  - gehen die Mails zu ihren Anmeldungen an die echten Adressen, alle anderen Mails weiter an die Testadresse;
+  - lässt sich das Formular unter `/veranstaltungen/<slug>/einbetten` als iframe einbinden. Erlaubt sind nur die Websites in `einbetten_von` (`instanzen/dv-trier/config.php`, jetzt www.dpsg-trier.de und dpsg-trier.de).
+- **Voraussetzung:** Deploy `dv-trier` (Test) mit diesem Stand.
+- **In WordPress:** einen Block „Individuelles HTML“ einfügen:
+
+  ```html
+  <iframe id="kluft-anmeldung" src="https://test.dpsg-trier.de/veranstaltungen/weihnachtspostkartenaktion-2026/einbetten"
+          title="Anmeldung Weihnachtspostkartenaktion" style="width:100%;border:0;min-height:1700px"></iframe>
+  <script>
+  window.addEventListener('message', function (e) {
+    if (e.origin === 'https://test.dpsg-trier.de' && e.data && e.data.kluftHoehe) {
+      document.getElementById('kluft-anmeldung').style.height = e.data.kluftHoehe + 'px';
+    }
+  });
+  </script>
+  ```
+
+  Das Skript passt die Höhe an. Entfernt WordPress es (nur Admins dürfen Skripte), reicht die Mindesthöhe; dann scrollt das Formular im Rahmen.
+- **Livetag:** Mit dem Umzug von WordPress nach alt.dpsg-trier.de fällt das iframe weg, ab dann gilt die Anmeldung auf www.dpsg-trier.de.
+  - Anmeldungen, die zwischen dem Kopieren und dem Umschalten auf Test eingehen, fehlen auf Live. Deshalb die Seite in WordPress beim Redaktionsstopp abschalten.
+  - Bestätigungslinks aus Mails vor dem Livegang zeigen auf test.dpsg-trier.de. Wer erst nach dem Kopieren bestätigt, ist nur auf Test bestätigt. Am 22.11. auf Test unter der Veranstaltung nachsehen und solche Anmeldungen auf Live von Hand nachtragen.
+  - Danach den Schalter ausschalten und `einbetten_von` leeren.
+
 ## Ablauf am Livetag (21.11.)
 
 1. **Redaktionsstopp auf Test** ab einer verabredeten Uhrzeit, an alle Redakteur*innen schicken.

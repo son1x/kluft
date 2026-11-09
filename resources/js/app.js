@@ -16,3 +16,7 @@ Alpine.start();
 if (document.querySelector('altcha-widget')) {
     import('./arbeitsnachweis');
 }
+
+if (document.body?.dataset.einbetten !== undefined) {
+    import('./einbetten').then((m) => m.default());
+}

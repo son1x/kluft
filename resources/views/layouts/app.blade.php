@@ -32,7 +32,7 @@
 <body class="min-h-screen flex flex-col bg-surface font-sans text-text" x-data="{ navOpen: false, scrolled: false }" @scroll.window.throttle.50ms="scrolled = window.scrollY > 40"
       :class="navOpen && 'max-md:overflow-hidden'" @keydown.escape.window="navOpen = false">
     <a href="#inhalt" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-2 focus:bg-white focus:px-4 focus:py-2 focus:text-dpsg-blau">Zum Inhalt springen</a>
-    @if (\App\Support\Testsystem::aktiv())
+    @if (\App\Support\Testsystem::aktiv() && ! request()->attributes->get('testsystem_extern'))
         {{-- Testsystem (docs/livegang.md): deutlich kennzeichnen, damit niemand hier Inhalte pflegt. --}}
         <div class="relative z-50 bg-dpsg-yellow text-text" role="note">
             <p class="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-2 px-4 py-2 text-center text-sm">

@@ -29,6 +29,9 @@ on:
           - backup:run
           - whatsapp:check
           - mitglieder:check
+          - wartung:status
+          - wartung:an
+          - wartung:aus
         default: calendar:check
 
 jobs:
@@ -68,6 +71,10 @@ jobs:
             cd "${{ env.SSH_TARGET_DIR }}"
             case "$CHECK" in
               calendar:check) "${{ env.PHP_BIN }}" artisan calendar:check ;;
+              # Wartungsmodus von Hand (auch im Backend unter Verwaltung → Wartungsmodus).
+              wartung:status) "${{ env.PHP_BIN }}" artisan kluft:wartung status ;;
+              wartung:an) "${{ env.PHP_BIN }}" artisan kluft:wartung an ;;
+              wartung:aus) "${{ env.PHP_BIN }}" artisan kluft:wartung aus ;;
               # Mitgliederverwaltung (NaMi 2 / NaMi 3): Anmeldung und Testsuche, ohne Mitgliederdaten.
               mitglieder:check) "${{ env.PHP_BIN }}" artisan mitglieder:check ;;
               # Kalender sofort abrufen (sonst alle 15 Minuten per Cronjob), danach Stand zeigen.

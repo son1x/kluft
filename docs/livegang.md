@@ -95,6 +95,7 @@ Beide Kluft-Installationen nutzen den Instanz-Ordner `instanzen/dv-trier`. Der D
 ## Ablauf am Livetag (21.11.)
 
 1. **Redaktionsstopp auf Test** ab einer verabredeten Uhrzeit, an alle Redakteur*innen schicken.
+   - Auf Test **Verwaltung → Wartungsmodus** einschalten, mit „Backend nur für Admins“ und einem Text wie „Wir ziehen um, ab etwa 16 Uhr sind wir wieder da.“ Der Schalter liegt in der Datenbank und wandert beim Kopieren mit: Live startet geschlossen, Admins sehen beim Prüfen (Schritt 8) trotzdem alles.
 2. **Sichern:** Plesk-Backup von Test und der WordPress-Seite.
 3. **Alte Seite umbenennen:**
    - Subdomain `alt.dpsg-trier.de` mit dem Ordner `alt.dpsg-trier.de` anlegen.
@@ -118,7 +119,10 @@ Beide Kluft-Installationen nutzen den Instanz-Ordner `instanzen/dv-trier`. Der D
    - Anmeldung mit Microsoft 365;
    - Kontaktformular mit echter Mail;
    - eine alte WordPress-Adresse;
-   - Systemstatus im Backend.
+   - Systemstatus im Backend;
+   - im privaten Fenster: Die Wartungsseite erscheint.
+
+   Danach auf Live **Verwaltung → Wartungsmodus → Ausschalten**. Geht das Backend nicht: Actions → Server-Prüfung → `dv-trier-live` → `wartung:aus`. Das Monitoring meldet die Website in dieser Zeit als nicht erreichbar (503).
 9. **Statistik auf null setzen**, erst nach den Prüfungen, weil die Datenbank samt Testaufrufen von Test kommt und auch die Prüfaufrufe mitzählen würden:
    - Backend → Verwaltung → Aufrufe → „Alle Zähler löschen“ (nur Admins). Alternativ auf dem Server `php artisan aufrufe:zuruecksetzen --force`.
    - **Prüfen:** Oben auf der Seite steht „Noch keine Aufrufe gezählt (0).“ Nach dem ersten Besuch von außen steht dort „Gezählt seit 21.11.2026“.

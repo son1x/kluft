@@ -55,6 +55,7 @@ class ListArtikel extends ListRecords
                 ->modalHeading('Mehrere Artikel vom Rüsthaus holen')
                 ->modalDescription('Artikelnummern oder Links, einer pro Zeile (Komma oder Leerzeichen gehen auch), höchstens '.ArtikelHolen::MAX.'. Kluft holt sie nacheinander im Hintergrund, etwa eine Sekunde je Größe. Den Stand siehst du oben auf dieser Seite.')
                 ->disabled(fn () => (bool) (ArtikelHolen::stand()['laeuft'] ?? false))
+                ->modalSubmitActionLabel('Holen')
                 ->schema([
                     Textarea::make('nummern')->label('Rüsthaus-Artikelnummern oder Links')->rows(8)->required()
                         ->placeholder("0100003.30\n0100004\nhttps://www.ruesthaus.de/…")

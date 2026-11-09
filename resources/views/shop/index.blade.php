@@ -180,8 +180,8 @@
                         <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
                     </button>
                 </div>
-                <div class="flex flex-col gap-5 overflow-y-auto px-5 pb-6 pt-2">
-                    <div class="flex aspect-[4/3] items-center justify-center overflow-hidden rounded-2xl bg-white">
+                <div class="flex min-h-0 flex-col gap-5 overflow-y-auto px-5 pb-6 pt-2 [&>*]:shrink-0">
+                    <div class="flex aspect-[4/3] max-h-[38dvh] items-center justify-center overflow-hidden rounded-2xl bg-white">
                         <template x-if="aktuell().bild"><img :src="aktuell().bild" :alt="aktuell().bildAlt || ''" class="h-full w-full object-contain p-3" /></template>
                         <template x-if="! aktuell().bild"><svg class="h-20 w-20 text-dpsg-blau/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M3 8l9-4 9 4v9l-9 4-9-4z"/></svg></template>
                     </div>
@@ -329,7 +329,7 @@
                     @endforeach
                 </ol>
 
-                <div class="flex flex-col gap-5 overflow-y-auto px-5 pb-6 pt-4">
+                <div class="flex min-h-0 flex-col gap-5 overflow-y-auto px-5 pb-6 pt-4 [&>*]:shrink-0">
                     @if ($errors->any())
                         <p class="rounded-2xl bg-white p-3 text-sm text-dpsg-rot ring-1 ring-dpsg-rot/30" role="alert">Bitte prüfe die markierten Angaben.</p>
                     @endif

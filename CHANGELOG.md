@@ -6,6 +6,9 @@ Admins. Kurz und aus Sicht der Redaktion schreiben.
 
 ## 0.9.0
 
+- Veranstaltungen: Info-Mails an das Team. Bei jeder bestätigten Anmeldung, beim Nachrücken und bei der Abmeldung bekommen die Sammeladresse (einstellbar unter Veranstaltungen → „Sammeladresse“) und die verantwortliche Person eine kurze Mail mit Link ins Backend. Je Veranstaltung abschaltbar.
+- Vorab freigegebene Anmeldungen (vor dem Livegang): Besucher*innen sehen einen schlichten Rahmen ohne Menü, die Infos zur Aktion stehen zum Aufklappen direkt am Formular.
+
 - Veranstaltungen: Im Formular-Baukasten gibt es „Eigene Felder“ (bis zu 15: kurzer oder langer Text, Zahl, Auswahl mit einer oder mehreren Antworten), mit Pflichtfeld und Hinweis. Die Antworten stehen in der Liste der Anmeldungen, im Export und in der Datenauskunft.
 - DV Trier: Anmeldung zur Wö- und Biber-Weihnachtspostkartenaktion (bis 23.11.2026).
 - Veranstaltungen: Schalter „Vorab extern freigeben“. Eine Anmeldung läuft dann schon vor dem Livegang über das Testsystem, auch als Formular auf der alten Website; die Bestätigungsmails gehen an die echten Adressen.

@@ -48,8 +48,26 @@ Warteschlange (verschlüsselt, Versand etwa jede Minute):
 | storniert | „Anmeldung storniert“ | – |
 
 Die Mails enthalten Titel, Name, Status und Links, keine weiteren Angaben aus
-dem Formular. Die Kontaktperson der Veranstaltung bekommt keine Mail je
-Anmeldung. Sie sieht die Anmeldungen im Backend.
+dem Formular. Bei vorab freigegebenen Veranstaltungen auf dem Testsystem fehlt
+der Hinweis auf „Meine Anmeldungen“, und „Website“ führt zur echten Website.
+
+### Info-Mails an das Team
+
+Veranstaltung bearbeiten → „Info-Mails an das Team“, beide Schalter
+standardmäßig an (auch bei bestehenden Veranstaltungen, in allen Instanzen):
+
+- **Sammeladresse informieren:** Adresse unter Veranstaltungen → Knopf
+  „Sammeladresse“ (nur Verwaltung, protokolliert). Leer: die Kontaktadresse
+  der Website, beim DV info@dpsg-trier.de.
+- **Verantwortliche Person informieren:** Feld „Verantwortlich (E-Mail)“ mit
+  Vorschlägen aus Benutzer*innen und Leitung & Büro. Neue Veranstaltungen
+  tragen die eigene Adresse ein; leer: wer die Veranstaltung angelegt hat.
+
+Eine Info-Mail (`AnmeldungInfoMail`) kommt nach der Bestätigung (bestätigt oder
+Warteliste), beim Nachrücken und bei der Abmeldung, nicht schon bei der
+unbestätigten Anmeldung. Sie enthält Name, ggf. Stamm, den Stand der Plätze und
+den Knopf „Anmeldungen ansehen“ ins Backend. Gleiche Adressen bekommen eine
+Mail. Wer das für eine Veranstaltung nicht will, schaltet es dort aus.
 
 Auf dem Testsystem gehen Mails an die Testadresse (`MAIL_TEST_REDIRECT_TO`,
 docs/deploy.md „Mail“). Ausnahme: Veranstaltungen mit „Vorab extern
@@ -65,8 +83,13 @@ Livegang über test.dpsg-trier.de, auch als iframe auf der alten Website:
   Datenschutz und Impressum sind auch auf dem geschlossenen Testsystem ohne
   Anmeldung erreichbar, ohne gelbes Band. Bestätigen und Stornieren
   funktionieren auch im Wartungsmodus.
-- Die Mails dieser Veranstaltung gehen an die echten Adressen. Erkannt an der
-  Kopfzeile `X-Kluft-Extern`, die vor dem Versand entfernt wird.
+- Die Mails dieser Veranstaltung gehen an die echten Adressen, auch die
+  Info-Mails ans Team. Erkannt an der Kopfzeile `X-Kluft-Extern`, die vor dem
+  Versand entfernt wird.
+- Gäste sehen diese Seiten in einem schlichten Rahmen: blaues Band mit Logo
+  (führt zur Live-Adresse bzw. vor dem Livegang zur alten Website), unten
+  Impressum und Datenschutz, kein Menü und keine Fußzeile der neuen Website.
+  Die Einbett-Ansicht zeigt die Infos zur Aktion zum Aufklappen.
 - Einbett-Ansicht: `/veranstaltungen/<slug>/einbetten`, nur von den Websites
   in `einbetten_von` (`instanzen/<instanz>/config.php`, nur https).
 
@@ -80,5 +103,6 @@ Die Inhaltsmigration
 `instanzen/dv-trier/migrations/2026_11_09_160000_weihnachtspostkartenaktion_2026.php`
 legt die Veranstaltung `/veranstaltungen/weihnachtspostkartenaktion-2026` an
 (Anmeldung bis 23.11.2026, Daten 60 Tage nach Ende gelöscht), eine zweite
-Migration schaltet „Vorab extern freigeben“ ein. Danach wird sie im Backend
+Migration schaltet „Vorab extern freigeben“ ein, eine dritte trägt Lisa Alm
+(Bildungsreferentin) als Verantwortliche ein. Danach wird sie im Backend
 gepflegt, eine erneute Migration ändert nichts.

@@ -43,6 +43,14 @@ Branch: `feature/anmelde-infos`
 - Bei Bestätigung, Warteliste, Nachrücken und Storno geht `AnmeldungInfoMail` an die Sammeladresse (Veranstaltungen → „Sammeladresse“, SiteSetting `anmeldungen.sammeladresse`, leer = `dpsg.contact.email`) und an die verantwortliche Person. Inhalt nur Name, ggf. Stamm, Stand der Plätze und Link ins Backend.
 - **Achtung Stammes/Bezirk:** Nach dem Deploy bekommt auch dort die Kontaktadresse der Website diese Infos. Wer das nicht will, schaltet es je Veranstaltung aus.
 
+### 2026-11-10 – Haupt → Stammes, Bezirk: #27 und #28 gemergt, Deploy Test
+Status: offen (für Stammes und Bezirk: Hinweis vor dem nächsten Deploy)
+Branch: `claude/kluft-instanzen`
+
+- #27 (Info-Mails an Sammeladresse und Verantwortliche) und #28 (schlichter Rahmen für vorab freigegebene Anmeldungen) gemergt, Deploy nur `dv-trier` (Test).
+- **Roden und Saar-Hochwald:** Die Info-Mails sind auch bei bestehenden Veranstaltungen standardmäßig an. Nach dem nächsten Deploy bekommen die Kontaktadresse der Website und wer die Veranstaltung angelegt hat bei jeder bestätigten Anmeldung eine Mail. Vorher mit dem Stamm bzw. Bezirk abklären oder je Veranstaltung ausschalten.
+- Doku: `docs/veranstaltungen.md` (Info-Mails ans Team, schlichter Rahmen), Changelog.
+
 ### 2026-11-09 – Haupt → Stammes, Bezirk: #24–#26 gemergt, Bestätigungsmails geprüft
 Status: erledigt
 Branch: `claude/kluft-instanzen`

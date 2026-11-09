@@ -50,6 +50,9 @@ class AdminPanelProvider extends PanelProvider
             // statt auf der Bearbeiten-Seite zu bleiben.
             ->resourceCreatePageRedirect('index')
             ->resourceEditPageRedirect('index')
+            // Eigenes Theme, damit Tailwind-Klassen in unseren Backend-Ansichten
+            // ankommen (resources/css/filament/admin/theme.css).
+            ->viteTheme('resources/css/filament/admin/theme.css')
             ->colors([
                 'primary' => Color::hex('#003056'), // dpsg-blau, s. Pflichtenheft 7.2
                 'danger' => Color::hex('#810a1a'), // dpsg-rot

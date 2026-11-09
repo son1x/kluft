@@ -138,14 +138,14 @@ class GeorgsboteTitelbildTest extends TestCase
         $this->assertSame([], Storage::disk('public')->allFiles());
     }
 
-    #[TestDox('Georgsbriefe bekommen kein Titelbild (422)')]
-    public function test_georgsbrief_bekommt_kein_titelbild(): void
+    #[TestDox('Georgsbriefe bekommen ebenfalls ein Titelbild')]
+    public function test_georgsbrief_bekommt_titelbild(): void
     {
         $this->actingAs($this->verwaltung());
         $brief = $this->issue(2019, 2, ['art' => GeorgsboteIssue::BRIEF]);
 
-        $this->hochladen($brief, UploadedFile::fake()->image('titel.webp', 800, 1131))->assertStatus(422)->assertJson(['ok' => false]);
-        $this->assertNull($brief->fresh()->cover_path);
+        $this->hochladen($brief, UploadedFile::fake()->image('titel.webp', 800, 1131))->assertOk()->assertJson(['ok' => true]);
+        $this->assertNotNull($brief->fresh()->cover_path);
     }
 
     #[TestDox('Upload nur mit Recht: Gast zur Anmeldung, Autor 403')]
@@ -160,44 +160,52 @@ class GeorgsboteTitelbildTest extends TestCase
         $this->assertNull($bote->fresh()->cover_path);
     }
 
-    #[TestDox('„Titelbilder erzeugen“ erscheint nur, wenn Georgsboten ohne Titelbild da sind')]
-    public function test_kopfaktion_nur_bei_fehlenden_titelbildern(): void
+    #[TestDox('„Fehlende Titelbilder erzeugen“ für Georgsboten und Georgsbriefe ohne Titelbild; „Alle neu erzeugen“ ersetzt auch vorhandene')]
+    public function test_kopfaktionen(): void
     {
         Filament::setCurrentPanel('admin');
         $this->actingAs($this->verwaltung());
-        // Georgsbriefe ohne Titelbild zählen nicht.
-        $this->issue(2019, 2, ['art' => GeorgsboteIssue::BRIEF]);
+        $brief = $this->issue(2019, 2, ['art' => GeorgsboteIssue::BRIEF]);
         $bote = $this->issue(2019, 1);
         $zweiter = $this->issue(2018, 1);
         $this->issue(2017, 1, ['cover_path' => 'georgsbote/von-hand.jpg']);
+        $this->issue(2016, 1, ['pdf_path' => '']);
 
         Livewire::test(ListGeorgsboteIssues::class)
             ->assertActionVisible('titelbilder')
             ->mountAction('titelbilder')
             ->assertActionMounted('titelbilder')
-            ->assertMountedActionModalSee('2 Georgsboten ohne Titelbild');
+            ->assertMountedActionModalSee('3 Ausgaben ohne Titelbild (Georgsbote und Georgsbrief)');
+
+        Livewire::test(ListGeorgsboteIssues::class)
+            ->mountAction('titelbilderNeu')
+            ->assertMountedActionModalSee('4 Ausgaben (Georgsbote und Georgsbrief)')
+            ->assertMountedActionModalSee('Alle ersetzen');
 
         // Knopf „Titelbilder jetzt erzeugen“ in der Meldung nach dem Hochladen.
         Livewire::test(ListGeorgsboteIssues::class)
             ->dispatch('titelbilder-oeffnen')
             ->assertActionMounted('titelbilder');
 
-        $bote->update(['cover_path' => 'georgsbote/titel.webp']);
-        $zweiter->update(['cover_path' => 'georgsbote/titel2.webp']);
+        foreach ([$bote, $zweiter, $brief] as $i => $issue) {
+            $issue->update(['cover_path' => "georgsbote/titel{$i}.webp"]);
+        }
 
-        Livewire::test(ListGeorgsboteIssues::class)->assertActionHidden('titelbilder');
+        Livewire::test(ListGeorgsboteIssues::class)->assertActionHidden('titelbilder')->assertActionVisible('titelbilderNeu');
     }
 
-    #[TestDox('„Titelbild aus PDF erzeugen“ gibt es auf der Bearbeiten-Seite nur bei Georgsboten')]
-    public function test_bearbeiten_aktion_nur_bei_georgsboten(): void
+    #[TestDox('„Titelbild aus PDF erzeugen“ gibt es auf der Bearbeiten-Seite bei Georgsboten und Georgsbriefen mit PDF')]
+    public function test_bearbeiten_aktion(): void
     {
         Filament::setCurrentPanel('admin');
         $this->actingAs($this->verwaltung());
         $bote = $this->issue(2019, 1);
         $brief = $this->issue(2019, 2, ['art' => GeorgsboteIssue::BRIEF]);
+        $ohnePdf = $this->issue(2016, 1, ['pdf_path' => '']);
 
         Livewire::test(EditGeorgsboteIssue::class, ['record' => $bote->getRouteKey()])->assertActionVisible('titelbild');
-        Livewire::test(EditGeorgsboteIssue::class, ['record' => $brief->getRouteKey()])->assertActionHidden('titelbild');
+        Livewire::test(EditGeorgsboteIssue::class, ['record' => $brief->getRouteKey()])->assertActionVisible('titelbild');
+        Livewire::test(EditGeorgsboteIssue::class, ['record' => $ohnePdf->getRouteKey()])->assertActionHidden('titelbild');
     }
 
     #[TestDox('Nach dem Erzeugen übernimmt die Bearbeiten-Seite das neue Titelbild, „Speichern“ leert es nicht')]

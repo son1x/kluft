@@ -65,22 +65,47 @@ class ListGeorgsboteIssues extends ListRecords
                     $n = GeorgsboteIssue::query()->get()->filter(fn (GeorgsboteIssue $issue) => GeorgsboteArchiv::anwenden($issue))->count();
                     Notification::make()->title("{$n} Ausgabe(n) ergänzt")->success()->send();
                 }),
+            // Titelbilder aus Seite 1 der PDFs, für Georgsboten und Georgsbriefe auf einmal (resources/js/titelbild.js).
             Action::make('titelbilder')
-                ->label('Titelbilder erzeugen')
+                ->label('Fehlende Titelbilder erzeugen')
                 ->icon('heroicon-o-photo')
                 ->color('gray')
                 ->visible(fn () => GeorgsboteIssueResource::canCreate() && GeorgsboteIssue::query()->ohneTitelbild()->exists())
-                ->modalHeading('Titelbilder aus Seite 1 der PDFs erzeugen')
+                ->modalHeading('Fehlende Titelbilder aus Seite 1 der PDFs erzeugen')
                 ->modalContent(fn () => view('filament.georgsbote.titelbilder', [
-                    'ausgaben' => GeorgsboteIssue::query()->ohneTitelbild()
-                        ->orderByDesc('year')->orderByDesc('issue_no')->get()
-                        ->map(fn (GeorgsboteIssue $issue) => $issue->titelbildAuftrag())->all(),
+                    'ausgaben' => self::auftraege(GeorgsboteIssue::query()->ohneTitelbild()),
                     'ueberschreiben' => false,
+                ]))
+                ->modalSubmitAction(false)
+                ->modalCancelActionLabel('Schließen'),
+            Action::make('titelbilderNeu')
+                ->label('Alle Titelbilder neu erzeugen')
+                ->icon('heroicon-o-arrow-path')
+                ->color('gray')
+                ->visible(fn () => GeorgsboteIssueResource::canCreate() && GeorgsboteIssue::query()->mitPdf()->exists())
+                ->modalHeading('Alle Titelbilder neu aus Seite 1 der PDFs erzeugen')
+                ->modalDescription('Vorhandene Titelbilder, auch von Hand hochgeladene, werden ersetzt.')
+                ->modalContent(fn () => view('filament.georgsbote.titelbilder', [
+                    'ausgaben' => self::auftraege(GeorgsboteIssue::query()->mitPdf()),
+                    'ueberschreiben' => true,
                 ]))
                 ->modalSubmitAction(false)
                 ->modalCancelActionLabel('Schließen'),
             CreateAction::make(),
         ];
+    }
+
+    /**
+     * Aufträge für den Renderer: Georgsboten zuerst, je Art die neuesten zuerst.
+     *
+     * @param  Builder<GeorgsboteIssue>  $query
+     * @return list<array{id: int, label: string, pdfUrl: string, uploadUrl: string}>
+     */
+    private static function auftraege(Builder $query): array
+    {
+        return $query->orderByRaw('case when art = ? then 0 else 1 end', [GeorgsboteIssue::BOTE])
+            ->orderByDesc('year')->orderByDesc('issue_no')->get()
+            ->map(fn (GeorgsboteIssue $issue) => $issue->titelbildAuftrag())->values()->all();
     }
 
     /** Knopf „Titelbilder jetzt erzeugen“ in der Meldung nach dem Hochladen. */
@@ -135,7 +160,7 @@ class ListGeorgsboteIssues extends ListRecords
 
         $created = [];
         $skipped = [];
-        $neueBoten = 0;
+        $neue = 0;
         foreach ($paths as $path) {
             $name = $names[$path] ?? basename($path);
             $guess = GeorgsboteIssue::erkennen($name);
@@ -155,7 +180,7 @@ class ListGeorgsboteIssues extends ListRecords
                     'privacy_checked' => false,
                 ]);
                 $created[] = $issue->label();
-                $neueBoten += $issue->istBrief() ? 0 : 1;
+                $neue++;
 
                 continue;
             }
@@ -165,7 +190,7 @@ class ListGeorgsboteIssues extends ListRecords
 
         AuditLogger::log('georgsbote.bulk_upload:'.count($created), Filament::auth()->user());
 
-        $ohneTitelbild = $neueBoten > 0 && GeorgsboteIssue::query()->ohneTitelbild()->exists();
+        $ohneTitelbild = $neue > 0 && GeorgsboteIssue::query()->ohneTitelbild()->exists();
 
         Notification::make()
             ->title(count($created).' Ausgabe(n) angelegt (offline)')

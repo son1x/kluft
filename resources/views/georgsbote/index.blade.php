@@ -48,15 +48,16 @@
                         @foreach ($ausgaben as $ausgabe)
                             <li>
                                 <a href="{{ $ausgabe->downloadUrl() }}" class="group flex h-full gap-4 bg-white p-3 shadow-md transition hover:-translate-y-0.5 hover:shadow-lg" target="_blank" rel="noopener">
-                                    @unless ($brief)
-                                        <div class="flex aspect-[3/4] w-24 shrink-0 items-center justify-center self-start overflow-hidden bg-dpsg-hellbeige">
+                                    {{-- Georgsbote immer mit Titel (sonst Platzhalter), Georgsbrief nur, wenn es eins gibt. --}}
+                                    @if (! $brief || $ausgabe->coverUrl())
+                                        <div @class(['flex aspect-[3/4] shrink-0 items-center justify-center self-start overflow-hidden bg-dpsg-hellbeige', 'w-24' => ! $brief, 'w-16' => $brief])>
                                             @if ($cover = $ausgabe->coverUrl())
                                                 <img src="{{ $cover }}" alt="" width="96" height="128" class="h-full w-full object-cover object-top" loading="lazy" decoding="async" />
                                             @else
                                                 <span class="px-2 text-center font-serif text-sm font-bold text-dpsg-blau">Georgsbote<br />{{ $ausgabe->issue_no }}/{{ $ausgabe->year }}</span>
                                             @endif
                                         </div>
-                                    @endunless
+                                    @endif
                                     <div class="min-w-0">
                                         @if ($brief)
                                             <span class="block font-bold group-hover:text-dpsg-rot">{{ $ausgabe->label() }}</span>

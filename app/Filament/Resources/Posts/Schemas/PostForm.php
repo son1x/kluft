@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Posts\Schemas;
 
+use App\Filament\Resources\Media\MediaResource;
 use App\Models\Event;
 use App\Models\Post;
 use App\Policies\PostPolicy;
@@ -9,6 +10,7 @@ use App\Support\Aufrufe;
 use App\Support\Features;
 use App\Support\RoleCatalog;
 use App\Support\Websites;
+use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Radio;
@@ -86,7 +88,8 @@ class PostForm
                         ->default('general')
                         ->native(false)
                         ->live()
-                        ->required(),
+                        ->required()
+                        ->helperText('Erscheint immer unter „Aktuelles“. Stufe/Sektion: Die Leitung dieses Bereichs kann ihn freigeben; Sektion zusätzlich auf der Fachbereichsseite.'),
 
                     Select::make('stage')
                         ->label('Stufe')
@@ -113,6 +116,7 @@ class PostForm
                         ->default('draft')
                         ->native(false)
                         ->required()
+                        ->helperText(fn () => self::statusHilfe())
                         ->rule(fn (Get $get, ?Post $record) => function (string $attribute, mixed $value, \Closure $fail) use ($get, $record) {
                             if ($record?->wp_id && $value !== 'draft' && ! $get('import_reviewed')) {
                                 $fail('Importierte Beiträge erst durchsehen und oben „Durchgesehen“ anhaken.');
@@ -123,7 +127,10 @@ class PostForm
                         ->label('Titelbild')
                         ->relationship('coverMedia', 'alt_text')
                         ->searchable()
-                        ->preload(),
+                        ->preload()
+                        ->helperText('Querformat 16 : 9, mindestens 1600 Pixel breit. Vorher in der Mediathek hochladen; gesucht wird nach dem Alt-Text.')
+                        ->hintAction(Action::make('mediathek')->label('Mediathek öffnen')->icon('heroicon-o-arrow-top-right-on-square')
+                            ->url(fn () => MediaResource::getUrl('index'), shouldOpenInNewTab: true)),
 
                     Select::make('event_id')
                         ->label('Anmeldung zu Veranstaltung')
@@ -140,6 +147,7 @@ class PostForm
                         ->label('Teaser (kurze Anrisstext für Übersichten)')
                         ->required()
                         ->maxLength(300)
+                        ->helperText('Ein bis zwei Sätze, die neugierig machen (höchstens 300 Zeichen). Erscheint in Übersichten, bei Suchmaschinen und als Vorschau, wenn jemand den Link teilt.')
                         ->columnSpanFull(),
                     RichEditor::make('body')
                         ->label('Inhalt')
@@ -212,6 +220,18 @@ class PostForm
         }
 
         return $all->only([...$user->scopeKeysFor('sektionsadmin'), ...$user->scopeKeysFor('autor')])->all();
+    }
+
+    /**
+     * Erklärt, was der Status bewirkt, je nachdem ob die Person selbst freigeben darf.
+     */
+    private static function statusHilfe(): string
+    {
+        $user = Filament::auth()->user();
+
+        return $user && app(PostPolicy::class)->publish($user)
+            ? 'Entwurf: nur im Backend sichtbar. Veröffentlicht: sofort auf der Website. Du darfst selbst freigeben.'
+            : 'Entwurf: nur im Backend sichtbar. Zur Prüfung: Die Leitung deines Bereichs, der Vorstand oder die Verwaltung sieht ihn und veröffentlicht ihn.';
     }
 
     /**

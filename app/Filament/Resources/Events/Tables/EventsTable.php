@@ -42,6 +42,9 @@ class EventsTable
                 TextColumn::make('waitlist_count')->label('Warteliste'),
                 TextColumn::make('pending_count')->label('Unbestätigt')->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->emptyStateHeading('Noch keine Veranstaltungen')
+            ->emptyStateDescription('Oben rechts auf „Erstellen“: Titel, Termin und Ort eintragen. Mit Online-Anmeldung kommen Teilnehmerliste und Bestätigungsmails dazu. Als Entwurf speichern, bis alles stimmt.')
+            ->emptyStateIcon('heroicon-o-calendar-days')
             ->defaultSort('starts_at')
             ->filters([
                 SelectFilter::make('status')->label('Status')->options(Event::STATUSES),

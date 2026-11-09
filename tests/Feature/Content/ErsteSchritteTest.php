@@ -61,9 +61,9 @@ class ErsteSchritteTest extends TestCase
     #[TestDox('Wer freigeben darf, sieht wartende Beiträge seines Bereichs und den eigenen Bereich')]
     public function test_freigebende(): void
     {
-        $stufe = (string) array_key_first((array) config('dpsg.stages'));
+        [$stufe, $andere] = array_map('strval', array_slice(array_keys((array) config('dpsg.stages')), 0, 2));
         $this->beitrag(['status' => 'review', 'scope' => 'stage', 'stage' => $stufe]);
-        $this->beitrag(['status' => 'review', 'scope' => 'stage', 'stage' => 'anders']);
+        $this->beitrag(['status' => 'review', 'scope' => 'stage', 'stage' => $andere]);
         $this->actingAs($this->user('stufe@example.org', 'stufenadmin', 'stage', $stufe));
 
         Livewire::test(ErsteSchritte::class)

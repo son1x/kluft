@@ -6,6 +6,7 @@ Admins. Kurz und aus Sicht der Redaktion schreiben.
 
 ## 0.9.0
 
+- Instagram-Konten: Die „Anleitung: Token erzeugen“ ist übersichtlicher, mit nummerierten Schritten, Hinweiskästen und aufklappbarer Hilfe „Wenn es hakt“.
 - Stufen- und Fachbereichsleitungen veröffentlichen Seiten ihres Bereichs selbst; eine schon veröffentlichte Seite lässt sich wieder speichern.
 - Roden: Kimberly und Flavio stehen auf der Seite „Stammesvorstand“ mit ihrer persönlichen Adresse statt vorstand@; die Vorstandsadresse bleibt im Seitentext.
 - Der Vorstand pflegt die Vorstandsseite (Seite der Diözesan- bzw. Bezirksleitung oder des Stammesvorstands) und ihre Unterseiten selbst und kann sie veröffentlichen. Andere Seiten sieht er im Backend nicht mehr.

@@ -87,6 +87,9 @@ class CalendarResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->emptyStateHeading('Noch keine Kalender')
+            ->emptyStateDescription('Oben rechts auf „Erstellen“ und den Abonnement-Link eines Nextcloud-Kalenders eintragen (Kalender → Teilen → Öffentlicher Link). Kluft holt die Termine danach alle 15 Minuten; mit „Jetzt abrufen“ sofort.')
+            ->emptyStateIcon('heroicon-o-calendar')
             ->columns([
                 ColorColumn::make('color')->label(''),
                 TextColumn::make('label')->label('Kalender')->searchable(),

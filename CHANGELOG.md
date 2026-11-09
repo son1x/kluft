@@ -6,6 +6,7 @@ Admins. Kurz und aus Sicht der Redaktion schreiben.
 
 ## 0.9.0
 
+- Backend: Seiten (URL-Pfad, übergeordnete Seite, Reihenfolge, Status), Gruppenfotos, Georgsbote (PDF-Größe, Titelbild aus dem PDF) und Kalender erklären ihre Felder bzw. was bei einer leeren Liste zu tun ist.
 - Backend: Hinweistexte, Listen und Tabellen auf eigenen Seiten (z. B. Updates, Push-Nachrichten, Funktionen, NaMi, Zuschüsse, Nachrichten) sind wieder richtig gesetzt, mit Nummern, Aufzählungspunkten und Abständen.
 - Stufen- und Fachbereichsleitungen veröffentlichen Seiten ihres Bereichs selbst; eine schon veröffentlichte Seite lässt sich wieder speichern.
 - Roden: Kimberly und Flavio stehen auf der Seite „Stammesvorstand“ mit ihrer persönlichen Adresse statt vorstand@; die Vorstandsadresse bleibt im Seitentext.

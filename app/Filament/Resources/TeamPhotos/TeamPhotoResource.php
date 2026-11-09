@@ -53,9 +53,11 @@ class TeamPhotoResource extends Resource
                 ->columns(2)
                 ->columnSpanFull()
                 ->components([
-                    Select::make('gremium')->label('Seite')->options($gremien)->in(array_keys($gremien))->required()->native(false),
+                    Select::make('gremium')->label('Seite')->options($gremien)->in(array_keys($gremien))->required()->native(false)
+                        ->helperText('Auf dieser Seite erscheint das Foto bei den Personen.'),
                     Select::make('media_id')->label('Foto aus der Mediathek')
-                        ->relationship('media', 'alt_text')->searchable()->preload()->required()->live(),
+                        ->relationship('media', 'alt_text')->searchable()->preload()->required()->live()
+                        ->helperText('Vorher in der Mediathek hochladen: Querformat, mit Bildnachweis und Einwilligung aller Abgebildeten. Danach unten die Personen markieren.'),
                     TextInput::make('title')->label('Überschrift')->placeholder('z. B. Unsere '.config('dpsg.site.leitung_label'))->maxLength(150),
                     TextInput::make('note')->label('Zusatz zur Bildunterschrift')->placeholder('z. B. wer auf dem Foto fehlt')->maxLength(255),
                     Toggle::make('active')->label('Auf der Seite anzeigen')->default(true),

@@ -86,7 +86,7 @@ Website heißt das:
 ├─ Kopf: Titel „Ausrüstung“, Rundenstatus (offen bis …, bzw. „nächste Runde …“)
 ├─ Suche (nur freigegebene Artikel)
 ├─ Kategorie-Leiste: Alle · Grundausstattung · Kluft · Halstücher · Aufnäher · Sets · Vom Stamm
-├─ „Für den Start“ (Grundausstattung und Sets, höchstens 4 Karten)
+├─ „Für den Start“ (Grundausstattung und Sets, ohne feste Anzahl)
 ├─ Artikelraster (2 Spalten Handy, 3–4 Desktop)
 ├─ „Anderen Rüsthaus-Artikel bestellen“ (eingeklappt, unten)
 └─ Warenkorb-Leiste (schwebend): Anzahl · Summe · „Warenkorb“

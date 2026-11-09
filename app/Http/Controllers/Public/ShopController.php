@@ -82,7 +82,8 @@ class ShopController extends Controller
             'pos.*.menge' => ['required', 'integer', 'min:1', 'max:10'],
             'pos.*.variante' => ['nullable', 'integer'],
             'pos.*.set' => ['nullable', 'integer'],
-            'pos.*.teile' => ['nullable', 'array', 'max:20'],
+            // Keine feste Obergrenze: zählen nur die Teile, die das Set wirklich hat (Sammelbestellung::setPositionen).
+            'pos.*.teile' => ['nullable', 'array'],
             'pos.*.teile.*.variante' => ['nullable', 'integer'],
             'pos.*.teile.*.dabei' => ['nullable', 'boolean'],
             'pos.*.frei_nummer' => ['nullable', 'string', 'max:300'],

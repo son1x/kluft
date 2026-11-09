@@ -336,7 +336,7 @@ Priorität: **M** = Muss, **S** = Soll, **K** = Kann. Phase 1 = MVP, Phase 2 = s
 |---|---|:-:|
 | F-EV-01 | Veranstaltung anlegen/bearbeiten: Titel, Beschreibung, Zeitraum, Ort, Stufe/Zielgruppe, Bild, Kontaktperson | M |
 | F-EV-02 | Anmeldezeitraum (Start/Ende), Teilnehmerlimit, Warteliste (optional), Status (Entwurf/Offen/Geschlossen/Abgesagt) | M |
-| F-EV-03 | **Konfigurierbarer Formularumfang je Veranstaltung** aus einem Baukasten (Datensparsamkeit): Pflichtfelder Name, E-Mail; optional Geburtsdatum/Alter, Stamm, Telefon, Verpflegung, Kommentar | M |
+| F-EV-03 | **Konfigurierbarer Formularumfang je Veranstaltung** aus einem Baukasten (Datensparsamkeit): Pflichtfelder Name, E-Mail; optional Geburtsdatum/Alter, Stamm, Telefon, Verpflegung, Kommentar; dazu bis zu 15 eigene Felder (Text, Zahl, Auswahl), docs/veranstaltungen.md | M |
 | F-EV-04 | Kostenbeitrag als Infotext (keine Zahlungsabwicklung im Phase 1) | S |
 | F-EV-05 | Teilnehmerübersicht mit Status (angemeldet, bestätigt, Warteliste, storniert) | M |
 | F-EV-06 | Manuelles Stornieren/Verschieben in Warteliste | S |

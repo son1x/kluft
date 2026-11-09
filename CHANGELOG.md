@@ -6,6 +6,11 @@ Admins. Kurz und aus Sicht der Redaktion schreiben.
 
 ## 0.9.0
 
+- Veranstaltungen: Im Formular-Baukasten gibt es „Eigene Felder“ (bis zu 15: kurzer oder langer Text, Zahl, Auswahl mit einer oder mehreren Antworten), mit Pflichtfeld und Hinweis. Die Antworten stehen in der Liste der Anmeldungen, im Export und in der Datenauskunft.
+- DV Trier: Anmeldung zur Wö- und Biber-Weihnachtspostkartenaktion (bis 23.11.2026).
+- Veranstaltungen: Schalter „Vorab extern freigeben“. Eine Anmeldung läuft dann schon vor dem Livegang über das Testsystem, auch als Formular auf der alten Website; die Bestätigungsmails gehen an die echten Adressen.
+- Verwaltung → Wartungsmodus (nur Admins): Website für Besucher*innen mit eigenem Text schließen, optional auch das Backend für alle außer Admins. Angemeldete sehen ein rotes Band.
+
 - Sammelbestellung: neuer Menüpunkt „Rüsthaus-Katalog“. Kategorie des Rüsthaus wählen, Artikel mit Bild und Preis ansehen und die gewünschten mit einem Klick übernehmen (als Entwurf oder gleich im Shop, auf Wunsch mit Shop-Kategorie).
 - Sammelbestellung: neue Bestellseite mit Kategorien, Suche und großen Artikelkarten; Größe, Mitglied und Anzahl in einem Fenster, Warenkorb nach Mitglied (bleibt 7 Tage im Browser), Bestellen in drei Schritten mit „Verbindlich bestellen“. Preise sind die Originalpreise des Rüsthaus.
 - Sammelbestellung: Stornieren geht bis zum Bestellschluss, auch nach der Zahlung; die Kasse sieht die offene Erstattung. Im Backend lassen sich mehrere Rüsthaus-Artikel auf einmal holen.

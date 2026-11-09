@@ -35,6 +35,15 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-09 – Haupt → Stammes, Bezirk: #24–#26 gemergt, Bestätigungsmails geprüft
+Status: erledigt
+Branch: `claude/kluft-instanzen`
+
+- #24 (eigene Felder), #25 (vorab extern freigeben, Einbett-Ansicht) und #26 (Wartungsmodus) gemergt, kein Deploy.
+- **Zusammenspiel #25/#26:** Im Wartungsmodus kamen Gäste nicht mehr an `/anmeldung/bestaetigen|stornieren/…`. Am Livetag (Test im Wartungsmodus, docs/livegang.md Schritt 1) wären die Bestätigungslinks der Weihnachtsaktion ins Leere gelaufen. Jetzt lässt `Wartungsmodus` diese Links durch, wenn `TestsystemSchutz` sie als „Vorab extern freigeben“ erkannt hat (Token gehört zu so einer Veranstaltung).
+- **Mails geprüft:** neuer Test `tests/Feature/Events/WeihnachtsaktionMailsTest.php` mit der echten Inhaltsmigration: Anmeldung über die Einbett-Ansicht, Mail über die Warteschlange (verschlüsselt) und `TestRecipientFilter` an die echte Adresse, Kopfzeile entfernt; Bestätigen und Stornieren per Link aus der Mail ohne Anmeldung, je mit Folgemail; dasselbe Bestätigen am Livetag im Wartungsmodus.
+- **Doku:** neu `docs/veranstaltungen.md` (Baukasten, eigene Felder, Mails der Anmeldung, vorab extern freigeben), `docs/deploy.md` (Mail-Ausnahme, Wartungsmodus von Hand), Pflichtenheft F-EV-03, Changelog.
+
 ### 2026-11-09 – Haupt → Stammes, Bezirk: Wartungsmodus von Hand
 Status: offen
 Branch: `feature/wartungsmodus`

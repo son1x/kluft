@@ -38,6 +38,13 @@ class Wartungsmodus
             return $this->seite($stand, 'Das Backend ist gerade gesperrt. Bitte schau etwas später noch einmal vorbei.');
         }
 
+        // Bestätigen/Stornieren per Link aus der Mail bei „Vorab extern freigeben“
+        // (TestsystemSchutz prüft das Token): Auf Test bleibt das auch beim Umzug
+        // möglich, docs/livegang.md „Anmeldungen vor dem Livegang“.
+        if ($user === null && $request->attributes->get('testsystem_extern') && $request->is('anmeldung/bestaetigen/*', 'anmeldung/stornieren/*')) {
+            return $next($request);
+        }
+
         if ($user !== null || $backend || $request->is(...self::FREI)) {
             return $next($request);
         }

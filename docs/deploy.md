@@ -88,7 +88,30 @@ im Backend unter Verwaltung → E-Mail-Versand steht „Mails werden nicht
 verschickt“. Bis 07.11.2026 gab es nur die Zeile mit Test-Umleitung; ohne sie
 gingen auch Live-Seiten (Roden) nur ins Log.
 
+Ausnahme auf dem Testsystem: Mails zu Veranstaltungen mit „Vorab extern
+freigeben“ gehen an die echten Adressen (Kopfzeile `X-Kluft-Extern`, die
+`TestRecipientFilter` vor dem Versand entfernt), docs/veranstaltungen.md.
+
 Secrets nie ins Repository oder in einen Chat. Was dort einmal stand, gilt als kompromittiert.
+
+## Wartungsmodus von Hand
+
+Für Umzug oder größere Arbeiten (z. B. Livegang, docs/livegang.md). Der
+kurze Wartungsmodus bei Deploy und Update (`artisan down`) ist davon getrennt.
+
+- **Backend:** Verwaltung → Wartungsmodus (nur Admins). Text für die
+  Wartungsseite, optional „voraussichtlich wieder da“ und „Backend nur für
+  Admins“ (Redaktionsstopp). Ein- und Ausschalten steht im Protokoll.
+- **Ohne Backend:** `php artisan kluft:wartung an|aus|status`
+  (`--text=…`, `--nur-admins`) oder Actions → „Server-Prüfung“ →
+  `wartung:status`, `wartung:an`, `wartung:aus`.
+- **Wirkung:** Gäste bekommen die Wartungsseite (503 mit `Retry-After`,
+  `noindex`). Angemeldete sehen die Website mit rotem Band. Erreichbar bleiben
+  Anmeldung, Backend, `/status`, `/up` und, bei „Vorab extern freigeben“, die
+  Bestätigen- und Stornieren-Links aus den Mails. Mails, Warteschlange und
+  Cronjobs laufen weiter; das Monitoring meldet in der Zeit 503.
+- **Speicherort:** `site_settings` (Schlüssel `wartung`). Eine kopierte
+  Datenbank startet deshalb ebenfalls im Wartungsmodus.
 
 ## Server vorbereiten
 

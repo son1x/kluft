@@ -118,7 +118,7 @@ Einzelne Anmeldungen laufen schon vor dem 21.11. über test.dpsg-trier.de, z. B.
   Das Skript passt die Höhe an. Entfernt WordPress es (nur Admins dürfen Skripte), reicht die Mindesthöhe; dann scrollt das Formular im Rahmen.
 - **Livetag:** Mit dem Umzug von WordPress nach alt.dpsg-trier.de fällt das iframe weg, ab dann gilt die Anmeldung auf www.dpsg-trier.de.
   - Anmeldungen, die zwischen dem Kopieren und dem Umschalten auf Test eingehen, fehlen auf Live. Deshalb die Seite in WordPress beim Redaktionsstopp abschalten.
-  - Bestätigungslinks aus Mails vor dem Livegang zeigen auf test.dpsg-trier.de. Wer erst nach dem Kopieren bestätigt, ist nur auf Test bestätigt. Am 22.11. auf Test unter der Veranstaltung nachsehen und solche Anmeldungen auf Live von Hand nachtragen.
+  - Bestätigungslinks aus Mails vor dem Livegang zeigen auf test.dpsg-trier.de. Sie funktionieren dort auch im Wartungsmodus (nur Bestätigen und Stornieren, nur bei freigegebenen Veranstaltungen). Wer erst nach dem Kopieren bestätigt, ist nur auf Test bestätigt. Am 22.11. auf Test unter der Veranstaltung nachsehen und solche Anmeldungen auf Live von Hand nachtragen.
   - Danach den Schalter ausschalten und `einbetten_von` leeren.
 
 ## Ablauf am Livetag (21.11.)

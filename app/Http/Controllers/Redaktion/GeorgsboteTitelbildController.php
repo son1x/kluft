@@ -42,10 +42,6 @@ class GeorgsboteTitelbildController extends Controller
     {
         $this->darf($request, $issue);
 
-        if ($issue->istBrief()) {
-            return $this->fehler('Georgsbriefe bekommen kein Titelbild.', 422);
-        }
-
         // „image“ lässt SVG nicht zu (erst mit image:allow_svg).
         $validator = Validator::make($request->all(), [
             'bild' => ['required', 'file', 'image', 'mimes:webp,jpeg,png', 'max:'.self::MAX_KB, 'dimensions:max_width=2000,max_height=3000'],

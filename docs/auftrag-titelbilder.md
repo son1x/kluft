@@ -25,7 +25,11 @@ Archiv einen Platzhalter mit „Georgsbote 2/2019“.
 - für alle vorhandenen Ausgaben ohne Titelbild auf Knopfdruck,
 - für einzelne Ausgaben auf der Bearbeiten-Seite.
 
-Georgsbriefe bekommen kein Titelbild, das Archiv zeigt sie als Liste.
+**Nachtrag 10.11.2026:** Georgsbriefe bekommen jetzt auch ein Titelbild; das
+Archiv zeigt es klein in der Liste, wenn es eins gibt. In der Übersicht gibt
+es „Fehlende Titelbilder erzeugen“ und „Alle Titelbilder neu erzeugen“
+(ersetzt auch vorhandene), jeweils für Georgsboten und Georgsbriefe auf
+einmal. Die Abschnitte unten beschreiben den ursprünglichen Auftrag.
 
 ### Entscheidung: im Browser rendern (pdf.js), nicht auf dem Server
 

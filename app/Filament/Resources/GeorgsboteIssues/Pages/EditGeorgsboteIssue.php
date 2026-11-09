@@ -25,7 +25,7 @@ class EditGeorgsboteIssue extends EditRecord
                 ->label('Titelbild aus PDF erzeugen')
                 ->icon('heroicon-o-photo')
                 ->color('gray')
-                ->visible(fn (GeorgsboteIssue $record) => ! $record->istBrief() && filled($record->pdf_path) && GeorgsboteIssueResource::canEdit($record))
+                ->visible(fn (GeorgsboteIssue $record) => filled($record->pdf_path) && GeorgsboteIssueResource::canEdit($record))
                 ->modalHeading('Titelbild aus Seite 1 des PDFs')
                 // Vorhandenes Titelbild nur nach Bestätigung ersetzen.
                 ->modalDescription(fn (GeorgsboteIssue $record) => $record->cover_path

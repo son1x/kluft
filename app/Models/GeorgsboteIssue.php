@@ -113,16 +113,25 @@ class GeorgsboteIssue extends Model
     }
 
     /**
-     * Georgsboten (nicht Georgsbriefe) mit PDF, aber ohne Titelbild.
+     * Ausgaben (Georgsbote und Georgsbrief) mit PDF.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopeMitPdf(Builder $query): Builder
+    {
+        return $query->whereNotNull('pdf_path')->where('pdf_path', '!=', '');
+    }
+
+    /**
+     * Ausgaben (Georgsbote und Georgsbrief) mit PDF, aber ohne Titelbild.
      *
      * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeOhneTitelbild(Builder $query): Builder
     {
-        return $query->where('art', self::BOTE)
-            ->whereNotNull('pdf_path')->where('pdf_path', '!=', '')
-            ->where(fn (Builder $q) => $q->whereNull('cover_path')->orWhere('cover_path', ''));
+        return $query->mitPdf()->where(fn (Builder $q) => $q->whereNull('cover_path')->orWhere('cover_path', ''));
     }
 
     /**

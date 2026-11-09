@@ -8,12 +8,12 @@
             @if (count($ausgaben) === 1)
                 Kluft öffnet das PDF in diesem Browser und macht aus Seite 1 das Titelbild.
             @else
-                {{ count($ausgaben) }} Georgsboten ohne Titelbild. Kluft öffnet die PDFs nacheinander in diesem Browser und macht aus Seite 1 jeweils das Titelbild.
+                {{ count($ausgaben) }} Ausgaben{{ $ueberschreiben ? '' : ' ohne Titelbild' }} (Georgsbote und Georgsbrief). Kluft öffnet die PDFs nacheinander in diesem Browser und macht aus Seite 1 jeweils das Titelbild.
             @endif
             Das Fenster bitte offen lassen, bis alles fertig ist.
         </p>
         <x-filament::button type="button" x-on:click="start()" icon="heroicon-o-photo">
-            {{ $ueberschreiben ? 'Titelbild ersetzen' : 'Jetzt erzeugen' }}
+            {{ $ueberschreiben ? (count($ausgaben) === 1 ? 'Titelbild ersetzen' : 'Alle ersetzen') : 'Jetzt erzeugen' }}
         </x-filament::button>
     </div>
 

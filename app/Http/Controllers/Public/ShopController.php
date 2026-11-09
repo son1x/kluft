@@ -9,8 +9,10 @@ use App\Models\Shop\Artikel;
 use App\Models\Shop\Bestellung;
 use App\Models\Shop\Runde;
 use App\Models\Shop\Set;
+use App\Models\Shop\Sperre;
 use App\Models\Shop\Variante;
 use App\Models\User;
+use App\Services\Sammelbestellung\Ruesthaus;
 use App\Support\Sammelbestellung;
 use App\Support\SammelbestellungAblauf;
 use App\Support\SpamGuard;
@@ -34,6 +36,9 @@ use Throwable;
  */
 class ShopController extends Controller
 {
+    /** Freie Artikel, die beim Absenden höchstens beim Rüsthaus nachgeschlagen werden. */
+    private const FREI_NACHSCHLAGEN = 5;
+
     public function index(): View
     {
         abort_unless(Sammelbestellung::sichtbar(auth()->user()), 404);
@@ -94,6 +99,7 @@ class ShopController extends Controller
         ]);
 
         $positionen = [];
+        $nachgeschlagen = 0;
         foreach ($data['pos'] as $i => $pos) {
             // Ohne Angabe ist die bestellende Person selbst gemeint.
             $basis = ['mitglied' => trim((string) ($pos['mitglied'] ?? '')) ?: trim($data['name']), 'stufe' => $pos['stufe'] ?? null, 'menge' => (int) $pos['menge']];
@@ -122,7 +128,12 @@ class ShopController extends Controller
             if ($nummer === '') {
                 throw ValidationException::withMessages(["pos.{$i}.variante" => 'Bitte einen Artikel wählen oder eine Rüsthaus-Artikelnummer eintragen.']);
             }
-            $info = Sammelbestellung::nachschlagen($nummer);
+            // Höchstens fünf freie Artikel beim Absenden nachschlagen (meist schon aus „Prüfen“
+            // zwischengespeichert); weitere prüft die Sammelbestellung im Backend.
+            $info = ++$nachgeschlagen <= self::FREI_NACHSCHLAGEN ? Sammelbestellung::nachschlagen($nummer) : null;
+            if ($info === null && ! Ruesthaus::istLink($nummer) && Sperre::greift($nummer)) {
+                throw ValidationException::withMessages(["pos.{$i}.frei_nummer" => 'Dieser Artikel kann über die Sammelbestellung nicht bestellt werden. Sprich bitte deine Leitung an.']);
+            }
             if ($info['gesperrt'] ?? false) {
                 throw ValidationException::withMessages(["pos.{$i}.frei_nummer" => 'Dieser Artikel kann über die Sammelbestellung nicht bestellt werden. Sprich bitte deine Leitung an.']);
             }

@@ -245,9 +245,12 @@ export default (daten) => {
                     f.gesperrt = true;
                     f.info = 'Diesen Artikel bestellen wir nicht über die Sammelbestellung. Sprich bitte deine Leitung an.';
                 } else if (d.name) {
+                    // Bei der Nummer einer bestimmten Größe kommt genau diese Größe zurück.
+                    const groesse = d.varianten && d.varianten.length === 1 && String(d.varianten[0].nummer).toLowerCase() === f.nummer.trim().toLowerCase()
+                        ? d.varianten[0].bezeichnung : null;
                     f.name = d.name;
-                    f.info = d.name + ' – ' + euro(d.preis_cent) + ' (vorläufig, wir prüfen den Preis)'
-                        + (d.varianten && d.varianten.length > 1 ? '. Größen: ' + d.varianten.map((v) => v.bezeichnung).join(', ') : '');
+                    if (groesse && !f.text.trim()) { f.text = groesse; }
+                    f.info = d.name + (groesse ? ', ' + groesse : '') + ' – ' + euro(d.preis_cent) + ' (vorläufig, wir prüfen den Preis)';
                 } else {
                     f.info = 'Nicht gefunden. Trag ein, was du genau brauchst, wir prüfen es.';
                 }

@@ -4,6 +4,7 @@ namespace App\Services\Sammelbestellung;
 
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 use RuntimeException;
 
 /**
@@ -19,6 +20,9 @@ class Ruesthaus
     public const HOST = 'www.ruesthaus.de';
 
     private const MAX_VARIANTEN = 40;
+
+    /** Schnelles Nachschlagen: höchstens so viele weitere Größen-Seiten, um eine Größen-Nummer zu finden. */
+    private const SCHNELL_MAX = 10;
 
     /**
      * Produkt zu Artikelnummer oder Rüsthaus-Link.
@@ -63,6 +67,67 @@ class Ruesthaus
                 return [
                     'nummer' => $seite['nummer'], 'name' => $seite['name'], 'beschreibung' => $seite['beschreibung'], 'url' => $url,
                     'kategorie' => self::kategorie($url), 'bild' => $seite['bild'], 'preis_cent' => $seite['preis_cent'], 'varianten' => $varianten,
+                ];
+            } catch (RuntimeException) {
+                return null;
+            }
+        });
+    }
+
+    /**
+     * Schnelles Nachschlagen für die Bestellseite: Name und Preis von einer
+     * Seite statt aller Größen (die kosten je eine Sekunde). Ist die Eingabe
+     * die Nummer einer bestimmten Größe (z. B. 0100003.32), wird nur bis zu
+     * dieser Größe weitergesucht. Ist der Artikel schon vollständig bekannt
+     * (z. B. aus dem Backend), ohne Abruf. Einen Tag zwischengespeichert.
+     *
+     * @return array{nummer: string, name: string, beschreibung: ?string, url: string, kategorie: ?string, bild: ?string, preis_cent: int, varianten: list<array{nummer: string, bezeichnung: ?string, preis_cent: int}>}|null
+     */
+    public function schnell(string $eingabe): ?array
+    {
+        $eingabe = trim($eingabe);
+        if ($eingabe === '' || mb_strlen($eingabe) > 300) {
+            return null;
+        }
+        $schluessel = sha1(mb_strtolower($eingabe));
+        $voll = Cache::get('ruesthaus3:v:'.$schluessel);
+        if (is_array($voll)) {
+            $genau = collect($voll['varianten'])->first(fn (array $v) => strcasecmp($v['nummer'], $eingabe) === 0);
+
+            return $genau ? [...$voll, 'nummer' => $genau['nummer'], 'preis_cent' => $genau['preis_cent'], 'varianten' => [$genau]] : $voll;
+        }
+
+        return Cache::remember('ruesthaus3:s:'.$schluessel, now()->addDay(), function () use ($eingabe) {
+            try {
+                $url = self::istLink($eingabe) ? self::sauber($eingabe) : $this->suchen($eingabe);
+                if ($url === null) {
+                    return null;
+                }
+                $seite = self::produktseite($this->holen($url), $url);
+                if ($seite === null) {
+                    return null;
+                }
+                $treffer = ['nummer' => $seite['nummer'], 'bezeichnung' => $seite['auswahl'][$seite['gewaehlt']] ?? null, 'preis_cent' => $seite['preis_cent']];
+                // Nur bei einer Größen-Nummer desselben Artikels (z. B. 0100003.32) weitersuchen, nicht bei 0100003.
+                $groessenNummer = ! self::istLink($eingabe) && str_contains($eingabe, '.')
+                    && strcasecmp(Str::before($seite['nummer'], '.'), Str::before($eingabe, '.')) === 0;
+                if ($groessenNummer && $seite['gruppe'] !== null && strcasecmp($seite['nummer'], $eingabe) !== 0) {
+                    $versuche = 0;
+                    foreach ($seite['auswahl'] as $wert => $bezeichnung) {
+                        if ((string) $wert === (string) $seite['gewaehlt'] || ++$versuche > self::SCHNELL_MAX) {
+                            continue;
+                        }
+                        $v = self::produktseite($this->holen($url.'?'.http_build_query([$seite['gruppe'] => $wert])), $url);
+                        if ($v !== null && strcasecmp($v['nummer'], $eingabe) === 0) {
+                            $treffer = ['nummer' => $v['nummer'], 'bezeichnung' => $bezeichnung, 'preis_cent' => $v['preis_cent']];
+                            break;
+                        }
+                    }
+                }
+
+                return [
+                    'nummer' => $treffer['nummer'], 'name' => $seite['name'], 'beschreibung' => $seite['beschreibung'], 'url' => $url,
+                    'kategorie' => self::kategorie($url), 'bild' => $seite['bild'], 'preis_cent' => $treffer['preis_cent'], 'varianten' => [$treffer],
                 ];
             } catch (RuntimeException) {
                 return null;

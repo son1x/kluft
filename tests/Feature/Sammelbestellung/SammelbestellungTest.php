@@ -266,6 +266,36 @@ class SammelbestellungTest extends TestCase
         $this->post(route('shop.stornieren', $token))->assertStatus(409);
     }
 
+    #[TestDox('Artikelnummer von Hand: schnelles Nachschlagen (nur bis zur gesuchten Größe, dann aus dem Zwischenspeicher); beim Absenden höchstens fünf Abfragen')]
+    public function test_nummer_schnell(): void
+    {
+        Runde::query()->create(['name' => 'Herbst', 'bestelldatum' => now()->addWeek()->toDateString(), 'status' => 'offen']);
+
+        $this->getJson('/bestellen/nachschlagen?nummer=0100003.32')->assertOk()
+            ->assertJson(['gesperrt' => false, 'name' => 'Halbarm-Klufthemd', 'nummer' => '0100003.32', 'preis_cent' => 4900])
+            ->assertJsonCount(1, 'varianten');
+        // Suche, Seite und Größen bis zur gesuchten, nicht alle Größen (Sonderanfertigung bleibt aus).
+        Http::assertSentCount(4);
+        Http::assertNotSent(fn (Request $r) => str_contains($r->url(), '=12'));
+
+        // Absenden: aus dem Zwischenspeicher, kein neuer Abruf; sechs freie Artikel, nur fünf werden nachgeschlagen.
+        $pos = [['mitglied' => 'Mia', 'menge' => 1, 'frei_nummer' => '0100003.32']];
+        foreach (range(1, 5) as $n) {
+            $pos[] = ['mitglied' => 'Mia', 'menge' => 1, 'frei_nummer' => '99999'.$n, 'frei_text' => 'Teil '.$n];
+        }
+        $this->post('/bestellen', [
+            '_t' => Crypt::encryptString((string) now()->subSeconds(30)->timestamp),
+            'name' => 'Erika', 'email' => 'erika@example.org', 'rolle' => 'mitglied', 'einwilligung' => '1', 'pos' => $pos,
+        ])->assertRedirect(route('shop.danke'));
+        $positionen = Bestellung::query()->sole()->positionen()->orderBy('id')->get();
+        $this->assertSame(['Halbarm-Klufthemd', 'Kragenweite 31/32', 4900, false], [$positionen[0]->bezeichnung, $positionen[0]->groesse, $positionen[0]->preis_cent, (bool) $positionen[0]->bestaetigt]);
+        $this->assertSame(['Teil 5', '999995', null], [$positionen[5]->bezeichnung, $positionen[5]->nummer, $positionen[5]->preis_cent]);
+        // 0100003.32 kam aus dem Zwischenspeicher, 99999[1–4] wurden abgefragt, die sechste (999995) nicht mehr.
+        Http::assertSent(fn (Request $r) => str_contains($r->url(), '999994'));
+        Http::assertNotSent(fn (Request $r) => str_contains($r->url(), '999995'));
+        $this->assertSame(1, collect(Http::recorded())->filter(fn ($p) => str_contains($p[0]->url(), 'sSearch=0100003.32'))->count());
+    }
+
     #[TestDox('Gesperrte freie Artikel werden abgewiesen; ohne offene Runde kein Formular')]
     public function test_gesperrt_und_ohne_runde(): void
     {

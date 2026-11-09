@@ -7,6 +7,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use InvalidArgumentException;
 use Throwable;
@@ -46,12 +47,21 @@ class ArtikelHolen implements ShouldQueue
         return array_values(array_unique(array_filter(array_map('trim', preg_split('/[\s,;]+/u', $text) ?: []), fn ($e) => $e !== '')));
     }
 
-    /** @return array{laeuft: bool, gesamt: int, erledigt: int, neu: list<string>, fehler: list<string>, am: string}|null */
+    /** @return array{laeuft: bool, gesamt: int, erledigt: int, neu: list<string>, fehler: list<string>, am: string, zuletzt?: string}|null */
     public static function stand(): ?array
     {
         $stand = Cache::get(self::KEY);
+        if (! is_array($stand)) {
+            return null;
+        }
+        // Abgebrochener Lauf (Fehler, Server-Neustart): nach 30 Minuten ohne
+        // Fortschritt nicht mehr als „läuft“ zählen, damit der Knopf wieder geht.
+        if (($stand['laeuft'] ?? false) && Carbon::parse((string) ($stand['zuletzt'] ?? $stand['am'] ?? 'now'))->lt(now()->subMinutes(30))) {
+            $stand['laeuft'] = false;
+            $stand['fehler'][] = 'Abgebrochen nach '.($stand['erledigt'] ?? 0).' von '.($stand['gesamt'] ?? 0).', bitte den Rest neu holen.';
+        }
 
-        return is_array($stand) ? $stand : null;
+        return $stand;
     }
 
     /** @param list<string> $eingaben */
@@ -80,6 +90,7 @@ class ArtikelHolen implements ShouldQueue
 
         $weiter = $this->ab + self::JE_LAUF < count($this->eingaben);
         $stand['laeuft'] = $weiter;
+        $stand['zuletzt'] = now()->toIso8601String();
         Cache::put(self::KEY, $stand, now()->addDays(7));
         if ($weiter) {
             self::dispatch($this->eingaben, $this->freigeben, $this->ab + self::JE_LAUF);

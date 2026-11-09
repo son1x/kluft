@@ -22,6 +22,7 @@ use App\Support\Zahlungen;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
@@ -306,5 +307,17 @@ class SammelbestellungTest extends TestCase
         Features::setzen(Features::SAMMELBESTELLUNG, false);
         $this->get('/bestellen')->assertNotFound();
         $this->get(ArtikelResource::getUrl())->assertForbidden();
+    }
+
+    #[TestDox('Mehrere Artikel holen: ein abgebrochener Lauf gilt nach 30 Minuten ohne Fortschritt nicht mehr als laufend')]
+    public function test_holen_abgebrochen(): void
+    {
+        Cache::put(ArtikelHolen::KEY, ['laeuft' => true, 'gesamt' => 9, 'erledigt' => 3, 'neu' => [], 'fehler' => [], 'am' => now()->subHour()->toIso8601String(), 'zuletzt' => now()->subMinutes(10)->toIso8601String()]);
+        $this->assertTrue(ArtikelHolen::stand()['laeuft']);
+
+        $this->travel(25)->minutes();
+        $stand = ArtikelHolen::stand();
+        $this->assertFalse($stand['laeuft']);
+        $this->assertStringContainsString('Abgebrochen nach 3 von 9', implode(' ', $stand['fehler']));
     }
 }

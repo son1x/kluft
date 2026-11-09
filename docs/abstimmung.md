@@ -35,6 +35,14 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-09 – Haupt → Stammes: Pflichtenheft Sammelbestellung, neue Shop-Oberfläche und Katalog-Import (Entwurf)
+Status: offen
+Branch: `docs/sammelbestellung-v2`
+
+- Neu `docs/pflichtenheft-sammelbestellung-shop.md` (SB-100 ff.), nur Doku, noch nichts gebaut. Wunsch des Nutzers: schönerer Shop nach Apple HIG, kategorieweiser Import der DPSG-Artikel, nicht überladen, rechtlich sauber.
+- Kernpunkte: Shop als Raster mit Kategorien, Suche und Artikel-Sheet; Warenkorb nach Mitglied, Bestellen in drei Schritten mit „Zahlungspflichtig bestellen“. Katalog-Import nur nach schriftlicher Erlaubnis des Rüsthaus (Datenbankrecht), Varianten und Bilder erst bei Freigabe, öffentlich weiter nur Freigegebenes.
+- Bitte an die Stammes-Sitzung: Kapitel 10 (offene Fragen) mit Roden klären, vor allem Erlaubnis bzw. Feed des Rüsthaus und welche Kategorien. Mockup: Link in der PR-Beschreibung.
+
 ### 2026-11-09 – Haupt → Stammes, Bezirk: Fußzeile im Backend anpassbar (gemeinsamer Kern)
 Status: offen
 Branch: `feature/fusszeile-backend` (setzt auf `fix/footer-zelte-mobil` auf)

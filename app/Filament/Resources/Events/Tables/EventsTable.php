@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Events\Tables;
 
 use App\Filament\Resources\Events\EventResource;
 use App\Models\Event;
+use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Actions\ReplicateAction;
 use Filament\Actions\ViewAction;
@@ -61,6 +62,10 @@ class EventsTable
             ])
             ->recordActions([
                 EditAction::make(),
+                // Direkt zum Reiter „Teilnehmende“ (EditEvent, ?relation=0).
+                Action::make('teilnehmende')->label('Teilnehmende')->icon('heroicon-o-user-group')->color('gray')
+                    ->url(fn (Event $record) => EventResource::getUrl('edit', ['record' => $record, 'relation' => '0']))
+                    ->visible(fn (Event $record) => (bool) Filament::auth()->user()?->can('update', $record) && (bool) Filament::auth()->user()?->can('manageParticipants', $record)),
                 ViewAction::make()->hidden(fn (Event $record) => Filament::auth()->user()?->can('update', $record)),
                 // Frühere Veranstaltung als Vorlage (F-EV-07); Anmeldungen
                 // werden nicht mitkopiert.

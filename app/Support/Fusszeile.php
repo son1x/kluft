@@ -30,6 +30,9 @@ class Fusszeile
         'leer' => 'Nichts (nur „DPSG im Netz“)',
     ];
 
+    /** Erlaubte Link-Adressen: http(s) oder ein Pfad dieser Website (kein „//host“). */
+    public const LINK = '#^(https?://|/(?!/))#i';
+
     /** Kontaktfelder, die sich überschreiben lassen. */
     public const KONTAKT = ['name', 'office', 'street', 'city', 'phone', 'email'];
 
@@ -50,7 +53,7 @@ class Fusszeile
             'netz' => isset($daten['netz']) && is_array($daten['netz']) ? self::links($daten['netz']) : null,
             'spalte3' => array_key_exists((string) ($daten['spalte3'] ?? ''), self::SPALTE3) ? (string) $daten['spalte3'] : 'standard',
             'bild_media_id' => isset($daten['bild_media_id']) ? (int) $daten['bild_media_id'] : null,
-            'bild_link' => filled($daten['bild_link'] ?? null) ? (string) $daten['bild_link'] : null,
+            'bild_link' => self::erlaubt($daten['bild_link'] ?? null) ? (string) $daten['bild_link'] : null,
         ];
     }
 
@@ -69,7 +72,7 @@ class Fusszeile
             'netz' => isset($daten['netz']) && is_array($daten['netz']) ? self::links($daten['netz']) : null,
             'spalte3' => ($daten['spalte3'] ?? 'standard') !== 'standard' ? (string) $daten['spalte3'] : null,
             'bild_media_id' => filled($daten['bild_media_id'] ?? null) ? (int) $daten['bild_media_id'] : null,
-            'bild_link' => filled($daten['bild_link'] ?? null) ? trim((string) $daten['bild_link']) : null,
+            'bild_link' => self::erlaubt(trim((string) ($daten['bild_link'] ?? ''))) ? trim((string) $daten['bild_link']) : null,
         ], fn ($v) => $v !== null);
 
         $wert === []
@@ -138,10 +141,15 @@ class Fusszeile
     private static function links(mixed $liste): array
     {
         return collect(is_array($liste) ? $liste : [])
-            ->filter(fn ($l) => is_array($l) && filled($l['label'] ?? null) && preg_match('#^(https?://|/)#i', (string) ($l['url'] ?? '')))
+            ->filter(fn ($l) => is_array($l) && filled($l['label'] ?? null) && self::erlaubt($l['url'] ?? null))
             ->map(fn (array $l) => ['label' => trim((string) $l['label']), 'url' => trim((string) $l['url'])])
             ->take(10)
             ->values()
             ->all();
+    }
+
+    private static function erlaubt(mixed $url): bool
+    {
+        return is_string($url) && preg_match(self::LINK, trim($url)) === 1;
     }
 }

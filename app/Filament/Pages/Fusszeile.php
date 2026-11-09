@@ -76,7 +76,7 @@ class Fusszeile extends Page
         $link = fn () => [
             TextInput::make('label')->label('Text')->required()->maxLength(80),
             TextInput::make('url')->label('Adresse')->required()->maxLength(500)
-                ->regex('#^(https?://|/)#i')
+                ->regex(FusszeileDaten::LINK)
                 ->validationMessages(['regex' => 'Mit https:// beginnen oder mit / für eine Seite dieser Website.'])
                 ->placeholder('https://… oder /seite'),
         ];
@@ -114,13 +114,14 @@ class Fusszeile extends Page
                         ->options(fn () => Features::newsletter() ? FusszeileDaten::SPALTE3 : array_diff_key(FusszeileDaten::SPALTE3, ['newsletter' => true]))
                         ->default('standard')->required()->live(),
                     Select::make('bild_media_id')->label('Bild aus der Mediathek')
-                        ->options(fn () => Media::query()->orderByDesc('created_at')->limit(200)->pluck('alt_text', 'id')->all())
+                        ->options(fn () => Media::query()->orderByDesc('created_at')->limit(200)->get(['id', 'alt_text', 'path'])
+                            ->mapWithKeys(fn (Media $m) => [$m->id => filled($m->alt_text) ? (string) $m->alt_text : basename((string) $m->path)])->all())
                         ->searchable()
                         ->required(fn (Get $get) => $get('spalte3') === 'bild')
                         ->visible(fn (Get $get) => $get('spalte3') === 'bild')
                         ->helperText('Am besten ein Bild mit transparentem oder hellem Hintergrund, etwa 600 × 320 Pixel. Es steht wie die Zelte unten auf dem blauen Balken.'),
                     TextInput::make('bild_link')->label('Bild verlinken (optional)')->maxLength(500)
-                        ->regex('#^(https?://|/)#i')
+                        ->regex(FusszeileDaten::LINK)
                         ->validationMessages(['regex' => 'Mit https:// beginnen oder mit / für eine Seite dieser Website.'])
                         ->visible(fn (Get $get) => $get('spalte3') === 'bild'),
                 ]),

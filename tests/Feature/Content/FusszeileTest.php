@@ -92,6 +92,11 @@ class FusszeileTest extends TestCase
             ->assertHasFormErrors(['service.0.url']);
 
         Livewire::test(Fusszeile::class)
+            ->fillForm(['service' => [['label' => 'Fremd', 'url' => '//example.net/x']]])
+            ->call('save')
+            ->assertHasFormErrors(['service.0.url']);
+
+        Livewire::test(Fusszeile::class)
             ->fillForm(['spalte3' => 'bild', 'bild_media_id' => $bild->id, 'bild_link' => 'https://example.org/stamm'])
             ->call('save')
             ->assertHasNoFormErrors();

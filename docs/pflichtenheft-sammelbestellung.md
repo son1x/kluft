@@ -10,6 +10,8 @@ Artikel frei, öffnet und schließt die Bestellrunden von Hand und bestellt
 zum angekündigten Bestelldatum gesammelt beim Rüsthaus. Danach wird die
 Ware gegen Unterschrift oder Abhaken ausgegeben.
 
+**Fortsetzung:** Neue Shop-Oberfläche und Katalog-Import stehen in `docs/pflichtenheft-sammelbestellung-shop.md` (SB-100 ff., Entwurf).
+
 Anforderungen tragen IDs der Form `SB-<Nr>`. **MUSS** = Pflicht, **SOLL** =
 Pflicht außer mit begründeter Ausnahme, **KANN** = optional.
 

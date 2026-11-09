@@ -116,7 +116,7 @@ flowchart LR
 | `Subscriber`, `Campaign`, `Template`, `Delivery`, `Suppression` | Eloquent-Modelle | siehe 5. |
 | Filament: `WhatsAppSubscribers`, `WhatsAppTemplates`, `WhatsAppCampaigns` | Ressourcen | Backend (siehe 7.) |
 | Health-Check `whatsapp` | `HealthChecks` | Token gültig, Nummer verbunden, Qualitätsbewertung, Limit-Stufe |
-| Zugangsdaten | `IntegrationToken` (verschlüsselt) + Seite „Integrationen“ | Token nie wieder angezeigt, nur Admin |
+| Zugangsdaten | `IntegrationToken` (verschlüsselt, Provider `whatsapp`, über `WhatsAppSettings`) + Seite „WhatsApp-Newsletter → Verbindung“ (`App\Filament\Pages\WhatsAppConnection`) | Token nie wieder angezeigt; nur WhatsApp-Newsletter-Admin bzw. Admin |
 
 ### 3.3 Betriebsrahmen (Webspace)
 - **Verbindliche Vorgabe:** Das Modul läuft vollständig auf dem bestehenden Webspace (Plesk, PHP, MariaDB, Cronjob). Kein Node.js, keine NPM-Pakete zur Laufzeit, keine Docker-Container, kein zusätzlicher Server oder Dienst. Was sich so nicht umsetzen lässt, gehört nicht in dieses Modul.
@@ -335,7 +335,7 @@ Anmeldung wie im ganzen Backend über Entra ID (M365). Freigeben darf nicht dies
 | F-WA-06 | Ergebnis je Aussendung: gesendet, zugestellt, fehlgeschlagen (Summen) | M |
 | F-WA-07 | Ressource „WhatsApp-Vorlagen“: Abgleich mit Meta, Status-Anzeige, neue Vorlage anlegen (Name, Kategorie, Text mit Platzhaltern, Fußzeile „Abmelden: STOP“, Button „Mehr lesen“ mit URL-Platzhalter) | M |
 | F-WA-08 | Abonnent:innen: Anzahl aktiv/ausstehend, Verlauf je Monat; Liste mit maskierten Nummern (`+49 151 ••••• 678`), Suche über Hash, Löschen; **kein Export** | M |
-| F-WA-09 | Integrationen (nur Admin): Token, App-Secret, Phone-Number-ID, WABA-ID, Verify-Token (erzeugen), Graph-Version; Button „Webhook abonnieren“ und „Verbindung prüfen“ | M |
+| F-WA-09 | Seite „WhatsApp-Newsletter → Verbindung“ (nur WhatsApp-Newsletter-Admin bzw. Admin): Token, App-Secret, Phone-Number-ID, WABA-ID, Verify-Token (erzeugen); Buttons „Verbindung prüfen“, „Webhook abonnieren“, „Nummer registrieren“. Graph-Version über `WHATSAPP_GRAPH_VERSION` (config/whatsapp.php) | M |
 | F-WA-10 | Health-Check auf /status: grau wenn nicht eingerichtet, gelb bei Qualität „mittel“ oder Vorlage pausiert, rot bei ungültigem Token oder gesperrter Nummer | M |
 | F-WA-11 | Datenschutz-Anfragen: Suche auch per Telefonnummer; Auskunft (Status, Zeitstempel, Herkunft, Einwilligungsversion) und Löschung | M |
 | F-WA-12 | Automatische Aussendung „neuer Beitrag“ als Vorschlag (Entwurf), nie ohne Freigabe | K |
@@ -387,7 +387,7 @@ Dauer etwa 1–2 Stunden Arbeit plus Wartezeit für die Prüfungen durch Meta (U
 ### Schritt 3 – Unternehmen verifizieren
 1. Einstellungen → Sicherheitscenter → **Unternehmensverifizierung starten**.
 2. Rechtlichen Namen, Anschrift und Telefonnummer angeben; Vereinsregisterauszug und Adressnachweis hochladen.
-3. **Domain bestätigen** (Einstellungen → Markensicherheit → Domains): entweder ein DNS-TXT-Eintrag beim Hoster oder ein Meta-Tag. Das Meta-Tag kann das CMS ausgeben (Feld in „Integrationen“).
+3. **Domain bestätigen** (Einstellungen → Markensicherheit → Domains): am einfachsten per DNS-TXT-Eintrag beim Hoster. (Das Meta-Tag im Seitenkopf kann das CMS derzeit nicht ausgeben.)
 4. Bestätigung abwarten (E-Mail von Meta). Ohne Verifizierung bleibt das Versandlimit sehr niedrig.
 
 ### Schritt 4 – App und WhatsApp-Konto anlegen
@@ -413,9 +413,9 @@ WhatsApp Manager → Kontoeinstellungen → **Zahlungsmethoden** → Kreditkarte
 4. Den Token **sofort** im CMS eintragen (Schritt 8) und nirgends sonst speichern, auch nicht per Mail oder Chat.
 
 ### Schritt 8 – Zugangsdaten im CMS eintragen
-Backend → **Integrationen** → WhatsApp (nur Admin):
+Backend → **WhatsApp-Newsletter → Verbindung** (`/admin/whatsapp/verbindung`, nur WhatsApp-Newsletter-Admin bzw. Admin; erscheint nur im API-Modus):
 - Token (aus Schritt 7), App-Secret (Schritt 4.3), **Phone-Number-ID** und **WABA-ID** (WhatsApp Manager → Telefonnummern → Nummer anklicken).
-- „Verify-Token erzeugen“ klicken und den angezeigten Wert kopieren (er wird nur dieses eine Mal gezeigt).
+- „Neues Verify-Token“ klicken und den angezeigten Wert kopieren (er wird nur dieses eine Mal gezeigt).
 - „Nummer registrieren“ klicken: das CMS ruft `/register` mit der PIN aus Schritt 5.5 auf; die PIN wird dafür einmalig abgefragt und nicht gespeichert.
 
 ### Schritt 9 – Webhook verbinden

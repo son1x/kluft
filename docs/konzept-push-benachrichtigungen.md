@@ -73,7 +73,7 @@ Bei Fragen zu Veranstaltungen gilt dasselbe: Die Benachrichtigung nennt nur Vera
 
 ## Umsetzungsskizze (nach Entscheidung)
 
-- Kanal-Adressen (Webhook-URLs bzw. Talk-Zugang) werden als **GitHub-Secrets** bzw. im Backend unter „Integrationen“ hinterlegt – nie im Code.
+- Kanal-Adressen (Webhook-URLs bzw. Talk-Zugang) werden als **GitHub-Secrets** bzw. verschlüsselt im Backend hinterlegt (eigene Seite nur für Admins, wie „WhatsApp-Newsletter → Verbindung“) – nie im Code.
 - Benachrichtigungen laufen über die vorhandene **Warteschlange** (wie die Instagram-Veröffentlichung), damit eine Anmeldung nie an einem nicht erreichbaren Chat-Dienst scheitert; Fehlschläge werden protokolliert und erneut versucht.
 - Zuordnung Ereignis → Kanal je Stufe/Fachbereich im Backend einstellbar.
 - Tests mit simuliertem Chat-Dienst (wie bei Instagram).

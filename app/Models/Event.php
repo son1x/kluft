@@ -50,7 +50,7 @@ class Event extends Model
         'title', 'slug', 'teaser', 'description', 'starts_at', 'ends_at', 'location',
         'stage', 'section', 'target_group', 'cover_media_id', 'contact_name', 'contact_email',
         'cost_info', 'reg_opens_at', 'reg_closes_at', 'capacity', 'waitlist_enabled', 'adults_only', 'member_check', 'member_gruppierung_id',
-        'status', 'form_fields', 'retention_days', 'created_by', 'calendar_uid',
+        'status', 'extern_freigegeben', 'form_fields', 'retention_days', 'created_by', 'calendar_uid',
         'certificate_enabled', 'certificate_text', 'certificate_signer', 'preise', 'zahlungsfrist_tage',
         'zuschuss', 'zuschuss_art', 'zuschuss_geber', 'zuschuss_finanzen', 'zuschuss_fern', 'zuschuss_bericht', 'zuschuss_antrag', 'zuschuss_stand',
     ];
@@ -64,6 +64,7 @@ class Event extends Model
             'reg_closes_at' => 'datetime',
             'waitlist_enabled' => 'boolean',
             'adults_only' => 'boolean',
+            'extern_freigegeben' => 'boolean',
             'member_check' => 'boolean',
             'certificate_enabled' => 'boolean',
             'form_fields' => 'array',

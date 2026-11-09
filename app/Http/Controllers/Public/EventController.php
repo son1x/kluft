@@ -45,11 +45,46 @@ class EventController extends Controller
         ]);
     }
 
+    /**
+     * Nur das Anmeldeformular, zum Einbinden als iframe (z. B. auf der alten
+     * Website vor dem Livegang). Nur bei „Vorab extern freigeben“; erlaubte
+     * Websites stehen in dpsg.einbetten_von.
+     */
+    public function embed(Request $request, string $slug): View
+    {
+        $event = Event::query()->visible()->where('extern_freigegeben', true)->where('slug', $slug)->firstOrFail();
+        $request->attributes->set('frame_ancestors', self::einbettenVon());
+
+        return view('events.einbetten', [
+            'event' => $event,
+            'state' => $event->registrationState(),
+            'fields' => $event->formFields(),
+            'gruppierungen' => isset($event->formFields()['stamm']) ? $this->gruppierungOptions() : [],
+            'einbetten' => true,
+        ]);
+    }
+
+    /**
+     * Gültige Ursprünge aus dpsg.einbetten_von (https, ohne Pfad).
+     *
+     * @return list<string>
+     */
+    public static function einbettenVon(): array
+    {
+        return array_values(array_filter(
+            array_map(fn ($u) => rtrim(trim((string) $u), '/'), (array) config('dpsg.einbetten_von', [])),
+            fn (string $u) => preg_match('#^https://[a-z0-9.-]+(:\d+)?$#i', $u) === 1,
+        ));
+    }
+
     public function register(Request $request, string $slug, EventRegistrations $registrations): RedirectResponse
     {
         $event = Event::query()->visible()->where('slug', $slug)->firstOrFail();
+        $einbetten = $request->boolean('einbetten') && $event->extern_freigegeben;
         // Erst beim Zurückgeben bauen: with() schreibt sofort in die Session.
-        $done = fn () => redirect()->route('events.show', $event->slug)->with('anmeldung', 'angefragt')->withFragment('anmeldung');
+        $done = fn () => ($einbetten
+            ? redirect()->route('events.embed', $event->slug)
+            : redirect()->route('events.show', $event->slug)->withFragment('anmeldung'))->with('anmeldung', 'angefragt');
 
         // Honeypot: Bots bekommen dieselbe Erfolgsmeldung, es passiert nichts.
         if (filled($request->input('website'))) {
@@ -57,7 +92,7 @@ class EventController extends Controller
         }
 
         if (! $event->acceptsRegistrations()) {
-            return redirect()->route('events.show', $event->slug)->withFragment('anmeldung');
+            return $einbetten ? redirect()->route('events.embed', $event->slug) : redirect()->route('events.show', $event->slug)->withFragment('anmeldung');
         }
 
         $fields = $event->formFields();

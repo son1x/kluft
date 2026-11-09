@@ -23,14 +23,24 @@ class TestRecipientFilter
     /** Ergänzungen aus dem Backend (Admins), ohne das GitHub-Secret zu ändern. */
     public const SETTING = 'mail.test_allowlist_backend';
 
+    /** Kopfzeile für Mails, die trotz Testsystem an die echten Empfänger*innen gehen (vorab extern freigegebene Veranstaltungen). */
+    public const EXTERN = 'X-Kluft-Extern';
+
     public function handle(MessageSending $event): void
     {
         $redirectTo = (string) config('mail.test_redirect_to');
         if ($redirectTo === '') {
+            $event->message->getHeaders()->remove(self::EXTERN);
+
             return;
         }
 
         $message = $event->message;
+        if ($message->getHeaders()->has(self::EXTERN)) {
+            $message->getHeaders()->remove(self::EXTERN);
+
+            return;
+        }
         $allowed = self::allowlist();
         $all = [...$message->getTo(), ...$message->getCc(), ...$message->getBcc()];
 

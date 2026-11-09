@@ -11,6 +11,7 @@ use App\Services\Mitglieder\NamiVerzeichnis;
 use App\Support\Features;
 use App\Support\RoleCatalog;
 use App\Support\Teilnahmebeitraege;
+use App\Support\Testsystem;
 use App\Support\Zuschuesse;
 use App\Support\Zuschuesse\Geber;
 use Filament\Facades\Filament;
@@ -139,6 +140,13 @@ class EventForm
                         ->default('draft')
                         ->native(false)
                         ->required(),
+                    Toggle::make('extern_freigegeben')
+                        ->label('Vorab extern freigeben')
+                        ->helperText(fn (?Event $record) => 'Für die Zeit vor dem Livegang: Die Veranstaltung ist auch auf dem geschlossenen Testsystem öffentlich, Mails zu ihren Anmeldungen gehen echt raus, und das Formular lässt sich als iframe einbinden'
+                            .(config('dpsg.einbetten_von') !== [] ? ' (von '.implode(', ', (array) config('dpsg.einbetten_von')).')' : '')
+                            .($record?->slug ? ': '.route('events.embed', $record->slug) : '').'.')
+                        ->visible(fn () => Testsystem::aktiv() || config('dpsg.einbetten_von') !== [])
+                        ->columnSpanFull(),
                     TextInput::make('capacity')->label('Teilnehmerlimit')->numeric()->minValue(1)->helperText('Leer = unbegrenzt'),
                     DateTimePicker::make('reg_opens_at')->label('Anmeldung ab')->seconds(false)->helperText('Leer = sofort'),
                     DateTimePicker::make('reg_closes_at')->label('Anmeldeschluss')->seconds(false)->helperText('Leer = bis zum Beginn'),

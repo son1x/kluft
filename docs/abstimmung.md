@@ -35,6 +35,15 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-09 – Haupt → Stammes, Bezirk: Veranstaltung „Vorab extern freigeben“, Einbett-Ansicht
+Status: offen
+Branch: `feature/anmeldung-einbetten` (setzt auf `feature/eigene-anmeldefelder` auf)
+
+- Neue Spalte `events.extern_freigegeben` (Migration `2026_11_09_170000`), Schalter im Backend nur sichtbar bei Testsystem oder `dpsg.einbetten_von`.
+- `TestsystemSchutz` lässt freigegebene Veranstaltungen, ihre Bestätigungs-/Stornolinks, Datenschutz und Impressum durch; `TestRecipientFilter` stellt `EventRegistrationMail` dazu echt zu (Kopfzeile `X-Kluft-Extern`).
+- `/veranstaltungen/{slug}/einbetten` mit `frame-ancestors` aus `dpsg.einbetten_von` (neuer Schlüssel, Standard leer). Das Anmeldeformular steht jetzt in `events/partials/anmeldung.blade.php`.
+- Für Stammes und Bezirk ohne Wirkung, solange `einbetten_von` leer ist und kein Testsystem läuft.
+
 ### 2026-11-09 – Haupt → Stammes, Bezirk: Veranstaltungen, eigene Felder im Formular-Baukasten
 Status: offen
 Branch: `feature/eigene-anmeldefelder`

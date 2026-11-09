@@ -29,6 +29,9 @@ class SecurityHeaders
 
         $connectSrc = ["'self'"];
 
+        // Einbett-Ansicht einer Veranstaltung: diese Websites dürfen sie als iframe zeigen.
+        $einbettenVon = array_values(array_filter((array) $request->attributes->get('frame_ancestors', []), 'is_string'));
+
         // Lokale Entwicklung mit `npm run dev`: Vite-Dev-Server zulassen.
         if (app()->isLocal() && Vite::isRunningHot()) {
             $hot = rtrim((string) file_get_contents(public_path('hot')));
@@ -48,7 +51,7 @@ class SecurityHeaders
             'child-src' => ["'self'", 'blob:'],
             // Zwei-Klick-Einbettungen (Videos, Karten) – erst nach Klick geladen.
             'frame-src' => ["'self'", ...Embeds::frameSources()],
-            'frame-ancestors' => ["'self'"],
+            'frame-ancestors' => ["'self'", ...$einbettenVon],
             'object-src' => ["'none'"],
             'base-uri' => ["'self'"],
             // Abmelden leitet über /admin/login weiter zur Microsoft-Anmeldung.
@@ -58,7 +61,7 @@ class SecurityHeaders
         $headers = [
             'Content-Security-Policy' => collect($csp)->map(fn (array $v, string $k) => $k.' '.implode(' ', array_unique($v)))->implode('; '),
             'X-Content-Type-Options' => 'nosniff',
-            'X-Frame-Options' => 'SAMEORIGIN',
+            ...($einbettenVon === [] ? ['X-Frame-Options' => 'SAMEORIGIN'] : []),
             'Referrer-Policy' => 'strict-origin-when-cross-origin',
             'Permissions-Policy' => 'camera=(), microphone=(), geolocation=(), payment=(), usb=()',
             'Cross-Origin-Opener-Policy' => 'same-origin',

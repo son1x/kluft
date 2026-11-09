@@ -10,6 +10,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
+use Illuminate\Mail\Mailables\Headers;
 use Illuminate\Queue\SerializesModels;
 
 /**
@@ -39,6 +40,12 @@ class EventRegistrationMail extends Mailable implements ShouldBeEncrypted, Shoul
         return new Envelope(
             subject: self::SUBJECTS[$this->kind].': '.$this->registration->event->title,
         );
+    }
+
+    /** Vorab extern freigegebene Veranstaltung: auch auf dem Testsystem echt zustellen (TestRecipientFilter). */
+    public function headers(): Headers
+    {
+        return new Headers(text: $this->registration->event->extern_freigegeben ? [TestRecipientFilter::EXTERN => '1'] : []);
     }
 
     public function content(): Content

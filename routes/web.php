@@ -102,6 +102,8 @@ Route::get('/api/calendar/events', [CalendarController::class, 'api'])
 // Veranstaltungen mit Anmeldung (F-EV, Pflichtenheft 11.1).
 Route::get('/veranstaltungen', [EventController::class, 'index'])->middleware($termine)->name('events.index');
 Route::get('/veranstaltungen/{slug}', [EventController::class, 'show'])->middleware($termine)->name('events.show');
+// Formular zum Einbetten (iframe), nur bei „Vorab extern freigeben“.
+Route::get('/veranstaltungen/{slug}/einbetten', [EventController::class, 'embed'])->middleware($anmeldungen)->name('events.embed');
 Route::post('/veranstaltungen/{slug}/anmeldung', [EventController::class, 'register'])
     ->middleware(['throttle:5,10', $anmeldungen])
     ->name('events.register');

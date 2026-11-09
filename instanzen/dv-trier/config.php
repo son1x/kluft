@@ -407,6 +407,10 @@ return [
     | "Einwilligungsnachweis"). Bei inhaltlicher Änderung die Version
     | hochzählen – jede Anmeldung speichert die Version, der sie zustimmte.
     */
+    // Alte WordPress-Seite bis zum Livegang (21.11.2026): bindet einzelne
+    // Anmeldungen als iframe von test.dpsg-trier.de ein. Danach leeren.
+    'einbetten_von' => ['https://www.dpsg-trier.de', 'https://dpsg-trier.de'],
+
     'event_consent' => [
         'version' => '2026-10-01',
         'text' => 'Ich willige ein, dass der DPSG Diözesanverband Trier meine Angaben zur Organisation und Durchführung dieser Veranstaltung verarbeitet. Die E-Mails werden über unseren Dienstleister Brevo versendet. Die Daten werden spätestens :tage Tage nach Ende der Veranstaltung gelöscht; unbestätigte Anmeldungen nach 48 Stunden. Ich kann die Einwilligung jederzeit über den Link in der Bestätigungsmail oder per E-Mail an info@dpsg-trier.de widerrufen.',

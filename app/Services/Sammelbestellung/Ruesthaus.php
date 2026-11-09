@@ -65,6 +65,170 @@ class Ruesthaus
         });
     }
 
+    /**
+     * Hauptkategorien aus der Navigation der Startseite (Katalog im Backend).
+     *
+     * @return array<string, string> Adresse => Name
+     */
+    public function kategorien(): array
+    {
+        return Cache::remember('ruesthaus3:kategorien', now()->addDay(), function () {
+            try {
+                return self::navigation($this->holen('https://'.self::HOST.'/'));
+            } catch (RuntimeException) {
+                return [];
+            }
+        }) ?: [];
+    }
+
+    /**
+     * Unterkategorien einer Kategorie (eine Ebene tiefer, aus der Seitenleiste).
+     *
+     * @return array<string, string> Adresse => Name
+     */
+    public function unterkategorien(string $url): array
+    {
+        if (! self::istLink($url)) {
+            return [];
+        }
+        $url = self::sauber($url);
+
+        return Cache::remember('ruesthaus3:unter:'.sha1($url), now()->addDay(), function () use ($url) {
+            try {
+                return self::unternavigation($this->holen($url), $url);
+            } catch (RuntimeException) {
+                return [];
+            }
+        }) ?: [];
+    }
+
+    /**
+     * Alle Artikel einer Kategorie aus den Übersichtsseiten (48 je Seite,
+     * höchstens $maxSeiten). Ohne Varianten und ohne Bilder zu speichern
+     * (SB-154/155); die holt erst die Übernahme.
+     *
+     * @return array{artikel: list<array{nummer: string, name: string, url: string, preis_cent: int, ab: bool, bild: ?string, kategorie: ?string}>, seiten: int, unvollstaendig: bool}|null
+     */
+    public function liste(string $url, int $maxSeiten = 10): ?array
+    {
+        if (! self::istLink($url)) {
+            return null;
+        }
+        $url = self::sauber($url);
+        if (! $this->erlaubt((string) parse_url($url, PHP_URL_PATH))) {
+            throw new RuntimeException('Das Rüsthaus erlaubt das Abrufen dieser Seiten nicht (robots.txt).');
+        }
+
+        return Cache::remember('ruesthaus3:liste:'.$maxSeiten.':'.sha1($url), now()->addDay(), function () use ($url, $maxSeiten) {
+            $artikel = [];
+            $seite = 0;
+            $weiter = true;
+            while ($weiter && $seite < $maxSeiten) {
+                $seite++;
+                $html = $this->holen($url.'?'.http_build_query(['p' => $seite, 'n' => 48]));
+                $neu = self::uebersicht($html);
+                foreach ($neu as $a) {
+                    $artikel[$a['url']] ??= $a;
+                }
+                $weiter = $neu !== [] && str_contains($html, 'paging--next');
+            }
+
+            return ['artikel' => array_values($artikel), 'seiten' => $seite, 'unvollstaendig' => $weiter];
+        });
+    }
+
+    /** Darf der Pfad laut robots.txt (User-agent: *) abgerufen werden? */
+    public function erlaubt(string $pfad): bool
+    {
+        $robots = Cache::remember('ruesthaus3:robots', now()->addDay(), function () {
+            try {
+                return $this->holen('https://'.self::HOST.'/robots.txt');
+            } catch (RuntimeException) {
+                return '';
+            }
+        });
+
+        return self::robotsErlaubt((string) $robots, $pfad);
+    }
+
+    /** robots.txt auswerten: Regeln für „*“, längste passende Regel gewinnt. */
+    public static function robotsErlaubt(string $robots, string $pfad): bool
+    {
+        $regeln = [];
+        $fuerAlle = false;
+        foreach (preg_split('/\R/', $robots) ?: [] as $zeile) {
+            $zeile = trim((string) preg_replace('/#.*/', '', $zeile));
+            if (preg_match('/^user-agent:\s*(.+)$/i', $zeile, $m)) {
+                $fuerAlle = trim($m[1]) === '*';
+            } elseif ($fuerAlle && preg_match('/^(allow|disallow):\s*(.*)$/i', $zeile, $m) && $m[2] !== '') {
+                $regeln[] = [strtolower($m[1]) === 'allow', $m[2]];
+            }
+        }
+        $treffer = null;
+        foreach ($regeln as [$erlaubt, $praefix]) {
+            if (str_starts_with($pfad, $praefix) && ($treffer === null || strlen($praefix) > strlen($treffer[1]))) {
+                $treffer = [$erlaubt, $praefix];
+            }
+        }
+
+        return $treffer === null || $treffer[0];
+    }
+
+    /** @return array<string, string> */
+    public static function navigation(string $html): array
+    {
+        preg_match_all('/<a class="navigation--link" href="(https:\/\/www\.ruesthaus\.de\/[a-z0-9-]+\/)" title="([^"]+)" itemprop="url"/', $html, $m, PREG_SET_ORDER);
+        $liste = [];
+        foreach ($m as $a) {
+            $liste[$a[1]] = html_entity_decode($a[2], ENT_QUOTES | ENT_HTML5);
+        }
+
+        return $liste;
+    }
+
+    /** @return array<string, string> */
+    public static function unternavigation(string $html, string $url): array
+    {
+        preg_match_all('/<a class="navigation--link[^"]*" href="('.preg_quote($url, '/').'[a-z0-9-]+\/)"[^>]*title="([^"]+)"/', $html, $m, PREG_SET_ORDER);
+        $liste = [];
+        foreach ($m as $a) {
+            $liste[$a[1]] ??= html_entity_decode($a[2], ENT_QUOTES | ENT_HTML5);
+        }
+
+        return $liste;
+    }
+
+    /**
+     * Artikel einer Übersichtsseite (Shopware 5: „product--box box--basic“).
+     *
+     * @return list<array{nummer: string, name: string, url: string, preis_cent: int, ab: bool, bild: ?string, kategorie: ?string}>
+     */
+    public static function uebersicht(string $html): array
+    {
+        $teile = preg_split('/<div class="product--box box--basic"/', $html) ?: [];
+        array_shift($teile);
+        $liste = [];
+        foreach ($teile as $box) {
+            if (! preg_match('/^[^>]*data-ordernumber="([^"]+)"/', $box, $nr)
+                || ! preg_match('/<a href="([^"]+)" class="product--title" title="([^"]*)"/', $box, $titel)
+                || ! preg_match('/class="price--default[^"]*">\s*(ab\s+)?([\d.]+,\d{2})/', $box, $preis)) {
+                continue;
+            }
+            $url = self::sauber(html_entity_decode($titel[1]));
+            if (parse_url($url, PHP_URL_HOST) !== self::HOST) {
+                continue;
+            }
+            $bild = preg_match('/<img srcset="([^",\s]+)/', $box, $b) ? html_entity_decode($b[1]) : null;
+            $liste[] = [
+                'nummer' => trim($nr[1]), 'name' => html_entity_decode(trim($titel[2]), ENT_QUOTES | ENT_HTML5), 'url' => $url,
+                'preis_cent' => (int) round((float) str_replace(['.', ','], ['', '.'], $preis[2]) * 100), 'ab' => $preis[1] !== '',
+                'bild' => $bild !== null && parse_url($bild, PHP_URL_HOST) === self::HOST ? $bild : null, 'kategorie' => self::kategorie($url),
+            ];
+        }
+
+        return $liste;
+    }
+
     /** Bilddatei eines freigegebenen Artikels laden (für die Mediathek). */
     public function bild(string $url): ?string
     {

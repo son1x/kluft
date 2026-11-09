@@ -26,6 +26,7 @@ use App\Http\Controllers\Public\StatusController;
 use App\Http\Controllers\Public\UmfrageController;
 use App\Http\Controllers\Public\WhatsAppController;
 use App\Http\Controllers\Redaktion\GeorgsboteTitelbildController;
+use App\Http\Controllers\Redaktion\KatalogBildController;
 use App\Http\Controllers\Webhooks\WhatsAppWebhookController;
 use App\Http\Middleware\Ausbaustufe;
 use App\Support\Ausbau;
@@ -116,6 +117,8 @@ Route::middleware('throttle:20,10')->group(function () {
 
 // Sammelbestellung beim Rüsthaus (nur Stämme, Funktion „Sammelbestellung“;
 // docs/pflichtenheft-sammelbestellung.md). Abgeschaltet: 404.
+// Sammelbestellung → Rüsthaus-Katalog im Backend: Vorschaubilder über Kluft (CSP, SB-155).
+Route::get('/admin/sammelbestellung/katalog-bild', KatalogBildController::class)->middleware(['auth', 'throttle:600,1'])->name('shop.katalog.bild');
 Route::get('/bestellen', [ShopController::class, 'index'])->name('shop.index');
 Route::get('/bestellen/nachschlagen', [ShopController::class, 'nachschlagen'])->middleware('throttle:20,1')->name('shop.nachschlagen');
 Route::post('/bestellen', [ShopController::class, 'store'])->middleware('throttle:5,10')->name('shop.store');

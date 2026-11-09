@@ -35,6 +35,15 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-09 – Haupt → Stammes: Sammelbestellung, Rüsthaus-Katalog im Backend
+Status: offen
+Branch: `feature/ruesthaus-katalog` (setzt auf `feature/sammelbestellung-shop` auf)
+
+- Neu **Sammelbestellung → Rüsthaus-Katalog** (`App\Filament\Pages\RuesthausKatalog`, nur Rolle Sammelbestellung bzw. Admin): Kategorie und Unterkategorie aus der Rüsthaus-Navigation, Artikel aus den Übersichtsseiten (48 je Seite, höchstens 10 Seiten, eine Anfrage pro Sekunde, einen Tag zwischengespeichert), Status neu, Entwurf, im Shop, gesperrt; Übernahme über `ArtikelHolen` (neu: Shop-Kategorie).
+- `robots.txt` des Rüsthaus wird beachtet (`/listing/` ist dort gesperrt und wird nicht genutzt). Erlaubnis des Rüsthaus liegt vor (Entscheidung Roden 09.11.2026).
+- Vorschaubilder über Kluft (`/admin/sammelbestellung/katalog-bild`, CSP), 30 Tage in `storage/app/ruesthaus-katalog`.
+- Getestet mit gekürzten echten Seiten (`tests/Fixtures/ruesthaus`) und einmal live gegen das Rüsthaus.
+
 ### 2026-11-09 – Haupt → Stammes: Sammelbestellung, neue Bestellseite, Storno bis Bestellschluss, mehrere Artikel holen
 Status: offen
 Branch: `feature/sammelbestellung-shop`

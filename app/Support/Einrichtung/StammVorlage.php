@@ -27,13 +27,15 @@ class StammVorlage
         $bezirk = trim((string) ($a['bezirk'] ?? ''));
         $dioezese = trim((string) ($a['dioezese'] ?? ''));
 
-        // Link zur nächsthöheren Ebene im Fuß; dpsg.de steht dort ohnehin.
-        $eltern = match (true) {
-            $bezirk !== '' && filled($a['bezirk_url'] ?? null) => ['label' => 'DPSG Bezirk '.$bezirk, 'url' => (string) $a['bezirk_url']],
+        // Links zu den höheren Ebenen im Fuß („DPSG im Netz“); dpsg.de steht dort ohnehin.
+        // Nächsthöhere Ebene als „parent“, der Diözesanverband zusätzlich, wenn es einen Bezirk gibt.
+        $dv = match (true) {
             $dioezese !== '' && filled($a['dioezese_url'] ?? null) => ['label' => 'DPSG Diözesanverband '.$dioezese, 'url' => (string) $a['dioezese_url']],
             (bool) preg_match('/^trier$/i', $dioezese) => ['label' => 'DPSG Diözesanverband Trier', 'url' => 'https://www.dpsg-trier.de'],
             default => null,
         };
+        $bezirkLink = $bezirk !== '' && filled($a['bezirk_url'] ?? null) ? ['label' => 'DPSG Bezirk '.$bezirk, 'url' => (string) $a['bezirk_url']] : null;
+        $eltern = $bezirkLink ?? $dv;
 
         return [
             // Zuschussgeber beim Einrichten: im Bistum Trier der KJP, alles Weitere unter Verwaltung → Zuschussgeber.
@@ -64,7 +66,7 @@ class StammVorlage
                 'events_menu_calendar' => true,
                 'join_text' => 'Du möchtest Pfadfinder*in werden oder als Leiter*in mitmachen? Komm zu einer Gruppenstunde vorbei – sag uns vorher kurz Bescheid.',
                 'parent' => $eltern,
-                'links' => [],
+                'links' => $bezirkLink !== null && $dv !== null ? [$dv] : [],
                 'hashtags' => '#dpsg #pfadfinden',
             ],
 

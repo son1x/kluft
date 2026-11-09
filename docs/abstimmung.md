@@ -35,6 +35,13 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-09 – Haupt → Stammes, Bezirk: Diözesanverband in „DPSG im Netz“, Wiese über die ganze Breite (gemeinsamer Kern)
+Status: offen
+Branch: `fix/footer-netz-wiese`
+
+- `StammVorlage`: Hat ein Stamm einen Bezirk, bleibt der Bezirk `site.parent`; der Diözesanverband kommt zusätzlich in `site.links` (Trier automatisch, sonst `dioezese_url`). Roden zeigt damit dpsg.de, Bezirk Saar-Hochwald und DV Trier. Wer unter Verwaltung → Fußzeile eine eigene Liste gespeichert hat, behält sie.
+- `layouts/app.blade.php`: Die Wiese des Zelte-Bildes läuft als Band hinter allen Spalten bis an den Seitenrand (ab `md`, hängt am Bild, damit der Horizont passt). Fußzeile dafür mit `isolate overflow-x-clip` und mehr Abstand unten, wenn die Zelte gezeigt werden.
+
 ### 2026-11-09 – Haupt → Stammes, Bezirk: Fußzeile im Backend anpassbar (gemeinsamer Kern)
 Status: offen
 Branch: `feature/fusszeile-backend` (setzt auf `fix/footer-zelte-mobil` auf)

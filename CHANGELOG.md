@@ -6,6 +6,7 @@ Admins. Kurz und aus Sicht der Redaktion schreiben.
 
 ## 0.9.0
 
+- Stämme: Unter „DPSG im Netz“ steht neben dem Bezirk auch der Diözesanverband. Die Wiese unter den Zelten läuft in der Fußzeile über die ganze Breite.
 - Instagram-Konten: Die „Anleitung: Token erzeugen“ ist übersichtlicher, mit nummerierten Schritten, Hinweiskästen und aufklappbarer Hilfe „Wenn es hakt“.
 - Backend für Autor:innen: Auf der Startseite steht „Erste Schritte“ (wie ein Beitrag online kommt, was bei Fotos gilt, wartende Freigaben, der eigene Bereich). Beitragsformular, Mediathek und leere Listen erklären, was zu tun ist.
 - Backend: Seiten (URL-Pfad, übergeordnete Seite, Reihenfolge, Status), Gruppenfotos, Georgsbote (PDF-Größe, Titelbild aus dem PDF) und Kalender erklären ihre Felder bzw. was bei einer leeren Liste zu tun ist.

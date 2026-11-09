@@ -68,6 +68,7 @@ class AuditText
         'push.eingeschaltet' => 'Push-Nachrichten eingeschaltet',
         'push.ausgeschaltet' => 'Push-Nachrichten ausgeschaltet',
         'push.neues_thema' => 'Push-Nachrichten: neues Thema erzeugt',
+        'georgsbote.alle_freigegeben' => 'Alle Zeitschriften-Ausgaben mit PDF als geprüft markiert und veröffentlicht (Auftrag Projektleitung)',
         'fusszeile.gespeichert' => 'Fußzeile angepasst',
         'fusszeile.zurueckgesetzt' => 'Fußzeile auf Standard zurückgesetzt',
         'integration.instagram.connect' => 'Instagram verbunden',

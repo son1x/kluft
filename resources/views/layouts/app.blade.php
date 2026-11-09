@@ -279,13 +279,10 @@
                     <li><a href="{{ url('/admin') }}" class="hover:underline">Redaktions-Login</a></li>
                     <li><a href="{{ url('/status') }}" class="hover:underline">Systemstatus</a></li>
                 </ul>
-                <h2 class="mb-3 mt-6 font-serif text-base font-bold">DPSG im Netz</h2>
-                <ul class="space-y-2">
-                    <li><a href="https://www.dpsg.de" target="_blank" rel="noopener" class="hover:underline">dpsg.de – Bundesebene</a></li>
-                    @foreach (array_filter([config('dpsg.site.parent'), ...config('dpsg.site.links', [])]) as $link)
-                        <li><a href="{{ $link['url'] }}" target="_blank" rel="noopener" class="hover:underline">{{ $link['label'] }}</a></li>
-                    @endforeach
-                </ul>
+                {{-- Mit Newsletter steht „DPSG im Netz“ hier, sonst oben in der dritten Spalte. --}}
+                @if (\App\Support\Features::newsletter())
+                    @include('partials.footer-netz', ['class' => 'mb-3 mt-6'])
+                @endif
             </div>
             @if (\App\Support\Features::newsletter())
                 <div>
@@ -300,13 +297,17 @@
                     </a>
                 </div>
             @else
-                {{-- Ohne Newsletter (Stämme, Bezirke): Zelte auf der Wiese unten rechts, sie stehen auf dem blauen Balken.
-                     Erst ab md (eigene Spalte); auf dem Handy wären sie nur Deko unter dem Text. --}}
-                <div class="-mb-12 hidden items-end justify-end md:flex" aria-hidden="true">
-                    <picture class="block w-full max-w-[300px]">
-                        <source type="image/webp" srcset="{{ asset('images/footer/zelte.webp') }}" />
-                        <img src="{{ asset('images/footer/zelte.png') }}" alt="" width="544" height="288" loading="lazy" class="h-auto w-full [mask-image:linear-gradient(to_right,transparent,#000_25%,#000_88%,transparent)]" />
-                    </picture>
+                {{-- Ohne Newsletter (Stämme, Bezirke): oben „DPSG im Netz“, darunter Zelte auf der Wiese,
+                     die auf dem blauen Balken stehen. Zelte erst ab md (eigene Spalte); auf dem Handy wären
+                     sie nur Deko unter dem Text. --}}
+                <div class="flex flex-col">
+                    @include('partials.footer-netz', ['class' => 'mb-4'])
+                    <div class="-mb-12 mt-auto hidden items-end justify-end pt-6 md:flex" aria-hidden="true">
+                        <picture class="block w-full max-w-[300px]">
+                            <source type="image/webp" srcset="{{ asset('images/footer/zelte.webp') }}" />
+                            <img src="{{ asset('images/footer/zelte.png') }}" alt="" width="544" height="288" loading="lazy" class="h-auto w-full [mask-image:linear-gradient(to_right,transparent,#000_25%,#000_88%,transparent)]" />
+                        </picture>
+                    </div>
                 </div>
             @endif
         </div>

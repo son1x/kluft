@@ -1,0 +1,11 @@
+/*
+ * Backend-Theme (Filament). Nötig, damit die eigenen Blade-Ansichten im
+ * Backend (resources/views/filament, Klassen in app/Filament) ihre
+ * Tailwind-Klassen bekommen: Filaments mitgeliefertes CSS enthält nur die
+ * eigenen Komponenten, keine Hilfsklassen wie flex, list-disc oder text-sm.
+ * Wird mit `npm run build` gebaut (AdminPanelProvider::viteTheme).
+ */
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+
+@source '../../../../app/Filament/**/*';
+@source '../../../../resources/views/filament/**/*';

@@ -205,7 +205,8 @@ class Sammelbestellung
      */
     public static function nachschlagen(string $eingabe): ?array
     {
-        $daten = app(Ruesthaus::class)->produkt($eingabe);
+        // Schnell (eine Seite, ggf. bis zur gesuchten Größe), sonst dauert es pro Größe eine Sekunde.
+        $daten = app(Ruesthaus::class)->schnell($eingabe);
         if ($daten === null) {
             return null;
         }

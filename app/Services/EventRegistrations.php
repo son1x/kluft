@@ -205,6 +205,56 @@ class EventRegistrations
     }
 
     /**
+     * Unbestätigte Anmeldung im Backend bestätigen (z. B. Mail nicht
+     * angekommen). Wie die Bestätigung per Link: „auto“ nimmt einen freien
+     * Platz, sonst die Warteliste (ohne Warteliste trotzdem bestätigt, das
+     * entscheidet hier ein Mensch); „confirmed“ auch über die Platzzahl hinaus.
+     *
+     * @return string|null neuer Status, null wenn nicht (mehr) unbestätigt
+     */
+    public function confirmManually(EventRegistration $registration, string $statusWahl = 'auto', bool $notify = true, ?User $by = null): ?string
+    {
+        $cancelToken = Str::random(48);
+
+        $status = DB::transaction(function () use ($registration, $statusWahl, $cancelToken) {
+            $event = Event::query()->lockForUpdate()->findOrFail($registration->event_id);
+            $registration->refresh();
+            if ($registration->status !== 'pending') {
+                return null;
+            }
+            $status = match ($statusWahl) {
+                'confirmed', 'waitlist' => $statusWahl,
+                default => $event->isFull() && $event->waitlist_enabled ? 'waitlist' : 'confirmed',
+            };
+            $registration->update([
+                'status' => $status,
+                'confirmed_at' => now(),
+                'confirm_token_hash' => null,
+                'cancel_token_hash' => filled($registration->email) ? EventRegistration::hashToken($cancelToken) : null,
+                'purge_at' => $event->purgeAt(),
+            ]);
+
+            return $status;
+        });
+
+        if ($status === null) {
+            return null;
+        }
+        AuditLogger::log('registration.confirm_manual', $by, EventRegistration::class, $registration->getKey(), request());
+        if ($notify) {
+            $this->send($registration, $status, $cancelToken);
+        }
+        app(PushNotifier::class)->registration($registration, $status);
+        AnmeldeInfos::senden($registration, $status);
+        Teilnahmebeitraege::fordern($registration, $notify);
+        if ($registration->event->checksMembers() && ! NamiVerzeichnis::persoenlich()) {
+            CheckEventMembers::dispatch($registration->event_id, false, [$registration->id]);
+        }
+
+        return $status;
+    }
+
+    /**
      * Stornierung durch die Person selbst (Link) oder im Backend.
      */
     public function cancel(EventRegistration $registration): void

@@ -25,6 +25,7 @@ use App\Support\Features;
 use App\Support\NamiAmpel;
 use App\Support\Teilnahmebeitraege;
 use App\Support\Zahlungen;
+use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkAction;
@@ -41,6 +42,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
@@ -65,6 +67,8 @@ class RegistrationsRelationManager extends RelationManager
 
     protected static ?string $title = 'Teilnehmende';
 
+    protected static string|BackedEnum|null $icon = Heroicon::OutlinedUserGroup;
+
     protected static ?string $modelLabel = 'Anmeldung';
 
     protected static ?string $pluralModelLabel = 'Anmeldungen';
@@ -72,6 +76,14 @@ class RegistrationsRelationManager extends RelationManager
     public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
     {
         return (bool) Filament::auth()->user()?->can('manageParticipants', $ownerRecord);
+    }
+
+    /** Zahl im Reiter: aktive Anmeldungen (bestätigt, Warteliste, unbestätigt). */
+    public static function getBadge(Model $ownerRecord, string $pageClass): ?string
+    {
+        $anzahl = $ownerRecord instanceof Event ? $ownerRecord->registrations()->whereIn('status', ['pending', 'confirmed', 'waitlist'])->count() : 0;
+
+        return $anzahl > 0 ? (string) $anzahl : null;
     }
 
     public function isReadOnly(): bool
@@ -488,6 +500,16 @@ class RegistrationsRelationManager extends RelationManager
                         AuditLogger::log('registration.beitrag', Filament::auth()->user(), EventRegistration::class, $record->getKey(), request());
                         Notification::make()->title('Gespeichert.')->success()->send();
                     }),
+                Action::make('confirmManually')
+                    ->label('Bestätigen')
+                    ->icon('heroicon-o-check')
+                    ->color('success')
+                    ->visible(fn (EventRegistration $record) => $record->status === 'pending')
+                    ->modalHeading(fn (EventRegistration $record) => 'Anmeldung von '.$record->fullName().' bestätigen')
+                    ->modalDescription('Zum Beispiel, wenn die Bestätigungsmail nicht angekommen ist. Danach gilt die Anmeldung wie per Link bestätigt.')
+                    ->schema(fn () => $this->confirmInputs($event))
+                    ->modalSubmitActionLabel('Bestätigen')
+                    ->action(fn (EventRegistration $record, array $data) => $this->confirmRecords(new Collection([$record]), $data)),
                 Action::make('promote')
                     ->label('Platz geben')
                     ->icon('heroicon-o-check-circle')
@@ -513,6 +535,15 @@ class RegistrationsRelationManager extends RelationManager
                     ->action(fn (EventRegistration $record) => $this->changeStatus($record, 'cancel')),
             ])
             ->toolbarActions([
+                BulkAction::make('confirmManuallyBulk')
+                    ->label('Bestätigen')
+                    ->icon('heroicon-o-check')
+                    ->color('success')
+                    ->modalHeading('Markierte Anmeldungen bestätigen')
+                    ->modalDescription('Gilt nur für unbestätigte Anmeldungen; bereits bestätigte, Warteliste und Stornierte werden übersprungen.')
+                    ->schema(fn () => $this->confirmInputs($event))
+                    ->deselectRecordsAfterCompletion()
+                    ->action(fn (Collection $records, array $data) => $this->confirmRecords($records, $data)),
                 BulkActionGroup::make([
                     BulkAction::make('approveCertificates')
                         ->label('Bescheinigungen freigeben')
@@ -639,6 +670,45 @@ class RegistrationsRelationManager extends RelationManager
         }
 
         Notification::make()->title('Dokument gespeichert'.(($data['notify'] ?? false) ? ' – die Person wurde per E-Mail informiert.' : '.'))->success()->send();
+    }
+
+    /**
+     * @return list<Component>
+     */
+    private function confirmInputs(Event $event): array
+    {
+        return [
+            Select::make('status')->label('Status')->required()->default('auto')->selectablePlaceholder(false)->options([
+                'auto' => $event->capacity
+                    ? 'Bestätigt, solange Plätze frei sind (noch '.$event->spotsLeft().'), danach '.($event->waitlist_enabled ? 'Warteliste' : 'trotzdem bestätigt')
+                    : 'Bestätigt',
+                'confirmed' => 'Bestätigt – auch über die Platzzahl hinaus',
+                'waitlist' => 'Warteliste',
+            ]),
+            Toggle::make('notify')->label('Bestätigung per E-Mail schicken')->default(true),
+        ];
+    }
+
+    /**
+     * Unbestätigte Anmeldungen von Hand bestätigen (EventRegistrations::confirmManually).
+     *
+     * @param  Collection<int, EventRegistration>  $records
+     * @param  array<string, mixed>  $data
+     */
+    private function confirmRecords(Collection $records, array $data): void
+    {
+        $event = $this->getOwnerRecord();
+        abort_unless(Filament::auth()->user()?->can('manageParticipants', $event), 403);
+        $user = Filament::auth()->user();
+
+        $ergebnis = $records->filter(fn (EventRegistration $r) => $r->event_id === $event->getKey())
+            ->map(fn (EventRegistration $r) => app(EventRegistrations::class)->confirmManually($r, (string) ($data['status'] ?? 'auto'), (bool) ($data['notify'] ?? false), $user instanceof User ? $user : null))
+            ->filter();
+
+        $ergebnis->isEmpty()
+            ? Notification::make()->title('Nichts zu bestätigen – nur unbestätigte Anmeldungen lassen sich bestätigen.')->warning()->send()
+            : Notification::make()->success()->title($ergebnis->count() === 1 ? 'Anmeldung bestätigt ('.EventRegistration::STATUSES[$ergebnis->first()].').' : $ergebnis->count().' Anmeldungen bestätigt.')
+                ->body($ergebnis->contains('waitlist') ? $ergebnis->filter(fn ($s) => $s === 'waitlist')->count().' davon auf der Warteliste.' : null)->send();
     }
 
     private function changeStatus(EventRegistration $record, string $method): void

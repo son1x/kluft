@@ -1,6 +1,6 @@
 # Pflichtenheft: Sammelbestellung – neue Shop-Oberfläche und Katalog-Import
 
-**Stand:** 9. November 2026 · **Status:** Entwurf zur Abstimmung, nicht umgesetzt · **Bezug:** `docs/pflichtenheft-sammelbestellung.md` (SB-01 bis SB-92, Phase 1 und 2 gebaut)
+**Stand:** 9. November 2026 · **Status:** Phase A und Teile von B umgesetzt (`feature/sammelbestellung-shop`), Katalog-Import offen · **Bezug:** `docs/pflichtenheft-sammelbestellung.md` (SB-01 bis SB-92, Phase 1 und 2 gebaut)
 
 Dieses Pflichtenheft ergänzt das bestehende. Es ändert **nicht** den Ablauf
 einer Bestellrunde, die Bezahlung oder das Backend der Sammelbestellung,
@@ -12,6 +12,15 @@ sondern zwei Dinge:
    als Vorschläge ins Backend. Freigegeben wird weiter von Hand.
 
 Leitlinie für beides: **nicht überladen** und **rechtlich sauber**.
+
+**Entscheidungen des Stamms (9. November 2026):**
+
+- **Rüsthaus:** einverstanden, dass wir einzelne Artikeldaten übernehmen (Name, Beschreibung, Bild, Preis, Größen), auch kategorieweise als Vorschläge.
+- **Keine unternehmerische Tätigkeit:** Die Sammelbestellung ist ein Service für Mitglieder. Wir sammeln die Bestellungen und geben sie weiter.
+- **Preise:** nur Originalpreise des Rüsthaus, keine Rabatte, keine Streichpreise.
+- **Storno:** nur bis zum Bestellschluss, also bis wir beim Rüsthaus bestellt haben; Bezahltes wird erstattet.
+- **Knopf:** „Verbindlich bestellen“.
+- **Mehrere Artikelnummern auf einmal** sollen sich im Backend eingeben lassen (SB-150a).
 
 Anforderungen tragen IDs der Form `SB-1xx`. **MUSS**, **SOLL**, **KANN** wie
 im Haupt-Pflichtenheft. Der Abschnitt zur Rechtslage ist eine fachliche
@@ -92,7 +101,7 @@ Website heißt das:
   - **Bedienung:** Die ganze Karte öffnet das Artikel-Sheet; ein „+“-Knopf öffnet dasselbe Sheet mit Fokus auf der Größe.
   - **Weggelassen:** Beschreibung und Artikelnummer stehen nicht auf der Karte.
 - **SB-113** MUSS: **Suche** über Name, Kategorie und Artikelnummer der **freigegebenen** Artikel, ohne Neuladen. Ohne Treffer der Hinweis auf „Anderen Rüsthaus-Artikel bestellen“.
-- **SB-114** SOLL: **„Für den Start“:** höchstens vier hervorgehobene Karten (Grundausstattung, Sets), von der Sammelbestellung festgelegt (Feld „hervorheben“ am Artikel bzw. Set).
+- **SB-114** SOLL (umgesetzt als Kategorie): **„Für den Start“:** hervorgehobene Artikel und Sets (Feld „Oben unter „Für den Start““ am Artikel bzw. Set) als eigene Kategorie in der Leiste.
 - **SB-115** MUSS: **Freie Bestellung** (SB-14) bleibt, aber als eingeklappter Bereich am Ende und als Sheet; sie bekommt keinen eigenen Formularblock mitten im Shop.
 
 ### 3.1 Artikel-Sheet
@@ -119,13 +128,13 @@ Website heißt das:
   3. **Prüfen:** Alle Positionen je Mitglied, Summe, Zahlungsfrist, Zahlungsweg („Du bekommst nach der Bestätigung per Mail die Bankverbindung mit GiroCode“), Hinweise zu Storno und Abholung, Einwilligungen (SB-34). Dann die Hauptaktion **„Zahlungspflichtig bestellen“** (SB-170).
 - **SB-134** MUSS: **Bestätigungsseite:** „Fast geschafft: Bitte bestätige deine Bestellung über den Link in der Mail.“ Dazu die nächsten Schritte als nummerierte Liste (bestätigen, bezahlen bis …, Abholung).
 - **SB-135** MUSS: Fehler stehen am Feld, nicht als Sammelmeldung oben. Der Ablauf springt zum ersten fehlerhaften Schritt.
-- **SB-136** MUSS: Ohne JavaScript bleibt ein einfaches Bestellformular nutzbar (progressive Verbesserung, wie heute serverseitig validiert).
+- **SB-136** SOLL (zurückgestellt): Ohne JavaScript bleibt ein einfaches Bestellformular nutzbar. Die bisherige Seite brauchte JavaScript ebenfalls; der Server prüft weiter alles neu.
 
 ---
 
 ## 4. Seite eines Artikels
 
-- **SB-140** SOLL: Jeder Artikel hat eine eigene Adresse `/bestellen/{slug}` (heute `shop/show`). Sie zeigt denselben Inhalt wie das Sheet als Seite, zum Teilen per Link in Elternbriefen oder WhatsApp. Das Sheet aktualisiert die Adresse (History API), ohne neu zu laden.
+- **SB-140** SOLL (umgesetzt als Anker): Jeder Artikel hat eine teilbare Adresse `/bestellen#artikel-a12` bzw. `#artikel-s3` für Sets. Sie öffnet das Sheet direkt; das Sheet setzt den Anker beim Öffnen.
 
 ---
 
@@ -150,7 +159,8 @@ einem Rutsch freigibt.
 
 ### 6.2 Voraussetzung
 
-- **SB-150** MUSS: **Erlaubnis des Rüsthaus.** Der Katalog-Import ist erst einschaltbar, wenn im Backend eine **schriftliche Erlaubnis** hinterlegt ist. Sie wird als Datei oder Vermerk mit Datum, Ansprechperson und Umfang abgelegt und ist Teil des Audit-Logs. Sie muss abdecken: Übernahme von Artikeldaten, Bildern und Beschreibungen für den Stamm, kategorieweiser Abruf. Ohne Erlaubnis bleibt es beim heutigen Einzelabruf (SB-10, SB-14). Begründung in Kapitel 9.1.
+- **SB-150** MUSS: **Erlaubnis des Rüsthaus** liegt vor (9.11.2026, siehe oben). Sie wird im Pflichtenheft und in `docs/roden.md` vermerkt; eine Datei im Backend ist nicht nötig. Für andere Stämme gilt: erst Erlaubnis einholen, dann einschalten.
+- **SB-150a** MUSS (umgesetzt): **Mehrere Artikel holen.** Im Backend lassen sich bis zu 50 Artikelnummern oder Links auf einmal eingeben (je Zeile, Komma oder Leerzeichen). Kluft holt sie nacheinander einzeln im Hintergrund (drei je Lauf, eine Anfrage pro Sekunde), wahlweise als Entwurf. Stand und Fehler stehen unter der Überschrift; „Im Shop zeigen“ gibt es als Sammelaktion.
 - **SB-151** SOLL: **Datenfeed statt Abruf der Shopseiten**, wenn das Rüsthaus einen anbietet (CSV- bzw. Produkt-Feed oder Shop-Schnittstelle mit Zugangsschlüssel). Kluft bekommt dafür eine austauschbare Quelle: „Feed“ oder „Shopseiten“. Der Feed ist der bevorzugte Weg: rechtlich klar, schneller, stabiler.
 
 ### 6.3 Ablauf
@@ -231,17 +241,19 @@ Fachliche Einschätzung, Stand November 2026, keine Rechtsberatung.
 
 ### 9.2 Verkauf an Mitglieder
 
-Ob der Stamm hier als **Unternehmer** (§ 14 BGB) handelt, ist offen. Er
-reicht Ware ohne Aufschlag weiter, behält aber die Provision. Deshalb
-gestaltet Kluft den Ablauf so, dass er auch für einen Unternehmer
-zulässig wäre. Das kostet kaum etwas und verhindert Abmahnrisiken.
+Der Stamm handelt hier **nicht unternehmerisch** (Entscheidung 9.11.2026):
+Er sammelt die Bestellungen seiner Mitglieder und gibt sie zum
+Originalpreis an das Rüsthaus weiter. Damit entfallen Widerrufsbelehrung
+und die Pflichtangaben für Online-Händler. Kluft bleibt trotzdem klar und
+fair: Preise inkl. MwSt., Bestellübersicht vor dem Abschicken,
+eindeutiger Knopf.
 
 | Thema | Anforderung |
 |---|---|
-| **Bestell-Button** (§ 312j Abs. 3 BGB) | **SB-170** MUSS: Die Hauptaktion heißt „Zahlungspflichtig bestellen“. Direkt davor stehen Artikel, Größen, Mengen, Gesamtpreis und Zahlungsfrist (§ 312j Abs. 2). |
-| **Preisangaben** (PAngV) | **SB-171** MUSS: Endpreise inkl. MwSt. mit Hinweis „inkl. MwSt.“. Versandkosten trägt der Stamm: „Kein Versand, Abholung in der Gruppenstunde“. Kein Streichpreis. |
-| **Widerruf und Storno** | **SB-172** MUSS: Klare, eigene Regel im Ablauf und in der Bestätigungsmail: „Bis zum Bestelldatum kannst du über den Link in der Mail stornieren; bezahlte Beträge erstatten wir. Nach dem Bestelldatum bestellen wir verbindlich beim Rüsthaus; Umtausch nur, wenn das Rüsthaus ihn zulässt.“ Ob ein gesetzliches Widerrufsrecht besteht, klärt der Rechtsträger (Kapitel 10). Bis dahin wird ihm nicht ausdrücklich widersprochen. |
-| **Produktsicherheit** (GPSR, VO (EU) 2023/988, Art. 19) | Für Online-Angebote an Verbraucher verlangt Art. 19 im Angebot: Hersteller (Name, Anschrift, E-Mail), Produktbezeichnung bzw. Kennung und Warnhinweise. Ob der Stamm „Wirtschaftsakteur“ ist, ist offen. **SB-173** SOLL: Diese Angaben werden mit übernommen bzw. gepflegt und im Sheet unter „Hersteller und Sicherheit“ angezeigt. |
+| **Bestell-Button** | **SB-170** MUSS (umgesetzt): Die Hauptaktion heißt **„Verbindlich bestellen“**. Direkt davor stehen Artikel, Größen, Mengen, Gesamtpreis und Zahlungsfrist. |
+| **Preise** | **SB-171** MUSS (umgesetzt): **Originalpreise des Rüsthaus** inkl. MwSt., keine Rabatte, keine Streichpreise. Hinweis „kein Versand, Abholung in der Gruppenstunde“. Eigene Artikel: „Preis des Stamms“. |
+| **Storno** | **SB-172** MUSS (umgesetzt): Storno über den Link in der Mail **bis zum Bestellschluss**, also solange die Runde nicht „beim Rüsthaus bestellt“ ist, auch nach Zahlung. Bezahltes erscheint bei der Kasse als „Erstattung offen“; die Person bekommt die Storno-Mail. Die Regel steht im Ablauf, auf der Danke-Seite, in der Mail und auf der Statusseite. Ein gesetzliches Widerrufsrecht besteht nicht (kein Unternehmer). |
+| **Produktsicherheit** (GPSR) | Der Stamm ist kein Wirtschaftsakteur; die Pflichtangaben nach Art. 19 entfallen. **SB-173** KANN: Hinweise des Rüsthaus (z. B. Pflege, Warnhinweise) stehen in der Beschreibung; der Link „beim Rüsthaus ansehen“ führt zu allen Herstellerangaben. |
 | **Barrierefreiheit** (BFSG, seit 28.06.2025) | Ein Stamm mit weniger als 10 Beschäftigten (Ehrenamtliche zählen in der Regel nicht) fällt als Kleinstunternehmen bei Dienstleistungen vermutlich unter die Ausnahme. **SB-174** MUSS trotzdem: WCAG 2.2 AA als Ziel (SB-103). Das ist ohnehin Anspruch der Website. |
 | **Datenschutz** (KDG; DSGVO für Dienstleister) | Unverändert nach SB-70 bis SB-74. Neu: **SB-175** MUSS: Der Warenkorb im Browser (SB-132) ist technisch notwendig, kein Tracking, und steht im Datenschutztext. Keine externen Bilder, Schriften oder Skripte im Shop (SB-155). |
 | **Kinder und Jugendliche** | Bestellungen für Minderjährige geben Erziehungsberechtigte auf (SB-31/34, unverändert). Die Seite richtet sich in der Ansprache an Eltern und Leitende. |
@@ -251,8 +263,8 @@ zulässig wäre. Das kostet kaum etwas und verhindert Abmahnrisiken.
 
 ## 10. Offene Fragen
 
-1. **Rüsthaus:** Erlaubnis für Katalog-Import, Bilder und Texte schriftlich einholen. Gibt es einen **Produkt-Feed** oder Shop-API-Zugang (SB-151)?
-2. **Unternehmer oder nicht:** Rechtsträger bzw. DV fragen, ob der Stamm beim Weiterverkauf als Unternehmer gilt. Daran hängen Widerrufsbelehrung (SB-172) und GPSR-Pflichten (SB-173).
+1. **Rüsthaus:** Erlaubnis liegt vor (9.11.2026). Offen: Gibt es einen **Produkt-Feed** oder Shop-API-Zugang (SB-151)?
+2. ~~Unternehmer oder nicht~~ – geklärt am 9.11.2026: Service für Mitglieder, nicht unternehmerisch.
 3. **Kategorien:** Welche Rüsthaus-Kategorien sollen abgeglichen werden, und wie heißen die lokalen Kategorien?
 4. **„Für den Start“:** Welche Artikel und Sets stehen oben?
 5. **Netz:** Für die Entwicklung muss `www.ruesthaus.de` im Netzwerk der Entwicklungsumgebung erlaubt sein, um echte Beispielseiten für Tests zu speichern. Aus dieser Sitzung war der Shop nicht erreichbar; `robots.txt` und Seitenstruktur sind deshalb noch nicht neu geprüft.
@@ -284,7 +296,7 @@ zulässig wäre. Das kostet kaum etwas und verhindert Abmahnrisiken.
 
 | Phase | Inhalt |
 |---|---|
-| **A** | Neue Oberfläche: Raster, Kategorien, Suche, Sheet, Warenkorb nach Mitglied, Ablauf in drei Schritten, „Zahlungspflichtig bestellen“, Preisangaben, Storno-Hinweis (SB-100 bis SB-136, SB-170 bis SB-172, SB-174/175). Unabhängig von der Rüsthaus-Erlaubnis. |
-| **B** | Artikelseiten mit eigener Adresse, „Für den Start“, Hersteller und Sicherheit (SB-114, SB-140, SB-173). |
-| **C** | Katalog-Import über Shopseiten, erst nach Erlaubnis (SB-150 bis SB-161). |
+| **A** (gebaut) | Neue Oberfläche: Raster, Kategorien, Suche, Sheet, Warenkorb nach Mitglied, Ablauf in drei Schritten, „Verbindlich bestellen“, Preisangaben, Storno bis Bestellschluss, mehrere Artikel holen (SB-100 bis SB-135, SB-150a, SB-170 bis SB-172, SB-174/175). Ohne JavaScript (SB-136) zurückgestellt. |
+| **B** (gebaut, vereinfacht) | „Für den Start“ als Kategorie, teilbarer Anker je Artikel (SB-114, SB-140). |
+| **C** | Katalog-Import kategorieweise über Shopseiten (SB-151 bis SB-161); Erlaubnis liegt vor. |
 | **D** | Feed-Quelle, sobald das Rüsthaus einen anbietet (SB-151). |

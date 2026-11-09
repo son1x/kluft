@@ -75,6 +75,7 @@ class ArtikelResource extends Resource
                     ->visible(fn (?Artikel $record) => $record === null || $record->eigen)
                     ->helperText('Aus der Mediathek; ein neues Bild dort zuerst hochladen.'),
                 Toggle::make('freigegeben')->label('Im Shop anbieten')->inline(false)->default(true),
+                Toggle::make('hervorheben')->label('Oben unter „Für den Start“')->inline(false)->helperText('Höchstens vier Artikel bzw. Sets, z. B. die Grundausstattung.'),
                 TextInput::make('sort')->label('Reihenfolge')->numeric()->default(0),
                 Repeater::make('varianten')->relationship()->label('Größen / Ausführungen')->columnSpanFull()->columns(4)
                     ->addable(fn (?Artikel $record) => $record === null || $record->eigen)

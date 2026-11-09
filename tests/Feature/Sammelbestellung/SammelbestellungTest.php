@@ -132,8 +132,8 @@ class SammelbestellungTest extends TestCase
         $sammler = User::query()->create(['name' => 'Michele', 'email' => 'michele@example.org', 'status' => 'active']);
         $sammler->roleAssignments()->create(['role' => 'sammelbestellung', 'scope_type' => 'global']);
 
-        $this->get('/bestellen')->assertOk()->assertSee('Halbarm-Klufthemd')->assertSee('Herbst 2026')->assertSee('Bestellung abschicken')
-            ->assertSee('Hinzufügen')->assertDontSee('Beim Rüsthaus ansehen')
+        $this->get('/bestellen')->assertOk()->assertSee('Halbarm-Klufthemd')->assertSee('Herbst 2026')->assertSee('Verbindlich bestellen')
+            ->assertSee('In den Warenkorb')->assertSee('Originalpreis des Rüsthaus')->assertSee('bis zum Bestellschluss')->assertDontSee('Beim Rüsthaus ansehen')
             // Inline-Skripte blockiert die CSP; das Formular kommt aus resources/js/shop-bestellung.js.
             ->assertDontSee('function shopBestellung', false)->assertSee('x-data="shopBestellung(', false);
         $this->getJson('/bestellen/nachschlagen?nummer=1404601')->assertOk()->assertJson(['gesperrt' => false, 'name' => 'Komplett-Kohte']);
@@ -248,7 +248,7 @@ class SammelbestellungTest extends TestCase
     public function test_gesperrt_und_ohne_runde(): void
     {
         Sperre::query()->create(['typ' => 'kategorie', 'wert' => 'zelte']);
-        $this->get('/bestellen')->assertOk()->assertSee('Gerade läuft keine Sammelbestellung')->assertDontSee('Bestellung abschicken');
+        $this->get('/bestellen')->assertOk()->assertSee('Gerade läuft keine Sammelbestellung')->assertDontSee('Verbindlich bestellen');
 
         Runde::query()->create(['name' => 'Herbst', 'bestelldatum' => now()->addWeek()->toDateString(), 'status' => 'offen']);
         $this->getJson('/bestellen/nachschlagen?nummer=1404601')->assertJson(['gesperrt' => true]);

@@ -304,7 +304,7 @@ class SammelbestellungPhase2Test extends TestCase
         $eigen = Artikel::query()->where('eigen', true)->with('varianten')->sole();
         $this->assertSame([400, 1], [$eigen->preis_cent, $eigen->varianten->count()]);
         $this->assertStringStartsWith('STAMM-', $eigen->nummer);
-        $this->get('/bestellen')->assertOk()->assertSee('Stammesaufnäher')->assertSee('vom Stamm');
+        $this->get('/bestellen')->assertOk()->assertSee('Stammesaufnäher')->assertSee('Vom Stamm');
 
         $b = $this->bestellen([
             ['mitglied' => 'Mia Muster', 'menge' => 1, 'variante' => $hemd->varianten[0]->id],

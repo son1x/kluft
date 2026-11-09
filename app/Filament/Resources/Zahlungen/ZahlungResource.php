@@ -100,8 +100,8 @@ class ZahlungResource extends Resource
                 TextColumn::make('erstattet_cent')->label('Erstattet')->formatStateUsing(fn (int $state) => $state > 0 ? Zahlungen::euro($state) : '–')->alignEnd()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('status')->label('Status')->badge()
-                    ->formatStateUsing(fn (string $state) => Zahlung::STATUS[$state] ?? $state)
-                    ->color(fn (string $state) => match ($state) {
+                    ->formatStateUsing(fn (string $state, Zahlung $record) => $record->erstattungOffenCent() > 0 ? 'storniert, Erstattung offen' : (Zahlung::STATUS[$state] ?? $state))
+                    ->color(fn (string $state, Zahlung $record) => $record->erstattungOffenCent() > 0 ? 'warning' : match ($state) {
                         'bezahlt' => 'success', 'teilweise' => 'warning', 'erstattet', 'storniert' => 'gray', default => 'danger',
                     }),
                 TextColumn::make('faellig_am')->label('Fällig')->date('d.m.Y')->placeholder('–')->sortable(),
@@ -113,8 +113,12 @@ class ZahlungResource extends Resource
             ->filters([
                 SelectFilter::make('status')->label('Status')->options(Zahlung::STATUS),
                 SelectFilter::make('stand')->label('Offen')
-                    ->options(['offen' => 'offen oder teilweise'])
-                    ->query(fn (Builder $query, array $data) => ($data['value'] ?? null) === 'offen' ? $query->whereIn('status', ['offen', 'teilweise']) : $query),
+                    ->options(['offen' => 'offen oder teilweise', 'erstattung' => 'Erstattung offen (storniert, schon bezahlt)'])
+                    ->query(fn (Builder $query, array $data) => match ($data['value'] ?? null) {
+                        'offen' => $query->whereIn('status', ['offen', 'teilweise']),
+                        'erstattung' => $query->where('status', 'storniert')->whereColumn('bezahlt_cent', '>', 'erstattet_cent'),
+                        default => $query,
+                    }),
             ])
             ->recordActions([
                 Action::make('eingang')

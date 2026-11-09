@@ -6,6 +6,8 @@ Admins. Kurz und aus Sicht der Redaktion schreiben.
 
 ## 0.9.0
 
+- Sammelbestellung: neue Bestellseite mit Kategorien, Suche und großen Artikelkarten; Größe, Mitglied und Anzahl in einem Fenster, Warenkorb nach Mitglied (bleibt 7 Tage im Browser), Bestellen in drei Schritten mit „Verbindlich bestellen“. Preise sind die Originalpreise des Rüsthaus.
+- Sammelbestellung: Stornieren geht bis zum Bestellschluss, auch nach der Zahlung; die Kasse sieht die offene Erstattung. Im Backend lassen sich mehrere Rüsthaus-Artikel auf einmal holen.
 - Stämme: Unter „DPSG im Netz“ steht neben dem Bezirk auch der Diözesanverband. Die Wiese unter den Zelten läuft in der Fußzeile über die ganze Breite.
 - Instagram-Konten: Die „Anleitung: Token erzeugen“ ist übersichtlicher, mit nummerierten Schritten, Hinweiskästen und aufklappbarer Hilfe „Wenn es hakt“.
 - Backend für Autor:innen: Auf der Startseite steht „Erste Schritte“ (wie ein Beitrag online kommt, was bei Fotos gilt, wartende Freigaben, der eigene Bereich). Beitragsformular, Mediathek und leere Listen erklären, was zu tun ist.

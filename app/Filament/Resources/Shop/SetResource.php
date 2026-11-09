@@ -54,6 +54,7 @@ class SetResource extends Resource
             Textarea::make('beschreibung')->label('Beschreibung')->rows(3)->maxLength(2000)->columnSpanFull()
                 ->placeholder('z. B. Alles für den Anfang: Kluft, Stammesaufnäher und Halstuchknoten. Das Halstuch bekommst du bei uns zum Versprechen.'),
             Toggle::make('freigegeben')->label('Im Shop anbieten')->inline(false),
+            Toggle::make('hervorheben')->label('Oben unter „Für den Start“')->inline(false)->helperText('Höchstens vier Artikel bzw. Sets, z. B. die Grundausstattung.'),
             TextInput::make('sort')->label('Reihenfolge')->numeric()->default(0),
             Repeater::make('teile')->relationship()->label('Teile')->columnSpanFull()->columns(4)->orderColumn('sort')->minItems(1)->defaultItems(1)
                 ->addActionLabel('Teil hinzufügen')

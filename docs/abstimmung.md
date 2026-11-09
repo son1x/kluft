@@ -35,6 +35,16 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-09 – Haupt → Stammes: Sammelbestellung, neue Bestellseite, Storno bis Bestellschluss, mehrere Artikel holen
+Status: offen
+Branch: `feature/sammelbestellung-shop`
+
+- **Entscheidungen Roden (09.11.2026):** Das Rüsthaus ist einverstanden, dass wir einzelne Artikeldaten übernehmen. Die Sammelbestellung ist ein Service für Mitglieder, keine unternehmerische Tätigkeit. Es gelten nur Originalpreise, keine Rabatte. Storno geht bis zum Bestellschluss (bis „beim Rüsthaus bestellt“), auch nach Zahlung. Der Knopf heißt „Verbindlich bestellen“.
+- **Bestellseite** (`shop/index.blade.php`, `resources/js/shop-bestellung.js` neu): Raster, Kategorien, Suche, Artikel-Sheet (`<dialog>`), Warenkorb nach Mitglied in `localStorage` (7 Tage), drei Schritte. `POST /bestellen` und `pos[…]` sind unverändert. Neu: `shop_artikel.hervorheben`/`shop_sets.hervorheben` (Migration `2026_11_09_130000`), Kategorie „Für den Start“. Deep-Link `#artikel-a12`.
+- **Storno:** `Sammelbestellung::stornierbar()`; bezahlte Zahlungen werden storniert und zeigen „Erstattung offen“ (`Zahlung::erstattungOffenCent`, Filter in Zahlungen).
+- **Mehrere Artikel holen:** Job `ArtikelHolen` (drei je Lauf, Stand unter der Überschrift), Sammelaktionen „Im Shop zeigen“ bzw. „Aus dem Shop nehmen“.
+- Bitte die Stammes-Sitzung, mit Michele (Roden) im Testbetrieb durchzuklicken.
+
 ### 2026-11-09 – Haupt → Stammes, Bezirk: Diözesanverband in „DPSG im Netz“, Wiese über die ganze Breite (gemeinsamer Kern)
 Status: offen
 Branch: `fix/footer-netz-wiese`

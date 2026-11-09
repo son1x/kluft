@@ -6,6 +6,7 @@ use App\Filament\Resources\Shop\ArtikelResource;
 use App\Filament\Resources\Shop\BestellungResource;
 use App\Filament\Resources\Shop\Pages\ListArtikel;
 use App\Filament\Resources\Shop\RundeResource;
+use App\Jobs\ArtikelHolen;
 use App\Mail\ShopBestellungMail;
 use App\Mail\ZahlungsaufforderungMail;
 use App\Models\Shop\Artikel;
@@ -24,6 +25,7 @@ use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
@@ -130,8 +132,8 @@ class SammelbestellungTest extends TestCase
         $sammler = User::query()->create(['name' => 'Michele', 'email' => 'michele@example.org', 'status' => 'active']);
         $sammler->roleAssignments()->create(['role' => 'sammelbestellung', 'scope_type' => 'global']);
 
-        $this->get('/bestellen')->assertOk()->assertSee('Halbarm-Klufthemd')->assertSee('Herbst 2026')->assertSee('Bestellung abschicken')
-            ->assertSee('Hinzufügen')->assertDontSee('Beim Rüsthaus ansehen')
+        $this->get('/bestellen')->assertOk()->assertSee('Halbarm-Klufthemd')->assertSee('Herbst 2026')->assertSee('Verbindlich bestellen')
+            ->assertSee('In den Warenkorb')->assertSee('Originalpreis des Rüsthaus')->assertSee('bis zum Bestellschluss')->assertDontSee('Beim Rüsthaus ansehen')
             // Inline-Skripte blockiert die CSP; das Formular kommt aus resources/js/shop-bestellung.js.
             ->assertDontSee('function shopBestellung', false)->assertSee('x-data="shopBestellung(', false);
         $this->getJson('/bestellen/nachschlagen?nummer=1404601')->assertOk()->assertJson(['gesperrt' => false, 'name' => 'Komplett-Kohte']);
@@ -180,7 +182,65 @@ class SammelbestellungTest extends TestCase
         $this->assertSame(3, Sammelbestellung::sammelliste($runde)->sole()['menge']);
         $this->assertSame('bezahlt', $bestellung->fresh()->stand());
 
-        // Nach Zahlung kein Storno mehr über die Website.
+        // Storno bis zum Bestellschluss, auch nach Zahlung: Zahlungen storniert, Erstattung offen, Mail.
+        $this->get(route('shop.show', $token))->assertSee('Bestellung stornieren');
+        $this->post(route('shop.stornieren', $token))->assertRedirect(route('shop.show', $token));
+        $this->assertNotNull($bestellung->fresh()->storniert_am);
+        $this->assertSame([4900, 9800], Zahlung::query()->orderBy('id')->get()->map->erstattungOffenCent()->all());
+        $this->assertSame(['storniert', 'storniert'], Zahlung::query()->orderBy('id')->pluck('status')->all());
+        Mail::assertQueued(ShopBestellungMail::class, fn (ShopBestellungMail $m) => $m->art === 'storno');
+        $this->assertCount(0, Sammelbestellung::sammelliste($runde));
+
+        // Kasse erstattet: Status „erstattet“, nichts mehr offen.
+        $erste = Zahlung::query()->orderBy('id')->first();
+        $erste->erstattung(4900, now());
+        $this->assertSame(['erstattet', 0], [$erste->fresh()->status, $erste->fresh()->erstattungOffenCent()]);
+    }
+
+    #[TestDox('Mehrere Artikel holen: Liste zerlegen, nacheinander holen als Entwurf, Sperren und Fehler im Stand; danach gesammelt in den Shop')]
+    public function test_mehrere_artikel_holen(): void
+    {
+        Sperre::query()->create(['typ' => 'kategorie', 'wert' => 'zelte']);
+        $this->login('sammelbestellung');
+        $this->assertSame(['0100003.30', '1404601', 'gibtsnicht'], ArtikelHolen::zerlegen("0100003.30\n1404601, gibtsnicht;0100003.30 "));
+
+        Livewire::test(ListArtikel::class)
+            ->callAction('mehrereHolen', ['nummern' => "0100003.30\n1404601\nab", 'freigeben' => false])
+            ->assertHasNoActionErrors()
+            ->assertNotified('3 Artikel werden geholt');
+
+        $hemd = Artikel::query()->where('nummer', '0100003.30')->sole();
+        $this->assertFalse($hemd->freigegeben);
+        $this->assertSame(2, $hemd->varianten()->count());
+        $stand = ArtikelHolen::stand();
+        $this->assertSame([false, 3, 3, 1], [$stand['laeuft'], $stand['gesamt'], $stand['erledigt'], count($stand['neu'])]);
+        $this->assertStringContainsString('1404601: Dieser Artikel steht auf der Sperrliste.', implode(' ', $stand['fehler']));
+        $this->assertStringContainsString('ab: Beim Rüsthaus nicht gefunden', implode(' ', $stand['fehler']));
+        Livewire::test(ListArtikel::class)->assertSee('Zuletzt geholt: 1 von 3');
+
+        // Zu viele auf einmal: abgelehnt.
+        Livewire::test(ListArtikel::class)
+            ->callAction('mehrereHolen', ['nummern' => implode("\n", range(1000, 1000 + ArtikelHolen::MAX))])
+            ->assertHasActionErrors(['nummern']);
+
+        // Gesammelt in den Shop.
+        Livewire::test(ListArtikel::class)->callTableBulkAction('imShop', [$hemd]);
+        $this->assertTrue($hemd->fresh()->freigegeben);
+    }
+
+    #[TestDox('Storno nur bis zum Bestellschluss: geschlossen noch möglich, nach „beim Rüsthaus bestellt“ nicht mehr')]
+    public function test_storno_bis_bestellschluss(): void
+    {
+        $runde = Runde::query()->create(['name' => 'Herbst', 'bestelldatum' => now()->addWeek()->toDateString(), 'status' => 'geschlossen']);
+        $neu = fn () => $runde->bestellungen()->create(['name' => 'Erika', 'email' => 'erika@example.org', 'rolle' => 'mitglied', 'token' => hash('sha256', $t = Str::random(40)), 'bestaetigt_am' => now()]) ? $t : null;
+
+        $token = $neu();
+        $this->assertTrue(Sammelbestellung::stornierbar(Bestellung::query()->latest('id')->first()));
+        $this->post(route('shop.stornieren', $token))->assertRedirect();
+
+        $runde->update(['status' => 'bestellt']);
+        $token = $neu();
+        $this->get(route('shop.show', $token))->assertOk()->assertDontSee('Bestellung stornieren')->assertSee('stornieren geht deshalb nicht mehr');
         $this->post(route('shop.stornieren', $token))->assertStatus(409);
     }
 
@@ -188,7 +248,7 @@ class SammelbestellungTest extends TestCase
     public function test_gesperrt_und_ohne_runde(): void
     {
         Sperre::query()->create(['typ' => 'kategorie', 'wert' => 'zelte']);
-        $this->get('/bestellen')->assertOk()->assertSee('Gerade läuft keine Sammelbestellung')->assertDontSee('Bestellung abschicken');
+        $this->get('/bestellen')->assertOk()->assertSee('Gerade läuft keine Sammelbestellung')->assertDontSee('Verbindlich bestellen');
 
         Runde::query()->create(['name' => 'Herbst', 'bestelldatum' => now()->addWeek()->toDateString(), 'status' => 'offen']);
         $this->getJson('/bestellen/nachschlagen?nummer=1404601')->assertJson(['gesperrt' => true]);

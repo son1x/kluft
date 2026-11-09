@@ -193,13 +193,18 @@ class ShopController extends Controller
         return redirect()->route('shop.show', $token)->with('shop_status', 'bestaetigt');
     }
 
-    /** Storno durch die Person: nur solange die Runde offen ist und nichts bezahlt wurde. */
+    /** Storno durch die Person: bis zum Bestellschluss (Sammelbestellung::stornierbar), Bezahltes wird erstattet. */
     public function stornieren(string $token): RedirectResponse
     {
         $bestellung = $this->bestellung($token);
         if (! $bestellung->storniert_am) {
-            abort_unless($bestellung->runde->istOffen() && $bestellung->zahlungen()->where('bezahlt_cent', '>', 0)->doesntExist(), 409);
+            abort_unless(Sammelbestellung::stornierbar($bestellung), 409);
+            $bezahlt = $bestellung->zahlungen()->sum('bezahlt_cent') > 0;
             Sammelbestellung::stornieren($bestellung);
+            // Bestätigung mit Hinweis auf die Erstattung; Bezahltes sieht die Kasse unter „Erstattung offen“.
+            if ($bezahlt) {
+                Mail::to($bestellung->email, $bestellung->name)->send(new ShopBestellungMail($bestellung->fresh(), 'storno'));
+            }
         }
 
         return redirect()->route('shop.show', $token)->with('shop_status', 'storniert');

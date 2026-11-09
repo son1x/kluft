@@ -17,11 +17,11 @@ class Artikel extends Model
 {
     protected $table = 'shop_artikel';
 
-    protected $fillable = ['nummer', 'eigen', 'name', 'beschreibung', 'url', 'rh_kategorie', 'kategorie', 'bild_media_id', 'preis_cent', 'freigegeben', 'sort', 'abgerufen_am'];
+    protected $fillable = ['nummer', 'eigen', 'name', 'beschreibung', 'url', 'rh_kategorie', 'kategorie', 'bild_media_id', 'preis_cent', 'freigegeben', 'hervorheben', 'sort', 'abgerufen_am'];
 
     protected function casts(): array
     {
-        return ['eigen' => 'boolean', 'preis_cent' => 'integer', 'freigegeben' => 'boolean', 'sort' => 'integer', 'abgerufen_am' => 'datetime'];
+        return ['eigen' => 'boolean', 'preis_cent' => 'integer', 'freigegeben' => 'boolean', 'hervorheben' => 'boolean', 'sort' => 'integer', 'abgerufen_am' => 'datetime'];
     }
 
     /** @return HasMany<Variante, $this> */

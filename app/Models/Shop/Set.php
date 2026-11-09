@@ -15,11 +15,11 @@ class Set extends Model
 {
     protected $table = 'shop_sets';
 
-    protected $fillable = ['name', 'beschreibung', 'bild_artikel_id', 'freigegeben', 'sort'];
+    protected $fillable = ['name', 'beschreibung', 'bild_artikel_id', 'freigegeben', 'hervorheben', 'sort'];
 
     protected function casts(): array
     {
-        return ['freigegeben' => 'boolean', 'sort' => 'integer'];
+        return ['freigegeben' => 'boolean', 'hervorheben' => 'boolean', 'sort' => 'integer'];
     }
 
     /** @return HasMany<SetTeil, $this> */

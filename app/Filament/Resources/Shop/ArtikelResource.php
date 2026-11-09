@@ -9,6 +9,7 @@ use App\Support\AuditLogger;
 use App\Support\Sammelbestellung;
 use BackedEnum;
 use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Facades\Filament;
@@ -25,6 +26,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 use UnitEnum;
@@ -73,6 +75,7 @@ class ArtikelResource extends Resource
                     ->visible(fn (?Artikel $record) => $record === null || $record->eigen)
                     ->helperText('Aus der Mediathek; ein neues Bild dort zuerst hochladen.'),
                 Toggle::make('freigegeben')->label('Im Shop anbieten')->inline(false)->default(true),
+                Toggle::make('hervorheben')->label('Oben unter „Für den Start“')->inline(false)->helperText('Höchstens vier Artikel bzw. Sets, z. B. die Grundausstattung.'),
                 TextInput::make('sort')->label('Reihenfolge')->numeric()->default(0),
                 Repeater::make('varianten')->relationship()->label('Größen / Ausführungen')->columnSpanFull()->columns(4)
                     ->addable(fn (?Artikel $record) => $record === null || $record->eigen)
@@ -96,7 +99,7 @@ class ArtikelResource extends Resource
         return $table
             ->defaultSort('sort')
             ->emptyStateHeading('Noch keine Artikel')
-            ->emptyStateDescription('Oben „Artikel holen“: Rüsthaus-Artikelnummer oder Link eingeben.')
+            ->emptyStateDescription('Oben „Artikel holen“ (eine Nummer oder ein Link) oder „Mehrere Artikel holen“ (eine Liste).')
             ->columns([
                 TextColumn::make('name')->label('Artikel')->weight('bold')->searchable()
                     ->description(fn (Artikel $record) => ($record->eigen ? 'Eigener Artikel' : 'Nr. '.$record->nummer).($record->kategorie ? ' · '.$record->kategorie : '')),
@@ -122,6 +125,17 @@ class ArtikelResource extends Resource
                     }),
                 EditAction::make(),
                 DeleteAction::make(),
+            ])
+            // Nach „Mehrere Artikel holen“ (als Entwurf): gesammelt in den Shop.
+            ->toolbarActions([
+                BulkAction::make('imShop')->label('Im Shop zeigen')->icon('heroicon-o-eye')
+                    ->action(function (Collection $records) {
+                        $records->each->update(['freigegeben' => true]);
+                        AuditLogger::log('sammelbestellung.artikel.freigegeben', Filament::auth()->user(), 'shop_artikel', null, request());
+                        Notification::make()->success()->title($records->count().' Artikel im Shop')->send();
+                    }),
+                BulkAction::make('ausShop')->label('Aus dem Shop nehmen')->icon('heroicon-o-eye-slash')->color('gray')
+                    ->action(fn (Collection $records) => $records->each->update(['freigegeben' => false])),
             ]);
     }
 

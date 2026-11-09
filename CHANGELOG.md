@@ -8,6 +8,7 @@ Admins. Kurz und aus Sicht der Redaktion schreiben.
 
 - Instagram-Konten: Die „Anleitung: Token erzeugen“ ist übersichtlicher, mit nummerierten Schritten, Hinweiskästen und aufklappbarer Hilfe „Wenn es hakt“.
 - Backend für Autor:innen: Auf der Startseite steht „Erste Schritte“ (wie ein Beitrag online kommt, was bei Fotos gilt, wartende Freigaben, der eigene Bereich). Beitragsformular, Mediathek und leere Listen erklären, was zu tun ist.
+- Backend: Seiten (URL-Pfad, übergeordnete Seite, Reihenfolge, Status), Gruppenfotos, Georgsbote (PDF-Größe, Titelbild aus dem PDF) und Kalender erklären ihre Felder bzw. was bei einer leeren Liste zu tun ist.
 - Backend: Hinweistexte, Listen und Tabellen auf eigenen Seiten (z. B. Updates, Push-Nachrichten, Funktionen, NaMi, Zuschüsse, Nachrichten) sind wieder richtig gesetzt, mit Nummern, Aufzählungspunkten und Abständen.
 - Stufen- und Fachbereichsleitungen veröffentlichen Seiten ihres Bereichs selbst; eine schon veröffentlichte Seite lässt sich wieder speichern.
 - Roden: Kimberly und Flavio stehen auf der Seite „Stammesvorstand“ mit ihrer persönlichen Adresse statt vorstand@; die Vorstandsadresse bleibt im Seitentext.

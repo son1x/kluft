@@ -50,14 +50,15 @@ class PageForm
                         ->alphaDash()
                         // Die Vorstandsseite hängt am Slug (config dpsg.gremien.leitung.page).
                         ->disabled(fn (?Page $record) => self::nurVorstandsseite($record))
-                        ->helperText('Erreichbar unter /{slug}'),
+                        ->helperText('Erreichbar unter /{slug}. Später ändern macht alte Links ungültig; dann unter „Weiterleitungen“ den alten Pfad auf den neuen umleiten.'),
 
                     Select::make('parent_id')
                         ->label('Übergeordnete Seite')
                         ->relationship('parent', 'title')
                         ->disabled(fn (?Page $record) => self::nurVorstandsseite($record))
                         ->searchable()
-                        ->preload(),
+                        ->preload()
+                        ->helperText('Macht diese Seite zur Unterseite, z. B. „Wölflinge“ unter „Die Stufen“. Zusammen mit „In Hauptnavigation anzeigen“ wird sie im Menü ein Unterpunkt.'),
 
                     Select::make('stage')
                         ->label('Stufe')
@@ -80,7 +81,10 @@ class PageForm
                         ->options(fn (?Page $record) => self::statusOptions($record))
                         ->default('draft')
                         ->native(false)
-                        ->required(),
+                        ->required()
+                        ->helperText(fn (?Page $record) => array_key_exists('published', self::statusOptions($record))
+                            ? 'Entwurf: nur im Backend sichtbar. Veröffentlicht: auf der Website.'
+                            : 'Entwurf: nur im Backend sichtbar. Zur Prüfung: Die Verwaltung schaut drüber und veröffentlicht die Seite.'),
 
                     Toggle::make('show_in_nav')
                         ->label('In Hauptnavigation anzeigen')
@@ -89,7 +93,8 @@ class PageForm
                     TextInput::make('nav_sort')
                         ->label('Reihenfolge in der Navigation')
                         ->numeric()
-                        ->default(0),
+                        ->default(0)
+                        ->helperText('Kleinere Zahl steht weiter vorn. In Zehnerschritten (10, 20, 30) lässt sich später etwas dazwischenschieben.'),
                 ]),
 
             Section::make('Inhalt')

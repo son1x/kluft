@@ -58,6 +58,9 @@ class PagesTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->emptyStateHeading('Noch keine Seiten')
+            ->emptyStateDescription('Oben rechts auf „Erstellen“: Titel und Text eintragen, bei Bedarf eine übergeordnete Seite wählen und „In Hauptnavigation anzeigen“ einschalten, damit sie im Menü erscheint.')
+            ->emptyStateIcon('heroicon-o-document-text')
             ->defaultSort('nav_sort')
             ->filters([
                 SelectFilter::make('status')

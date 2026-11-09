@@ -65,6 +65,7 @@ class GeorgsboteIssueForm
                         ->maxSize(51200)
                         ->required()
                         ->downloadable()
+                        ->helperText('Bis 50 MB. Größere PDFs vorher verkleinern (z. B. in Acrobat „Datei → Als andere speichern → PDF mit reduzierter Größe“).')
                         ->columnSpan(2),
                     FileUpload::make('cover_path')
                         ->label('Titelbild (optional)')
@@ -73,7 +74,9 @@ class GeorgsboteIssueForm
                         ->image()
                         ->imageEditor()
                         ->maxSize(5120)
-                        ->helperText('z. B. Screenshot der Titelseite'),
+                        ->helperText(fn (Get $get) => $get('art') === GeorgsboteIssue::BRIEF
+                            ? 'z. B. ein Ausschnitt der ersten Seite.'
+                            : 'Leer lassen und nach dem Speichern „Titelbild aus PDF erzeugen“ nutzen.'),
                 ]),
 
             Section::make('Veröffentlichung')

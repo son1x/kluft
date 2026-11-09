@@ -10,6 +10,7 @@ Admins. Kurz und aus Sicht der Redaktion schreiben.
 - Backend für Autor:innen: Auf der Startseite steht „Erste Schritte“ (wie ein Beitrag online kommt, was bei Fotos gilt, wartende Freigaben, der eigene Bereich). Beitragsformular, Mediathek und leere Listen erklären, was zu tun ist.
 - Backend: Seiten (URL-Pfad, übergeordnete Seite, Reihenfolge, Status), Gruppenfotos, Georgsbote (PDF-Größe, Titelbild aus dem PDF) und Kalender erklären ihre Felder bzw. was bei einer leeren Liste zu tun ist.
 - Backend: Hinweistexte, Listen und Tabellen auf eigenen Seiten (z. B. Updates, Push-Nachrichten, Funktionen, NaMi, Zuschüsse, Nachrichten) sind wieder richtig gesetzt, mit Nummern, Aufzählungspunkten und Abständen.
+- Fußzeile im Backend anpassbar (Verwaltung → Fußzeile, für Verwaltung und Admins): Kontaktangaben, eigene Service-Links, die Links unter „DPSG im Netz“ und was in der dritten Spalte steht (Newsletter, Zelte, eigenes Bild oder nichts). Ohne Anpassung bleibt alles wie bisher.
 - Stämme und Bezirke: In der Fußzeile steht „DPSG im Netz“ jetzt oben in der dritten Spalte, die Zelte darunter; so sind die Spalten gleich hoch. Auf dem Handy entfällt das Zelte-Bild.
 - Stufen- und Fachbereichsleitungen veröffentlichen Seiten ihres Bereichs selbst; eine schon veröffentlichte Seite lässt sich wieder speichern.
 - Roden: Kimberly und Flavio stehen auf der Seite „Stammesvorstand“ mit ihrer persönlichen Adresse statt vorstand@; die Vorstandsadresse bleibt im Seitentext.

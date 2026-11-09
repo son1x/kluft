@@ -35,6 +35,15 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-09 – Haupt → Stammes, Bezirk: Fußzeile im Backend anpassbar (gemeinsamer Kern)
+Status: offen
+Branch: `feature/fusszeile-backend` (setzt auf `fix/footer-zelte-mobil` auf)
+
+- Neu **Verwaltung → Fußzeile** (`App\Filament\Pages\Fusszeile`, Verwaltung und Admins), Daten in `site_settings` unter `fusszeile` (`App\Support\Fusszeile`). Gespeichert wird nur die Abweichung vom Standard der Instanz.
+- Anpassbar: Kontaktangaben (nur in der Fußzeile; Impressum, Kontaktseite und Mails nutzen weiter `dpsg.contact`), eigene Service-Links unter den festen, eine eigene Liste „DPSG im Netz“ (Standard: dpsg.de + `dpsg.site.parent`/`links`), die dritte Spalte (Standard, Newsletter, Zelte, eigenes Bild aus der Mediathek mit optionalem Link, nichts). Links nur mit `https://` oder `/`.
+- `layouts/app.blade.php` liest alles über `Fusszeile::anzeigen()`; ohne Eintrag sieht die Fußzeile aus wie vorher. Audit: `fusszeile.gespeichert`, `fusszeile.zurueckgesetzt`.
+- **Stämme und Bezirk:** Nichts zu tun. Wer die Fußzeile anpassen will, findet das nach dem Deploy im Backend.
+
 ### 2026-11-09 – Haupt → Stammes, Bezirk: Zelte in der Fußzeile nur ab Tablet-Breite (gemeinsamer Kern)
 Status: offen
 Branch: `fix/footer-zelte-mobil`

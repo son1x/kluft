@@ -71,6 +71,7 @@ class AuditText
         'georgsbote.alle_freigegeben' => 'Alle Zeitschriften-Ausgaben mit PDF als geprüft markiert und veröffentlicht (Auftrag Projektleitung)',
         'fusszeile.gespeichert' => 'Fußzeile angepasst',
         'wartung.an' => 'Wartungsmodus eingeschaltet',
+        'anmeldungen.sammeladresse' => 'Sammeladresse für Anmeldungen geändert',
         'wartung.aus' => 'Wartungsmodus ausgeschaltet',
         'fusszeile.zurueckgesetzt' => 'Fußzeile auf Standard zurückgesetzt',
         'integration.instagram.connect' => 'Instagram verbunden',

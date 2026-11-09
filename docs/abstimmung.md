@@ -35,6 +35,14 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-10 – Haupt → Stammes, Bezirk: Info-Mails zu Anmeldungen (Sammeladresse, verantwortliche Person)
+Status: offen
+Branch: `feature/anmelde-infos`
+
+- Neue Spalten `events.info_sammeladresse`, `info_verantwortlich` (beide Standard an, auch für bestehende Veranstaltungen) und `verantwortlich_email` (leer = wer die Veranstaltung angelegt hat).
+- Bei Bestätigung, Warteliste, Nachrücken und Storno geht `AnmeldungInfoMail` an die Sammeladresse (Veranstaltungen → „Sammeladresse“, SiteSetting `anmeldungen.sammeladresse`, leer = `dpsg.contact.email`) und an die verantwortliche Person. Inhalt nur Name, ggf. Stamm, Stand der Plätze und Link ins Backend.
+- **Achtung Stammes/Bezirk:** Nach dem Deploy bekommt auch dort die Kontaktadresse der Website diese Infos. Wer das nicht will, schaltet es je Veranstaltung aus.
+
 ### 2026-11-09 – Haupt → Stammes, Bezirk: #24–#26 gemergt, Bestätigungsmails geprüft
 Status: erledigt
 Branch: `claude/kluft-instanzen`

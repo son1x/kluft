@@ -247,7 +247,8 @@ class BackupService
         $files = 1;
 
         $sources = [
-            'storage/app/private' => ['backups'],
+            // „einspielen“: laufender Auftrag und Arbeitsordner (BackupEinspielen).
+            'storage/app/private' => ['backups', 'einspielen'],
             'public/uploads' => ['media/variants', 'instagram', 'instagram-feed'],
         ];
         foreach ($sources as $dir => $exclude) {

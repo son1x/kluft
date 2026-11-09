@@ -36,7 +36,8 @@ Falls du doch nicht teilnehmen kannst, storniere bitte über diesen Link, damit 
 [Anmeldung stornieren]({{ $cancelUrl }})
 @endif
 
-@if ($kind !== 'doi')
+{{-- Vor dem Livegang (vorab freigegeben, Testsystem) ist „Meine Anmeldungen“ nicht öffentlich. --}}
+@if ($kind !== 'doi' && ! ($event->extern_freigegeben && \App\Support\Testsystem::aktiv()))
 Alle deine Anmeldungen, Rechnungen und Bescheinigungen findest du unter [Meine Anmeldungen]({{ route('participants.index') }}).
 
 @endif

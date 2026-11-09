@@ -25,6 +25,13 @@
             <p class="mt-2 text-text-secondary">{{ $registration->event->title }} · {{ $registration->event->dateLabel() }}</p>
         @endif
         <p class="mt-4">{{ $text }}</p>
-        <p class="mt-8"><a href="{{ route('events.index') }}" class="font-bold text-dpsg-rot underline">Zu den Veranstaltungen</a></p>
+        @if (request()->attributes->get('testsystem_extern'))
+            {{-- Vorab freigegeben (Testsystem): zurück zur Website statt zur nicht öffentlichen Übersicht. --}}
+            @if ($zurueck = \App\Support\Testsystem::zurueckUrl())
+                <p class="mt-8"><a href="{{ $zurueck }}" class="font-bold text-dpsg-rot underline">Zur Website</a></p>
+            @endif
+        @else
+            <p class="mt-8"><a href="{{ route('events.index') }}" class="font-bold text-dpsg-rot underline">Zu den Veranstaltungen</a></p>
+        @endif
     </div>
 @endsection

@@ -35,7 +35,8 @@
     @if (auth()->check() && \App\Support\Wartung::aktiv())
         @include('kluft.wartung-band')
     @endif
-    @if (\App\Support\Testsystem::aktiv() && ! request()->attributes->get('testsystem_extern'))
+    @php($schlicht = (bool) request()->attributes->get('testsystem_extern'))
+    @if (\App\Support\Testsystem::aktiv() && ! $schlicht)
         {{-- Testsystem (docs/livegang.md): deutlich kennzeichnen, damit niemand hier Inhalte pflegt. --}}
         <div class="relative z-50 bg-dpsg-yellow text-text" role="note">
             <p class="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-2 px-4 py-2 text-center text-sm">
@@ -49,6 +50,20 @@
     @endif
 
 
+    {{-- Vorab extern freigegebene Veranstaltung auf dem Testsystem (Besucher*innen
+         von der alten Website): schlichter Rahmen ohne Menü und Fußzeile, damit
+         niemand vor dem Livegang auf die neue Website stößt. --}}
+    @if ($schlicht)
+        <header class="bg-dpsg-blau text-white">
+            <div class="mx-auto flex max-w-6xl items-center px-4 py-3">
+                @if ($zurueck = \App\Support\Testsystem::zurueckUrl())
+                    <a href="{{ $zurueck }}" class="rounded bg-white px-2 py-1"><x-static-image :src="config('dpsg.site.logo')" :alt="config('dpsg.site.name').' – zur Website'" class="h-12 w-auto" :width="config('dpsg.site.logo_size')[0]" :height="config('dpsg.site.logo_size')[1]" /></a>
+                @else
+                    <span class="rounded bg-white px-2 py-1"><x-static-image :src="config('dpsg.site.logo')" :alt="config('dpsg.site.name')" class="h-12 w-auto" :width="config('dpsg.site.logo_size')[0]" :height="config('dpsg.site.logo_size')[1]" /></span>
+                @endif
+            </div>
+        </header>
+    @else
     {{-- Mobil bleibt die blaue Kopfzeile beim Scrollen oben stehen; das
          hängende Logo schrumpft dann (und bei offenem Menü) in die Zeile. --}}
     <header class="sticky top-0 z-40 bg-dpsg-blau text-white md:relative md:z-30">
@@ -243,10 +258,21 @@
         </nav>
     </div>
 
+    @endif
+
     <main id="inhalt" class="flex-1 @yield('main_class')">
         @yield('content')
     </main>
 
+    @if ($schlicht)
+        <footer class="mt-20 bg-dpsg-blau text-white">
+            <div class="mx-auto flex max-w-6xl flex-wrap gap-x-6 gap-y-2 px-4 py-4 text-sm">
+                <span>© {{ date('Y') }} {{ config('dpsg.contact.name') }}</span>
+                <a href="{{ url('/impressum') }}" class="hover:underline">Impressum</a>
+                <a href="{{ url('/datenschutz') }}" class="hover:underline">Datenschutz</a>
+            </div>
+        </footer>
+    @else
     {{-- Schlanker Footer (Rückmeldung Talia): kein zweites Menü, nur
          Kontakt, Service und der Newsletter. Anpassbar unter Verwaltung →
          Fußzeile (App\Support\Fusszeile), sonst Angaben der Instanz. --}}
@@ -346,6 +372,7 @@
             </div>
         </div>
     </footer>
+    @endif
 
     @include('partials.consent-banner')
 </body>

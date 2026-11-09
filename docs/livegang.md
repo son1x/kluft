@@ -100,6 +100,7 @@ Einzelne Anmeldungen laufen schon vor dem 21.11. über test.dpsg-trier.de, z. B.
   - ist die Veranstaltung auf dem geschlossenen Testsystem ohne Anmeldung erreichbar, ohne gelbes Band, weiter mit noindex. Erreichbar sind die Seite, das Formular, die Links zum Bestätigen und Stornieren, Datenschutz und Impressum;
   - gehen die Mails zu ihren Anmeldungen an die echten Adressen, alle anderen Mails weiter an die Testadresse;
   - lässt sich das Formular unter `/veranstaltungen/<slug>/einbetten` als iframe einbinden. Erlaubt sind nur die Websites in `einbetten_von` (`instanzen/dv-trier/config.php`, jetzt www.dpsg-trier.de und dpsg-trier.de).
+- **Schlichter Rahmen:** Wer nicht angemeldet ist, sieht diese Seiten ohne Menü und Fußzeile, nur mit Logo (Link zur alten Website), Impressum und Datenschutz. Die Einbett-Ansicht zeigt die Infos zur Aktion aufklappbar im iframe statt als Link. In den Mails fehlt „Meine Anmeldungen“, und „Website“ führt zur alten Website. So stößt vor dem Livegang niemand auf die neue Homepage.
 - **Voraussetzung:** Deploy `dv-trier` (Test) mit diesem Stand.
 - **In WordPress:** einen Block „Individuelles HTML“ einfügen:
 

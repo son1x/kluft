@@ -25,14 +25,19 @@ class Ruesthaus
      *
      * @return array{nummer: string, name: string, beschreibung: ?string, url: string, kategorie: ?string, bild: ?string, preis_cent: int, varianten: list<array{nummer: string, bezeichnung: ?string, preis_cent: int}>}|null
      */
-    public function produkt(string $eingabe, bool $mitVarianten = true): ?array
+    public function produkt(string $eingabe, bool $mitVarianten = true, bool $frisch = false): ?array
     {
         $eingabe = trim($eingabe);
         if ($eingabe === '' || mb_strlen($eingabe) > 300) {
             return null;
         }
+        $schluessel = 'ruesthaus3:'.($mitVarianten ? 'v:' : '').sha1(mb_strtolower($eingabe));
+        // „Alle aktualisieren“: nicht den Stand von heute früh aus dem Zwischenspeicher nehmen.
+        if ($frisch) {
+            Cache::forget($schluessel);
+        }
 
-        return Cache::remember('ruesthaus3:'.($mitVarianten ? 'v:' : '').sha1(mb_strtolower($eingabe)), now()->addDay(), function () use ($eingabe, $mitVarianten) {
+        return Cache::remember($schluessel, now()->addDay(), function () use ($eingabe, $mitVarianten) {
             try {
                 $url = self::istLink($eingabe) ? self::sauber($eingabe) : $this->suchen($eingabe);
                 if ($url === null) {

@@ -229,6 +229,27 @@ class SammelbestellungTest extends TestCase
         $this->assertTrue($hemd->fresh()->freigegeben);
     }
 
+    #[TestDox('Alle aktualisieren läuft im Hintergrund, holt frisch (nicht aus dem Zwischenspeicher) und lässt die Freigabe, wie sie ist')]
+    public function test_alle_aktualisieren(): void
+    {
+        $this->login('sammelbestellung');
+        $hemd = Sammelbestellung::freigeben('0100003.30');
+        $kohte = Sammelbestellung::freigeben('1404601', false);
+        $hemd->update(['preis_cent' => 1, 'name' => 'Alt']);
+        $vorher = count(Http::recorded());
+
+        Livewire::test(ListArtikel::class)
+            ->callAction('alleAktualisieren')
+            ->assertNotified('2 Artikel werden aktualisiert');
+
+        $this->assertGreaterThan($vorher, count(Http::recorded()), 'neu abgerufen statt aus dem Zwischenspeicher');
+        $this->assertSame(['Halbarm-Klufthemd', 4800, true], [$hemd->fresh()->name, $hemd->fresh()->preis_cent, $hemd->fresh()->freigegeben]);
+        $this->assertFalse($kohte->fresh()->freigegeben);
+        $stand = ArtikelHolen::stand();
+        $this->assertSame([false, 2, 2, 'aktualisieren'], [$stand['laeuft'], $stand['gesamt'], $stand['erledigt'], $stand['art']]);
+        Livewire::test(ListArtikel::class)->assertSee('Zuletzt aktualisiert: 2 von 2');
+    }
+
     #[TestDox('Storno nur bis zum Bestellschluss: geschlossen noch möglich, nach „beim Rüsthaus bestellt“ nicht mehr')]
     public function test_storno_bis_bestellschluss(): void
     {

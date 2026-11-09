@@ -34,22 +34,17 @@ class ListArtikel extends ListRecords
                 }),
             Action::make('alleAktualisieren')->label('Alle aktualisieren')->icon('heroicon-o-arrow-path')->color('gray')
                 ->visible(fn () => Artikel::query()->where('eigen', false)->exists())
+                ->disabled(fn () => (bool) (ArtikelHolen::stand()['laeuft'] ?? false))
                 ->requiresConfirmation()
-                ->modalDescription('Name, Beschreibung, Preise und Größen aller Artikel neu vom Rüsthaus holen. Geänderte Preise gelten für neue Bestellungen. Dauert etwa eine Sekunde je Größe.')
+                ->modalDescription('Name, Beschreibung, Preise und Größen aller Rüsthaus-Artikel neu holen. Das läuft im Hintergrund, etwa eine Sekunde je Größe; den Stand siehst du oben auf dieser Seite. Geänderte Preise gelten für neue Bestellungen, die Freigabe bleibt, wie sie ist.')
                 ->action(function () {
                     abort_unless(ArtikelResource::canAccess(), 403);
-                    $fehler = [];
-                    foreach (Artikel::query()->where('eigen', false)->orderBy('id')->get() as $artikel) {
-                        try {
-                            Sammelbestellung::freigeben($artikel->url ?: $artikel->nummer, $artikel->freigegeben);
-                        } catch (InvalidArgumentException $e) {
-                            $fehler[] = $artikel->name.': '.$e->getMessage();
-                        }
-                    }
+                    $eingaben = Artikel::query()->where('eigen', false)->orderBy('id')->get()
+                        ->map(fn (Artikel $a) => $a->url ?: $a->nummer)->filter()->unique()->values()->all();
+                    ArtikelHolen::starten($eingaben, false, null, frisch: true);
                     AuditLogger::log('sammelbestellung.artikel.aktualisiert', Filament::auth()->user(), 'shop_artikel', null, request());
-                    $fehler === []
-                        ? Notification::make()->title('Alle Artikel aktualisiert')->success()->send()
-                        : Notification::make()->title('Nicht alle aktualisiert')->body(implode("\n", $fehler))->warning()->persistent()->send();
+                    Notification::make()->success()->title(count($eingaben).' Artikel werden aktualisiert')
+                        ->body('Das läuft im Hintergrund. Den Stand siehst du oben auf dieser Seite (neu laden).')->send();
                 }),
             Action::make('mehrereHolen')->label('Mehrere Artikel holen')->icon('heroicon-o-queue-list')->color('gray')
                 ->modalHeading('Mehrere Artikel vom Rüsthaus holen')
@@ -105,10 +100,11 @@ class ListArtikel extends ListRecords
         if ($stand === null) {
             return null;
         }
+        $aktualisieren = ($stand['art'] ?? 'holen') === 'aktualisieren';
         if ($stand['laeuft']) {
-            return "Mehrere Artikel holen: {$stand['erledigt']} von {$stand['gesamt']} erledigt … (Seite neu laden für den Stand)";
+            return ($aktualisieren ? 'Alle aktualisieren' : 'Mehrere Artikel holen').": {$stand['erledigt']} von {$stand['gesamt']} erledigt … (Seite neu laden für den Stand)";
         }
-        $text = 'Zuletzt geholt: '.count($stand['neu']).' von '.$stand['gesamt'];
+        $text = ($aktualisieren ? 'Zuletzt aktualisiert: ' : 'Zuletzt geholt: ').count($stand['neu']).' von '.$stand['gesamt'];
         if ($stand['fehler'] !== []) {
             $text .= '. Nicht geklappt: '.implode('; ', array_slice($stand['fehler'], 0, 10)).(count($stand['fehler']) > 10 ? ' …' : '');
         }

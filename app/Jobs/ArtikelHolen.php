@@ -13,7 +13,7 @@ use InvalidArgumentException;
 use Throwable;
 
 /**
- * „Mehrere Artikel holen“ (Sammelbestellung → Artikel): Rüsthaus-Nummern bzw.
+ * „Mehrere Artikel holen“ und „Alle aktualisieren“ (Sammelbestellung → Artikel): Rüsthaus-Nummern bzw.
  * Links nacheinander einzeln abrufen wie „Artikel holen“ (SB-10, SB-16: eine
  * Anfrage pro Sekunde), je Lauf höchstens drei, damit der Lauf im Zeitfenster
  * des Cronjobs bleibt; danach stellt sich der Job für den Rest wieder ein.
@@ -34,7 +34,7 @@ class ArtikelHolen implements ShouldQueue
     public int $timeout = 300;
 
     /** @param list<string> $eingaben */
-    public function __construct(public array $eingaben, public bool $freigeben = false, public int $ab = 0, public ?string $kategorie = null) {}
+    public function __construct(public array $eingaben, public bool $freigeben = false, public int $ab = 0, public ?string $kategorie = null, public bool $frisch = false) {}
 
     /**
      * Eingabe in einzelne Nummern bzw. Links zerlegen: je Zeile, Komma, Semikolon
@@ -47,7 +47,7 @@ class ArtikelHolen implements ShouldQueue
         return array_values(array_unique(array_filter(array_map('trim', preg_split('/[\s,;]+/u', $text) ?: []), fn ($e) => $e !== '')));
     }
 
-    /** @return array{laeuft: bool, gesamt: int, erledigt: int, neu: list<string>, fehler: list<string>, am: string, zuletzt?: string}|null */
+    /** @return array{laeuft: bool, gesamt: int, erledigt: int, neu: list<string>, fehler: list<string>, am: string, zuletzt?: string, art?: string}|null */
     public static function stand(): ?array
     {
         $stand = Cache::get(self::KEY);
@@ -64,11 +64,15 @@ class ArtikelHolen implements ShouldQueue
         return $stand;
     }
 
-    /** @param list<string> $eingaben */
-    public static function starten(array $eingaben, bool $freigeben, ?string $kategorie = null): void
+    /**
+     * @param  list<string>  $eingaben
+     * @param  bool  $frisch  am Zwischenspeicher vorbei (Alle aktualisieren)
+     */
+    public static function starten(array $eingaben, bool $freigeben, ?string $kategorie = null, bool $frisch = false): void
     {
-        Cache::put(self::KEY, ['laeuft' => true, 'gesamt' => count($eingaben), 'erledigt' => 0, 'neu' => [], 'fehler' => [], 'am' => now()->toIso8601String()], now()->addDays(7));
-        self::dispatch($eingaben, $freigeben, 0, filled($kategorie) ? mb_substr(trim((string) $kategorie), 0, 80) : null);
+        Cache::put(self::KEY, ['laeuft' => true, 'gesamt' => count($eingaben), 'erledigt' => 0, 'neu' => [], 'fehler' => [], 'am' => now()->toIso8601String(),
+            'art' => $frisch ? 'aktualisieren' : 'holen'], now()->addDays(7));
+        self::dispatch($eingaben, $freigeben, 0, filled($kategorie) ? mb_substr(trim((string) $kategorie), 0, 80) : null, $frisch);
     }
 
     public function handle(): void
@@ -77,7 +81,7 @@ class ArtikelHolen implements ShouldQueue
         $teil = array_slice($this->eingaben, $this->ab, self::JE_LAUF);
         foreach ($teil as $eingabe) {
             try {
-                $artikel = Sammelbestellung::freigeben($eingabe, $this->freigeben);
+                $artikel = Sammelbestellung::freigeben($eingabe, $this->freigeben, $this->frisch);
                 // Kategorie im Shop nur setzen, wenn der Artikel noch keine hat.
                 if ($this->kategorie !== null && blank($artikel->kategorie)) {
                     $artikel->update(['kategorie' => $this->kategorie]);
@@ -97,7 +101,7 @@ class ArtikelHolen implements ShouldQueue
         $stand['zuletzt'] = now()->toIso8601String();
         Cache::put(self::KEY, $stand, now()->addDays(7));
         if ($weiter) {
-            self::dispatch($this->eingaben, $this->freigeben, $this->ab + self::JE_LAUF, $this->kategorie);
+            self::dispatch($this->eingaben, $this->freigeben, $this->ab + self::JE_LAUF, $this->kategorie, $this->frisch);
         }
     }
 }

@@ -127,13 +127,14 @@ class Sammelbestellung
 
     /**
      * Artikel per Rüsthaus-Nummer oder -Link holen und freigeben (Bild,
-     * Beschreibung, Größen werden lokal gespeichert). Bestehende werden aktualisiert.
+     * Beschreibung, Größen werden lokal gespeichert). Bestehende werden aktualisiert,
+     * ihre Freigabe bleibt. $frisch: am Zwischenspeicher vorbei neu abrufen.
      *
      * @throws InvalidArgumentException nicht gefunden oder gesperrt
      */
-    public static function freigeben(string $eingabe, bool $freigeben = true): Artikel
+    public static function freigeben(string $eingabe, bool $freigeben = true, bool $frisch = false): Artikel
     {
-        $daten = app(Ruesthaus::class)->produkt($eingabe);
+        $daten = app(Ruesthaus::class)->produkt($eingabe, frisch: $frisch);
         if ($daten === null) {
             throw new InvalidArgumentException('Beim Rüsthaus nicht gefunden. Bitte Artikelnummer oder Link prüfen.');
         }

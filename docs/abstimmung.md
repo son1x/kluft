@@ -35,6 +35,13 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-09 – Haupt → Stammes, Bezirk: Zelte in der Fußzeile nur ab Tablet-Breite (gemeinsamer Kern)
+Status: offen
+Branch: `fix/footer-zelte-mobil`
+
+- `layouts/app.blade.php`: Ohne Newsletter-Widget steht „DPSG im Netz“ (neu `partials/footer-netz.blade.php`) oben in der dritten Spalte, die Zelte darunter auf dem blauen Balken. Vorher war die mittlere Spalte lang und rechts oben leer. Mit Newsletter (DV) unverändert.
+- Das Zelte-Bild ist auf dem Handy ausgeblendet (`hidden md:flex`). Anlass: In Roden stand es dort als großes Deko-Bild unter den Links. Wirksam mit dem nächsten Deploy der jeweiligen Instanz.
+
 ### 2026-11-09 – Haupt → Stammes, Bezirk: PRs #6–#12 gemergt, Stufen-/Sektionsadmins veröffentlichen Seiten (gemeinsamer Kern)
 Status: offen
 

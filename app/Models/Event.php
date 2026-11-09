@@ -46,9 +46,15 @@ class Event extends Model
         'cancelled' => 'Abgesagt',
     ];
 
+    /** Standard wie in der Datenbank, damit neue Modelle ihn auch vor dem Neuladen kennen. */
+    protected $attributes = [
+        'info_sammeladresse' => true,
+        'info_verantwortlich' => true,
+    ];
+
     protected $fillable = [
         'title', 'slug', 'teaser', 'description', 'starts_at', 'ends_at', 'location',
-        'stage', 'section', 'target_group', 'cover_media_id', 'contact_name', 'contact_email',
+        'stage', 'section', 'target_group', 'cover_media_id', 'contact_name', 'contact_email', 'info_sammeladresse', 'info_verantwortlich', 'verantwortlich_email',
         'cost_info', 'reg_opens_at', 'reg_closes_at', 'capacity', 'waitlist_enabled', 'adults_only', 'member_check', 'member_gruppierung_id',
         'status', 'extern_freigegeben', 'form_fields', 'retention_days', 'created_by', 'calendar_uid',
         'certificate_enabled', 'certificate_text', 'certificate_signer', 'preise', 'zahlungsfrist_tage',
@@ -65,6 +71,8 @@ class Event extends Model
             'waitlist_enabled' => 'boolean',
             'adults_only' => 'boolean',
             'extern_freigegeben' => 'boolean',
+            'info_sammeladresse' => 'boolean',
+            'info_verantwortlich' => 'boolean',
             'member_check' => 'boolean',
             'certificate_enabled' => 'boolean',
             'form_fields' => 'array',
@@ -134,6 +142,16 @@ class Event extends Model
         return $g->typ === 'bezirk'
             ? 'Mitglieder im '.$g->displayName()
             : 'Mitglieder von '.(str_starts_with($g->name, 'Stamm') ? '' : 'Stamm ').$g->name;
+    }
+
+    /**
+     * Wer die Veranstaltung angelegt hat (Standard für „verantwortlich“).
+     *
+     * @return BelongsTo<User, $this>
+     */
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     /**

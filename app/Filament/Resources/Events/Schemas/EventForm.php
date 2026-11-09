@@ -8,6 +8,7 @@ use App\Models\Gruppierung;
 use App\Services\Mitglieder\MitgliederAbgleich;
 use App\Services\Mitglieder\Mitgliederverzeichnis;
 use App\Services\Mitglieder\NamiVerzeichnis;
+use App\Support\AnmeldeInfos;
 use App\Support\Features;
 use App\Support\RoleCatalog;
 use App\Support\Teilnahmebeitraege;
@@ -121,6 +122,21 @@ class EventForm
                     TextInput::make('contact_name')->label('Kontaktperson')->maxLength(255),
                     TextInput::make('contact_email')->label('Kontakt-E-Mail')->email()->maxLength(255)
                         ->helperText('Bitte eine Funktionsadresse (z. B. woelflinge@'.config('dpsg.site.domain').').'),
+                    Fieldset::make('Info-Mails an das Team')
+                        ->columnSpan(2)
+                        ->columns(2)
+                        ->components([
+                            Toggle::make('info_sammeladresse')->label('Sammeladresse informieren')->default(true)
+                                ->helperText(fn () => 'Bei jeder bestätigten Anmeldung, Nachrücken und Abmeldung eine kurze Mail an '.(AnmeldeInfos::sammeladresse() ?? '– (keine Sammeladresse eingestellt)').'. Ändern: Veranstaltungen → „Sammeladresse“.'),
+                            Toggle::make('info_verantwortlich')->label('Verantwortliche Person informieren')->default(true)->live()
+                                ->helperText('z. B. Bildungsreferent*in oder DL-Mitglied. Ohne Adresse: wer die Veranstaltung angelegt hat.'),
+                            TextInput::make('verantwortlich_email')->label('Verantwortlich (E-Mail)')->email()->maxLength(255)
+                                ->default(fn () => Filament::auth()->user()?->email)
+                                ->placeholder(fn (?Event $record) => $record?->creator?->email ?? Filament::auth()->user()?->email)
+                                ->datalist(fn () => AnmeldeInfos::vorschlaege())
+                                ->visible(fn (Get $get) => (bool) $get('info_verantwortlich'))
+                                ->columnSpan(2),
+                        ]),
                     Select::make('cover_media_id')
                         ->label('Titelbild')
                         ->relationship('coverMedia', 'alt_text')

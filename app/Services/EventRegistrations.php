@@ -8,6 +8,7 @@ use App\Models\Event;
 use App\Models\EventRegistration;
 use App\Models\User;
 use App\Services\Mitglieder\NamiVerzeichnis;
+use App\Support\AnmeldeInfos;
 use App\Support\AuditLogger;
 use App\Support\Teilnahmebeitraege;
 use Illuminate\Support\Facades\DB;
@@ -191,6 +192,7 @@ class EventRegistrations
 
         $this->send($registration, $result, $cancelToken);
         app(PushNotifier::class)->registration($registration, $result);
+        AnmeldeInfos::senden($registration, $result);
         Teilnahmebeitraege::fordern($registration);
 
         // Automatisch nur mit technischem Konto; bei persönlicher NaMi-Anmeldung
@@ -217,6 +219,7 @@ class EventRegistrations
 
         $this->send($registration, 'cancelled');
         app(PushNotifier::class)->registration($registration, 'cancelled');
+        AnmeldeInfos::senden($registration, 'cancelled');
         Teilnahmebeitraege::stornieren($registration, 'Anmeldung storniert');
 
         if ($wasConfirmed) {
@@ -244,6 +247,7 @@ class EventRegistrations
     {
         $registration->update(['status' => 'confirmed']);
         $this->send($registration, 'promoted', $this->issueCancelToken($registration));
+        AnmeldeInfos::senden($registration, 'promoted');
         Teilnahmebeitraege::fordern($registration);
     }
 

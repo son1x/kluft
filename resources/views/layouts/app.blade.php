@@ -249,8 +249,9 @@
          Fußzeile (App\Support\Fusszeile), sonst Angaben der Instanz. --}}
     @php($fuss = \App\Support\Fusszeile::anzeigen())
     @php($contact = $fuss['kontakt'])
-    <footer class="mt-20 bg-dpsg-hellbeige text-text">
-        <div class="mx-auto grid max-w-6xl gap-10 px-4 py-12 text-sm md:grid-cols-3">
+    {{-- isolate + overflow-x-clip: die Wiese der Zelte läuft hinter allen Spalten bis an den Rand. --}}
+    <footer class="isolate mt-20 overflow-x-clip bg-dpsg-hellbeige text-text">
+        <div @class(['mx-auto grid max-w-6xl gap-10 px-4 pt-12 text-sm md:grid-cols-3', 'pb-12' => $fuss['spalte3'] !== 'zelte', 'pb-12 md:pb-24' => $fuss['spalte3'] === 'zelte'])>
             <div>
                 <h2 class="mb-4 font-serif text-base font-bold">{{ $contact['name'] }}</h2>
                 <p class="font-bold">{{ $contact['office'] }}</p>
@@ -308,11 +309,16 @@
                 <div class="flex flex-col">
                     @include('partials.footer-netz', ['class' => 'mb-4', 'links' => $fuss['netz']])
                     @if ($fuss['spalte3'] === 'zelte')
-                        <div class="-mb-12 mt-auto hidden items-end justify-end pt-6 md:flex" aria-hidden="true">
-                            <picture class="block w-full max-w-[300px]">
-                                <source type="image/webp" srcset="{{ asset('images/footer/zelte.webp') }}" />
-                                <img src="{{ asset('images/footer/zelte.png') }}" alt="" width="544" height="288" loading="lazy" class="h-auto w-full [mask-image:linear-gradient(to_right,transparent,#000_25%,#000_88%,transparent)]" />
-                            </picture>
+                        {{-- Die Wiese des Bildes (untere 55 %) läuft als Band über die ganze Breite weiter;
+                             es hängt am Bild, damit der Horizont bei jeder Bildgröße passt. --}}
+                        <div class="mt-auto hidden items-end justify-end pt-6 md:-mb-24 md:flex" aria-hidden="true">
+                            <div class="relative w-full max-w-[300px]">
+                                <span class="absolute -left-[200vw] -right-[200vw] bottom-0 -z-10 h-[55%] bg-[linear-gradient(to_bottom,rgba(101,146,8,0),#b7cc8b_3px,#659208_9px)]"></span>
+                                <picture class="relative block">
+                                    <source type="image/webp" srcset="{{ asset('images/footer/zelte.webp') }}" />
+                                    <img src="{{ asset('images/footer/zelte.png') }}" alt="" width="544" height="288" loading="lazy" class="h-auto w-full [mask-image:linear-gradient(to_right,transparent,#000_15%)]" />
+                                </picture>
+                            </div>
                         </div>
                     @elseif ($fuss['spalte3'] === 'bild' && $fuss['bild'])
                         <div class="-mb-12 mt-auto hidden items-end justify-end pt-6 md:flex">

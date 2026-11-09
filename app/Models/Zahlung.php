@@ -75,6 +75,12 @@ class Zahlung extends Model
         $query->whereIn('status', ['offen', 'teilweise']);
     }
 
+    /** Bei stornierter Zahlung: was schon bezahlt, aber noch nicht erstattet ist. */
+    public function erstattungOffenCent(): int
+    {
+        return $this->status === 'storniert' ? max(0, (int) $this->bezahlt_cent - (int) $this->erstattet_cent) : 0;
+    }
+
     public function offenCent(): int
     {
         return in_array($this->status, ['offen', 'teilweise'], true) ? max(0, $this->betrag_cent - (int) $this->bezahlt_cent) : 0;

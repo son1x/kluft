@@ -253,10 +253,25 @@ class Sammelbestellung
     /** Bestellung stornieren: offene Zahlungen entfallen, bezahlte bleiben für die Erstattung sichtbar. */
     public static function stornieren(Bestellung $bestellung, ?int $userId = null): void
     {
-        foreach ($bestellung->zahlungen()->whereIn('status', ['offen'])->get() as $zahlung) {
-            $zahlung->stornieren($userId, 'Sammelbestellung storniert');
+        // Auch Bezahltes: Die Zahlung wird storniert und zeigt der Kasse die offene
+        // Erstattung (Zahlung::erstattungOffenCent, Filter „Erstattung offen“).
+        foreach ($bestellung->zahlungen()->whereNotIn('status', ['storniert', 'erstattet'])->get() as $zahlung) {
+            $bezahlt = (int) $zahlung->bezahlt_cent - (int) $zahlung->erstattet_cent;
+            $zahlung->stornieren($userId, $bezahlt > 0
+                ? 'Sammelbestellung storniert – '.Zahlungen::euro($bezahlt).' erstatten'
+                : 'Sammelbestellung storniert');
         }
         $bestellung->update(['storniert_am' => now()]);
+    }
+
+    /**
+     * Storno durch die Person (Entscheidung Stamm, 09.11.2026): bis zum
+     * Bestellschluss, also solange die Runde noch nicht als „beim Rüsthaus
+     * bestellt“ markiert ist, auch wenn schon bezahlt wurde.
+     */
+    public static function stornierbar(Bestellung $bestellung): bool
+    {
+        return ! $bestellung->storniert_am && in_array($bestellung->runde?->status, ['offen', 'geschlossen'], true);
     }
 
     /**

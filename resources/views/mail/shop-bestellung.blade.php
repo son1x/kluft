@@ -39,7 +39,7 @@ deine Bestellung ist eingegangen. Bestellt wird beim Rüsthaus am **{{ $bestellu
 </x-mail::table>
 
 @if ($art === 'bestaetigt' && $link)
-Stand und Storno (solange die Runde offen und nichts bezahlt ist): [deine Bestellung]({{ $link }})
+Stand und Storno (bis zum Bestellschluss, Bezahltes erstatten wir): [deine Bestellung]({{ $link }})
 @endif
 @endif
 

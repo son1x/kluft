@@ -47,12 +47,14 @@
             <p class="mt-4 text-sm">Zahlung {{ $zahlung->referenz }}: {{ \App\Support\Zahlungen::euro($zahlung->betrag_cent) }} – {{ \App\Models\Zahlung::STATUS[$zahlung->status] ?? $zahlung->status }}. Kontodaten und GiroCode stehen in der Zahlungsaufforderung.</p>
         @endforeach
 
-        @if (! $bestellung->storniert_am && $bestellung->runde->istOffen() && $bestellung->zahlungen->sum('bezahlt_cent') === 0)
+        @if (\App\Support\Sammelbestellung::stornierbar($bestellung))
             <form method="post" action="{{ route('shop.stornieren', $token) }}" class="mt-8" x-data @submit="if (! confirm('Bestellung wirklich stornieren?')) $event.preventDefault()">
                 @csrf
                 <button type="submit" class="border border-dpsg-rot px-4 py-2 font-bold text-dpsg-rot hover:bg-dpsg-rot hover:text-white">Bestellung stornieren</button>
             </form>
-            <p class="mt-2 text-xs text-text-secondary">Etwas ändern? Storniere und bestelle neu, solange die Runde offen ist – oder schreib uns.</p>
+            <p class="mt-2 text-xs text-text-secondary">Stornieren geht bis zum Bestellschluss, also bis wir beim Rüsthaus bestellen. Schon Bezahltes erstatten wir. Etwas ändern? Storniere und bestelle neu, solange die Runde offen ist, oder schreib uns.</p>
+        @elseif (! $bestellung->storniert_am)
+            <p class="mt-8 text-sm text-text-secondary">Wir haben beim Rüsthaus bestellt; stornieren geht deshalb nicht mehr.</p>
         @endif
     </div>
 @endsection

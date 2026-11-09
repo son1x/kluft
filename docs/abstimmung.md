@@ -35,6 +35,14 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-09 – Haupt → Stammes, Bezirk: Veranstaltungen, eigene Felder im Formular-Baukasten
+Status: offen
+Branch: `feature/eigene-anmeldefelder`
+
+- Formular-Baukasten hat unten **„Eigene Felder“** (bis zu 15): kurzer/langer Text, Zahl, Auswahl (eine oder mehrere Antworten), Pflicht ja/nein, Hinweis. Gespeichert in `events.form_fields.eigene`, jedes Feld mit festem Schlüssel `eigen_…`; `Event::formFields()` liefert sie vor „Anmerkungen“, damit laufen Formular, Prüfung, Backend-Liste, Export und Auskunft ohne Sonderwege.
+- Neue Feldtypen in `formFields()`: `zahl` und `mehrfach` (Liste). Wer `formFields()` auswertet, bekommt sie über `fieldValueLabel()` als Text.
+- DV Trier: Inhaltsmigration legt die Anmeldung zur Wö- und Biber-Weihnachtspostkartenaktion an (Anmeldung bis 23.11.2026).
+
 ### 2026-11-09 – Haupt → Stammes: Sammelbestellung, Rüsthaus-Katalog im Backend
 Status: offen
 Branch: `feature/ruesthaus-katalog` (setzt auf `feature/sammelbestellung-shop` auf)

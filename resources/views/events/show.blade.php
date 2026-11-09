@@ -147,7 +147,7 @@
                             @endif
                             @php($label = $field['label'].($field['required'] ? ' *' : ''))
                             <div>
-                                <label for="{{ $key }}" class="block text-sm font-bold">{{ $label }}</label>
+                                <label id="{{ $key }}-label" for="{{ $key }}" class="block text-sm font-bold">{{ $label }}</label>
                                 @switch($field['type'])
                                     @case('year')
                                         <input id="{{ $key }}" name="{{ $key }}" type="number" inputmode="numeric" min="{{ now()->year - 100 }}" max="{{ now()->year }}" @required($field['required']) value="{{ old($key) }}" class="{{ $input }} sm:max-w-40" aria-describedby="{{ $key }}-hint" />
@@ -163,7 +163,24 @@
                                         @break
                                     @case('textarea')
                                         <textarea id="{{ $key }}" name="{{ $key }}" rows="3" maxlength="1000" @required($field['required']) class="{{ $input }}" aria-describedby="{{ $key }}-hint">{{ old($key) }}</textarea>
-                                        <p id="{{ $key }}-hint" class="mt-1 text-xs text-text-secondary">Bitte keine Gesundheitsangaben hier eintragen – die klären wir bei Bedarf persönlich.</p>
+                                        @unless ($field['eigen'] ?? false)
+                                            <p id="{{ $key }}-hint" class="mt-1 text-xs text-text-secondary">Bitte keine Gesundheitsangaben hier eintragen – die klären wir bei Bedarf persönlich.</p>
+                                        @endunless
+                                        @break
+                                    @case('zahl')
+                                        <input id="{{ $key }}" name="{{ $key }}" type="number" inputmode="numeric" min="0" max="100000" step="1" @required($field['required']) value="{{ old($key) }}" class="{{ $input }} sm:max-w-40" />
+                                        @break
+                                    @case('mehrfach')
+                                        {{-- Mehrere Antworten möglich; Pflicht prüft der Server (mindestens eine). --}}
+                                        <div class="mt-1 space-y-2" role="group" aria-labelledby="{{ $key }}-label">
+                                            @foreach ($field['options'] as $value => $optionLabel)
+                                                <label class="flex items-start gap-2">
+                                                    <input @if ($loop->first) id="{{ $key }}" @endif type="checkbox" name="{{ $key }}[]" value="{{ $value }}" @checked(in_array($value, (array) old($key, []), true)) class="mt-1 h-4 w-4 shrink-0" />
+                                                    <span>{{ $optionLabel }}</span>
+                                                </label>
+                                            @endforeach
+                                        </div>
+                                        @error($key.'.*')<p class="mt-1 text-sm text-dpsg-rot">{{ $message }}</p>@enderror
                                         @break
                                     @case('plz')
                                         <input id="{{ $key }}" name="{{ $key }}" type="text" inputmode="numeric" autocomplete="postal-code" maxlength="10" @required($field['required']) value="{{ old($key) }}" class="{{ $input }} sm:max-w-40" />
@@ -208,6 +225,9 @@
                                     @default
                                         <input id="{{ $key }}" name="{{ $key }}" type="text" @required($field['required']) value="{{ old($key) }}" class="{{ $input }}" />
                                 @endswitch
+                                @if (($field['eigen'] ?? false) && filled($field['hint'] ?? null))
+                                    <p class="mt-1 text-xs text-text-secondary">{{ $field['hint'] }}</p>
+                                @endif
                                 @error($key)<p class="mt-1 text-sm text-dpsg-rot">{{ $message }}</p>@enderror
                             </div>
                         @endforeach

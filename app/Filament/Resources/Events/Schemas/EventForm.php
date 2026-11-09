@@ -221,7 +221,7 @@ class EventForm
                 ->description('Name und E-Mail werden immer abgefragt. Frag nur ab, was du für diese Veranstaltung wirklich brauchst (Datensparsamkeit).')
                 ->columns(3)
                 ->columnSpanFull()
-                ->components(collect(config('dpsg.event_fields'))->map(fn (array $field, string $key) => Select::make("form_fields.{$key}")
+                ->components([...collect(config('dpsg.event_fields'))->map(fn (array $field, string $key) => Select::make("form_fields.{$key}")
                     ->label($field['label'])
                     ->helperText($field['hint'] ?? null)
                     ->options(['none' => 'Nicht abfragen', 'optional' => 'Optional', 'required' => 'Pflichtfeld'])
@@ -229,7 +229,29 @@ class EventForm
                     ->default('none')
                     ->afterStateHydrated(fn (Select $component, ?string $state) => $component->state($state ?: 'none'))
                     ->selectablePlaceholder(false)
-                    ->native(false))->values()->all()),
+                    ->native(false))->values()->all(),
+                    Repeater::make('form_fields.eigene')
+                        ->label('Eigene Felder')
+                        ->helperText('Für Fragen, die es oben nicht gibt, z. B. „Anzahl der Kinder“ oder „Welche Aktion?“. Sie stehen im Formular vor den Anmerkungen, in der Liste der Anmeldungen und im Export. Wird ein Feld gelöscht, verschwinden auch die Antworten darauf aus der Anzeige.')
+                        ->schema([
+                            Hidden::make('schluessel'),
+                            TextInput::make('label')->label('Frage')->required()->maxLength(150)->columnSpan(2),
+                            Select::make('typ')->label('Art')->options(Event::EIGENE_TYPEN)->default('text')->required()
+                                ->in(array_keys(Event::EIGENE_TYPEN))->selectablePlaceholder(false)->native(false)->live(),
+                            Textarea::make('optionen')->label('Antwortmöglichkeiten')->helperText('Eine pro Zeile.')->rows(3)->columnSpan(2)
+                                ->required(fn (Get $get) => in_array($get('typ'), ['auswahl', 'mehrfach'], true))
+                                ->visible(fn (Get $get) => in_array($get('typ'), ['auswahl', 'mehrfach'], true)),
+                            Toggle::make('pflicht')->label('Pflichtfeld')->inline(false),
+                            TextInput::make('hinweis')->label('Hinweis unter dem Feld (optional)')->maxLength(300)->columnSpanFull(),
+                        ])
+                        ->columns(3)
+                        ->columnSpanFull()
+                        ->defaultItems(0)
+                        ->maxItems(Event::EIGENE_MAX)
+                        ->collapsible()
+                        ->itemLabel(fn (array $state) => filled($state['label'] ?? null) ? $state['label'].' ('.(Event::EIGENE_TYPEN[$state['typ'] ?? ''] ?? '').')' : null)
+                        ->addActionLabel('Eigenes Feld hinzufügen'),
+                ]),
 
             Section::make('Datenschutz')
                 ->columnSpanFull()

@@ -35,6 +35,14 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-09 – Haupt → Stammes, Bezirk: Wartungsmodus von Hand
+Status: offen
+Branch: `feature/wartungsmodus`
+
+- Neu **Verwaltung → Wartungsmodus** (nur Admins), Befehl `kluft:wartung an|aus|status` und in „Server-Prüfung“ `wartung:status|an|aus`.
+- Schalter in `site_settings` (Schlüssel `wartung`), wandert beim Kopieren der Datenbank mit. Middleware `Wartungsmodus` in der web-Gruppe und im Panel (authMiddleware): Gäste bekommen `errors/503` mit eigenem Text und „voraussichtlich wieder da“, Angemeldete die Website mit rotem Band; optional Backend nur für Admins.
+- `php artisan down` für Deploy und Update bleibt unverändert.
+
 ### 2026-11-09 – Haupt → Stammes, Bezirk: Veranstaltung „Vorab extern freigeben“, Einbett-Ansicht
 Status: offen
 Branch: `feature/anmeldung-einbetten` (setzt auf `feature/eigene-anmeldefelder` auf)

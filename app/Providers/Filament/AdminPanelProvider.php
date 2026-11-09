@@ -7,8 +7,10 @@ use App\Filament\Resources\GeorgsboteIssues\Pages\EditGeorgsboteIssue;
 use App\Filament\Resources\GeorgsboteIssues\Pages\ListGeorgsboteIssues;
 use App\Filament\Resources\Gruppierungen\Pages\CreateGruppierung;
 use App\Filament\Resources\Gruppierungen\Pages\EditGruppierung;
+use App\Http\Middleware\Wartungsmodus;
 use App\Support\Features;
 use App\Support\Testsystem;
+use App\Support\Wartung;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -88,6 +90,8 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+                // Redaktionsstopp im Wartungsmodus (nur Admins); das Panel läuft nicht über die web-Gruppe.
+                Wartungsmodus::class,
             ])
             // Kartenauswahl für den Standort von Bezirken/Stämmen (F-MAP-05),
             // nur auf den Seiten laden, die sie brauchen.
@@ -106,6 +110,11 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook(
                 PanelsRenderHook::BODY_START,
                 fn (): string => Testsystem::aktiv() ? view('kluft.testsystem-band')->render() : '',
+            )
+            // Wartungsmodus von Hand: rotes Band, damit niemand vergisst, ihn auszuschalten.
+            ->renderHook(
+                PanelsRenderHook::BODY_START,
+                fn (): string => Wartung::aktiv() ? view('kluft.wartung-band')->render() : '',
             )
             // Unten auf jeder Backend-Seite: Kluft-Logo, Name und Git-Revision.
             ->renderHook(

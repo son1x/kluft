@@ -4,6 +4,7 @@ use App\Http\Middleware\AufrufZaehlen;
 use App\Http\Middleware\LegacyRedirects;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\TestsystemSchutz;
+use App\Http\Middleware\Wartungsmodus;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -21,6 +22,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(LegacyRedirects::class);
         // Testsystem: noindex, im Modus „geschlossen“ nur nach Anmeldung (docs/livegang.md).
         $middleware->web(append: TestsystemSchutz::class);
+        // Wartungsmodus von Hand (Verwaltung → Wartungsmodus), z. B. beim Umzug.
+        $middleware->web(append: Wartungsmodus::class);
         // Seitenaufrufe ohne Personenbezug zählen (Funktion „aufrufe“, docs/aufrufe.md).
         $middleware->web(append: AufrufZaehlen::class);
         // Gäste auf Routen mit „auth“ zur Anmeldung der Redaktion (Filament

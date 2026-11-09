@@ -300,9 +300,10 @@
                     </a>
                 </div>
             @else
-                {{-- Ohne Newsletter (Stämme, Bezirke): Zelte auf der Wiese unten rechts, sie stehen auf dem blauen Balken. --}}
-                <div class="-mb-12 flex items-end justify-end" aria-hidden="true">
-                    <picture class="block w-56 md:w-full md:max-w-[300px]">
+                {{-- Ohne Newsletter (Stämme, Bezirke): Zelte auf der Wiese unten rechts, sie stehen auf dem blauen Balken.
+                     Erst ab md (eigene Spalte); auf dem Handy wären sie nur Deko unter dem Text. --}}
+                <div class="-mb-12 hidden items-end justify-end md:flex" aria-hidden="true">
+                    <picture class="block w-full max-w-[300px]">
                         <source type="image/webp" srcset="{{ asset('images/footer/zelte.webp') }}" />
                         <img src="{{ asset('images/footer/zelte.png') }}" alt="" width="544" height="288" loading="lazy" class="h-auto w-full [mask-image:linear-gradient(to_right,transparent,#000_25%,#000_88%,transparent)]" />
                     </picture>

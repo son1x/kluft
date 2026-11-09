@@ -6,6 +6,7 @@ Admins. Kurz und aus Sicht der Redaktion schreiben.
 
 ## 0.9.0
 
+- Stämme und Bezirke: Die Zelte unten in der Fußzeile erscheinen nur noch ab Tablet-Breite; auf dem Handy entfällt das Bild.
 - Stufen- und Fachbereichsleitungen veröffentlichen Seiten ihres Bereichs selbst; eine schon veröffentlichte Seite lässt sich wieder speichern.
 - Roden: Kimberly und Flavio stehen auf der Seite „Stammesvorstand“ mit ihrer persönlichen Adresse statt vorstand@; die Vorstandsadresse bleibt im Seitentext.
 - Der Vorstand pflegt die Vorstandsseite (Seite der Diözesan- bzw. Bezirksleitung oder des Stammesvorstands) und ihre Unterseiten selbst und kann sie veröffentlichen. Andere Seiten sieht er im Backend nicht mehr.

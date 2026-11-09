@@ -35,6 +35,12 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-09 – Haupt → Stammes, Bezirk: Zelte in der Fußzeile nur ab Tablet-Breite (gemeinsamer Kern)
+Status: offen
+Branch: `fix/footer-zelte-mobil`
+
+- `layouts/app.blade.php`: Das Zelte-Bild (ohne Newsletter-Widget) ist auf dem Handy ausgeblendet (`hidden md:flex`). Anlass: In Roden stand es auf dem Handy als großes Deko-Bild unter den Links. Ab `md` unverändert in der dritten Spalte. Wirksam mit dem nächsten Deploy der jeweiligen Instanz.
+
 ### 2026-11-09 – Haupt → Stammes, Bezirk: PRs #6–#12 gemergt, Stufen-/Sektionsadmins veröffentlichen Seiten (gemeinsamer Kern)
 Status: offen
 

@@ -7,6 +7,7 @@ use App\Mail\TestRecipientFilter;
 use App\Models\Event;
 use App\Models\EventRegistration;
 use App\Models\Page;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use PHPUnit\Framework\Attributes\TestDox;
@@ -114,5 +115,39 @@ class AnmeldungEinbettenTest extends TestCase
 
         $this->assertSame([['kim@example.org'], ['test@example.org']], $an);
         $this->assertFalse($nachrichten[0]->getHeaders()->has(TestRecipientFilter::EXTERN), 'Kopfzeile wird vor dem Versand entfernt');
+    }
+
+    #[TestDox('Vor dem Livegang: schlichter Rahmen ohne Menü, Fußzeile und Links in die neue Website; Infos im iframe; Mails ohne „Meine Anmeldungen“')]
+    public function test_schlicht(): void
+    {
+        config(['kluft.testsystem' => 'geschlossen', 'mail.default' => 'array', 'mail.test_redirect_to' => 'test@example.org']);
+        $event = $this->event('aktion', true);
+        $event->update(['description' => '<p>Karten für Bolivien</p>', 'location' => 'In euren Gruppenstunden', 'contact_email' => 'info@example.org']);
+
+        $this->get('/veranstaltungen/aktion')->assertOk()
+            ->assertDontSee('Hauptnavigation')->assertDontSee('Brotkrumen')->assertDontSee('id="frage"', false)
+            ->assertDontSee('href="'.route('events.index').'"', false)->assertDontSee('Meine Anmeldungen')
+            ->assertSee('href="https://www.dpsg-trier.de"', false)->assertSee('Datenschutz');
+
+        $this->get('/veranstaltungen/aktion/einbetten')->assertOk()
+            ->assertSee('Mehr zur Aktion')->assertSee('Karten für Bolivien')->assertSee('In euren Gruppenstunden')
+            ->assertDontSee(route('events.show', 'aktion').'"', false);
+
+        // Angemeldet: normale Website.
+        $admin = User::query()->create(['name' => 'A', 'email' => 'a@example.org', 'status' => 'active']);
+        $this->actingAs($admin)->get('/veranstaltungen/aktion')->assertOk()->assertSee('Hauptnavigation');
+        auth()->logout();
+
+        // Bestätigen: Ergebnis mit Link zur Website, Mail ohne „Meine Anmeldungen“ und mit Website-Link nach außen.
+        $this->post('/veranstaltungen/aktion/anmeldung', self::anmeldung())->assertSessionHasNoErrors();
+        $mails = array_values(array_map(fn ($m) => $m->getOriginalMessage(), iterator_to_array(app('mailer')->getSymfonyTransport()->messages())));
+        preg_match('#https?://[^\s"<>]+/anmeldung/bestaetigen/[A-Za-z0-9]+#', html_entity_decode((string) $mails[0]->getHtmlBody()), $t);
+        $this->post($t[0])->assertOk()->assertSee('Zur Website')->assertDontSee('Zu den Veranstaltungen')->assertDontSee('Hauptnavigation');
+
+        $mails = array_values(array_map(fn ($m) => $m->getOriginalMessage(), iterator_to_array(app('mailer')->getSymfonyTransport()->messages())));
+        $bestaetigt = collect($mails)->first(fn (Email $m) => str_starts_with((string) $m->getSubject(), 'Anmeldung bestätigt'));
+        $this->assertNotNull($bestaetigt);
+        $this->assertStringNotContainsString('Meine Anmeldungen', (string) $bestaetigt->getHtmlBody());
+        $this->assertStringContainsString('https://www.dpsg-trier.de', (string) $bestaetigt->getHtmlBody());
     }
 }

@@ -5,13 +5,15 @@
     $input = 'mt-1 w-full border border-dpsg-mittelbeige bg-white px-3 py-2 font-normal focus:outline-2 focus:outline-dpsg-blau';
     $guardianAge = config('dpsg.guardian_consent_age');
     $einbetten ??= false;
+    // Ohne Verweise in den Rest der Website: eingebettet oder im schlichten Rahmen (vorab freigegeben).
+    $ohneLinks = $einbetten || (bool) request()->attributes->get('testsystem_extern');
 @endphp
 <section id="anmeldung" aria-labelledby="anmeldung-heading" @class(['max-w-3xl scroll-mt-24', 'mt-12' => ! $einbetten])>
     <h2 id="anmeldung-heading" class="font-serif text-2xl font-bold">Anmeldung</h2>
     @if ($event->memberGruppierung)
         <p class="mt-2 border-l-4 border-dpsg-blau bg-white p-3 text-sm shadow">Diese Veranstaltung ist für {{ $event->zielgruppeMitglieder() }}. Wenn du nicht dazugehörst, melde dich bitte vorher bei der Veranstaltungsleitung.</p>
     @endif
-    @if ($state !== 'ohne' && ! $einbetten)
+    @if ($state !== 'ohne' && ! $ohneLinks)
         <p class="mt-1 text-sm text-text-secondary">Schon angemeldet? Unter <a href="{{ route('participants.index') }}" class="underline">Meine Anmeldungen</a> kannst du stornieren und Unterlagen abrufen.</p>
     @endif
 
@@ -26,7 +28,7 @@
         <p class="mt-4 text-text-secondary">
             Eine Online-Anmeldung gibt es hier nicht.
             @if ($event->contact_email)
-                Melde dich bitte direkt bei <a href="{{ (! $einbetten && \App\Support\Mailformular::aktiv()) ? '#frage' : 'mailto:'.$event->contact_email }}" class="text-dpsg-rot underline">{{ $event->contact_name ?: $event->contact_email }}</a> an.
+                Melde dich bitte direkt bei <a href="{{ (! $ohneLinks && \App\Support\Mailformular::aktiv()) ? '#frage' : 'mailto:'.$event->contact_email }}" class="text-dpsg-rot underline">{{ $event->contact_name ?: $event->contact_email }}</a> an.
             @else
                 Melde dich bitte über das <a href="{{ url('/'.config('dpsg.contact_page')) }}" class="text-dpsg-rot underline">Kontaktformular</a> an.
             @endif
@@ -34,7 +36,7 @@
     @elseif ($state === 'bald')
         <p class="mt-4 text-text-secondary">Die Anmeldung öffnet am {{ $event->reg_opens_at->locale('de')->isoFormat('D. MMMM YYYY [um] HH:mm') }} Uhr.</p>
     @elseif ($state === 'geschlossen')
-        <p class="mt-4 text-text-secondary">Die Anmeldung ist geschlossen.@if ($event->contact_email) Bei Fragen melde dich bei <a href="{{ (! $einbetten && \App\Support\Mailformular::aktiv()) ? '#frage' : 'mailto:'.$event->contact_email }}" class="text-dpsg-rot underline">{{ $event->contact_email }}</a>.@endif</p>
+        <p class="mt-4 text-text-secondary">Die Anmeldung ist geschlossen.@if ($event->contact_email) Bei Fragen melde dich bei <a href="{{ (! $ohneLinks && \App\Support\Mailformular::aktiv()) ? '#frage' : 'mailto:'.$event->contact_email }}" class="text-dpsg-rot underline">{{ $event->contact_email }}</a>.@endif</p>
     @elseif ($state === 'ausgebucht')
         <p class="mt-4 text-text-secondary">Leider sind alle Plätze vergeben.</p>
     @else

@@ -5,9 +5,12 @@
 
 @section('content')
     <article class="mx-auto max-w-6xl px-4 py-10">
-        <nav aria-label="Brotkrumen" class="mb-4 text-sm text-text-secondary">
-            <a href="{{ route('events.index') }}" class="hover:underline">Veranstaltungen</a> › <span>{{ $event->title }}</span>
-        </nav>
+        @php($schlicht = (bool) request()->attributes->get('testsystem_extern'))
+        @unless ($schlicht)
+            <nav aria-label="Brotkrumen" class="mb-4 text-sm text-text-secondary">
+                <a href="{{ route('events.index') }}" class="hover:underline">Veranstaltungen</a> › <span>{{ $event->title }}</span>
+            </nav>
+        @endunless
 
         <div class="grid gap-10 lg:grid-cols-3">
             <div class="lg:col-span-2">
@@ -57,7 +60,7 @@
                         bis {{ $event->registrationClosesAt()->locale('de')->isoFormat('D. MMMM YYYY, HH:mm') }} Uhr
                     </dd></div>
                     @if ($event->contact_name || $event->contact_email)
-                        <div><dt class="font-bold">Kontakt</dt><dd>{{ $event->contact_name }}@if ($event->contact_email)<br /><a href="{{ \App\Support\Mailformular::aktiv() ? '#frage' : 'mailto:'.$event->contact_email }}" class="text-dpsg-rot underline">{{ $event->contact_email }}</a>@endif</dd></div>
+                        <div><dt class="font-bold">Kontakt</dt><dd>{{ $event->contact_name }}@if ($event->contact_email)<br /><a href="{{ (! $schlicht && \App\Support\Mailformular::aktiv()) ? '#frage' : 'mailto:'.$event->contact_email }}" class="text-dpsg-rot underline">{{ $event->contact_email }}</a>@endif</dd></div>
                     @endif
                 </dl>
             </aside>
@@ -65,6 +68,8 @@
 
         @include('events.partials.anmeldung')
 
+        {{-- Im schlichten Rahmen (vorab freigegeben) ohne Formular: es läuft über eine nicht freigegebene Adresse. --}}
+        @unless ($schlicht)
         {{-- Frage zur Veranstaltung (F-CMS-09): geht per Mail an die Kontaktperson --}}
         <section id="frage" aria-labelledby="frage-heading" class="mt-12 max-w-3xl scroll-mt-24">
             <h2 id="frage-heading" class="font-serif text-2xl font-bold">Fragen zur Veranstaltung?</h2>
@@ -90,5 +95,6 @@
                 </details>
             @endif
         </section>
+        @endunless
     </article>
 @endsection

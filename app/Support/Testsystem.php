@@ -34,4 +34,16 @@ class Testsystem
 
         return str_starts_with($url, 'https://') ? rtrim($url, '/') : null;
     }
+
+    /**
+     * Wohin das Logo im schlichten Rahmen (vorab freigegebene Veranstaltung)
+     * führt: die Live-Adresse, vor dem Livegang die alte Website aus
+     * dpsg.einbetten_von.
+     */
+    public static function zurueckUrl(): ?string
+    {
+        $url = self::liveUrl() ?? (string) (((array) config('dpsg.einbetten_von', []))[0] ?? '');
+
+        return str_starts_with($url, 'https://') ? rtrim($url, '/') : null;
+    }
 }

@@ -34,7 +34,7 @@ class ArtikelHolen implements ShouldQueue
     public int $timeout = 300;
 
     /** @param list<string> $eingaben */
-    public function __construct(public array $eingaben, public bool $freigeben = false, public int $ab = 0) {}
+    public function __construct(public array $eingaben, public bool $freigeben = false, public int $ab = 0, public ?string $kategorie = null) {}
 
     /**
      * Eingabe in einzelne Nummern bzw. Links zerlegen: je Zeile, Komma, Semikolon
@@ -65,10 +65,10 @@ class ArtikelHolen implements ShouldQueue
     }
 
     /** @param list<string> $eingaben */
-    public static function starten(array $eingaben, bool $freigeben): void
+    public static function starten(array $eingaben, bool $freigeben, ?string $kategorie = null): void
     {
         Cache::put(self::KEY, ['laeuft' => true, 'gesamt' => count($eingaben), 'erledigt' => 0, 'neu' => [], 'fehler' => [], 'am' => now()->toIso8601String()], now()->addDays(7));
-        self::dispatch($eingaben, $freigeben);
+        self::dispatch($eingaben, $freigeben, 0, filled($kategorie) ? mb_substr(trim((string) $kategorie), 0, 80) : null);
     }
 
     public function handle(): void
@@ -78,6 +78,10 @@ class ArtikelHolen implements ShouldQueue
         foreach ($teil as $eingabe) {
             try {
                 $artikel = Sammelbestellung::freigeben($eingabe, $this->freigeben);
+                // Kategorie im Shop nur setzen, wenn der Artikel noch keine hat.
+                if ($this->kategorie !== null && blank($artikel->kategorie)) {
+                    $artikel->update(['kategorie' => $this->kategorie]);
+                }
                 $stand['neu'][] = $artikel->name.' ('.$artikel->varianten->count().' Größen)';
             } catch (InvalidArgumentException $e) {
                 $stand['fehler'][] = $eingabe.': '.$e->getMessage();
@@ -93,7 +97,7 @@ class ArtikelHolen implements ShouldQueue
         $stand['zuletzt'] = now()->toIso8601String();
         Cache::put(self::KEY, $stand, now()->addDays(7));
         if ($weiter) {
-            self::dispatch($this->eingaben, $this->freigeben, $this->ab + self::JE_LAUF);
+            self::dispatch($this->eingaben, $this->freigeben, $this->ab + self::JE_LAUF, $this->kategorie);
         }
     }
 }

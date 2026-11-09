@@ -1,0 +1,12 @@
+# Umzugsseite: jede Adresse zeigt index.html mit Status 503 („vorübergehend
+# nicht verfügbar“), damit Suchmaschinen nichts Falsches speichern.
+# Logo und Seite selbst werden normal ausgeliefert.
+RewriteEngine On
+RewriteCond %{REQUEST_URI} !^/(index\.html|logo\.png)$
+RewriteRule ^ - [R=503,L]
+ErrorDocument 503 /index.html
+<IfModule mod_headers.c>
+    Header always set Retry-After "3600"
+    Header always set Cache-Control "no-store"
+</IfModule>
+DirectoryIndex index.html

@@ -64,6 +64,7 @@ class RuesthausKatalogTest extends TestCase
                 str_starts_with($url, self::DPSG.'?'), $url === self::DPSG => Http::response(self::fixture('kategorie-1.html')),
                 str_starts_with($url, self::HALSTUCH) => Http::response(self::produkt('Halstuch Jungpfadfinder Fairtrade', '0120103', '8.50')),
                 str_contains($url, '/aufnaeher-friedenslicht') => Http::response(self::produkt('Aufnäher Friedenslicht Bethlehem 2026', '4171326', '2.50')),
+                str_contains($url, '/media/image/umleitung') => Http::response('', 302, ['Location' => 'https://boese.example.org/x.png']),
                 str_contains($url, '/media/image/') => Http::response('PNG-Bild', 200, ['Content-Type' => 'image/png']),
                 default => Http::response('', 404),
             };
@@ -152,6 +153,8 @@ class RuesthausKatalogTest extends TestCase
         Http::assertSentCount(1);
         $this->get(KatalogBildController::adresse('https://boese.example.org/media/image/x.jpg'))->assertNotFound();
         $this->get(route('shop.katalog.bild', ['u' => 'unsinn']))->assertNotFound();
+        // Umleitungen werden nicht verfolgt (kein Abruf von anderen Hosts).
+        $this->get(KatalogBildController::adresse('https://www.ruesthaus.de/media/image/umleitung.jpg'))->assertNotFound();
 
         $this->login('autor');
         $this->get(KatalogBildController::adresse($bild))->assertForbidden();

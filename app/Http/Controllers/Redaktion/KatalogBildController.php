@@ -42,9 +42,10 @@ class KatalogBildController extends Controller
                 usleep((int) ($warten * 1_000_000));
             }
             Cache::put('ruesthaus:bild', microtime(true), 60);
-            $antwort = Http::withHeaders(['User-Agent' => 'Kluft/1.0 (+'.rtrim((string) config('app.url'), '/').')'])->timeout(10)->get($url);
+            $antwort = Http::withHeaders(['User-Agent' => 'Kluft/1.0 (+'.rtrim((string) config('app.url'), '/').')'])->timeout(10)
+                ->withOptions(['allow_redirects' => false])->get($url);
             $typ = (string) $antwort->header('Content-Type');
-            abort_unless($antwort->successful() && preg_match('#^image/(jpeg|png|webp|gif)#', $typ) && strlen($antwort->body()) < 2_000_000, 404);
+            abort_unless($antwort->status() === 200 && preg_match('#^image/(jpeg|png|webp|gif)#', $typ) && strlen($antwort->body()) < 2_000_000, 404);
             $disk->put($pfad, $antwort->body());
             $disk->put($pfad.'.typ', $typ);
         }

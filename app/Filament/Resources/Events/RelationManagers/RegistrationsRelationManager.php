@@ -693,6 +693,8 @@ class RegistrationsRelationManager extends RelationManager
                 'herkunft' => Select::make($name)->label($field['label'])->options($field['options'] ?? [])->default($field['default'] ?? null)->selectablePlaceholder(false),
                 'days' => CheckboxList::make($name)->label($field['label'])->options($event->days())->columns(2),
                 'textarea' => Textarea::make($name)->label($field['label'])->rows(2)->maxLength(1000),
+                'zahl' => TextInput::make($name)->label($field['label'])->integer()->minValue(0)->maxValue(100000),
+                'mehrfach' => CheckboxList::make($name)->label($field['label'])->options($field['options'] ?? []),
                 'date' => DatePicker::make($name)->label($field['label'])->native(false)->displayFormat('d.m.Y')->maxDate(now()),
                 default => TextInput::make($name)->label($field['label'])->maxLength(255),
             };

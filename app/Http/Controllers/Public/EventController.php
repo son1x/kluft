@@ -89,6 +89,13 @@ class EventController extends Controller
 
                 continue;
             }
+            // Eigenes Feld mit mehreren Antworten: Liste aus den angebotenen Möglichkeiten.
+            if ($field['type'] === 'mehrfach') {
+                $rules[$key] = [$field['required'] ? 'required' : 'nullable', 'array'];
+                $rules["{$key}.*"] = [Rule::in(array_keys($field['options'] ?? []))];
+
+                continue;
+            }
             $base = [$field['required'] ? 'required' : 'nullable'];
             $rules[$key] = [...$base, ...match ($field['type']) {
                 'year' => ['integer', 'between:'.(now()->year - 100).','.now()->year],
@@ -97,11 +104,14 @@ class EventController extends Controller
                 'plz' => ['string', 'max:10', 'regex:/^([A-Za-z]{1,2}[- ]?)?[0-9]{4,5}$/'],
                 'date' => ['date_format:Y-m-d', 'before_or_equal:today', 'after:'.now()->subYears(100)->toDateString()],
                 'textarea' => ['string', 'max:1000'],
+                'zahl' => ['integer', 'between:0,100000'],
                 default => ['string', 'max:150'],
             }];
         }
 
         $validator = ValidatorFactory::make($request->all(), $rules, [
+            ...collect($fields)->filter(fn (array $f) => $f['type'] === 'zahl')
+                ->mapWithKeys(fn (array $f, string $k) => ["{$k}.between" => 'Bitte gib eine Zahl von 0 bis 100.000 an.'])->all(),
             'required' => 'Bitte fülle dieses Feld aus.',
             'required_if_accepted' => 'Bitte gib deinen Namen als personensorgeberechtigte Person an.',
             'accepted_if' => 'Bitte bestätige die Einwilligung als personensorgeberechtigte Person.',
@@ -112,6 +122,7 @@ class EventController extends Controller
             'plz.regex' => 'Bitte gib eine gültige Postleitzahl an (4 oder 5 Ziffern).',
             'required_if' => 'Bitte wähle mindestens einen Tag aus.',
             'in' => 'Bitte wähle eine der angebotenen Möglichkeiten.',
+            'integer' => 'Bitte gib eine ganze Zahl an.',
             'preis.required' => 'Bitte wähle den passenden Teilnahmebeitrag.',
             'date_format' => 'Bitte gib ein gültiges Datum an.',
             'before_or_equal' => 'Bitte gib ein gültiges Geburtsdatum an.',

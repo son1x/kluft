@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 
 /**
  * Veranstaltung mit Online-Anmeldung, Pflichtenheft 6.7.
@@ -20,11 +21,23 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $ends_at
  * @property Carbon|null $reg_opens_at
  * @property Carbon|null $reg_closes_at
+ * @property array<string, mixed>|null $form_fields
  */
 class Event extends Model
 {
     /** Datenfeld zur Stamm-Auswahl: „hier“ oder „gast“ (andere Gliederung/anderer Verband). */
     public const HERKUNFT = 'herkunft';
+
+    /** Arten der eigenen Felder im Formular-Baukasten (form_fields.eigene). */
+    public const EIGENE_TYPEN = [
+        'text' => 'Kurzer Text',
+        'textarea' => 'Langer Text',
+        'zahl' => 'Zahl',
+        'auswahl' => 'Auswahl (eine Antwort)',
+        'mehrfach' => 'Auswahl (mehrere Antworten)',
+    ];
+
+    public const EIGENE_MAX = 15;
 
     public const STATUSES = [
         'draft' => 'Entwurf',
@@ -134,6 +147,25 @@ class Event extends Model
     {
         // Anmeldungen fallen per Fremdschlüssel weg; deren Dateien hier.
         static::deleting(fn (self $event) => RegistrationDocument::purgeFor($event->registrations()->pluck('id')));
+
+        // Eigene Felder bekommen einen festen Schlüssel, unter dem die Antworten
+        // in den Anmeldungen stehen. So bleiben sie zugeordnet, auch wenn die
+        // Felder umsortiert oder umbenannt werden.
+        static::saving(function (self $event) {
+            $config = $event->form_fields;
+            if (! is_array($config) || ! array_key_exists('eigene', $config)) {
+                return;
+            }
+            $eigene = [];
+            foreach (array_values(array_filter((array) $config['eigene'], 'is_array')) as $feld) {
+                if (! preg_match('/^eigen_[a-z0-9]{4,12}$/', (string) ($feld['schluessel'] ?? ''))) {
+                    $feld['schluessel'] = 'eigen_'.Str::lower(Str::random(8));
+                }
+                $eigene[] = $feld;
+            }
+            $config['eigene'] = array_slice($eigene, 0, self::EIGENE_MAX);
+            $event->form_fields = $config;
+        });
     }
 
     /**
@@ -161,7 +193,7 @@ class Event extends Model
     /**
      * Aktive Felder aus dem Baukasten in fester Reihenfolge.
      *
-     * @return array<string, array{label: string, type: string, required: bool, options?: array<string, string>, default?: string}>
+     * @return array<string, array{label: string, type: string, required: bool, options?: array<string, string>, default?: string, hint?: ?string, eigen?: true}>
      */
     public function formFields(): array
     {
@@ -190,7 +222,61 @@ class Event extends Model
             }
         }
 
-        return $fields;
+        // Eigene Felder vor den Anmerkungen, sonst am Ende.
+        $eigene = $this->eigeneFelder();
+        if ($eigene !== [] && isset($fields['comment'])) {
+            $comment = $fields['comment'];
+            unset($fields['comment']);
+
+            return [...$fields, ...$eigene, 'comment' => $comment];
+        }
+
+        return [...$fields, ...$eigene];
+    }
+
+    /**
+     * Eigene Felder dieser Veranstaltung (Formular-Baukasten → „Eigene Felder“),
+     * im selben Format wie die festen Felder. Auswahlfelder ohne
+     * Antwortmöglichkeiten fallen weg.
+     *
+     * @return array<string, array{label: string, type: string, required: bool, options?: array<string, string>, hint?: ?string, eigen: true}>
+     */
+    public function eigeneFelder(): array
+    {
+        $felder = [];
+        foreach (array_values((array) (($this->form_fields ?? [])['eigene'] ?? [])) as $i => $feld) {
+            $typ = is_array($feld) ? (string) ($feld['typ'] ?? '') : '';
+            if (! isset(self::EIGENE_TYPEN[$typ]) || blank($feld['label'] ?? null)) {
+                continue;
+            }
+            $optionen = in_array($typ, ['auswahl', 'mehrfach'], true) ? self::optionenListe($feld['optionen'] ?? null) : [];
+            if (in_array($typ, ['auswahl', 'mehrfach'], true) && $optionen === []) {
+                continue;
+            }
+            $schluessel = preg_match('/^eigen_[a-z0-9]{4,12}$/', (string) ($feld['schluessel'] ?? '')) ? (string) $feld['schluessel'] : 'eigen_'.$i;
+            $felder[$schluessel] = [
+                'label' => trim((string) $feld['label']),
+                'type' => $typ === 'auswahl' ? 'select' : $typ,
+                'required' => (bool) ($feld['pflicht'] ?? false),
+                ...($optionen !== [] ? ['options' => array_combine($optionen, $optionen)] : []),
+                'hint' => filled($feld['hinweis'] ?? null) ? trim((string) $feld['hinweis']) : null,
+                'eigen' => true,
+            ];
+        }
+
+        return $felder;
+    }
+
+    /**
+     * Antwortmöglichkeiten: eine pro Zeile (oder als Liste), ohne Leerzeilen und Doppelte.
+     *
+     * @return list<string>
+     */
+    public static function optionenListe(mixed $optionen): array
+    {
+        $zeilen = is_array($optionen) ? $optionen : preg_split('/\R/', (string) $optionen);
+
+        return array_values(array_unique(array_filter(array_map(fn ($z) => Str::limit(trim((string) $z), 150, ''), (array) $zeilen), 'filled')));
     }
 
     public function confirmedCount(): int

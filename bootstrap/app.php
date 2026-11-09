@@ -16,6 +16,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Stand eines Backup-Auftrags auch während des Einspielens (php artisan down).
+        $middleware->preventRequestsDuringMaintenance(except: ['einspielen/stand/*']);
         // Security-Header für alle Antworten (Pflichtenheft 10.1).
         $middleware->append(SecurityHeaders::class);
         // Alte Adressen (WordPress) per 301 auf die neuen (F-MIG-05).

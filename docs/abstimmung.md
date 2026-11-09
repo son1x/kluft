@@ -35,6 +35,15 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-10 – Haupt → Stammes, Bezirk: Verwaltung → Backups (jetzt sichern, einspielen, übertragen)
+Status: offen
+Branch: `feature/backup-einspielen`
+
+- Neue Seite **Verwaltung → Backups** (nur Admins): Stand, „Backup jetzt erstellen“, „Backup einspielen“, „Auf andere Website übertragen“ (andere Kluft-Installation im selben Webspace, z. B. Test → Live).
+- Ausgeführt im Cronjob (`backup:auftrag`, jede Minute, wenn ein Auftrag da ist); Auftrag und Stand als Dateien in `storage/app/private/einspielen` (nicht im Backup, nicht in der Datenbank). Stand-Seite `/einspielen/stand/{token}` ohne Anmeldung, auch im Wartungsmodus (Laravel `down`, Kluft-Wartung, Testsystem).
+- `BackupEinspielen`: ersetzt Datenbank (SQLite per ATTACH, MariaDB per `mariadb`/`mysql`-Client oder über die Verbindung), `storage/app/private` (ohne `backups`, `einspielen`) und `public/uploads`; Schlüssel aus `app.key` in die `.env`; danach `migrate`, `optimize:clear`, `media:variants --all`. SSH: `php artisan backup:einspielen <datei>`.
+- Livegang DV (`docs/livegang.md`) jetzt per Übertragen statt Plesk-Kopie.
+
 ### 2026-11-10 – Haupt → Stammes, Bezirk: Info-Mails zu Anmeldungen (Sammeladresse, verantwortliche Person)
 Status: offen
 Branch: `feature/anmelde-infos`

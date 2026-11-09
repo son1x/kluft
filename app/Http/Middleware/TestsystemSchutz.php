@@ -19,7 +19,7 @@ class TestsystemSchutz
     private const FREI = [
         'admin', 'admin/*', 'livewire/*', 'livewire-*/*', 'filament/*',
         'auth/*', 'redaktion/anmelden', 'redaktion/anmelden/*', 'notfall-login',
-        'status', 'api/status', 'up',
+        'status', 'api/status', 'up', 'einspielen/stand/*',
     ];
 
     public function handle(Request $request, Closure $next): Response

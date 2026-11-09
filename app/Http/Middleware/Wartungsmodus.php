@@ -20,7 +20,7 @@ class Wartungsmodus
     private const FREI = [
         'admin/login', 'admin/login/*', 'admin/logout', 'livewire/*', 'livewire-*/*', 'filament/*',
         'auth/*', 'redaktion/anmelden', 'redaktion/anmelden/*', 'notfall-login',
-        'status', 'api/status', 'up',
+        'status', 'api/status', 'up', 'einspielen/stand/*',
     ];
 
     public function handle(Request $request, Closure $next): Response

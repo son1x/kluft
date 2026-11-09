@@ -25,6 +25,7 @@ use App\Http\Controllers\Public\ShopController;
 use App\Http\Controllers\Public\StatusController;
 use App\Http\Controllers\Public\UmfrageController;
 use App\Http\Controllers\Public\WhatsAppController;
+use App\Http\Controllers\Redaktion\BackupStandController;
 use App\Http\Controllers\Redaktion\GeorgsboteTitelbildController;
 use App\Http\Controllers\Redaktion\KatalogBildController;
 use App\Http\Controllers\Webhooks\WhatsAppWebhookController;
@@ -98,6 +99,11 @@ Route::get('/kalender', [CalendarController::class, 'index'])->middleware($termi
 Route::get('/api/calendar/events', [CalendarController::class, 'api'])
     ->middleware(['throttle:60,1', $termine])
     ->name('calendar.api');
+
+// Stand eines Backup-Auftrags (Verwaltung → Backups). Ohne Anmeldung und auch im
+// Wartungsmodus erreichbar, weil beim Einspielen Datenbank und Sitzung ersetzt
+// werden; geschützt durch das Token aus dem Auftrag.
+Route::get('/einspielen/stand/{token}', BackupStandController::class)->where('token', '[A-Za-z0-9]{40}')->name('backup.stand');
 
 // Veranstaltungen mit Anmeldung (F-EV, Pflichtenheft 11.1).
 Route::get('/veranstaltungen', [EventController::class, 'index'])->middleware($termine)->name('events.index');

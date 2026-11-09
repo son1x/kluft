@@ -1,5 +1,6 @@
 <?php
 
+use App\Services\Backup\BackupEinspielen;
 use App\Services\Update\Updater;
 use App\Services\WhatsApp\WhatsAppSettings;
 use App\Support\Roadmap;
@@ -50,6 +51,8 @@ Schedule::command('videokonferenzen:aufraeumen')->dailyAt('03:55');
 // Backups (Pflichtenheft 10.2, 11.4): täglich 02:00, Wiederherstellungstest
 // wöchentlich.
 Schedule::command('backup:run')->dailyAt('02:00')->withoutOverlapping();
+// Aufträge aus Verwaltung → Backups (jetzt sichern, einspielen); Sperre per Datei, nicht im Cache (der wird beim Einspielen ersetzt).
+Schedule::command('backup:auftrag')->everyMinute()->when(fn () => is_file(BackupEinspielen::auftragPfad()));
 Schedule::command('backup:verify')->weeklyOn(0, '05:00');
 
 // WhatsApp-Newsletter (docs/whatsapp_newsletter.md): geplante Aussendungen

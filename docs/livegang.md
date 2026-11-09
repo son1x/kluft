@@ -11,6 +11,11 @@
 - **06.11.2026, Weg B:** **Kopie mit Plesk** in einen neuen Ordner mit eigener Datenbank, dazu ein eigenes GitHub-Environment `dv-trier-live` mit neuem Deploy-Pfad.
   - Grund: Die Ordner sollen danach einheitlich heißen. Live liegt in `www.dpsg-trier.de`, Test in `test.dpsg-trier.de`, die alte Seite in `alt.dpsg-trier.de`.
   - Kein eigener Kopier-Workflow und kein Update-System.
+- **10.11.2026, Übertragen per Backup statt Plesk-Kopie:** Live wird frisch deployt, dann kommt der Inhalt von Test über **Verwaltung → Backups → „Auf andere Website übertragen“** (im Browser auf Test, ohne SSH).
+  - Datenbank, `storage/app/private` mit `app.key` und `public/uploads` kommen aus einem frischen Backup von Test.
+  - Es wird kein Ordner kopiert, also zeigt nie eine `.env` auf die falsche Datenbank.
+  - Probelauf und Livetag prüfen nebenbei die Wiederherstellung aus einem Backup.
+  - Die Plesk-Kopie bleibt als Rückfallweg (unten).
 
 ## Aufbau nachher
 
@@ -62,6 +67,7 @@ Beide Kluft-Installationen nutzen den Instanz-Ordner `instanzen/dv-trier`. Der D
    | `MAIL_TEST_REDIRECT_TO`, `MAIL_TEST_ALLOWLIST` | Probelauf wie bei Test (keine echten Mails), am Livetag **löschen** |
    | `KLUFT_TESTSYSTEM` (Variable) | Probelauf `offen`, am Livetag **löschen** |
    | `KLUFT_MAIL_LIVE` (Variable) | Probelauf nicht setzen, am Livetag `ja` (sonst gehen ohne Umleitung keine Mails raus, docs/deploy.md „Mail“) |
+   | `BACKUP_PASSWORD` | **dasselbe** wie bei Test, sonst kann Live das Backup von Test nicht entschlüsseln |
    | `BACKUP_WEBDAV_URL` | **eigener** Zielordner, sonst überschreiben sich die Sicherungen von Test und Live |
    | `MONITOR_URL` (Variable) | am Livetag `https://www.dpsg-trier.de` |
 
@@ -70,23 +76,33 @@ Beide Kluft-Installationen nutzen den Instanz-Ordner `instanzen/dv-trier`. Der D
    - `https://neu.dpsg-trier.de/auth/entra/callback`
    - `https://www.dpsg-trier.de/auth/entra/callback`
 
-## Kopieren (Probelauf und Livetag gleich)
+## Übertragen (Probelauf und Livetag gleich)
 
-1. **Datenbank:**
-   - Plesk → Datenbanken → Test-Datenbank → Exportieren.
-   - Den Dump in die Live-Datenbank importieren. Beim zweiten Mal die Live-Datenbank vorher leeren.
-2. **Dateien:** Plesk → test.dpsg-trier.de → „Website kopieren“, oder im Dateimanager den **ganzen** Ordner nach `www.dpsg-trier.de` kopieren. Wichtig sind:
-   - `storage/app/private/app.key`, der Schlüssel für verschlüsselte Daten (Umfrage-Antworten, Zuschuss- und NaMi-Daten, Notfall-Login). Ohne ihn sind diese Daten auf Live unlesbar.
-   - `public/uploads/` (Mediathek, Dokumente) und `storage/app/`.
-   - Die `.env` wird beim Deploy ersetzt und muss nicht angepasst werden.
-3. **Sofort danach Deploy `dv-trier-live`.** Bis dahin zeigt die kopierte `.env` noch auf die Test-Datenbank. Deshalb:
-   - die Adresse vorher nicht aufrufen,
-   - noch keinen Cronjob für den neuen Ordner anlegen.
-4. **Cronjob** für den neuen Ordner in Plesk anlegen (wie bei Test: `php artisan schedule:run` jede Minute), erst nach dem Deploy.
+1. **Deploy `dv-trier-live`** in den leeren Ordner. Das legt `.env`, Programm und eine frische Datenbank an.
+2. **Cronjob** für den neuen Ordner in Plesk anlegen: wie bei Test `php artisan schedule:run` jede Minute. Ohne Cronjob startet die Übertragung nicht.
+3. **Auf Test:** Verwaltung → **Backups** → **„Auf andere Website übertragen“** (nur Admins):
+   - Ziel `www.dpsg-trier.de` wählen und zur Bestätigung den Ordnernamen eintippen.
+   - Test erstellt ein frisches Backup und legt den Auftrag im Live-Ordner ab.
+   - Die Fortschrittsseite von Test zeigt den Link zur Fortschrittsseite auf Live (`…/einspielen/stand/…`). Sie lädt sich selbst neu, auch ohne Anmeldung.
+4. **Auf Live spielt der Cronjob das Backup ein** (dauert einige Minuten):
+   - Wartungsmodus; die Datenbank wird ersetzt;
+   - `storage/app/private` samt `app.key` und `public/uploads` werden kopiert;
+   - der Schlüssel aus dem Backup kommt in die `.env`;
+   - danach `migrate`, Zwischenspeicher leeren, Bildvarianten neu erzeugen.
+5. **Danach auf Live neu anmelden.** Es gelten die Konten von Test. Der Kluft-Wartungsmodus ist so, wie er auf Test war.
+6. **Noch einmal Deploy `dv-trier-live`.** Nicht zwingend, aber sauber: Die `.env` kommt dann wieder vollständig aus dem Environment, mit dem Schlüssel aus `app.key`.
+
+**Rückfallweg ohne Übertragen (Plesk):**
+- Test-Datenbank exportieren und in die Live-Datenbank importieren.
+- Den Ordner von Test komplett nach `www.dpsg-trier.de` kopieren, wichtig sind `storage/app/private/app.key` und `public/uploads/`.
+- Sofort danach Deploy `dv-trier-live`. Bis dahin die Adresse nicht aufrufen, weil die kopierte `.env` noch auf die Test-Datenbank zeigt.
+
+**Per SSH geht es auch:** `php artisan backup:einspielen <datei>`. Und auf einer Website, auf der man sich anmelden kann: Verwaltung → Backups → „Backup einspielen“, mit eigenen Backups oder denen anderer Installationen im selben Webspace.
 
 **Probelauf (~18.11.) prüfen:**
 - Startseite, `/status` und das Backend mit Microsoft-Anmeldung
-- Mediathek-Bilder, ein Umfrage-Ergebnis (verschlüsselte Daten lesbar?)
+- Fortschrittsseite der Übertragung zeigt „Fertig.“
+- Mediathek-Bilder, ein Umfrage-Ergebnis (verschlüsselte Daten lesbar? Dann hat der Schlüssel aus dem Backup gegriffen)
 - Kontaktformular (geht an die Testadresse)
 - eine alte WordPress-Adresse (Weiterleitung)
 - Bolivien, Beraten und Scoutergy
@@ -135,11 +151,13 @@ Einzelne Anmeldungen laufen schon vor dem 21.11. über test.dpsg-trier.de, z. B.
    - Backend → Verwaltung → E-Mail-Versand: Warteschlange leeren.
    - Testanmeldungen, Testzahlungen und Testbestellungen löschen.
    - Testbenutzer ohne Funktion entfernen.
-5. **Kopieren** wie oben: Datenbank, Dateien. Vorher im Environment `dv-trier-live`:
+5. **Environment `dv-trier-live` umstellen:**
    - `APP_URL` auf `https://www.dpsg-trier.de`;
    - `MAIL_TEST_REDIRECT_TO`, `MAIL_TEST_ALLOWLIST` und `KLUFT_TESTSYSTEM` löschen;
    - Variable `KLUFT_MAIL_LIVE=ja` setzen.
-6. **Deploy `dv-trier-live`**, danach den Cronjob anlegen. Ab jetzt gehen Mails an echte Empfänger*innen. Prüfen: Das Deploy-Protokoll zeigt „Mailer: smtp“ und keine Warnung zu Mails; Backend → Verwaltung → E-Mail-Versand zeigt keinen Hinweis „Mails werden nicht verschickt“.
+6. **Übertragen** wie oben: Deploy `dv-trier-live`, auf Test „Auf andere Website übertragen“, Fortschritt abwarten, noch einmal Deploy `dv-trier-live`.
+   - Ab jetzt gehen Mails an echte Empfänger*innen.
+   - Prüfen: Das Deploy-Protokoll zeigt „Mailer: smtp“ und keine Warnung zu Mails. Backend → Verwaltung → E-Mail-Versand zeigt keinen Hinweis „Mails werden nicht verschickt“.
 7. **Domain umstellen:**
    - Plesk → dpsg-trier.de → Hosting-Einstellungen: Dokumentstamm auf `www.dpsg-trier.de/public`.
    - Let’s-Encrypt-Zertifikat für dpsg-trier.de und www.

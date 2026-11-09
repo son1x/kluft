@@ -31,6 +31,9 @@ class MediaTable
                     ->dateTime('d.m.Y H:i')
                     ->sortable(),
             ])
+            ->emptyStateHeading('Noch keine Bilder')
+            ->emptyStateDescription('Oben rechts auf „Erstellen“ und ein Foto hochladen. Danach lässt es sich als Titelbild in Beiträgen, Seiten und Veranstaltungen wählen.')
+            ->emptyStateIcon('heroicon-o-photo')
             ->defaultSort('created_at', 'desc')
             ->recordActions([
                 EditAction::make(),

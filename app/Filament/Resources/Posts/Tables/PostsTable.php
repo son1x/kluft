@@ -70,6 +70,9 @@ class PostsTable
                     ->sortable(),
             ])
             ->modifyQueryUsing(fn ($query) => $query->with('socialPosts'))
+            ->emptyStateHeading('Noch keine Beiträge')
+            ->emptyStateDescription('Oben rechts auf „Erstellen“: Titel, Teaser und Text eintragen, ein Titelbild aus der Mediathek wählen. Erst als Entwurf speichern, dann zur Prüfung geben oder veröffentlichen.')
+            ->emptyStateIcon('heroicon-o-newspaper')
             ->defaultSort('created_at', 'desc')
             ->filters([
                 SelectFilter::make('status')

@@ -46,6 +46,7 @@ class Auswertung
             'mittel' => null,
             'mittel_hinweis' => null,
             'texte' => [],
+            'termine' => null,
             'kommentare' => $eintraege->pluck('kommentar')->filter()->values()->all(),
             'sonstiges' => $eintraege->pluck('sonstiges')->filter()->values()->all(),
         ];
@@ -81,6 +82,16 @@ class Auswertung
                 $ergebnis['mittel'] = round($werte->avg(), 1);
                 $ergebnis['mittel_hinweis'] = $von.' = '.($frage->einstellung('label_von') ?: 'niedrig').', '.$bis.' = '.($frage->einstellung('label_bis') ?: 'hoch');
             }
+        } elseif ($frage->typ === 'termin') {
+            // Je Vorschlag ja / wenn nötig / nein zählen; Punkte: ja 2, wenn nötig 1.
+            $termine = collect($frage->optionenListe())->map(function (string $vorschlag) use ($werte) {
+                $antworten = $werte->map(fn ($w) => is_array($w) ? ($w[$vorschlag] ?? null) : null)->filter();
+
+                return ['vorschlag' => $vorschlag, 'ja' => $antworten->filter(fn ($a) => $a === 'ja')->count(),
+                    'vielleicht' => $antworten->filter(fn ($a) => $a === 'vielleicht')->count(), 'nein' => $antworten->filter(fn ($a) => $a === 'nein')->count()];
+            })->map(fn (array $t) => [...$t, 'punkte' => $t['ja'] * 2 + $t['vielleicht']]);
+            $beste = $termine->max('punkte');
+            $ergebnis['termine'] = $termine->map(fn (array $t) => [...$t, 'bester' => $beste > 0 && $t['punkte'] === $beste])->values()->all();
         } elseif (in_array($frage->typ, ['kurztext', 'langtext'], true)) {
             $ergebnis['texte'] = $werte->map(fn ($w) => (string) $w)->values()->all();
         }
@@ -93,6 +104,8 @@ class Auswertung
     {
         return match (true) {
             $wert === null, $wert === [] => '–',
+            // Terminfindung: „Vorschlag: Ja; …“
+            is_array($wert) && ! array_is_list($wert) => collect($wert)->map(fn ($a, $v) => $v.': '.(Umfragen::TERMIN_ANTWORTEN[$a] ?? $a))->implode('; '),
             is_array($wert) => implode(', ', $wert),
             default => (string) $wert,
         };

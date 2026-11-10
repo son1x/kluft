@@ -71,6 +71,9 @@ Schedule::command('nachrichten:spamverdacht-melden')->dailyAt('08:05');
 // am Bestelldatum, Löschfristen (docs/pflichtenheft-sammelbestellung.md).
 Schedule::command('sammelbestellung:taeglich')->dailyAt('08:10');
 
+// Rollen mit Ablaufdatum: Hinweise 30/7 Tage vorher, danach entfernen.
+Schedule::command('rollen:ablauf')->dailyAt('08:15');
+
 // Zuschussanträge: Unterlagen in die Nextcloud-Ablage (docs/pflichtenheft-zuschuesse.md, ZU-40).
 Schedule::command('zuschuss:nextcloud')->dailyAt('03:20')->withoutOverlapping();
 Schedule::command('zuschuss:juleica')->dailyAt('08:20');

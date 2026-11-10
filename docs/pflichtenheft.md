@@ -48,6 +48,8 @@ Ein wartungsarmes, sicheres und KDG-konformes CMS, das von Ehrenamtlichen ohne E
 
 Rechte werden als **Rolle + Geltungsbereich (Scope)** vergeben (Scope = global, Sektion, Stufe oder „eigene Inhalte“). Eine Person kann mehrere Zuweisungen haben, z. B. Stufenadmin Wölflinge und Autorin in der Sektion Bolivien. „Event-Manager“ ist keine eigene Rolle mehr, sondern ein Recht von Stufenadmin, Sektionsadmin und Verwaltung.
 
+Eine Zuweisung kann ein Datum **„gültig bis“** haben (z. B. Ende der Amtszeit). Sie gilt bis einschließlich zu diesem Tag; 30 und 7 Tage vorher bekommen die Person und die Verwaltung einen Hinweis, am Tag danach entfernt `rollen:ablauf` (täglich 08:15) die Rolle und protokolliert „Recht abgelaufen“. „Meine Rollen und Rechte“ zeigt das Datum.
+
 ---
 
 ## 3. Technologie-Vorschlag

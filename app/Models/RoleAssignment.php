@@ -14,8 +14,15 @@ class RoleAssignment extends Model
         'role',
         'scope_type',
         'scope_key',
+        'gueltig_bis',
         'granted_by',
     ];
+
+    /** @return array<string, string> */
+    protected function casts(): array
+    {
+        return ['gueltig_bis' => 'date'];
+    }
 
     /**
      * Jede Rollenvergabe/-änderung landet im Audit-Log (5.5).

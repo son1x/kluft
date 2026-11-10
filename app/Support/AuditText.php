@@ -123,6 +123,7 @@ class AuditText
             'role.granted' => 'Recht vergeben: '.self::rolle($rest),
             'role.revoked' => 'Recht entzogen: '.self::rolle($rest),
             'role.changed' => 'Recht geändert: '.self::rolle($rest),
+            'role.expired' => 'Recht abgelaufen: '.self::rolle($rest),
             'feature.an' => 'Funktion eingeschaltet: '.(Features::KATALOG[$rest]['label'] ?? $rest),
             'feature.aus' => 'Funktion ausgeschaltet: '.(Features::KATALOG[$rest]['label'] ?? $rest),
             'registrations.purge' => 'Automatisch gelöscht: '.($teile[0] ?? 0).' unbestätigte und '.($teile[1] ?? 0).' abgelaufene Anmeldungen',

@@ -127,7 +127,10 @@ class User extends Authenticatable implements FilamentUser
      */
     public function roleAssignments(): HasMany
     {
-        return $this->hasMany(RoleAssignment::class);
+        // Abgelaufene Rollen (gültig bis gestern) zählen nirgends mehr, auch
+        // bevor `rollen:ablauf` sie entfernt hat.
+        return $this->hasMany(RoleAssignment::class)
+            ->where(fn ($q) => $q->whereNull('gueltig_bis')->orWhereDate('gueltig_bis', '>=', today()));
     }
 
     /**

@@ -6,6 +6,12 @@ Admins. Kurz und aus Sicht der Redaktion schreiben.
 
 ## 0.9.0
 
+- Verwaltung → Backups (nur Admins): Stand der Backups, „Backup jetzt erstellen“, „Backup einspielen“ und „Auf andere Website übertragen“ (z. B. von Test auf die neue Live-Website). Läuft im Hintergrund, der Fortschritt steht auf einer eigenen Seite, auch ohne Anmeldung.
+- Veranstaltungen: Beim Bearbeiten stehen „Veranstaltung“, „Teilnehmende“ (mit Anzahl) und „Fragen“ als Reiter oben; in der Liste führt „Teilnehmende“ direkt dorthin. Unbestätigte Anmeldungen lassen sich von Hand bestätigen, einzeln oder mehrere auf einmal, auf Wunsch mit Bestätigungsmail.
+- Georgsbote: „Fehlende Titelbilder erzeugen“ und neu „Alle Titelbilder neu erzeugen“ gelten für Georgsboten und Georgsbriefe auf einmal; auch Georgsbriefe bekommen ein Titelbild.
+- Sammelbestellung: Sets ohne feste Grenze, auch mit vielen Teilen bestellbar; der Hinweis „höchstens vier“ bei „Für den Start“ entfällt.
+- Sammelbestellung: Eine Rüsthaus-Nummer von Hand ist schneller geprüft (nur bis zur gesuchten Größe), die Größe wird vorgeschlagen; Bestellungen mit solchen Artikeln scheitern nicht mehr am Zeitlimit.
+- Sammelbestellung: „Alle aktualisieren“ läuft im Hintergrund und holt die Daten frisch beim Rüsthaus; den Stand zeigt die Artikelliste.
 - Veranstaltungen: Info-Mails an das Team. Bei jeder bestätigten Anmeldung, beim Nachrücken und bei der Abmeldung bekommen die Sammeladresse (einstellbar unter Veranstaltungen → „Sammeladresse“) und die verantwortliche Person eine kurze Mail mit Link ins Backend. Je Veranstaltung abschaltbar.
 - Vorab freigegebene Anmeldungen (vor dem Livegang): Besucher*innen sehen einen schlichten Rahmen ohne Menü, die Infos zur Aktion stehen zum Aufklappen direkt am Formular.
 

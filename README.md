@@ -105,12 +105,20 @@ Tests: `php artisan test` für den DV, `KLUFT_INSTANZ=saar-hochwald php artisan 
 
 - [CHANGELOG.md](CHANGELOG.md): Änderungen je Version
 - [docs/deploy.md](docs/deploy.md): Deploy, Environments, Server, Umstellung des DV, Stammes-Instanzen im Repository
+- [docs/livegang.md](docs/livegang.md): Livegang www.dpsg-trier.de (Übertragen per Backup, Umzugsseite, Ablauf)
 - [docs/einrichtung.md](docs/einrichtung.md): Einrichtungsassistent für Stämme
 - [docs/updates.md](docs/updates.md): signierte Updates für eigenständige Installationen
 - [docs/runner.md](docs/runner.md): eigener Actions-Runner (z. B. auf dem NAS) für Deploys ohne Actions-Minuten
 - [docs/roden.md](docs/roden.md): Betreuung der Roden-Website, Aufteilung zwischen den Claude-Code-Sitzungen
 - [docs/saar-hochwald.md](docs/saar-hochwald.md): Betreuung der Bezirks-Website Saar-Hochwald
 - [docs/abstimmung.md](docs/abstimmung.md): Briefkasten der Claude-Code-Sitzungen
+- [docs/veranstaltungen.md](docs/veranstaltungen.md): Veranstaltungen (Baukasten, eigene Felder, Teilnehmende, Mails, vorab extern freigeben)
+- [docs/umfragen.md](docs/umfragen.md): Umfragen
+- [docs/adressbuch.md](docs/adressbuch.md): Adressbuch und Verteiler
+- [docs/aufrufe.md](docs/aufrufe.md): Seitenaufrufe zählen
+- [docs/videokonferenzen.md](docs/videokonferenzen.md): Videokonferenzen (Jitsi)
+- [docs/instagram.md](docs/instagram.md): Instagram-Konten
+- [docs/pflichtenheft-sammelbestellung-shop.md](docs/pflichtenheft-sammelbestellung-shop.md): Sammelbestellung (Bestellseite, Rüsthaus-Katalog)
 - [docs/beitraege.md](docs/beitraege.md): Kasse und Mitgliedsbeiträge (Stämme)
 - [docs/zahlungen.md](docs/zahlungen.md): Baustein „Zahlungen“ (Zahlungsaufforderung mit GiroCode, Eingang, Erstattung)
 - [docs/nachrichten.md](docs/nachrichten.md): Nachrichten-Eingang

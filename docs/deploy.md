@@ -113,6 +113,17 @@ kurze Wartungsmodus bei Deploy und Update (`artisan down`) ist davon getrennt.
 - **Speicherort:** `site_settings` (Schlüssel `wartung`). Eine kopierte
   Datenbank startet deshalb ebenfalls im Wartungsmodus.
 
+## Backups
+
+- **Automatisch:** jede Nacht um 2 Uhr (`backup:run`), 14 Tage aufbewahrt, mindestens drei; sonntags Wiederherstellungsprobe (`backup:verify`). Verschlüsselt mit `BACKUP_PASSWORD`, auf Wunsch zusätzlich per WebDAV außerhalb des Webspace.
+- **Verwaltung → Backups** (nur Admins): Stand, „Backup jetzt erstellen“, „Backup einspielen“ (eigene Backups und die anderer Kluft-Installationen im selben Webspace), „Auf andere Website übertragen“ (frisches Backup, Einspiel-Auftrag im Ordner der anderen Installation; z. B. Test → Live, docs/livegang.md).
+  - Ausgeführt im **Cronjob** (`backup:auftrag`, jede Minute, wenn ein Auftrag da ist), nicht im Web-Request. Ohne Cronjob startet nichts.
+  - Fortschritt unter `/einspielen/stand/<token>`, ohne Anmeldung und auch im Wartungsmodus erreichbar.
+  - Einspielen ersetzt Datenbank, `storage/app/private` (samt `app.key`) und `public/uploads`; der Schlüssel kommt in die `.env`; danach `migrate`, `optimize:clear`, `media:variants --all`. Danach neu anmelden.
+  - Zum Einspielen auf einer anderen Website muss `BACKUP_PASSWORD` dort **dasselbe** sein.
+- **Per SSH:** `php artisan backup:run`, `backup:status`, `backup:verify`, `backup:einspielen <datei>`, `backup:restore <datei> --to=<ordner>` (nur entpacken).
+- **Ohne Backend:** Actions → „Server-Prüfung“ → `backup:run` bzw. `backup:status`.
+
 ## Server vorbereiten
 
 **Webspace (Netcup/Plesk):**

@@ -23,6 +23,16 @@ class Suche
 {
     public const MAX = 50;
 
+    /** Bereiche der Bereichsleiste (höchstens vier plus „Alle“). */
+    public const BEREICHE = [
+        'seiten' => ['Seite', 'Begriff'],
+        'beitraege' => ['Beitrag'],
+        'termine' => ['Veranstaltung'],
+        'downloads' => ['Download', 'Zeitschrift'],
+    ];
+
+    public const BEREICH_NAMEN = ['seiten' => 'Seiten', 'beitraege' => 'Beiträge', 'termine' => 'Termine', 'downloads' => 'Downloads'];
+
     /**
      * @return Collection<int, array{art: string, titel: string, url: ?string, auszug: string, datum: ?string, punkte: int}>
      */

@@ -2,11 +2,13 @@
 
 namespace Tests\Feature\Content;
 
+use App\Models\Download;
 use App\Models\Event;
 use App\Models\GlossaryTerm;
 use App\Models\Page;
 use App\Models\Post;
 use App\Support\Ausbau;
+use App\Support\Features;
 use App\Support\Suche;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\TestDox;
@@ -59,6 +61,13 @@ class SucheTest extends TestCase
         $this->get('/suche?q=schlafsack')->assertOk()->assertSee('1 Treffer')->assertSee('Packliste')->assertSee('<mark>Schlafsack</mark>', false)
             ->assertDontSee('<script>alert(1)', false)->assertSee('noindex', false);
         $this->get('/suche?q=a')->assertOk()->assertSee('mindestens zwei Buchstaben');
+        GlossaryTerm::query()->create(['term' => 'Schlafsack', 'explanation' => 'Zum Schlafen im Zelt.']);
+        Download::query()->create(['title' => 'Packliste Schlafsack', 'category' => 'formulare', 'file_path' => 'x.pdf', 'file_name' => 'x.pdf', 'published' => true, 'rights_confirmed' => true]);
+        $alle = $this->get('/suche?q=schlafsack')->assertOk();
+        if (Features::enabled(Features::DOWNLOADS)) {
+            $alle->assertSee('aria-label="Bereich"', false)->assertSee('bereich=downloads', false);
+            $this->get('/suche?q=schlafsack&bereich=downloads')->assertSee('Packliste Schlafsack')->assertDontSee('Zum Schlafen im Zelt');
+        }
         $this->get('/suche?q=gibtesnicht')->assertOk()->assertSee('Keine Treffer');
         $this->get('/packliste')->assertOk()->assertSee(route('suche'), false);
     }

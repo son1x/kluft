@@ -23,6 +23,9 @@ Schedule::command('audit:prune')->dailyAt('03:30');
 // Seitenaufrufe nach 25 Monaten löschen (docs/aufrufe.md).
 Schedule::command('aufrufe:aufraeumen')->dailyAt('03:40');
 
+// Auslagen: Löschfristen (10 Jahre ausgezahlt, 1 Jahr abgelehnt).
+Schedule::command('auslagen:aufraeumen')->dailyAt('04:05');
+
 // Mail-Warteschlange (F-MAIL-05, Pflichtenheft 3/156): ohne Daemon – der
 // Cronjob startet jede Minute einen Worker, der die Schlange abarbeitet und
 // sich dann beendet. Fehlgeschlagene Mails nach 14 Tagen verwerfen.

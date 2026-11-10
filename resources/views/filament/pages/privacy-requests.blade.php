@@ -87,6 +87,14 @@
             </x-filament::section>
         @endif
 
+        @if ($found['auslagen']->isNotEmpty())
+            <x-filament::section heading="Auslagen ({{ $found['auslagen']->count() }})" description="Erstattungen mit Belegen. Wegen der Aufbewahrungspflicht (10 Jahre) werden sie hier nicht gelöscht; die Bankverbindung wird nach der Auszahlung entfernt.">
+                @foreach ($found['auslagen'] as $auslage)
+                    <p style="font-size: .875rem;">{{ $auslage->datum->format('d.m.Y') }}: {{ $auslage->anlass }}, {{ \App\Support\Zahlungen::euro($auslage->summe_cent) }} ({{ \App\Models\Auslage::STATUS[$auslage->status] ?? $auslage->status }})</p>
+                @endforeach
+            </x-filament::section>
+        @endif
+
         <x-filament::section heading="Weitere Stellen">
             <ul style="font-size: .875rem; list-style: disc; padding-left: 1.25rem;">
                 <li>Mails in der Warteschlange an diese Adresse: {{ $found['queued'] }}</li>

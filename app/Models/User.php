@@ -81,6 +81,7 @@ class User extends Authenticatable implements FilamentUser
         'ntfy_topic',
         'nami_user',
         'nami_password',
+        'auslagen_konto',
     ];
 
     /**
@@ -101,6 +102,7 @@ class User extends Authenticatable implements FilamentUser
             'mail_events' => 'array',
             'nami_user' => 'encrypted',
             'nami_password' => 'encrypted',
+            'auslagen_konto' => 'encrypted:array',
             'nami_checked_at' => 'datetime',
             'member_checked_at' => 'datetime',
         ];

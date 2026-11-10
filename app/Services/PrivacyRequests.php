@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\AdressbuchKontakt;
+use App\Models\Auslage;
 use App\Models\ContactMessage;
 use App\Models\DatenabgleichZeile;
 use App\Models\Datenmeldung;
@@ -37,7 +38,7 @@ class PrivacyRequests
     public function __construct(private EventRegistrations $registrations) {}
 
     /**
-     * @return array{registrations: Collection<int, EventRegistration>, people: Collection<int, Person>, users: Collection<int, User>, messages: Collection<int, ContactMessage>, bestellungen: Collection<int, Bestellung>, umfragen: Collection<int, UmfrageAntwort>, gewinnspiel: Collection<int, UmfrageGewinnspiel>, datenmeldungen: Collection<int, Datenmeldung>, adressbuch: Collection<int, AdressbuchKontakt>, queued: int}
+     * @return array{registrations: Collection<int, EventRegistration>, people: Collection<int, Person>, users: Collection<int, User>, messages: Collection<int, ContactMessage>, bestellungen: Collection<int, Bestellung>, umfragen: Collection<int, UmfrageAntwort>, gewinnspiel: Collection<int, UmfrageGewinnspiel>, datenmeldungen: Collection<int, Datenmeldung>, adressbuch: Collection<int, AdressbuchKontakt>, auslagen: Collection<int, Auslage>, queued: int}
      */
     public function find(string $email): array
     {
@@ -65,6 +66,10 @@ class PrivacyRequests
             // Adressbuch (Kontakte, auch Externe), samt Verteilern.
             'adressbuch' => Schema::hasTable('adressbuch_kontakte')
                 ? AdressbuchKontakt::query()->where('email', $email)->with('verteiler')->get()
+                : new EloquentCollection,
+            // Auslagen: nur Auskunft, Löschung erst nach der Aufbewahrungsfrist.
+            'auslagen' => Schema::hasTable('auslagen')
+                ? Auslage::query()->where('email', $email)->orderByDesc('id')->get()
                 : new EloquentCollection,
             'queued' => $this->queueEntries($email)->count(),
         ];
@@ -156,6 +161,12 @@ class PrivacyRequests
             'adressbuch' => $found['adressbuch']->map(fn (AdressbuchKontakt $k) => [
                 'name' => $k->name, 'email' => $k->email, 'organisation' => $k->organisation, 'notiz' => $k->notiz,
                 'verteiler' => $k->verteiler->pluck('name')->all(), 'angelegt' => $k->created_at?->toDateString(),
+            ])->values()->all(),
+            'auslagen' => $found['auslagen']->map(fn (Auslage $a) => [
+                'anlass' => $a->anlass, 'datum' => $a->datum->toDateString(), 'art' => $a->beschreibung(),
+                'betrag' => $a->summe_cent / 100, 'status' => Auslage::STATUS[$a->status] ?? $a->status,
+                'belege' => count($a->belege ?? []), 'ausgezahlt_am' => $a->ausgezahlt_am?->toDateString(),
+                'bankverbindung_gespeichert' => $a->konto !== null,
             ])->values()->all(),
             'mails_in_warteschlange' => $found['queued'],
             'hinweise' => array_values(array_filter([

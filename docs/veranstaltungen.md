@@ -106,3 +106,14 @@ legt die Veranstaltung `/veranstaltungen/weihnachtspostkartenaktion-2026` an
 Migration schaltet „Vorab extern freigeben“ ein, eine dritte trägt Lisa Alm
 (Bildungsreferentin) als Verantwortliche ein. Danach wird sie im Backend
 gepflegt, eine erneute Migration ändert nichts.
+
+## Liste für unterwegs (PDF)
+
+Unter „Teilnehmende“ → **Liste für unterwegs (PDF)**: zum Ausdrucken für
+Lager und Fahrten, wenn kein Netz da ist. Bestätigte Teilnehmende
+alphabetisch (auf Wunsch mit Warteliste), wählbare Spalten (Vorschlag:
+Geburtsjahr, Stamm, Telefon; lange Freitexte nicht), die
+personensorgeberechtigte Person und auf Wunsch leere Kästchen für die
+Anwesenheit je Tag. Mit dem Hinweis „Vertraulich, nach der Veranstaltung
+vernichten“; jeder Abruf wird protokolliert („Liste für unterwegs (PDF)
+abgerufen“).

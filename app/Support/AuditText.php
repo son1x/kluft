@@ -44,6 +44,7 @@ class AuditText
         'entra.verzeichnis.fehlgeschlagen' => 'Verzeichnissuche (Microsoft 365) fehlgeschlagen',
         'entra.verzeichnis.anderes_konto' => 'Verzeichnissuche: anderes Microsoft-Konto gewählt, abgelehnt',
         'event.export' => 'Teilnehmendenliste exportiert',
+        'event.liste' => 'Liste für unterwegs (PDF) abgerufen',
         'event.member_check' => 'Mitgliederabgleich gestartet',
         'registration.manual' => 'Teilnehmende*n von Hand eingetragen',
         'registration.promote' => 'Von der Warteliste nachgerückt',

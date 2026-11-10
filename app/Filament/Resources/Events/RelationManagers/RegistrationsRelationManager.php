@@ -19,6 +19,7 @@ use App\Services\Mitglieder\MitgliederverzeichnisException;
 use App\Services\Mitglieder\NamiVerzeichnis;
 use App\Services\ParticipantExport;
 use App\Services\Teilnahmebescheinigung;
+use App\Services\TeilnehmendeListePdf;
 use App\Services\TeilnehmendenListe;
 use App\Support\AuditLogger;
 use App\Support\Features;
@@ -326,6 +327,32 @@ class RegistrationsRelationManager extends RelationManager
                         Notification::make()->title('Abgleich gestartet – die Spalte „Mitglied“ füllt sich in den nächsten Minuten.')->success()->send();
                     }),
                 $this->zuschussKopfaktionen($event),
+                Action::make('liste')
+                    ->label('Liste für unterwegs (PDF)')
+                    ->icon('heroicon-o-printer')
+                    ->modalHeading('Liste für unterwegs')
+                    ->modalDescription('Zum Ausdrucken für Lager und Fahrten. Vertraulich: nur für die Leitung, nach der Veranstaltung vernichten. Der Abruf wird protokolliert.')
+                    ->modalSubmitActionLabel('PDF herunterladen')
+                    ->fillForm(fn () => [
+                        'felder' => TeilnehmendeListePdf::standardFelder($this->getOwnerRecord()),
+                        'anwesenheit' => true,
+                        'warteliste' => false,
+                    ])
+                    ->schema([
+                        CheckboxList::make('felder')->label('Spalten')->columns(2)
+                            ->options(fn () => TeilnehmendeListePdf::felder($this->getOwnerRecord()))
+                            ->helperText('Nur, was ihr unterwegs braucht. Lange Freitexte passen nicht in die Liste.'),
+                        Toggle::make('anwesenheit')->label('Kästchen für die Anwesenheit je Tag'),
+                        Toggle::make('warteliste')->label('Warteliste mit aufnehmen'),
+                    ])
+                    ->action(function (array $data, TeilnehmendeListePdf $liste): StreamedResponse {
+                        $event = $this->getOwnerRecord();
+                        abort_unless(Filament::auth()->user()?->can('manageParticipants', $event), 403);
+                        AuditLogger::log('event.liste', Filament::auth()->user(), Event::class, $event->getKey(), request());
+                        $pdf = $liste->pdf($event, array_values((array) ($data['felder'] ?? [])), (bool) $data['anwesenheit'], (bool) $data['warteliste']);
+
+                        return response()->streamDownload(fn () => print ($pdf), $liste->dateiname($event), ['Content-Type' => 'application/pdf']);
+                    }),
                 Action::make('export')
                     ->label('Teilnehmerliste (.xlsx)')
                     ->icon('heroicon-o-arrow-down-tray')

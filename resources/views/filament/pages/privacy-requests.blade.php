@@ -87,6 +87,14 @@
             </x-filament::section>
         @endif
 
+        @if ($found['praevention']->isNotEmpty())
+            <x-filament::section heading="Präventions-Nachweise ({{ $found['praevention']->count() }})" description="Nur Daten (Führungszeugnis eingesehen, Schulungen, Juleica). Ein Jahr nach Ablauf werden sie ohnehin gelöscht.">
+                @foreach ($found['praevention'] as $nachweis)
+                    <p style="font-size: .875rem;">{{ $nachweis->artLabel() }}{{ $nachweis->bezeichnung ? ' ('.$nachweis->bezeichnung.')' : '' }}, gültig bis {{ $nachweis->gueltig_bis->format('d.m.Y') }}</p>
+                @endforeach
+            </x-filament::section>
+        @endif
+
         <x-filament::section heading="Weitere Stellen">
             <ul style="font-size: .875rem; list-style: disc; padding-left: 1.25rem;">
                 <li>Mails in der Warteschlange an diese Adresse: {{ $found['queued'] }}</li>

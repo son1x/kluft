@@ -74,6 +74,7 @@
 
             <nav aria-label="Service" class="hidden text-sm md:block">
                 <ul class="flex gap-6">
+                    <li><a href="{{ route('suche') }}" class="inline-flex items-center gap-1 hover:underline"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Suche</a></li>
                     <li><a href="{{ url('/kontakt') }}" class="hover:underline">Kontakt</a></li>
                     @if (\App\Support\Ausbau::gruppen())
                         <li><a href="{{ \App\Support\Site::officeUrl() }}" class="hover:underline">{{ \App\Support\Site::officeLabel() }}</a></li>
@@ -96,6 +97,14 @@
              die Kopfzeile, die Seite dahinter ist so lange gesperrt. --}}
         <nav id="mobile-nav" aria-label="Hauptnavigation (mobil)" class="max-h-[calc(100dvh-3rem)] overflow-y-auto overscroll-contain border-t border-white/20 bg-white text-text shadow-lg md:hidden" x-show="navOpen" x-cloak>
             <ul class="divide-y divide-surface-muted pt-2 pb-[calc(2rem+env(safe-area-inset-bottom))] font-bold">
+                {{-- Suche (docs/plan-ehrenamt.md Nr. 3), ohne JavaScript nutzbar. --}}
+                <li class="px-4 pb-3">
+                    <form method="get" action="{{ route('suche') }}" role="search" class="flex gap-2">
+                        <label for="suche-mobil" class="sr-only">Suchbegriff</label>
+                        <input id="suche-mobil" type="search" name="q" maxlength="100" placeholder="Suchen …" class="min-w-0 flex-1 border border-dpsg-mittelbeige bg-white px-3 py-2 font-normal" />
+                        <button type="submit" class="bg-dpsg-blau px-4 py-2 text-white">Los</button>
+                    </form>
+                </li>
                 @foreach ($navPages ?? [] as $navPage)
                     <li>
                         <a href="{{ url('/'.$navPage->slug) }}" @class(['block px-4 py-3', 'text-dpsg-rot' => request()->is($navPage->slug)])>{{ $navPage->title }}</a>

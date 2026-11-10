@@ -117,3 +117,17 @@ NaMi 3. Es wird nicht gespeichert; die Abfrage steht im Protokoll.
 Ratenzahlung bei Lagern und Veranstaltungen sowie Kosten, die sich mehrere
 Stellen teilen (z. B. Teilnehmende und Bezirk), stehen in der Roadmap unter
 „Stämme“.
+
+## Hinweise zur Barrierefreiheit
+
+Nach dem Speichern einer Seite oder eines Beitrags prüft Kluft den Text und
+zeigt bei Bedarf eine Mitteilung „Hinweise zur Barrierefreiheit“. Gespeichert
+wird immer, die Hinweise sind kein Zwang:
+
+- Bilder ohne Alternativtext (außer ausdrücklich dekorative);
+- Linktexte, die nicht sagen, wohin es geht („hier“, „mehr“, „weiterlesen“ …);
+- eine Überschrift 1 im Text (die ist schon der Titel) oder eine
+  übersprungene Ebene (z. B. 2 → 4);
+- Sätze mit mehr als 30 Wörtern.
+
+Bilder aus der Mediathek haben immer einen Alternativtext (Pflichtfeld).

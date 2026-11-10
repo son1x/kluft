@@ -2,12 +2,15 @@
 
 namespace App\Filament\Resources\Pages\Pages;
 
+use App\Filament\Concerns\ZeigtBarrierefreiheitsHinweise;
 use App\Filament\Resources\Pages\PageResource;
 use Filament\Facades\Filament;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreatePage extends CreateRecord
 {
+    use ZeigtBarrierefreiheitsHinweise;
+
     protected static string $resource = PageResource::class;
 
     protected function mutateFormDataBeforeCreate(array $data): array

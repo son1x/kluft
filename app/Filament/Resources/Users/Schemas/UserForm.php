@@ -14,6 +14,7 @@ use App\Support\Features;
 use App\Support\RoleCatalog;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Repeater;
@@ -128,7 +129,7 @@ class UserForm
 
             Section::make('Rollen')
                 ->description($global
-                    ? 'Mehrere Zuweisungen je Person möglich. Jede Änderung wird im Audit-Log protokolliert.'
+                    ? 'Mehrere Zuweisungen je Person möglich. „Gültig bis“ ist optional (z. B. Ende der Amtszeit): 30 und 7 Tage vorher kommt ein Hinweis, danach wird die Rolle entfernt. Jede Änderung wird im Audit-Log protokolliert.'
                     : 'Du kannst Autor:innen in deinem Bereich freischalten oder entziehen.')
                 ->components([
                     Repeater::make('roleAssignments')
@@ -139,14 +140,21 @@ class UserForm
                         )
                         ->schema([
                             Select::make('assignment')
-                                ->hiddenLabel()
+                                ->label('Rolle')
                                 ->options($grantable)
                                 ->in(array_keys($grantable))
                                 ->required()
                                 ->distinct()
                                 ->native(false),
+                            DatePicker::make('gueltig_bis')
+                                ->label('Gültig bis')
+                                ->placeholder('unbegrenzt')
+                                ->minDate(today())
+                                ->native(false)
+                                ->displayFormat('d.m.Y'),
                         ])
-                        ->mutateRelationshipDataBeforeFillUsing(fn (array $data) => ['assignment' => RoleCatalog::encode($data)])
+                        ->columns(2)
+                        ->mutateRelationshipDataBeforeFillUsing(fn (array $data) => ['assignment' => RoleCatalog::encode($data), 'gueltig_bis' => $data['gueltig_bis'] ?? null])
                         ->mutateRelationshipDataBeforeCreateUsing(fn (array $data) => self::toColumns($data, $grantable))
                         ->mutateRelationshipDataBeforeSaveUsing(fn (array $data) => self::toColumns($data, $grantable))
                         ->addActionLabel('Rolle hinzufügen')
@@ -266,7 +274,7 @@ class UserForm
 
     /**
      * @param  array<string, string>  $grantable
-     * @return array{role: string, scope_type: string, scope_key: ?string, granted_by: int|null}
+     * @return array{role: string, scope_type: string, scope_key: ?string, gueltig_bis: ?string, granted_by: int|null}
      */
     private static function toColumns(array $data, array $grantable): array
     {
@@ -277,7 +285,7 @@ class UserForm
             throw ValidationException::withMessages(['roleAssignments' => 'Diese Rolle darfst du nicht vergeben.']);
         }
 
-        return [...RoleCatalog::decode($data['assignment']), 'granted_by' => Filament::auth()->id()];
+        return [...RoleCatalog::decode($data['assignment']), 'gueltig_bis' => filled($data['gueltig_bis'] ?? null) ? $data['gueltig_bis'] : null, 'granted_by' => Filament::auth()->id()];
     }
 
     /**

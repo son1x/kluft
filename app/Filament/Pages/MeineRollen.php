@@ -40,7 +40,7 @@ class MeineRollen extends Page
     }
 
     /**
-     * @return list<array{rolle: string, erklaerung: ?string, seit: ?string, von: ?string}>
+     * @return list<array{rolle: string, erklaerung: ?string, seit: ?string, von: ?string, bis: ?string}>
      */
     public function rollen(): array
     {
@@ -50,6 +50,7 @@ class MeineRollen extends Page
                 'erklaerung' => RoleCatalog::erklaerung($a->role),
                 'seit' => $a->created_at?->format('d.m.Y'),
                 'von' => $a->grantedBy?->name,
+                'bis' => $a->gueltig_bis?->format('d.m.Y'),
             ])->values()->all();
     }
 

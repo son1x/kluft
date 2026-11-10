@@ -93,7 +93,7 @@ class UserManagementTest extends TestCase
 
         Livewire::test(EditUser::class, ['record' => $person->getRouteKey()])
             ->assertFormSet(['roleAssignments' => [
-                'record-'.$person->roleAssignments->firstWhere('scope_key', 'biber')->id => ['assignment' => 'autor|own|biber'],
+                'record-'.$person->roleAssignments->firstWhere('scope_key', 'biber')->id => ['assignment' => 'autor|own|biber', 'gueltig_bis' => null],
             ]])
             ->fillForm(['roleAssignments' => []])
             ->call('save')

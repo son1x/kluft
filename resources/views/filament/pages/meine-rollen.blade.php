@@ -27,6 +27,9 @@
                         @if ($rolle['seit'] || $rolle['von'])
                             <br><span style="opacity: .7;">Seit {{ $rolle['seit'] ?? '–' }}@if ($rolle['von']), vergeben von {{ $rolle['von'] }}@endif</span>
                         @endif
+                        @if ($rolle['bis'])
+                            <br><span style="font-weight: 600;">Gültig bis {{ $rolle['bis'] }}</span>
+                        @endif
                     </li>
                 @endforeach
             </ul>

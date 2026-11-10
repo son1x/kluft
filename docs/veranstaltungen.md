@@ -42,6 +42,11 @@ Verantwortlichen bei Bedarf persönlich.
   - „Bestätigung per E-Mail schicken“ ist voreingestellt (mit Stornolink).
   - Danach wie bei der Bestätigung per Link: Info-Mails ans Team, Teilnahmebeitrag, Mitgliederabgleich. Protokoll `registration.confirm_manual`.
   - Bestätigte, Warteliste und Stornierte werden übersprungen.
+## Nachricht an die Teilnehmenden, Erinnerung
+
+- **Nachricht an Teilnehmende** (Reiter „Teilnehmende“, Kopfzeile): an Bestätigte, Warteliste und/oder Unbestätigte, mit Anzahl je Gruppe. Jede Person bekommt eine eigene Mail (keine sichtbaren Adressen) mit Anrede und einem Kasten mit Titel, Datum, Ort und Link; Antworten gehen an die Kontakt-E-Mail der Veranstaltung. Der Text wird als reiner Text übernommen (Zeilenumbrüche bleiben). Gespeichert werden Betreff, Text und Zahl der Empfänger*innen (`event_nachrichten`), protokolliert als `event.nachricht`.
+- **Erinnerung** (Veranstaltung bearbeiten → „Erinnerung an die Teilnehmenden“): 1 bis 14 Tage vorher, eigener Text oder Standardtext. Der Befehl `veranstaltungen:erinnerungen` (täglich 9 Uhr) schickt sie einmal an alle Bestätigten; ändert sich das Datum oder die Vorlaufzeit, wird neu erinnert.
+- Test-Umleitung und „Vorab extern freigeben“ gelten wie bei allen Mails.
 
 ## Mails der Anmeldung
 

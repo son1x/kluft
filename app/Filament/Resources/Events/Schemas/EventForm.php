@@ -12,6 +12,7 @@ use App\Support\AnmeldeInfos;
 use App\Support\Features;
 use App\Support\RoleCatalog;
 use App\Support\Teilnahmebeitraege;
+use App\Support\TeilnehmendeNachrichten;
 use App\Support\Testsystem;
 use App\Support\Zuschuesse;
 use App\Support\Zuschuesse\Geber;
@@ -239,6 +240,23 @@ class EventForm
                         ->visible(fn (Get $get) => (bool) $get('zuschuss')),
                     Text::make('Kosten, Programm, Antragsteller, Fristen und Bewilligungen stehen gesammelt in der Maske „Zuschussantrag“ (Knopf oben, nach dem Speichern).')
                         ->columnSpanFull()->visible(fn (Get $get) => (bool) $get('zuschuss')),
+                ]),
+
+            // Erinnerung vor Beginn (docs/plan-ehrenamt.md Nr. 1, Befehl veranstaltungen:erinnerungen).
+            Section::make('Erinnerung an die Teilnehmenden')
+                ->description('Eine Mail an alle Bestätigten einige Tage vor Beginn, einmal. Wird das Datum geändert, wird neu erinnert.')
+                ->columns(3)
+                ->columnSpanFull()
+                ->collapsible()
+                ->components([
+                    Select::make('erinnerung_tage')->label('Erinnerung')->placeholder('keine')
+                        ->options(collect([1, 2, 3, 5, 7, 10, 14])->mapWithKeys(fn (int $t) => [$t => $t === 1 ? '1 Tag vorher' : $t.' Tage vorher'])->all())
+                        ->live(),
+                    Textarea::make('erinnerung_text')->label('Text der Erinnerung')->rows(4)->maxLength(5000)->columnSpan(2)
+                        ->placeholder(TeilnehmendeNachrichten::ERINNERUNG_STANDARD)
+                        ->helperText(fn (?Event $record) => 'Leer: der Standardtext. Anrede und Kasten mit Datum, Ort und Link kommen automatisch dazu.'
+                            .($record?->erinnerung_gesendet_am ? ' Verschickt am '.$record->erinnerung_gesendet_am->format('d.m.Y H:i').'.' : ''))
+                        ->visible(fn (Get $get) => filled($get('erinnerung_tage'))),
                 ]),
 
             Section::make('Formular-Baukasten')

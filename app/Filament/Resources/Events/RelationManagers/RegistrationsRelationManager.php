@@ -24,6 +24,7 @@ use App\Support\AuditLogger;
 use App\Support\Features;
 use App\Support\NamiAmpel;
 use App\Support\Teilnahmebeitraege;
+use App\Support\TeilnehmendeNachrichten;
 use App\Support\Zahlungen;
 use BackedEnum;
 use Filament\Actions\Action;
@@ -326,6 +327,34 @@ class RegistrationsRelationManager extends RelationManager
                         Notification::make()->title('Abgleich gestartet – die Spalte „Mitglied“ füllt sich in den nächsten Minuten.')->success()->send();
                     }),
                 $this->zuschussKopfaktionen($event),
+                // Rundmail an die Angemeldeten (docs/plan-ehrenamt.md Nr. 1).
+                Action::make('nachricht')
+                    ->label('Nachricht an Teilnehmende')
+                    ->icon('heroicon-o-envelope')
+                    ->modalHeading('Nachricht an die Teilnehmenden')
+                    ->modalDescription(fn () => 'Jede Person bekommt eine eigene Mail, die Adressen sieht niemand. Antworten gehen an '
+                        .($this->getOwnerRecord()->contact_email ?: 'die Absenderadresse der Website').'.'
+                        .(($letzte = $this->getOwnerRecord()->nachrichten()->first()) ? ' Zuletzt: „'.$letzte->betreff.'“ am '.$letzte->created_at->format('d.m.Y H:i').' an '.$letzte->empfaenger.'.' : ''))
+                    ->schema([
+                        CheckboxList::make('an')->label('An')->required()->default(['confirmed'])->columns(3)
+                            ->options(fn () => collect(TeilnehmendeNachrichten::STATUS)->mapWithKeys(fn (string $label, string $status) => [
+                                $status => $label.' ('.TeilnehmendeNachrichten::anzahl($this->getOwnerRecord(), [$status]).')',
+                            ])->all()),
+                        TextInput::make('betreff')->label('Betreff')->required()->maxLength(150)
+                            ->default(fn () => $this->getOwnerRecord()->title.': '),
+                        Textarea::make('text')->label('Nachricht')->required()->rows(8)->maxLength(5000)
+                            ->helperText('Die Anrede („Hallo Vorname,“) und ein Kasten mit Titel, Datum, Ort und Link zur Veranstaltung kommen automatisch dazu.'),
+                    ])
+                    ->modalSubmitActionLabel('Senden')
+                    ->action(function (array $data) {
+                        $event = $this->getOwnerRecord();
+                        abort_unless(Filament::auth()->user()?->can('manageParticipants', $event), 403);
+                        $user = Filament::auth()->user();
+                        $nachricht = TeilnehmendeNachrichten::senden($event, array_values((array) $data['an']), trim((string) $data['betreff']), trim((string) $data['text']), $user instanceof User ? $user : null);
+                        $nachricht->empfaenger === 0
+                            ? Notification::make()->warning()->title('Niemand mit E-Mail-Adresse in der Auswahl.')->send()
+                            : Notification::make()->success()->title('Nachricht an '.$nachricht->empfaenger.' '.($nachricht->empfaenger === 1 ? 'Person' : 'Personen').' unterwegs.')->send();
+                    }),
                 Action::make('export')
                     ->label('Teilnehmerliste (.xlsx)')
                     ->icon('heroicon-o-arrow-down-tray')

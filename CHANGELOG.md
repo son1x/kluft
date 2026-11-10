@@ -12,6 +12,7 @@ Admins. Kurz und aus Sicht der Redaktion schreiben.
 - Sammelbestellung: Sets ohne feste Grenze, auch mit vielen Teilen bestellbar; der Hinweis „höchstens vier“ bei „Für den Start“ entfällt.
 - Sammelbestellung: Eine Rüsthaus-Nummer von Hand ist schneller geprüft (nur bis zur gesuchten Größe), die Größe wird vorgeschlagen; Bestellungen mit solchen Artikeln scheitern nicht mehr am Zeitlimit.
 - Sammelbestellung: „Alle aktualisieren“ läuft im Hintergrund und holt die Daten frisch beim Rüsthaus; den Stand zeigt die Artikelliste.
+- Veranstaltungen: „Nachricht an Teilnehmende“ im Reiter Teilnehmende – eine Mail je Person an Bestätigte, Warteliste oder Unbestätigte, Antworten gehen an die Kontaktadresse. Dazu eine automatische Erinnerung einige Tage vor Beginn (je Veranstaltung einstellbar).
 - Veranstaltungen: Info-Mails an das Team. Bei jeder bestätigten Anmeldung, beim Nachrücken und bei der Abmeldung bekommen die Sammeladresse (einstellbar unter Veranstaltungen → „Sammeladresse“) und die verantwortliche Person eine kurze Mail mit Link ins Backend. Je Veranstaltung abschaltbar.
 - Vorab freigegebene Anmeldungen (vor dem Livegang): Besucher*innen sehen einen schlichten Rahmen ohne Menü, die Infos zur Aktion stehen zum Aufklappen direkt am Formular.
 

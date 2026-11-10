@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Posts\Pages;
 
 use App\Filament\Actions\CopyForWhatsAppChannelAction;
+use App\Filament\Concerns\ZeigtBarrierefreiheitsHinweise;
 use App\Filament\Resources\Posts\Actions\ShareToInstagramAction;
 use App\Filament\Resources\Posts\PostResource;
 use Filament\Actions\DeleteAction;
@@ -11,6 +12,8 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditPost extends EditRecord
 {
+    use ZeigtBarrierefreiheitsHinweise;
+
     protected static string $resource = PostResource::class;
 
     protected function getHeaderActions(): array

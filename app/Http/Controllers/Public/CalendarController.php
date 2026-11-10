@@ -7,12 +7,15 @@ use App\Models\Calendar;
 use App\Models\CalendarEvent;
 use App\Models\Event;
 use App\Support\CalendarItem;
+use App\Support\IcsKalender;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Kalender (Pflichtenheft 6.5, F-CAL-04): Liste und Monatsansicht aus dem
@@ -82,6 +85,27 @@ class CalendarController extends Controller
             ]);
 
         return response()->json($events->values())->header('Cache-Control', 'public, max-age=300');
+    }
+
+    /**
+     * Kalender-Abo (ICS): alle Termine oder die einer Stufe bzw. nur
+     * Veranstaltungen, vom letzten Monat bis ein Jahr im Voraus.
+     */
+    public function ics(Request $request): Response
+    {
+        $nurVeranstaltungen = $request->query('kalender') === self::EVENTS;
+        $stufe = array_key_exists((string) $request->query('stufe'), config('dpsg.stages')) ? (string) $request->query('stufe') : null;
+        $von = CarbonImmutable::now()->subMonth()->startOfDay();
+        $name = config('dpsg.site.name').($stufe ? ' – '.config("dpsg.stages.{$stufe}.label") : '').($nurVeranstaltungen ? ' – Veranstaltungen' : '');
+
+        $inhalt = Cache::remember('kalender-ics:'.($stufe ?? '-').':'.(int) $nurVeranstaltungen, now()->addMinutes(15),
+            fn () => IcsKalender::erzeugen($this->items($von, $von->addMonths(13), null, $stufe, $nurVeranstaltungen)->take(2000), $name));
+
+        return response($inhalt, 200, [
+            'Content-Type' => 'text/calendar; charset=utf-8',
+            'Content-Disposition' => 'inline; filename="'.str($name)->slug().'.ics"',
+            'Cache-Control' => 'public, max-age=900',
+        ]);
     }
 
     /**

@@ -298,5 +298,10 @@ eindeutiger Knopf.
 |---|---|
 | **A** (gebaut) | Neue Oberfläche: Raster, Kategorien, Suche, Sheet, Warenkorb nach Mitglied, Ablauf in drei Schritten, „Verbindlich bestellen“, Preisangaben, Storno bis Bestellschluss, mehrere Artikel holen (SB-100 bis SB-135, SB-150a, SB-170 bis SB-172, SB-174/175). Ohne JavaScript (SB-136) zurückgestellt. |
 | **B** (gebaut, vereinfacht) | „Für den Start“ als Kategorie, teilbarer Anker je Artikel (SB-114, SB-140). |
-| **C** | Katalog-Import kategorieweise über Shopseiten (SB-151 bis SB-161); Erlaubnis liegt vor. |
+| **C** (gebaut, Teil) | Rüsthaus-Katalog im Backend: Kategorie wählen, Artikel der Übersichtsseiten ansehen und ausgewählte übernehmen (`RuesthausKatalog`, Übernahme über den Job `ArtikelHolen`). Abgleich vor Rundenstart (SB-158) offen. |
 | **D** | Feed-Quelle, sobald das Rüsthaus einen anbietet (SB-151). |
+
+**Nachträge (10.11.2026):**
+- **Sets ohne feste Grenze:** beliebig viele Teile; die Bestellung prüft nur die Teile, die das Set hat. „Für den Start“ ohne feste Anzahl.
+- **Rüsthaus-Nummer von Hand (SB-115):** „Prüfen“ holt nur eine Seite, bei einer Größen-Nummer (z. B. `0100003.32`) nur bis zu dieser Größe (`Ruesthaus::schnell`), einen Tag zwischengespeichert; die Größe wird vorgeschlagen. Beim Absenden höchstens fünf solche Artikel nachschlagen, weitere prüft die Sammelbestellung im Backend.
+- **„Alle aktualisieren“ (SB-12):** auf Knopfdruck, aber im Hintergrund über `ArtikelHolen` (drei je Lauf) und frisch vom Rüsthaus statt aus dem Zwischenspeicher; Stand oben in der Artikelliste. Freigaben bleiben.

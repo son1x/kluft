@@ -299,7 +299,7 @@ class Roadmap
                 'key' => 'live-environment',
                 'phase' => 'Livegang',
                 'title' => 'Livegang 2/5: GitHub-Environment „dv-trier-live“ anlegen',
-                'detail' => 'Repository → Settings → Environments → „New environment“: dv-trier-live. Secrets wie bei dv-trier, aber mit SSH_TARGET_DIR und DB_* der Live-Website, APP_URL zunächst die vorläufige Adresse (am Livetag https://www.dpsg-trier.de). Für den Probelauf MAIL_TEST_REDIRECT_TO/MAIL_TEST_ALLOWLIST wie bei Test und die Variable KLUFT_TESTSYSTEM=offen setzen, am Livetag löschen. Die Variable KLUFT_MAIL_LIVE für den Probelauf nicht anlegen, am Livetag auf „ja“ setzen – ohne sie verschickt die Live-Seite keine Mails (docs/deploy.md „Mail“). BACKUP_WEBDAV_URL mit eigenem Zielordner. Tabelle in docs/livegang.md. Die Testumgebung dv-trier bleibt, wie sie ist.',
+                'detail' => 'Repository → Settings → Environments → „New environment“: dv-trier-live. Secrets wie bei dv-trier (BACKUP_PASSWORD genau gleich, sonst lässt sich das Backup von Test nicht einspielen), aber mit SSH_TARGET_DIR und DB_* der Live-Website, APP_URL zunächst die vorläufige Adresse (am Livetag https://www.dpsg-trier.de). Für den Probelauf MAIL_TEST_REDIRECT_TO/MAIL_TEST_ALLOWLIST wie bei Test und die Variable KLUFT_TESTSYSTEM=offen setzen, am Livetag löschen. Die Variable KLUFT_MAIL_LIVE für den Probelauf nicht anlegen, am Livetag auf „ja“ setzen – ohne sie verschickt die Live-Seite keine Mails (docs/deploy.md „Mail“). BACKUP_WEBDAV_URL mit eigenem Zielordner. Tabelle in docs/livegang.md. Die Testumgebung dv-trier bleibt, wie sie ist.',
                 'done' => null,
             ],
             [
@@ -320,7 +320,7 @@ class Roadmap
                 'key' => 'live-umschalten',
                 'phase' => 'Livegang',
                 'title' => 'Livegang 5/5: Umschalten am 21.11.',
-                'detail' => 'Mit der Technik abgestimmt: Redaktionsstopp auf Test, Backups, WordPress mit dem WP Toolkit nach alt.dpsg-trier.de klonen, Test aufräumen, Datenbank und Ordner mit Plesk nach www.dpsg-trier.de kopieren, vorher in dv-trier-live KLUFT_MAIL_LIVE=ja setzen und MAIL_TEST_REDIRECT_TO, MAIL_TEST_ALLOWLIST und KLUFT_TESTSYSTEM löschen, Deploy dv-trier-live (Protokoll muss „Mailer: smtp“ zeigen), Cronjob, Dokumentstamm von dpsg-trier.de auf www.dpsg-trier.de/public, Zertifikat, Statistik unter Verwaltung → Aufrufe auf null setzen, Test schließen (KLUFT_TESTSYSTEM). Danach bolivienpartnerschaft.de und beraten-online.de als Aliasse. Ablauf Schritt für Schritt in docs/livegang.md.',
+                'detail' => 'Ablauf in docs/livegang.md: Redaktionsstopp und Wartungsmodus auf Test, Backups, Dokumentstamm von dpsg-trier.de auf die Umzugsseite (Ordner umzug), WordPress mit dem WP Toolkit nach alt.dpsg-trier.de klonen, Test aufräumen, in dv-trier-live KLUFT_MAIL_LIVE=ja setzen und MAIL_TEST_REDIRECT_TO, MAIL_TEST_ALLOWLIST und KLUFT_TESTSYSTEM löschen, Deploy dv-trier-live und Cronjob, auf Test Verwaltung → Backups → „Auf andere Website übertragen“, noch einmal Deploy dv-trier-live (Protokoll muss „Mailer: smtp“ zeigen), Dokumentstamm auf www.dpsg-trier.de/public, Zertifikat, prüfen, Wartungsmodus aus, Statistik unter Verwaltung → Aufrufe auf null setzen, Test schließen (KLUFT_TESTSYSTEM).',
                 'done' => null,
             ],
             [

@@ -34,6 +34,15 @@ Anzeige.
 Keine Gesundheitsangaben über eigene Felder abfragen. Die klären die
 Verantwortlichen bei Bedarf persönlich.
 
+## Teilnehmende
+
+- **Reiter:** Beim Bearbeiten einer Veranstaltung stehen oben „Veranstaltung“ (Formular), „Teilnehmende“ (Zahl = aktive Anmeldungen) und „Fragen“. Direkt zu den Teilnehmenden: Veranstaltungsliste → „Teilnehmende“ oder `?relation=0` an der Adresse.
+- **Von Hand bestätigen:** Bei unbestätigten Anmeldungen (z. B. Bestätigungsmail nicht angekommen) „Bestätigen“, für mehrere die Sammelaktion „Bestätigen“.
+  - Status: wie per Link (freier Platz, sonst Warteliste; ohne Warteliste trotzdem bestätigt), „bestätigt – auch über die Platzzahl hinaus“ oder „Warteliste“.
+  - „Bestätigung per E-Mail schicken“ ist voreingestellt (mit Stornolink).
+  - Danach wie bei der Bestätigung per Link: Info-Mails ans Team, Teilnahmebeitrag, Mitgliederabgleich. Protokoll `registration.confirm_manual`.
+  - Bestätigte, Warteliste und Stornierte werden übersprungen.
+
 ## Mails der Anmeldung
 
 Alle Mails an Teilnehmende verschickt `EventRegistrationMail` über die

@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Gruppierungen\Schemas;
 
 use App\Models\Gruppierung;
+use App\Support\Slug;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -49,7 +50,7 @@ class GruppierungForm
                         ->live(onBlur: true)
                         ->afterStateUpdated(fn (?string $state, Get $get, Set $set) => $get('slug') ?: $set('slug', str($state)->slug()))
                         ->helperText(fn (Get $get) => $get('typ') === 'bezirk' ? 'Ohne „Bezirk“ davor, z. B. „Saar-Hochwald“.' : 'z. B. „Stamm St. Georg Musterstadt“'),
-                    TextInput::make('slug')
+                    Slug::feld(TextInput::make('slug'))
                         ->label('Kurzname (URL)')
                         ->required()
                         ->alphaDash()

@@ -130,6 +130,8 @@
                 <div class="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-sm font-bold">
                     <a href="{{ route('events.index', ['stufe' => $page->stage]) }}" class="text-dpsg-rot underline">Alle Veranstaltungen</a>
                     <a href="{{ route('calendar.index', ['stufe' => $page->stage]) }}" class="text-dpsg-rot underline">Kalender</a>
+                    {{-- Kalender-Abo der Stufe (ICS), docs/plan-ehrenamt.md Nr. 2. --}}
+                    <a href="{{ preg_replace('#^https?://#', 'webcal://', route('calendar.ics', ['stufe' => $page->stage])) }}" class="text-dpsg-rot underline">Termine abonnieren</a>
                 </div>
             </div>
             @endif

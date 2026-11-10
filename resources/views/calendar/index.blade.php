@@ -56,6 +56,20 @@
             </div>
         </form>
 
+        {{-- Kalender-Abo (ICS) mit der gewählten Stufe bzw. nur Veranstaltungen (docs/plan-ehrenamt.md Nr. 2). --}}
+        @php($abo = route('calendar.ics', array_filter(['stufe' => $stufe, 'kalender' => $kalender === 'veranstaltungen' ? 'veranstaltungen' : null])))
+        <details class="mt-3 text-sm">
+            <summary class="cursor-pointer font-bold text-dpsg-blau">Kalender abonnieren{{ $stufe ? ' ('.config("dpsg.stages.{$stufe}.label").')' : '' }}</summary>
+            <div class="mt-2 max-w-3xl space-y-2 bg-surface-muted p-4">
+                <p>Die Termine erscheinen dann im Kalender deines Handys oder in Outlook und bleiben von selbst aktuell.</p>
+                <p class="flex flex-wrap gap-3">
+                    <a href="{{ preg_replace('#^https?://#', 'webcal://', $abo) }}" class="bg-dpsg-blau px-4 py-2 font-bold text-white hover:bg-dpsg-rot">Im Kalender abonnieren</a>
+                    <a href="{{ $abo }}" class="border border-dpsg-blau px-4 py-2 font-bold text-dpsg-blau">ICS-Datei</a>
+                </p>
+                <p class="text-text-secondary">Google Kalender: „Weitere Kalender“ → „Per URL“ und diese Adresse einfügen: <span class="break-all font-mono text-xs">{{ $abo }}</span></p>
+            </div>
+        </details>
+
         @if ($calendars->isEmpty() && ! $hasEvents)
             <p class="mt-8 text-text-secondary">Der Kalender wird gerade eingerichtet. Bald findest du hier die Termine des {{ config('dpsg.site.level_genitive') }} und der Stufen.</p>
         @elseif ($ansicht === 'liste')

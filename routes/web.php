@@ -96,6 +96,8 @@ Route::get('/api/gruppierungen.geojson', [GruppierungController::class, 'geojson
 
 // Kalender (F-CAL, Pflichtenheft 11.1).
 Route::get('/kalender', [CalendarController::class, 'index'])->middleware($termine)->name('calendar.index');
+// Kalender-Abo (ICS) für Handy und Outlook, docs/plan-ehrenamt.md Nr. 2.
+Route::get('/kalender.ics', [CalendarController::class, 'ics'])->middleware(['throttle:60,1', $termine])->name('calendar.ics');
 Route::get('/api/calendar/events', [CalendarController::class, 'api'])
     ->middleware(['throttle:60,1', $termine])
     ->name('calendar.api');

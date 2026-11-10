@@ -56,6 +56,8 @@ class EventRegistrationMail extends Mailable implements ShouldBeEncrypted, Shoul
                 'event' => $this->registration->event,
                 'name' => $this->registration->first_name,
                 'confirmUrl' => $this->kind === 'doi' && $this->token ? route('registrations.confirm', $this->token) : null,
+                // Familienanmeldung: alle Namen in der einen Bestätigungsmail.
+                'weitere' => $this->kind === 'doi' ? $this->registration->mitAngemeldete()->map(fn (EventRegistration $r) => $r->first_name.' '.$r->last_name)->all() : [],
                 'cancelUrl' => $this->kind !== 'doi' && $this->token ? route('registrations.cancel', $this->token) : null,
             ],
         );

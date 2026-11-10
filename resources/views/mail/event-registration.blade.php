@@ -3,7 +3,11 @@ Hallo {{ $name }},
 
 @switch($kind)
 @case('doi')
+@if ($weitere !== [])
+danke für die Anmeldung zur Veranstaltung **{{ $event->title }}** ({{ $event->dateLabel() }}) für **{{ $registration->first_name }} {{ $registration->last_name }}** und **{{ implode('**, **', $weitere) }}**.
+@else
 danke für deine Anmeldung zur Veranstaltung **{{ $event->title }}** ({{ $event->dateLabel() }}).
+@endif
 
 Bitte bestätige sie innerhalb von 48 Stunden über diesen Button. Erst dann ist die Anmeldung gültig – ohne Bestätigung löschen wir die Angaben automatisch.
 

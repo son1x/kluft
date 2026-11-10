@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -34,7 +35,7 @@ class EventRegistration extends Model
         'event_id', 'status', 'first_name', 'last_name', 'email', 'birth_year', 'data',
         'guardian_name', 'guardian_consent', 'consent_text_version', 'consent_at',
         'confirm_token_hash', 'confirmed_at', 'cancel_token_hash', 'cancelled_at', 'purge_at',
-        'preis_bezeichnung', 'preis_cent',
+        'preis_bezeichnung', 'preis_cent', 'anmeldung_gruppe',
         'funktion', 'kreis', 'juleica', 'anwesend', 'anwesend_tage',
     ];
 
@@ -109,6 +110,18 @@ class EventRegistration extends Model
     public static function hashToken(string $token): string
     {
         return hash('sha256', $token);
+    }
+
+    /**
+     * Gemeinsam angemeldete Personen (Familienanmeldung), ohne diese.
+     *
+     * @return Collection<int, self>
+     */
+    public function mitAngemeldete(): Collection
+    {
+        return $this->anmeldung_gruppe
+            ? static::query()->where('anmeldung_gruppe', $this->anmeldung_gruppe)->whereKeyNot($this->id)->orderBy('id')->get()
+            : new Collection;
     }
 
     public static function findByConfirmToken(string $token): ?self

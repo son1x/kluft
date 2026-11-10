@@ -167,6 +167,8 @@ class EventForm
                     DateTimePicker::make('reg_opens_at')->label('Anmeldung ab')->seconds(false)->helperText('Leer = sofort'),
                     DateTimePicker::make('reg_closes_at')->label('Anmeldeschluss')->seconds(false)->helperText('Leer = bis zum Beginn'),
                     Toggle::make('waitlist_enabled')->label('Warteliste, wenn ausgebucht'),
+                    Toggle::make('mehrere_personen')->label('Mehrere Personen in einer Anmeldung (Familien)')
+                        ->helperText('Im Formular „Weitere Person hinzufügen“: bis zu 5 weitere mit Vorname, Nachname, Geburtsjahr und Teilnahmebeitrag; alle übrigen Angaben werden von der ersten Person übernommen. Eine Bestätigungsmail, je Person eine Anmeldung.'),
                     Toggle::make('adults_only')->label('Für Erwachsene (eigenverantwortliche Anmeldung)')
                         ->helperText('Z. B. Elternabend, Leitungsrunde oder Schulung: Alle melden sich selbst an, ohne Abschnitt für Personensorgeberechtigte. Wer laut Geburtsjahr jünger als '.config('dpsg.guardian_consent_age').' sein könnte, kann sich nicht anmelden.'),
                     Toggle::make('member_check')->label('Mitgliedschaft mit der Mitgliederverwaltung abgleichen')

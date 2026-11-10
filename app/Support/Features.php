@@ -68,6 +68,8 @@ class Features
 
     public const AUFRUFE = 'aufrufe';
 
+    public const PRAEVENTION = 'praevention';
+
     private const CACHE_KEY = 'features.schalter';
 
     /**
@@ -104,6 +106,7 @@ class Features
         self::VIDEOKONFERENZEN => ['ab' => 3, 'bereich' => 'Backend', 'label' => 'Videokonferenzen (Jitsi)', 'text' => 'Konferenzen auf einer eigenen Jitsi-Installation terminieren: Teilnahme-Link, Einladungstext und ein Moderator-Link, der bis zum Ende des Folgetags gilt. Anlegen dürfen Stufen- und Fachbereichsleitungen, Vorstand, Verwaltung und Admins. Nur sinnvoll mit einer Jitsi-Installation mit Token-Anmeldung (Prosody „token“, Gäste warten auf Moderation, Anmeldung der Mitglieder über einen OpenID-Adapter wie jitsi-openid).', 'standard' => false, 'braucht' => 'eigene Jitsi-Installation mit Token-Anmeldung und das gemeinsame Secret JITSI_SECRET im Environment (docs/videokonferenzen.md)'],
         self::ZUSCHUESSE => ['ab' => 3, 'bereich' => 'Veranstaltungen', 'label' => 'Zuschussanträge', 'text' => 'Je Veranstaltung „Zuschuss beantragen“: Das Anmeldeformular fragt Anschrift, Geburtsdatum und Geschlecht ab; im Backend eine Maske „Zuschussantrag“ mit allen Angaben, Anträge als PDF, Förderschätzung, Fristen und Bewilligungen. Welche Zuschussgeber zur Wahl stehen, steht unter Verwaltung → Zuschussgeber (Vorlagen für Saarland, Saarlouis und Bistum Trier, dazu eigene).', 'standard' => false],
         self::NAMI_DATENABGLEICH => ['ab' => 3, 'ebene' => 'Stamm', 'bereich' => 'Mitglieder', 'label' => 'NaMi-Datenabgleich', 'text' => 'Formular „Meine Daten aktualisieren“ (/meine-daten) für Mitglieder und Eltern; im Backend (Kasse → NaMi-Datenabgleich) eine Unterschiedsliste zu NaMi zum Korrigieren dort. Kluft schreibt nichts in NaMi. Für Verwaltung und Kasse.', 'standard' => false, 'braucht' => 'NaMi-Zugang und DPSG-Nummer des Stamms'],
+        self::PRAEVENTION => ['bereich' => 'Backend', 'label' => 'Präventions-Nachweise', 'text' => 'Verband & Kontakt → Prävention: Führungszeugnis (eingesehen am), Präventionsschulung und Juleica der Leitenden mit „gültig bis“, Ampel und Erinnerung 90 und 30 Tage vor Ablauf an die Person und den Vorstand. Nur Daten, keine Dokumente; ein Jahr nach Ablauf gelöscht. Für Vorstand und Verwaltung.', 'standard' => false],
         self::PUSH => ['bereich' => 'Backend', 'label' => 'Push-Nachrichten (ntfy)', 'text' => '„Mein Konto → Meine Push-Nachrichten“ und Versand aufs Handy.', 'standard' => true],
         self::CODE_LOGIN => ['bereich' => 'Backend', 'label' => 'Anmeldung per E-Mail-Code', 'text' => 'Redaktion ohne Microsoft 365: Zugänge für Personen oder Rollen (Funktionspostfach, z. B. „Stammesvorstand“), Anmeldung mit Einmalcode per E-Mail. Microsoft 365 bleibt daneben möglich.', 'standard' => false],
         self::WP_IMPORT => ['ab' => 3, 'bereich' => 'Backend', 'label' => 'WordPress-Import', 'text' => 'Übernahme von Seiten und Beiträgen aus einer WordPress-Website.', 'standard' => false],

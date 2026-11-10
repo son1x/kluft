@@ -124,6 +124,7 @@ class AuditText
             'user.status' => 'Kontostatus geändert: '.(self::STATUS[$rest] ?? $rest),
             'role.granted' => 'Recht vergeben: '.self::rolle($rest),
             'role.revoked' => 'Recht entzogen: '.self::rolle($rest),
+            'praevention.geloescht' => 'Präventions-Nachweise gelöscht (ein Jahr nach Ablauf): '.$rest,
             'role.changed' => 'Recht geändert: '.self::rolle($rest),
             'role.expired' => 'Recht abgelaufen: '.self::rolle($rest),
             'feature.an' => 'Funktion eingeschaltet: '.(Features::KATALOG[$rest]['label'] ?? $rest),

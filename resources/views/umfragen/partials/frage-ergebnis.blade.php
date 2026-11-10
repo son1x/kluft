@@ -26,6 +26,18 @@
             </table>
             @if ($f->typ === 'mehrfach')<p style="margin: .2rem 0 0; font-size: .75rem; color: #6b7280;">Mehrfachnennung: Prozent bezogen auf {{ $e['beantwortet'] }} Antwortende.</p>@endif
         @endif
+        @if (! empty($e['termine']))
+            <table style="width: 100%; border-collapse: collapse; font-size: .85rem;">
+                <tr style="text-align: left; color: #6b7280;"><th style="padding: .2rem .5rem .2rem 0;">Vorschlag</th><th style="padding: .2rem .5rem;">Ja</th><th style="padding: .2rem .5rem;">Wenn nötig</th><th style="padding: .2rem .5rem;">Nein</th></tr>
+                @foreach ($e['termine'] as $t)
+                    <tr style="border-top: 1px solid #e5e7eb;{{ $t['bester'] ? ' background: #e8f3ea; font-weight: bold;' : '' }}">
+                        <td style="padding: .25rem .5rem .25rem 0;">{{ $t['vorschlag'] }}@if ($t['bester']) <span style="color: #1a7f37;">· bester Termin</span>@endif</td>
+                        <td style="padding: .25rem .5rem;">{{ $t['ja'] }}</td><td style="padding: .25rem .5rem;">{{ $t['vielleicht'] }}</td><td style="padding: .25rem .5rem;">{{ $t['nein'] }}</td>
+                    </tr>
+                @endforeach
+            </table>
+            <p style="margin: .2rem 0 0; font-size: .75rem; color: #6b7280;">Bester Termin: die meisten „Ja“ (zählen doppelt) und „Wenn nötig“.</p>
+        @endif
         @foreach ([['Antworten', $e['texte']], ['Sonstiges', $e['sonstiges']], ['Kommentare', $e['kommentare']]] as [$titel, $liste])
             @if ($liste !== [])
                 <p style="margin: .5rem 0 .2rem; font-size: .8rem; font-weight: bold;">{{ $titel }} ({{ count($liste) }})</p>

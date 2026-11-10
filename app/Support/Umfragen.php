@@ -24,6 +24,7 @@ class Umfragen
         'janein' => 'Ja/Nein',
         'kurztext' => 'Kurzer Text',
         'langtext' => 'Langer Text',
+        'termin' => 'Terminfindung (Vorschläge mit ja / wenn nötig / nein)',
         'abschnitt' => 'Abschnitt (Überschrift und Text, keine Frage)',
     ];
 
@@ -31,6 +32,9 @@ class Umfragen
     public const AUSWAHL = ['einfach', 'mehrfach', 'bewertung', 'janein'];
 
     public const BEWERTUNG_STANDARD = ['sehr gut', 'gut', 'nicht so gut', 'gar nicht gut'];
+
+    /** Antworten je Terminvorschlag (Terminfindung), mit Punkten für die Auswertung. */
+    public const TERMIN_ANTWORTEN = ['ja' => 'Ja', 'vielleicht' => 'Wenn nötig', 'nein' => 'Nein'];
 
     /** Diözesanleitung und mehr: Stufen- und Fachbereichsleitungen, Vorstand, Verwaltung, Admins. */
     public static function zugriff(?User $user): bool
@@ -114,6 +118,9 @@ class Umfragen
                 'skala' => is_numeric($roh) && (int) $roh >= self::skala($frage)[0] && (int) $roh <= self::skala($frage)[1] ? (int) $roh : null,
                 'kurztext' => filled($roh) ? mb_substr(trim((string) $roh), 0, 500) : null,
                 'langtext' => filled($roh) ? mb_substr(trim((string) $roh), 0, 5000) : null,
+                // Terminfindung: [Index des Vorschlags => ja|vielleicht|nein], gespeichert als [Vorschlag => Antwort].
+                'termin' => collect($frage->optionenListe())->mapWithKeys(fn (string $v, int $i) => [$v => in_array(($roh[$i] ?? null), array_keys(self::TERMIN_ANTWORTEN), true) ? (string) $roh[$i] : null])
+                    ->filter()->all(),
                 default => null,
             };
             if ($wert === []) {

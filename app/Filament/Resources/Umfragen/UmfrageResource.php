@@ -151,12 +151,15 @@ class UmfrageResource extends Resource
             ]),
             Textarea::make('hilfe')->label(fn (Get $get) => $get('typ') === 'abschnitt' ? 'Text' : 'Hilfetext (optional)')->rows(2),
             TagsInput::make('optionen')->label('Antwortmöglichkeiten')->reorderable()->splitKeys(['Tab'])
-                ->visible($ist('einfach', 'mehrfach', 'bewertung'))
-                ->required(fn (Get $get) => in_array($get('typ'), ['einfach', 'mehrfach'], true))
+                ->visible($ist('einfach', 'mehrfach', 'bewertung', 'termin'))
+                ->required(fn (Get $get) => in_array($get('typ'), ['einfach', 'mehrfach', 'termin'], true))
                 ->disabled($gesperrt)->dehydrated()
-                ->helperText(fn (Get $get) => $get('typ') === 'bewertung'
-                    ? 'Beste zuerst. Leer: '.implode(', ', Umfragen::BEWERTUNG_STANDARD).'. Mit Enter übernehmen.'
-                    : 'Jede Möglichkeit mit Enter übernehmen; Reihenfolge per Ziehen.'),
+                ->label(fn (Get $get) => $get('typ') === 'termin' ? 'Terminvorschläge' : 'Antwortmöglichkeiten')
+                ->helperText(fn (Get $get) => match ($get('typ')) {
+                    'bewertung' => 'Beste zuerst. Leer: '.implode(', ', Umfragen::BEWERTUNG_STANDARD).'. Mit Enter übernehmen.',
+                    'termin' => 'Je Vorschlag z. B. „Di, 25.11., 19 Uhr“, mit Enter übernehmen. Wer antwortet, wählt je Vorschlag „Ja“, „Wenn nötig“ oder „Nein“. Tipp: davor eine Frage „Name“ (kurzer Text).',
+                    default => 'Jede Möglichkeit mit Enter übernehmen; Reihenfolge per Ziehen.',
+                }),
             Grid::make(4)->components([
                 Toggle::make('pflicht')->label('Pflichtfrage')->inline(false)->visible(fn (Get $get) => $get('typ') !== 'abschnitt'),
                 Toggle::make('kommentar')->label('Kommentarfeld dazu')->inline(false)->visible($ist('einfach', 'mehrfach', 'skala', 'bewertung', 'janein'))

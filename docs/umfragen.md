@@ -26,6 +26,7 @@ Backend unter **Verband & Kontakt → Umfragen**. Pflichtenheft:
     optional eine Antwort ohne Wertung wie „nicht teilgenommen“);
   - Ja/Nein, kurzer und langer Text;
   - **Abschnitt** (Überschrift mit Text).
+  - **Terminfindung:** Terminvorschläge, je Vorschlag „Ja“, „Wenn nötig“ oder „Nein“ (Umschalter mit drei Segmenten). Die Auswertung zeigt je Vorschlag die Summen und markiert den besten Termin (Ja zählt doppelt, Wenn nötig einfach); im Export steht „Vorschlag: Ja; …“. Tipp: davor eine Frage „Name“.
 - **Kommentarfeld dazu:** Auswahl, Skala, Bewertung und Ja/Nein bekommen auf
   Wunsch ein freies Feld („Hier hast du Platz für eigene Gedanken …“).
   Dafür braucht es keine eigene Frage.

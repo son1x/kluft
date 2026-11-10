@@ -78,6 +78,24 @@
                                         @if ($frage->einstellung('label_bis'))<span class="text-sm text-text-secondary">{{ $frage->einstellung('label_bis') }}</span>@endif
                                     </div>
                                     @break
+                                @case('termin')
+                                    {{-- Je Vorschlag ein Umschalter mit drei gleich breiten Segmenten, Tippfläche 44 px. --}}
+                                    <div class="space-y-3">
+                                        @foreach ($frage->optionenListe() as $i => $vorschlag)
+                                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                                <span class="font-semibold">{{ $vorschlag }}</span>
+                                                <span class="inline-grid grid-cols-3 rounded-full bg-surface-muted p-1 text-sm font-semibold" role="radiogroup" aria-label="{{ $vorschlag }}">
+                                                    @foreach (\App\Support\Umfragen::TERMIN_ANTWORTEN as $wert => $text)
+                                                        <label class="relative">
+                                                            <input type="radio" name="a[{{ $k }}][{{ $i }}]" value="{{ $wert }}" @checked((old('a.'.$k.'.'.$i)) === $wert) class="peer sr-only" />
+                                                            <span class="flex h-11 min-w-24 cursor-pointer items-center justify-center rounded-full px-3 text-text-secondary peer-checked:bg-white peer-checked:text-dpsg-blau peer-checked:shadow-sm peer-focus-visible:outline-2 peer-focus-visible:outline-dpsg-blau">{{ $text }}</span>
+                                                        </label>
+                                                    @endforeach
+                                                </span>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    @break
                                 @case('kurztext')
                                     <input type="text" name="a[{{ $k }}]" maxlength="500" value="{{ $alt }}" aria-label="{{ $frage->text }}" class="w-full border border-dpsg-mittelbeige bg-white px-3 py-2" />
                                     @break

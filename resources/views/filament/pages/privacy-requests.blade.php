@@ -87,6 +87,14 @@
             </x-filament::section>
         @endif
 
+        @if ($found['material']->isNotEmpty())
+            <x-filament::section heading="Materialverleih ({{ $found['material']->count() }})" description="Reservierungen und Anfragen; erledigte werden 6 Monate nach der Rückgabe ohnehin gelöscht.">
+                @foreach ($found['material'] as $reservierung)
+                    <p style="font-size: .875rem;">{{ $reservierung->material->name }}, {{ $reservierung->zeitraum() }} ({{ \App\Models\MaterialReservierung::STATUS[$reservierung->status] ?? $reservierung->status }})</p>
+                @endforeach
+            </x-filament::section>
+        @endif
+
         <x-filament::section heading="Weitere Stellen">
             <ul style="font-size: .875rem; list-style: disc; padding-left: 1.25rem;">
                 <li>Mails in der Warteschlange an diese Adresse: {{ $found['queued'] }}</li>

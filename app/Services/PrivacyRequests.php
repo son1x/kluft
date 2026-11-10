@@ -8,6 +8,7 @@ use App\Models\DatenabgleichZeile;
 use App\Models\Datenmeldung;
 use App\Models\Event;
 use App\Models\EventRegistration;
+use App\Models\MaterialReservierung;
 use App\Models\Person;
 use App\Models\RegistrationDocument;
 use App\Models\Shop\Bestellung;
@@ -37,7 +38,7 @@ class PrivacyRequests
     public function __construct(private EventRegistrations $registrations) {}
 
     /**
-     * @return array{registrations: Collection<int, EventRegistration>, people: Collection<int, Person>, users: Collection<int, User>, messages: Collection<int, ContactMessage>, bestellungen: Collection<int, Bestellung>, umfragen: Collection<int, UmfrageAntwort>, gewinnspiel: Collection<int, UmfrageGewinnspiel>, datenmeldungen: Collection<int, Datenmeldung>, adressbuch: Collection<int, AdressbuchKontakt>, queued: int}
+     * @return array{registrations: Collection<int, EventRegistration>, people: Collection<int, Person>, users: Collection<int, User>, messages: Collection<int, ContactMessage>, bestellungen: Collection<int, Bestellung>, umfragen: Collection<int, UmfrageAntwort>, gewinnspiel: Collection<int, UmfrageGewinnspiel>, datenmeldungen: Collection<int, Datenmeldung>, adressbuch: Collection<int, AdressbuchKontakt>, material: Collection<int, MaterialReservierung>, queued: int}
      */
     public function find(string $email): array
     {
@@ -65,6 +66,10 @@ class PrivacyRequests
             // Adressbuch (Kontakte, auch Externe), samt Verteilern.
             'adressbuch' => Schema::hasTable('adressbuch_kontakte')
                 ? AdressbuchKontakt::query()->where('email', $email)->with('verteiler')->get()
+                : new EloquentCollection,
+            // Materialverleih: Reservierungen und Anfragen.
+            'material' => Schema::hasTable('material_reservierungen')
+                ? MaterialReservierung::query()->where('email', $email)->with('material')->orderByDesc('von')->get()
                 : new EloquentCollection,
             'queued' => $this->queueEntries($email)->count(),
         ];
@@ -157,6 +162,11 @@ class PrivacyRequests
                 'name' => $k->name, 'email' => $k->email, 'organisation' => $k->organisation, 'notiz' => $k->notiz,
                 'verteiler' => $k->verteiler->pluck('name')->all(), 'angelegt' => $k->created_at?->toDateString(),
             ])->values()->all(),
+            'materialverleih' => $found['material']->map(fn (MaterialReservierung $r) => [
+                'material' => $r->material->name, 'von' => $r->von->toDateString(), 'bis' => $r->bis->toDateString(),
+                'name' => $r->name, 'telefon' => $r->telefon, 'gruppierung' => $r->gruppierung, 'zweck' => $r->zweck,
+                'status' => MaterialReservierung::STATUS[$r->status] ?? $r->status,
+            ])->values()->all(),
             'mails_in_warteschlange' => $found['queued'],
             'hinweise' => array_values(array_filter([
                 Features::newsletter() ? config('dpsg.newsletter.name').' (Newsletter): Die Adressen liegen nur beim Versanddienst Brevo, nicht im CMS. Auskunft/Löschung dort.' : null,
@@ -188,7 +198,7 @@ class PrivacyRequests
      * automatisch gelöscht (Rollen/Audit) – das geht unter „Benutzer“.
      * Frei werdende Plätze kommender Veranstaltungen rücken nach.
      *
-     * @return array{registrations: int, people: int, messages: int, bestellungen: int, umfragen: int, datenmeldungen: int, adressbuch: int, queued: int}
+     * @return array{registrations: int, people: int, messages: int, bestellungen: int, umfragen: int, datenmeldungen: int, adressbuch: int, material: int, queued: int}
      */
     public function delete(string $email): array
     {
@@ -214,13 +224,14 @@ class PrivacyRequests
 
         // Adressbuch: Kontakt samt Zugehörigkeit zu Verteilern.
         $found['adressbuch']->each->delete();
+        $found['material']->each->delete();
 
         $queued = $this->queueEntries($email);
         DB::table('jobs')->whereIn('id', $queued->where('table', 'jobs')->pluck('id'))->delete();
         DB::table('failed_jobs')->whereIn('id', $queued->where('table', 'failed_jobs')->pluck('id'))->delete();
 
         return ['registrations' => $found['registrations']->count(), 'people' => $found['people']->count(), 'messages' => $found['messages']->count(),
-            'bestellungen' => $found['bestellungen']->count(), 'umfragen' => $found['umfragen']->count() + $found['gewinnspiel']->count(), 'datenmeldungen' => $found['datenmeldungen']->count(), 'adressbuch' => $found['adressbuch']->count(), 'queued' => $queued->count()];
+            'bestellungen' => $found['bestellungen']->count(), 'umfragen' => $found['umfragen']->count() + $found['gewinnspiel']->count(), 'datenmeldungen' => $found['datenmeldungen']->count(), 'adressbuch' => $found['adressbuch']->count(), 'material' => $found['material']->count(), 'queued' => $queued->count()];
     }
 
     /**

@@ -76,6 +76,9 @@ Schedule::command('zuschuss:nextcloud')->dailyAt('03:20')->withoutOverlapping();
 Schedule::command('zuschuss:juleica')->dailyAt('08:20');
 Schedule::command('zuschuss:fristen')->dailyAt('08:25');
 
+// Materialverleih: Rückgabe-Erinnerung, alte Reservierungen löschen.
+Schedule::command('material:taeglich')->dailyAt('08:35');
+
 // NaMi-Datenabgleich: Löschfristen (docs/pflichtenheft-nami-datenabgleich.md).
 Schedule::command('datenabgleich:aufraeumen')->dailyAt('03:45');
 

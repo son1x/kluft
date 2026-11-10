@@ -23,6 +23,7 @@ use App\Http\Controllers\Public\RoadmapController;
 use App\Http\Controllers\Public\SectionController;
 use App\Http\Controllers\Public\ShopController;
 use App\Http\Controllers\Public\StatusController;
+use App\Http\Controllers\Public\SucheController;
 use App\Http\Controllers\Public\UmfrageController;
 use App\Http\Controllers\Public\WhatsAppController;
 use App\Http\Controllers\Redaktion\BackupStandController;
@@ -104,6 +105,9 @@ Route::get('/api/calendar/events', [CalendarController::class, 'api'])
 // Wartungsmodus erreichbar, weil beim Einspielen Datenbank und Sitzung ersetzt
 // werden; geschützt durch das Token aus dem Auftrag.
 Route::get('/einspielen/stand/{token}', BackupStandController::class)->where('token', '[A-Za-z0-9]{40}')->name('backup.stand');
+
+// Suche auf der Website (docs/plan-ehrenamt.md Nr. 3).
+Route::get('/suche', SucheController::class)->middleware('throttle:30,1')->name('suche');
 
 // Veranstaltungen mit Anmeldung (F-EV, Pflichtenheft 11.1).
 Route::get('/veranstaltungen', [EventController::class, 'index'])->middleware($termine)->name('events.index');

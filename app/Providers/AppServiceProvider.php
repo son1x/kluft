@@ -18,6 +18,7 @@ use App\Support\StufenAlter;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Mail\Events\MessageSending;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\View;
@@ -48,6 +49,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Seitennavigation der Website: deutsch und barrierefrei (partials/seiten).
+        Paginator::defaultView('partials.seiten');
+
         // Inhalts-Migrationen der aktiven Instanz (instanzen/<schlüssel>/migrations):
         // bringen neue Inhalte auf laufende Installationen; andere Instanzen sehen sie nicht.
         $instanzMigrationen = base_path('instanzen/'.config('dpsg.instanz').'/migrations');

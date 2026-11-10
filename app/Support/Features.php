@@ -69,6 +69,7 @@ class Features
     public const AUFRUFE = 'aufrufe';
 
     public const PRAEVENTION = 'praevention';
+
     public const AUSLAGEN = 'auslagen';
 
     public const MATERIALVERLEIH = 'materialverleih';

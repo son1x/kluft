@@ -6,6 +6,7 @@ Admins. Kurz und aus Sicht der Redaktion schreiben.
 
 ## 0.9.0
 
+- URL-Pfad (Slug): Unsichtbare Zeichen (z. B. aus Word oder Outlook eingefügte Bindestriche, Leerzeichen am Ende) werden beim Verlassen des Feldes bereinigt, statt die Veranstaltung, Seite oder den Beitrag mit einer Fehlermeldung abzulehnen.
 - Verwaltung → Backups (nur Admins): Stand der Backups, „Backup jetzt erstellen“, „Backup einspielen“ und „Auf andere Website übertragen“ (z. B. von Test auf die neue Live-Website). Läuft im Hintergrund, der Fortschritt steht auf einer eigenen Seite, auch ohne Anmeldung.
 - Veranstaltungen: Beim Bearbeiten stehen „Veranstaltung“, „Teilnehmende“ (mit Anzahl) und „Fragen“ als Reiter oben; in der Liste führt „Teilnehmende“ direkt dorthin. Unbestätigte Anmeldungen lassen sich von Hand bestätigen, einzeln oder mehrere auf einmal, auf Wunsch mit Bestätigungsmail.
 - Georgsbote: „Fehlende Titelbilder erzeugen“ und neu „Alle Titelbilder neu erzeugen“ gelten für Georgsboten und Georgsbriefe auf einmal; auch Georgsbriefe bekommen ein Titelbild.

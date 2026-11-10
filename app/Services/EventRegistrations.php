@@ -28,46 +28,65 @@ class EventRegistrations
 
     public const CONFIRM_HOURS = 48;
 
+    /** Familienanmeldung: so viele weitere Personen auf einmal. */
+    public const MAX_WEITERE = 5;
+
     /**
+     * Anmeldung über die Website, bei der Familienanmeldung mit weiteren
+     * Personen. Jede Person bekommt eine eigene Anmeldung; die weiteren
+     * übernehmen E-Mail, Zusatzangaben und Einwilligung der ersten und sind
+     * über anmeldung_gruppe verbunden. Eine Bestätigungsmail für alle.
+     *
      * @param  array{first_name: string, last_name: string, email: string, birth_year?: int|null, data?: array<string, mixed>, guardian_name?: string|null, guardian_consent?: bool, preis?: array{bezeichnung: string, cent: int}|null}  $input
+     * @param  list<array{first_name: string, last_name: string, birth_year?: int|null, preis?: array{bezeichnung: string, cent: int}|null}>  $weitere
      */
-    public function register(Event $event, array $input): void
+    public function register(Event $event, array $input, array $weitere = []): void
     {
         $email = mb_strtolower(trim($input['email']));
+        $personen = [$input, ...array_map(fn (array $p) => [...$input, 'birth_year' => null, ...$p], array_slice($weitere, 0, self::MAX_WEITERE))];
 
         // Doppelte Anmeldung derselben Person: keine zweite Zeile anlegen,
         // aber auch nicht verraten, dass es schon eine gibt.
-        $exists = $event->registrations()
+        $neu = array_values(array_filter($personen, fn (array $p) => ! $event->registrations()
             ->whereIn('status', ['pending', 'confirmed', 'waitlist'])
             ->where('email', $email)
-            ->whereRaw('lower(first_name) = ?', [mb_strtolower(trim($input['first_name']))])
-            ->whereRaw('lower(last_name) = ?', [mb_strtolower(trim($input['last_name']))])
-            ->exists();
+            ->whereRaw('lower(first_name) = ?', [mb_strtolower(trim($p['first_name']))])
+            ->whereRaw('lower(last_name) = ?', [mb_strtolower(trim($p['last_name']))])
+            ->exists()));
+        // Innerhalb derselben Absendung nur einmal je Name.
+        $neu = collect($neu)->unique(fn (array $p) => mb_strtolower(trim($p['first_name']).'|'.trim($p['last_name'])))->values()->all();
 
-        if ($exists) {
+        if ($neu === []) {
             return;
         }
 
         $token = Str::random(48);
+        $gruppe = count($neu) > 1 ? (string) Str::uuid() : null;
+        $erste = null;
 
-        $registration = $event->registrations()->create([
-            'status' => 'pending',
-            'first_name' => trim($input['first_name']),
-            'last_name' => trim($input['last_name']),
-            'email' => $email,
-            'birth_year' => $input['birth_year'] ?? null,
-            'data' => array_filter($input['data'] ?? [], fn ($v) => filled($v)),
-            'guardian_name' => $input['guardian_name'] ?? null,
-            'guardian_consent' => (bool) ($input['guardian_consent'] ?? false),
-            'preis_bezeichnung' => $input['preis']['bezeichnung'] ?? null,
-            'preis_cent' => $input['preis']['cent'] ?? null,
-            'consent_text_version' => $event->consentVersion(),
-            'consent_at' => now(),
-            'confirm_token_hash' => EventRegistration::hashToken($token),
-            'purge_at' => now()->addHours(self::CONFIRM_HOURS),
-        ]);
+        foreach ($neu as $i => $p) {
+            $registration = $event->registrations()->create([
+                'status' => 'pending',
+                'first_name' => trim($p['first_name']),
+                'last_name' => trim($p['last_name']),
+                'email' => $email,
+                'birth_year' => $p['birth_year'] ?? null,
+                'data' => array_filter($input['data'] ?? [], fn ($v) => filled($v)),
+                'guardian_name' => $input['guardian_name'] ?? null,
+                'guardian_consent' => (bool) ($input['guardian_consent'] ?? false),
+                'preis_bezeichnung' => $p['preis']['bezeichnung'] ?? null,
+                'preis_cent' => $p['preis']['cent'] ?? null,
+                'consent_text_version' => $event->consentVersion(),
+                'consent_at' => now(),
+                // Der Link bestätigt die ganze Gruppe; er hängt an der ersten Anmeldung.
+                'confirm_token_hash' => $i === 0 ? EventRegistration::hashToken($token) : null,
+                'anmeldung_gruppe' => $gruppe,
+                'purge_at' => now()->addHours(self::CONFIRM_HOURS),
+            ]);
+            $erste ??= $registration;
+        }
 
-        $this->send($registration, 'doi', $token);
+        $this->send($erste, 'doi', $token);
     }
 
     /**
@@ -152,56 +171,70 @@ class EventRegistrations
             return [$registration->status === 'cancelled' ? 'invalid' : $registration->status, $registration];
         }
 
+        // Familienanmeldung: der Link bestätigt alle noch offenen der Gruppe.
+        $gruppe = collect([$registration])->concat(
+            $registration->mitAngemeldete()->where('status', 'pending')->values()
+        );
+
         if ($registration->created_at->addHours(self::CONFIRM_HOURS)->isPast()) {
-            $registration->delete();
+            $gruppe->each->delete();
 
             return ['expired', null];
         }
 
-        $cancelToken = Str::random(48);
+        $ergebnisse = DB::transaction(function () use ($gruppe) {
+            $event = Event::query()->lockForUpdate()->findOrFail($gruppe->first()->event_id);
+            $ergebnisse = [];
 
-        $result = DB::transaction(function () use ($registration, $cancelToken) {
-            $event = Event::query()->lockForUpdate()->findOrFail($registration->event_id);
+            foreach ($gruppe as $r) {
+                $status = match (true) {
+                    ! $event->isFull() => 'confirmed',
+                    $event->waitlist_enabled => 'waitlist',
+                    default => 'full',
+                };
 
-            $status = match (true) {
-                ! $event->isFull() => 'confirmed',
-                $event->waitlist_enabled => 'waitlist',
-                default => 'full',
-            };
+                if ($status === 'full') {
+                    $r->delete();
+                    $ergebnisse[] = [$r, 'full', null];
 
-            if ($status === 'full') {
-                $registration->delete();
+                    continue;
+                }
 
-                return 'full';
+                $cancelToken = Str::random(48);
+                $r->update([
+                    'status' => $status,
+                    'confirmed_at' => now(),
+                    'confirm_token_hash' => null,
+                    'cancel_token_hash' => EventRegistration::hashToken($cancelToken),
+                    'purge_at' => $event->purgeAt(),
+                ]);
+                $ergebnisse[] = [$r, $status, $cancelToken];
             }
 
-            $registration->update([
-                'status' => $status,
-                'confirmed_at' => now(),
-                'confirm_token_hash' => null,
-                'cancel_token_hash' => EventRegistration::hashToken($cancelToken),
-                'purge_at' => $event->purgeAt(),
-            ]);
-
-            return $status;
+            return $ergebnisse;
         });
 
-        if ($result === 'full') {
-            return ['full', null];
+        $pruefen = [];
+        foreach ($ergebnisse as [$r, $status, $cancelToken]) {
+            if ($status === 'full') {
+                continue;
+            }
+            $this->send($r, $status, $cancelToken);
+            app(PushNotifier::class)->registration($r, $status);
+            AnmeldeInfos::senden($r, $status);
+            Teilnahmebeitraege::fordern($r);
+            $pruefen[] = $r->id;
         }
-
-        $this->send($registration, $result, $cancelToken);
-        app(PushNotifier::class)->registration($registration, $result);
-        AnmeldeInfos::senden($registration, $result);
-        Teilnahmebeitraege::fordern($registration);
 
         // Automatisch nur mit technischem Konto; bei persönlicher NaMi-Anmeldung
         // prüft die Veranstaltungsleitung unter „Teilnehmende“.
-        if ($registration->event->checksMembers() && ! NamiVerzeichnis::persoenlich()) {
-            CheckEventMembers::dispatch($registration->event_id, false, [$registration->id]);
+        if ($pruefen !== [] && $registration->event->checksMembers() && ! NamiVerzeichnis::persoenlich()) {
+            CheckEventMembers::dispatch($registration->event_id, false, $pruefen);
         }
 
-        return [$result, $registration];
+        [, $result] = $ergebnisse[0];
+
+        return $result === 'full' ? ['full', null] : [$result, $registration];
     }
 
     /**

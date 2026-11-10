@@ -176,6 +176,63 @@
                 @endforeach
             </fieldset>
 
+            @if ($event->mehrere_personen)
+                {{-- Familienanmeldung: weitere Personen mit denselben Angaben (docs/veranstaltungen.md).
+                     Ohne JavaScript bleibt es bei einer Person. --}}
+                @php($mitJahr = isset($fields['birth_year']))
+                @php($jahrPflicht = $mitJahr && $fields['birth_year']['required'])
+                @php($preise = $event->hatTeilnahmebeitrag() ? $event->preise() : [])
+                <fieldset class="space-y-4 border-t border-dpsg-mittelbeige pt-5" x-cloak
+                          x-data="{ weitere: @js(array_values((array) old('weitere', []))), max: {{ \App\Services\EventRegistrations::MAX_WEITERE }} }">
+                    <legend class="font-bold">Weitere Personen anmelden</legend>
+                    <p class="text-sm text-text-secondary">
+                        Geschwister oder weitere Familienmitglieder? Trag sie hier ein, bis zu {{ \App\Services\EventRegistrations::MAX_WEITERE }} weitere. Die übrigen Angaben (z. B. Stamm, Anschrift, Telefon) übernehmen wir von der ersten Person; jede Person bekommt eine eigene Anmeldung.
+                    </p>
+                    <template x-for="(person, i) in weitere" :key="i">
+                        <div class="relative border border-dpsg-mittelbeige bg-white p-4">
+                            <div class="flex items-center justify-between gap-2">
+                                <p class="font-bold" x-text="'Person ' + (i + 2)"></p>
+                                <button type="button" class="min-h-11 px-3 text-sm font-bold text-dpsg-rot underline" @click="weitere.splice(i, 1)" :aria-label="'Person ' + (i + 2) + ' entfernen'">Entfernen</button>
+                            </div>
+                            <div class="mt-2 grid gap-4 sm:grid-cols-2">
+                                <div>
+                                    <label class="block text-sm font-bold" :for="'weitere-' + i + '-vorname'">Vorname *</label>
+                                    <input type="text" required autocomplete="off" maxlength="100" class="{{ $input }}" :id="'weitere-' + i + '-vorname'" :name="'weitere[' + i + '][first_name]'" x-model="person.first_name" />
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold" :for="'weitere-' + i + '-nachname'">Nachname *</label>
+                                    <input type="text" required autocomplete="off" maxlength="100" class="{{ $input }}" :id="'weitere-' + i + '-nachname'" :name="'weitere[' + i + '][last_name]'" x-model="person.last_name" />
+                                </div>
+                                @if ($mitJahr)
+                                    <div>
+                                        <label class="block text-sm font-bold" :for="'weitere-' + i + '-jahr'">{{ $fields['birth_year']['label'] }}{{ $jahrPflicht ? ' *' : '' }}</label>
+                                        <input type="number" inputmode="numeric" min="{{ now()->year - 100 }}" max="{{ now()->year }}" @required($jahrPflicht) class="{{ $input }} sm:max-w-40" :id="'weitere-' + i + '-jahr'" :name="'weitere[' + i + '][birth_year]'" x-model="person.birth_year" />
+                                    </div>
+                                @endif
+                                @if ($preise !== [])
+                                    <div>
+                                        <label class="block text-sm font-bold" :for="'weitere-' + i + '-preis'">Teilnahmebeitrag *</label>
+                                        <select required class="{{ $input }}" :id="'weitere-' + i + '-preis'" :name="'weitere[' + i + '][preis]'" x-model="person.preis">
+                                            <option value="">Bitte wählen</option>
+                                            @foreach ($preise as $pi => $preis)
+                                                <option value="{{ $pi }}">{{ $preis['bezeichnung'] }} – {{ \App\Support\Zahlungen::euro($preis['cent']) }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    </template>
+                    <button type="button" x-show="weitere.length < max"
+                            @click="weitere.push({ first_name: '', last_name: document.getElementById('last_name')?.value ?? '', birth_year: '', preis: '' }); $nextTick(() => document.getElementById('weitere-' + (weitere.length - 1) + '-vorname')?.focus())"
+                            class="inline-flex min-h-11 items-center gap-2 border border-dpsg-blau bg-white px-4 py-2 font-bold text-dpsg-blau hover:bg-dpsg-blau hover:text-white">
+                        <x-heroicon-o-user-plus class="h-5 w-5" aria-hidden="true" />
+                        Weitere Person hinzufügen
+                    </button>
+                    @error('weitere')<p class="text-sm text-dpsg-rot">{{ $message }}</p>@enderror
+                </fieldset>
+            @endif
+
             @unless ($event->adults_only)
             <fieldset class="space-y-4 border-t border-dpsg-mittelbeige pt-5">
                 <legend class="sr-only">Anmeldung durch Personensorgeberechtigte</legend>

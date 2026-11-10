@@ -25,6 +25,16 @@
             <p class="mt-2 text-text-secondary">{{ $registration->event->title }} · {{ $registration->event->dateLabel() }}</p>
         @endif
         <p class="mt-4">{{ $text }}</p>
+        @if ($registration && ($mit = $registration->mitAngemeldete())->isNotEmpty())
+            {{-- Familienanmeldung: Ergebnis je Person. --}}
+            @php($statusText = ['confirmed' => 'bestätigt', 'waitlist' => 'Warteliste', 'pending' => 'unbestätigt', 'cancelled' => 'storniert'])
+            <ul class="mt-4 space-y-1 border-l-4 border-dpsg-hellbeige pl-4">
+                @foreach ($registration->newCollection([$registration])->concat($mit) as $person)
+                    <li><strong>{{ $person->first_name }} {{ $person->last_name }}</strong>: {{ $statusText[$person->status] ?? $person->status }}</li>
+                @endforeach
+            </ul>
+            <p class="mt-2 text-sm text-text-secondary">Jede Person bekommt eine eigene E-Mail mit Stornolink.</p>
+        @endif
         @if (request()->attributes->get('testsystem_extern'))
             {{-- Vorab freigegeben (Testsystem): zurück zur Website statt zur nicht öffentlichen Übersicht. --}}
             @if ($zurueck = \App\Support\Testsystem::zurueckUrl())

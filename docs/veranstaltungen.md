@@ -47,6 +47,24 @@ Verantwortlichen bei Bedarf persönlich.
 - **Nachricht an Teilnehmende** (Reiter „Teilnehmende“, Kopfzeile): an Bestätigte, Warteliste und/oder Unbestätigte, mit Anzahl je Gruppe. Jede Person bekommt eine eigene Mail (keine sichtbaren Adressen) mit Anrede und einem Kasten mit Titel, Datum, Ort und Link; Antworten gehen an die Kontakt-E-Mail der Veranstaltung. Der Text wird als reiner Text übernommen (Zeilenumbrüche bleiben). Gespeichert werden Betreff, Text und Zahl der Empfänger*innen (`event_nachrichten`), protokolliert als `event.nachricht`.
 - **Erinnerung** (Veranstaltung bearbeiten → „Erinnerung an die Teilnehmenden“): 1 bis 14 Tage vorher, eigener Text oder Standardtext. Der Befehl `veranstaltungen:erinnerungen` (täglich 9 Uhr) schickt sie einmal an alle Bestätigten; ändert sich das Datum oder die Vorlaufzeit, wird neu erinnert.
 - Test-Umleitung und „Vorab extern freigeben“ gelten wie bei allen Mails.
+## Mehrere Personen in einer Anmeldung (Familien)
+
+Schalter „Mehrere Personen in einer Anmeldung (Familien)“ unter „Anmeldung“.
+Das Formular zeigt dann „Weitere Person hinzufügen“ (ohne JavaScript bleibt es
+bei einer Person):
+
+- bis zu **5 weitere** Personen, je Person Vorname, Nachname (vorbelegt),
+  Geburtsjahr (wenn das Formular es abfragt) und Teilnahmebeitrag (wenn es
+  Preisstufen gibt);
+- alle übrigen Angaben (Baukasten-Felder, E-Mail, Personensorgeberechtigte,
+  Einwilligung) werden von der ersten Person übernommen; unter 16 gilt die
+  Regel für jede Person;
+- **eine Bestätigungsmail** mit allen Namen; der Link bestätigt alle. Plätze
+  werden der Reihe nach vergeben, wer keinen mehr bekommt, kommt auf die
+  Warteliste. Die Ergebnisseite zeigt das je Person;
+- je Person eine eigene Anmeldung (Liste, Export, Zahlungen, Storno wie
+  gewohnt) mit eigener Mail und eigenem Stornolink. Verbunden sind sie über
+  `anmeldung_gruppe`. Verfällt der Link, werden alle gelöscht.
 
 ## Mails der Anmeldung
 

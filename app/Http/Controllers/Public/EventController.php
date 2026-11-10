@@ -144,7 +144,28 @@ class EventController extends Controller
             }];
         }
 
+        // Familienanmeldung: weitere Personen; leere Zeilen zählen nicht.
+        if ($event->mehrere_personen) {
+            $weitere = array_values(array_filter((array) $request->input('weitere', []),
+                fn ($p) => is_array($p) && collect($p)->except('preis')->contains(fn ($v) => filled($v))));
+            $request->merge(['weitere' => $weitere]);
+            $rules['weitere'] = ['array', 'max:'.EventRegistrations::MAX_WEITERE];
+            $rules['weitere.*.first_name'] = ['required', 'string', 'max:100'];
+            $rules['weitere.*.last_name'] = ['required', 'string', 'max:100'];
+            $rules['weitere.*.birth_year'] = [($fields['birth_year']['required'] ?? false) ? 'required' : 'nullable', 'integer', 'between:'.(now()->year - 100).','.now()->year];
+            if ($preise !== []) {
+                $rules['weitere.*.preis'] = ['required', Rule::in(array_map('strval', array_keys($preise)))];
+            }
+        } else {
+            $request->request->remove('weitere');
+        }
+
         $validator = ValidatorFactory::make($request->all(), $rules, [
+            'weitere.max' => 'Höchstens '.EventRegistrations::MAX_WEITERE.' weitere Personen auf einmal.',
+            'weitere.*.first_name.required' => 'Bitte gib bei jeder weiteren Person den Vornamen an.',
+            'weitere.*.last_name.required' => 'Bitte gib bei jeder weiteren Person den Nachnamen an.',
+            'weitere.*.birth_year.required' => 'Bitte gib bei jeder weiteren Person das Geburtsjahr an.',
+            'weitere.*.preis.required' => 'Bitte wähle bei jeder weiteren Person den Teilnahmebeitrag.',
             ...collect($fields)->filter(fn (array $f) => $f['type'] === 'zahl')
                 ->mapWithKeys(fn (array $f, string $k) => ["{$k}.between" => 'Bitte gib eine Zahl von 0 bis 100.000 an.'])->all(),
             'required' => 'Bitte fülle dieses Feld aus.',
@@ -178,6 +199,15 @@ class EventController extends Controller
             } elseif ($event->mayBeUnderConsentAge($year) && ! $request->boolean('by_guardian')) {
                 $validator->errors()->add('by_guardian', 'Für Teilnehmende unter '.config('dpsg.guardian_consent_age').' Jahren muss eine personensorgeberechtigte Person die Anmeldung vornehmen.');
             }
+            // Dieselben Regeln für weitere Personen (Familienanmeldung).
+            foreach ((array) $request->input('weitere', []) as $i => $person) {
+                $jahr = is_numeric($person['birth_year'] ?? null) ? (int) $person['birth_year'] : null;
+                if ($event->adults_only && $event->mayBeUnderConsentAge($jahr)) {
+                    $validator->errors()->add("weitere.{$i}.birth_year", 'Person '.($i + 2).': Diese Veranstaltung ist für Erwachsene ab '.config('dpsg.guardian_consent_age').' Jahren.');
+                } elseif ($event->mayBeUnderConsentAge($jahr) && ! $request->boolean('by_guardian') && ! $validator->errors()->has('by_guardian')) {
+                    $validator->errors()->add('by_guardian', 'Für Teilnehmende unter '.config('dpsg.guardian_consent_age').' Jahren muss eine personensorgeberechtigte Person die Anmeldung vornehmen.');
+                }
+            }
         });
 
         $data = $validator->validate();
@@ -193,7 +223,12 @@ class EventController extends Controller
             'guardian_name' => $request->boolean('by_guardian') ? $data['guardian_name'] : null,
             'guardian_consent' => $request->boolean('by_guardian') && $request->boolean('guardian_consent'),
             'preis' => $preise !== [] ? $preise[(int) $data['preis']] : null,
-        ]);
+        ], collect($data['weitere'] ?? [])->map(fn (array $p) => [
+            'first_name' => $p['first_name'],
+            'last_name' => $p['last_name'],
+            'birth_year' => isset($p['birth_year']) ? (int) $p['birth_year'] : null,
+            'preis' => $preise !== [] ? $preise[(int) $p['preis']] : null,
+        ])->all());
 
         return $done();
     }

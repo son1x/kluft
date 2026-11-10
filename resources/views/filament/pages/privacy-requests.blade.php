@@ -91,6 +91,10 @@
             <x-filament::section heading="Präventions-Nachweise ({{ $found['praevention']->count() }})" description="Nur Daten (Führungszeugnis eingesehen, Schulungen, Juleica). Ein Jahr nach Ablauf werden sie ohnehin gelöscht.">
                 @foreach ($found['praevention'] as $nachweis)
                     <p style="font-size: .875rem;">{{ $nachweis->artLabel() }}{{ $nachweis->bezeichnung ? ' ('.$nachweis->bezeichnung.')' : '' }}, gültig bis {{ $nachweis->gueltig_bis->format('d.m.Y') }}</p>
+        @if ($found['auslagen']->isNotEmpty())
+            <x-filament::section heading="Auslagen ({{ $found['auslagen']->count() }})" description="Erstattungen mit Belegen. Wegen der Aufbewahrungspflicht (10 Jahre) werden sie hier nicht gelöscht; die Bankverbindung wird nach der Auszahlung entfernt.">
+                @foreach ($found['auslagen'] as $auslage)
+                    <p style="font-size: .875rem;">{{ $auslage->datum->format('d.m.Y') }}: {{ $auslage->anlass }}, {{ \App\Support\Zahlungen::euro($auslage->summe_cent) }} ({{ \App\Models\Auslage::STATUS[$auslage->status] ?? $auslage->status }})</p>
                 @endforeach
             </x-filament::section>
         @endif

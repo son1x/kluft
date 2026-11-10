@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\AdressbuchKontakt;
+use App\Models\Auslage;
 use App\Models\ContactMessage;
 use App\Models\DatenabgleichZeile;
 use App\Models\Datenmeldung;
@@ -38,7 +39,7 @@ class PrivacyRequests
     public function __construct(private EventRegistrations $registrations) {}
 
     /**
-     * @return array{registrations: Collection<int, EventRegistration>, people: Collection<int, Person>, users: Collection<int, User>, messages: Collection<int, ContactMessage>, bestellungen: Collection<int, Bestellung>, umfragen: Collection<int, UmfrageAntwort>, gewinnspiel: Collection<int, UmfrageGewinnspiel>, datenmeldungen: Collection<int, Datenmeldung>, adressbuch: Collection<int, AdressbuchKontakt>, praevention: Collection<int, PraeventionNachweis>, queued: int}
+     * @return array{registrations: Collection<int, EventRegistration>, people: Collection<int, Person>, users: Collection<int, User>, messages: Collection<int, ContactMessage>, bestellungen: Collection<int, Bestellung>, umfragen: Collection<int, UmfrageAntwort>, gewinnspiel: Collection<int, UmfrageGewinnspiel>, datenmeldungen: Collection<int, Datenmeldung>, adressbuch: Collection<int, AdressbuchKontakt>, praevention: Collection<int, PraeventionNachweis>, auslagen: Collection<int, Auslage>, queued: int}
      */
     public function find(string $email): array
     {
@@ -70,6 +71,10 @@ class PrivacyRequests
             // Präventions-Nachweise (nur Daten), docs/praevention.md.
             'praevention' => Schema::hasTable('praevention_nachweise')
                 ? PraeventionNachweis::query()->where('email', $email)->orderBy('gueltig_bis')->get()
+                : new EloquentCollection,
+            // Auslagen: nur Auskunft, Löschung erst nach der Aufbewahrungsfrist.
+            'auslagen' => Schema::hasTable('auslagen')
+                ? Auslage::query()->where('email', $email)->orderByDesc('id')->get()
                 : new EloquentCollection,
             'queued' => $this->queueEntries($email)->count(),
         ];
@@ -166,6 +171,12 @@ class PrivacyRequests
                 'name' => $n->name, 'art' => $n->artLabel(), 'bezeichnung' => $n->bezeichnung,
                 'datum' => $n->datum?->toDateString(), 'gueltig_bis' => $n->gueltig_bis->toDateString(),
                 'loeschung' => $n->gueltig_bis->copy()->addYear()->toDateString(),
+            ])->values()->all(),
+            'auslagen' => $found['auslagen']->map(fn (Auslage $a) => [
+                'anlass' => $a->anlass, 'datum' => $a->datum->toDateString(), 'art' => $a->beschreibung(),
+                'betrag' => $a->summe_cent / 100, 'status' => Auslage::STATUS[$a->status] ?? $a->status,
+                'belege' => count($a->belege ?? []), 'ausgezahlt_am' => $a->ausgezahlt_am?->toDateString(),
+                'bankverbindung_gespeichert' => $a->konto !== null,
             ])->values()->all(),
             'mails_in_warteschlange' => $found['queued'],
             'hinweise' => array_values(array_filter([

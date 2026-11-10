@@ -125,6 +125,7 @@ class AuditText
             'role.granted' => 'Recht vergeben: '.self::rolle($rest),
             'role.revoked' => 'Recht entzogen: '.self::rolle($rest),
             'praevention.geloescht' => 'Präventions-Nachweise gelöscht (ein Jahr nach Ablauf): '.$rest,
+            'auslagen.geloescht' => 'Auslagen gelöscht (Aufbewahrungsfrist abgelaufen): '.$rest,
             'role.changed' => 'Recht geändert: '.self::rolle($rest),
             'role.expired' => 'Recht abgelaufen: '.self::rolle($rest),
             'feature.an' => 'Funktion eingeschaltet: '.(Features::KATALOG[$rest]['label'] ?? $rest),

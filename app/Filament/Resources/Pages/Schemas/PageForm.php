@@ -6,6 +6,7 @@ use App\Models\Page;
 use App\Support\Aufrufe;
 use App\Support\Features;
 use App\Support\RoleCatalog;
+use App\Support\Slug;
 use App\Support\Websites;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Placeholder;
@@ -43,7 +44,7 @@ class PageForm
                         ))
                         ->columnSpan(2),
 
-                    TextInput::make('slug')
+                    Slug::feld(TextInput::make('slug'))
                         ->label('URL-Pfad (Slug)')
                         ->required()
                         ->unique(ignoreRecord: true)

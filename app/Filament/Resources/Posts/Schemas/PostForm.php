@@ -9,6 +9,7 @@ use App\Policies\PostPolicy;
 use App\Support\Aufrufe;
 use App\Support\Features;
 use App\Support\RoleCatalog;
+use App\Support\Slug;
 use App\Support\Websites;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
@@ -70,7 +71,7 @@ class PostForm
                         ))
                         ->columnSpan(2),
 
-                    TextInput::make('slug')
+                    Slug::feld(TextInput::make('slug'))
                         ->label('URL-Pfad (Slug)')
                         ->required()
                         ->unique(ignoreRecord: true)

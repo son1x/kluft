@@ -11,6 +11,7 @@ use App\Services\Mitglieder\NamiVerzeichnis;
 use App\Support\AnmeldeInfos;
 use App\Support\Features;
 use App\Support\RoleCatalog;
+use App\Support\Slug;
 use App\Support\Teilnahmebeitraege;
 use App\Support\TeilnehmendeNachrichten;
 use App\Support\Testsystem;
@@ -90,7 +91,7 @@ class EventForm
                         ->live(onBlur: true)
                         ->afterStateUpdated(fn ($state, $set, $get) => $get('slug') ?: $set('slug', str($state)->slug()))
                         ->columnSpan(2),
-                    TextInput::make('slug')
+                    Slug::feld(TextInput::make('slug'))
                         ->label('URL-Pfad (Slug)')
                         ->required()
                         ->unique(ignoreRecord: true)

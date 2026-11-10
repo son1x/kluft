@@ -72,7 +72,8 @@ Beide Kluft-Installationen nutzen den Instanz-Ordner `instanzen/dv-trier`. Der D
    | `MONITOR_URL` (Variable) | am Livetag `https://www.dpsg-trier.de` |
 
    - Secrets nie in Chat oder Mail. Die Werte stehen im Passwortmanager oder in der `.env` von Test auf dem Server.
-3. **Entra:** In der App-Registrierung unter Authentifizierung zwei Umleitungs-URIs ergänzen:
+3. **Umzugsseite:** Ordner `umzug` im Abo dpsg-trier.de anlegen, die Dateien aus `docs/umzug-seite/` hochladen. Einmal testen, z. B. mit einer Test-Subdomain auf diesen Ordner.
+4. **Entra:** In der App-Registrierung unter Authentifizierung zwei Umleitungs-URIs ergänzen:
    - `https://neu.dpsg-trier.de/auth/entra/callback`
    - `https://www.dpsg-trier.de/auth/entra/callback`
 
@@ -143,6 +144,10 @@ Einzelne Anmeldungen laufen schon vor dem 21.11. über test.dpsg-trier.de, z. B.
 1. **Redaktionsstopp auf Test** ab einer verabredeten Uhrzeit, an alle Redakteur*innen schicken.
    - Auf Test **Verwaltung → Wartungsmodus** einschalten, mit „Backend nur für Admins“ und einem Text wie „Wir ziehen um, ab etwa 16 Uhr sind wir wieder da.“ Der Schalter liegt in der Datenbank und wandert beim Kopieren mit: Live startet geschlossen, Admins sehen beim Prüfen (Schritt 8) trotzdem alles.
 2. **Sichern:** Plesk-Backup von Test und der WordPress-Seite.
+   - **Umzugsseite einschalten:** Plesk → dpsg-trier.de → Hosting-Einstellungen → Dokumentstamm auf `umzug`.
+     - Den Ordner `umzug` vorher einmal im Abo anlegen und die drei Dateien aus `docs/umzug-seite/` hochladen: `index.html`, `logo.png`, `.htaccess` (versteckte Datei, mit hochladen).
+     - Jede Adresse zeigt dann „Wir ziehen um“ mit Status 503, sodass Suchmaschinen nichts Falsches speichern. WordPress in `httpdocs` bleibt unberührt.
+     - Den Text bei Bedarf direkt in der `index.html` anpassen.
 3. **Alte Seite umbenennen:**
    - Subdomain `alt.dpsg-trier.de` mit dem Ordner `alt.dpsg-trier.de` anlegen.
    - Die WordPress-Seite mit dem WP Toolkit dorthin **klonen**. Das Klonen passt die Adressen in WordPress (`home`, `siteurl`) mit an.
@@ -159,7 +164,7 @@ Einzelne Anmeldungen laufen schon vor dem 21.11. über test.dpsg-trier.de, z. B.
    - Ab jetzt gehen Mails an echte Empfänger*innen.
    - Prüfen: Das Deploy-Protokoll zeigt „Mailer: smtp“ und keine Warnung zu Mails. Backend → Verwaltung → E-Mail-Versand zeigt keinen Hinweis „Mails werden nicht verschickt“.
 7. **Domain umstellen:**
-   - Plesk → dpsg-trier.de → Hosting-Einstellungen: Dokumentstamm auf `www.dpsg-trier.de/public`.
+   - Plesk → dpsg-trier.de → Hosting-Einstellungen: Dokumentstamm von `umzug` auf `www.dpsg-trier.de/public`. Ab da zeigt Live die Kluft-Wartungsseite, bis der Wartungsmodus in Schritt 8 aus ist.
    - Let’s-Encrypt-Zertifikat für dpsg-trier.de und www.
    - Die Subdomain neu.dpsg-trier.de entfernen.
 8. **Prüfen:**
@@ -183,7 +188,7 @@ Einzelne Anmeldungen laufen schon vor dem 21.11. über test.dpsg-trier.de, z. B.
     - bolivienpartnerschaft.de und beraten-online.de auf Live umstellen.
     - Die alte Seite abschalten, sobald alles läuft.
 
-**Zurück, wenn etwas schiefgeht:** In Plesk den Dokumentstamm von dpsg-trier.de wieder auf `httpdocs` stellen, dort liegt die WordPress-Seite unverändert. Test und die Sicherungen bleiben unberührt.
+**Zurück, wenn etwas schiefgeht:** In Plesk den Dokumentstamm von dpsg-trier.de wieder auf `httpdocs` stellen, dort liegt die WordPress-Seite unverändert. Zum Überbrücken geht auch wieder `umzug`. Test und die Sicherungen bleiben unberührt.
 
 ## Ab dem 22.11.
 

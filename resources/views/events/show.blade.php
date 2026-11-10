@@ -66,6 +66,22 @@
             </aside>
         </div>
 
+        @php($fotos = $event->fotos()->where('status', 'freigegeben')->with('media')->orderBy('sort')->get()->filter(fn ($f) => $f->media))
+        @if ($fotos->isNotEmpty())
+            {{-- Freigegebene Fotos (Vier-Augen), als Galerie wie in Beiträgen. --}}
+            <section class="mt-12" aria-labelledby="fotos-heading">
+                <h2 id="fotos-heading" class="font-serif text-2xl font-bold">Fotos</h2>
+                <ul class="galerie not-prose mt-4">
+                    @foreach ($fotos as $foto)
+                        <li><a href="{{ $foto->media->url() }}" title="Bild in voller Größe öffnen"><img src="{{ $foto->media->url() }}" @if ($foto->media->webpSrcset()) srcset="{{ $foto->media->webpSrcset() }}" sizes="(min-width: 768px) 25vw, 50vw" @endif alt="{{ $foto->media->alt_text }}" loading="lazy" /></a></li>
+                    @endforeach
+                </ul>
+                @if ($credits = $fotos->pluck('media.credit')->filter()->unique()->implode(', '))
+                    <p class="mt-2 text-xs text-text-secondary">Fotos: {{ $credits }}</p>
+                @endif
+            </section>
+        @endif
+
         @include('events.partials.anmeldung')
 
         {{-- Im schlichten Rahmen (vorab freigegeben) ohne Formular: es läuft über eine nicht freigegebene Adresse. --}}

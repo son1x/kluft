@@ -106,3 +106,19 @@ legt die Veranstaltung `/veranstaltungen/weihnachtspostkartenaktion-2026` an
 Migration schaltet „Vorab extern freigeben“ ein, eine dritte trägt Lisa Alm
 (Bildungsreferentin) als Verantwortliche ein. Danach wird sie im Backend
 gepflegt, eine erneute Migration ändert nichts.
+
+## Fotos zur Veranstaltung (Vier-Augen)
+
+Reiter **Fotos** beim Bearbeiten einer Veranstaltung, für alle, die ihre
+Teilnehmenden verwalten dürfen:
+
+- **Fotos hochladen** (bis 30 auf einmal, je 15 MB) mit „Foto von“ und der
+  Bestätigung, dass die erkennbar Abgebildeten eingewilligt haben (bei
+  Minderjährigen die Personensorgeberechtigten). Bis zur Freigabe liegen die
+  Bilder privat (`storage/app/private/event-fotos`), sichtbar nur im Backend.
+- **Freigeben** darf nur eine **andere Person** als die, die hochgeladen hat
+  (Vier-Augen). Dann wird das Bild ein Medium (Mediathek) und erscheint als
+  Galerie unter „Fotos“ auf der Veranstaltungsseite, mit Bildnachweis.
+- Je Foto: Alternativtext, Reihenfolge (ziehen), **Ausblenden** (wieder
+  freigeben holt es zurück), Löschen (entfernt auch das Medium).
+- Der Reiter zeigt die Zahl der Fotos, die auf Freigabe warten.

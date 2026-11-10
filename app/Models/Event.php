@@ -91,6 +91,16 @@ class Event extends Model
     }
 
     /**
+     * Fotos mit Vier-Augen-Freigabe (Reiter „Fotos“).
+     *
+     * @return HasMany<EventFoto, $this>
+     */
+    public function fotos(): HasMany
+    {
+        return $this->hasMany(EventFoto::class);
+    }
+
+    /**
      * @return HasMany<EventRegistration, $this>
      */
     public function registrations(): HasMany

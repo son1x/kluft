@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\BreakGlassAuthController;
 use App\Http\Controllers\Auth\CodeLoginController;
 use App\Http\Controllers\Auth\EntraAuthController;
+use App\Http\Controllers\EventFotoVorschauController;
 use App\Http\Controllers\Public\ArbeitsnachweisController;
 use App\Http\Controllers\Public\CalendarController;
 use App\Http\Controllers\Public\CertificateController;
@@ -204,6 +205,10 @@ if (Features::enabled(Features::GEORGSBOTE)) {
             ->name('georgsbote.titelbild');
     });
 }
+
+// Vorschau noch nicht freigegebener Veranstaltungsfotos (nur Backend, docs/veranstaltungen.md).
+Route::get('/admin/event-fotos/{foto}/vorschau', EventFotoVorschauController::class)
+    ->middleware('auth')->whereNumber('foto')->name('event-fotos.vorschau');
 
 // Download-Seite (Methoden, Formulare, Arbeitshilfen).
 if (Features::enabled(Features::DOWNLOADS)) {

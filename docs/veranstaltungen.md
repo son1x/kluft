@@ -154,3 +154,13 @@ Teilnehmenden verwalten dürfen:
 - Je Foto: Alternativtext, Reihenfolge (ziehen), **Ausblenden** (wieder
   freigeben holt es zurück), Löschen (entfernt auch das Medium).
 - Der Reiter zeigt die Zahl der Fotos, die auf Freigabe warten.
+## Liste für unterwegs (PDF)
+
+Unter „Teilnehmende“ → **Liste für unterwegs (PDF)**: zum Ausdrucken für
+Lager und Fahrten, wenn kein Netz da ist. Bestätigte Teilnehmende
+alphabetisch (auf Wunsch mit Warteliste), wählbare Spalten (Vorschlag:
+Geburtsjahr, Stamm, Telefon; lange Freitexte nicht), die
+personensorgeberechtigte Person und auf Wunsch leere Kästchen für die
+Anwesenheit je Tag. Mit dem Hinweis „Vertraulich, nach der Veranstaltung
+vernichten“; jeder Abruf wird protokolliert („Liste für unterwegs (PDF)
+abgerufen“).

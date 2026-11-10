@@ -51,6 +51,8 @@ Schedule::command('videokonferenzen:aufraeumen')->dailyAt('03:55');
 // Backups (Pflichtenheft 10.2, 11.4): täglich 02:00, Wiederherstellungstest
 // wöchentlich.
 Schedule::command('backup:run')->dailyAt('02:00')->withoutOverlapping();
+// Erinnerungen vor Veranstaltungen (je Veranstaltung „Erinnerung … Tage vorher“).
+Schedule::command('veranstaltungen:erinnerungen')->dailyAt('09:00');
 // Aufträge aus Verwaltung → Backups (jetzt sichern, einspielen); Sperre per Datei, nicht im Cache (der wird beim Einspielen ersetzt).
 Schedule::command('backup:auftrag')->everyMinute()->when(fn () => is_file(BackupEinspielen::auftragPfad()));
 Schedule::command('backup:verify')->weeklyOn(0, '05:00');

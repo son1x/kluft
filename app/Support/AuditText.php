@@ -73,6 +73,8 @@ class AuditText
         'wartung.an' => 'Wartungsmodus eingeschaltet',
         'anmeldungen.sammeladresse' => 'Sammeladresse für Anmeldungen geändert',
         'wartung.aus' => 'Wartungsmodus ausgeschaltet',
+        'event.nachricht' => 'Nachricht an die Teilnehmenden einer Veranstaltung',
+        'event.erinnerung' => 'Erinnerung an die Teilnehmenden einer Veranstaltung',
         'backup.angefordert' => 'Backup im Backend angefordert',
         'backup.einspielen' => 'Backup einspielen angefordert',
         'backup.uebertragen' => 'Backup auf andere Website übertragen angefordert',

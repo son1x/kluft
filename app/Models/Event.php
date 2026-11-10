@@ -54,7 +54,7 @@ class Event extends Model
 
     protected $fillable = [
         'title', 'slug', 'teaser', 'description', 'starts_at', 'ends_at', 'location',
-        'stage', 'section', 'target_group', 'cover_media_id', 'contact_name', 'contact_email', 'info_sammeladresse', 'info_verantwortlich', 'verantwortlich_email',
+        'stage', 'section', 'target_group', 'cover_media_id', 'contact_name', 'contact_email', 'info_sammeladresse', 'info_verantwortlich', 'verantwortlich_email', 'erinnerung_tage', 'erinnerung_text', 'erinnerung_gesendet_am',
         'cost_info', 'reg_opens_at', 'reg_closes_at', 'capacity', 'waitlist_enabled', 'adults_only', 'member_check', 'member_gruppierung_id',
         'status', 'extern_freigegeben', 'form_fields', 'retention_days', 'created_by', 'calendar_uid',
         'certificate_enabled', 'certificate_text', 'certificate_signer', 'preise', 'zahlungsfrist_tage',
@@ -73,6 +73,8 @@ class Event extends Model
             'extern_freigegeben' => 'boolean',
             'info_sammeladresse' => 'boolean',
             'info_verantwortlich' => 'boolean',
+            'erinnerung_tage' => 'integer',
+            'erinnerung_gesendet_am' => 'datetime',
             'member_check' => 'boolean',
             'certificate_enabled' => 'boolean',
             'form_fields' => 'array',
@@ -144,6 +146,12 @@ class Event extends Model
             : 'Mitglieder von '.(str_starts_with($g->name, 'Stamm') ? '' : 'Stamm ').$g->name;
     }
 
+    /** @return HasMany<EventNachricht, $this> */
+    public function nachrichten(): HasMany
+    {
+        return $this->hasMany(EventNachricht::class)->latest();
+    }
+
     /**
      * Wer die Veranstaltung angelegt hat (Standard für „verantwortlich“).
      *
@@ -171,6 +179,10 @@ class Event extends Model
         // in den Anmeldungen stehen. So bleiben sie zugeordnet, auch wenn die
         // Felder umsortiert oder umbenannt werden.
         static::saving(function (self $event) {
+            // Neues Datum oder andere Vorlaufzeit: noch einmal erinnern.
+            if ($event->exists && $event->isDirty(['starts_at', 'erinnerung_tage']) && $event->starts_at?->isFuture()) {
+                $event->erinnerung_gesendet_am = null;
+            }
             $config = $event->form_fields;
             if (! is_array($config) || ! array_key_exists('eigene', $config)) {
                 return;

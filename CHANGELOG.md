@@ -6,6 +6,7 @@ Admins. Kurz und aus Sicht der Redaktion schreiben.
 
 ## 0.9.0
 
+- Veranstaltungen: „Nachricht an Teilnehmende“ im Reiter Teilnehmende – eine Mail je Person an Bestätigte, Warteliste oder Unbestätigte, Antworten gehen an die Kontaktadresse. Dazu eine automatische Erinnerung einige Tage vor Beginn (je Veranstaltung einstellbar).
 - Veranstaltungen: Info-Mails an das Team. Bei jeder bestätigten Anmeldung, beim Nachrücken und bei der Abmeldung bekommen die Sammeladresse (einstellbar unter Veranstaltungen → „Sammeladresse“) und die verantwortliche Person eine kurze Mail mit Link ins Backend. Je Veranstaltung abschaltbar.
 - Vorab freigegebene Anmeldungen (vor dem Livegang): Besucher*innen sehen einen schlichten Rahmen ohne Menü, die Infos zur Aktion stehen zum Aufklappen direkt am Formular.
 

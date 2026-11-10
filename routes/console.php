@@ -87,6 +87,9 @@ Schedule::command('zuschuss:fristen')->dailyAt('08:25');
 // Präventions-Nachweise: Erinnerungen 90/30 Tage vorher, nach einem Jahr löschen.
 Schedule::command('praevention:erinnerungen')->dailyAt('08:30');
 
+// Materialverleih: Rückgabe-Erinnerung, alte Reservierungen löschen.
+Schedule::command('material:taeglich')->dailyAt('08:35');
+
 // NaMi-Datenabgleich: Löschfristen (docs/pflichtenheft-nami-datenabgleich.md).
 Schedule::command('datenabgleich:aufraeumen')->dailyAt('03:45');
 

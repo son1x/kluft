@@ -50,6 +50,7 @@ class AdminSmokeTest extends TestCase
         Features::setzen(Features::ADRESSBUCH, true);
         Features::setzen(Features::PRAEVENTION, true);
         Features::setzen(Features::AUSLAGEN, true);
+        Features::setzen(Features::MATERIALVERLEIH, true);
         $kasse = Features::enabled(Features::MITGLIEDSBEITRAEGE);
         // Umfragen ab Ausbaustufe 3.
         $umfragen = Features::enabled(Features::UMFRAGEN);

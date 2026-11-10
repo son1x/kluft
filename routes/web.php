@@ -14,6 +14,7 @@ use App\Http\Controllers\Public\FeedController;
 use App\Http\Controllers\Public\GeorgsboteController;
 use App\Http\Controllers\Public\GruppierungController;
 use App\Http\Controllers\Public\HomeController;
+use App\Http\Controllers\Public\MaterialController;
 use App\Http\Controllers\Public\NewsletterController;
 use App\Http\Controllers\Public\PageController;
 use App\Http\Controllers\Public\ParticipantController;
@@ -240,6 +241,12 @@ foreach (config('dpsg.redirects') as $from => $to) {
 Route::get('/spamschutz/aufgabe', ArbeitsnachweisController::class)
     ->middleware('throttle:30,1')
     ->name('spamschutz.aufgabe');
+
+// Materialverleih (docs/materialverleih.md): nur mit Funktion „Anfragen über die Website“, sonst 404.
+Route::get('/material', [MaterialController::class, 'index'])->name('material.index');
+Route::post('/material/anfrage', [MaterialController::class, 'anfrage'])
+    ->middleware('throttle:5,10')
+    ->name('material.anfrage');
 
 // Kontaktformular (F-CMS-09); das Formular steht auf der CMS-Seite „kontakt“.
 Route::post('/kontakt', [ContactController::class, 'send'])

@@ -56,6 +56,9 @@ class RoleCatalog
         if (WhatsAppMode::enabled()) {
             $options['whatsapp|global|'] = 'WhatsApp-Newsletter-Admin';
         }
+        if (Features::enabled(Features::MATERIALVERLEIH)) {
+            $options['material|global|'] = 'Materialwart*in';
+        }
         $options['admin|global|'] = 'Admin (Technik)';
         $options['superadmin|global|'] = 'Super-Admin';
 
@@ -151,6 +154,7 @@ class RoleCatalog
             'autor' => 'eigene Beiträge schreiben und bearbeiten',
             'stufenadmin' => 'Stufenseite, Beiträge und Veranstaltungen der Stufe pflegen, Autor:innen freischalten',
             'sektionsadmin' => 'Seiten, Beiträge und Veranstaltungen des Bereichs pflegen, Autor:innen freischalten',
+            'material' => 'Material und Reservierungen im Materialverleih pflegen',
             'vorstand' => 'Vorstandsseiten pflegen, Beiträge freigeben',
             'verwaltung' => 'alle Inhalte und Veranstaltungen, Benutzer und Datenschutz-Anfragen',
             'kasse' => 'Mitgliedsbeiträge: offene und bezahlte Beiträge, Abgleich mit NaMi und der Rechnung des Bundesverbands',

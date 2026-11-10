@@ -136,7 +136,7 @@ class PrivacyRequestsPage extends Page
 
                     Notification::make()
                         ->title('Gelöscht')
-                        ->body("{$result['registrations']} Anmeldung(en), {$result['people']} Personenvorstellung(en), {$result['messages']} Nachricht(en), {$result['bestellungen']} Sammelbestellung(en) anonymisiert, {$result['umfragen']} Umfrage-Antwort(en)/Gewinnspiel, {$result['datenmeldungen']} Datenmeldung(en), {$result['adressbuch']} Adressbuch-Kontakt(e), {$result['praevention']} Präventions-Nachweis(e), {$result['queued']} Mail(s) aus der Warteschlange.")
+                        ->body("{$result['registrations']} Anmeldung(en), {$result['people']} Personenvorstellung(en), {$result['messages']} Nachricht(en), {$result['bestellungen']} Sammelbestellung(en) anonymisiert, {$result['umfragen']} Umfrage-Antwort(en)/Gewinnspiel, {$result['datenmeldungen']} Datenmeldung(en), {$result['adressbuch']} Adressbuch-Kontakt(e), {$result['praevention']} Präventions-Nachweis(e), {$result['material']} Material-Reservierung(en), {$result['queued']} Mail(s) aus der Warteschlange.")
                         ->success()->send();
                 }),
         ];

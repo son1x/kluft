@@ -12,6 +12,18 @@ Admins. Kurz und aus Sicht der Redaktion schreiben.
 - Sammelbestellung: Sets ohne feste Grenze, auch mit vielen Teilen bestellbar; der Hinweis „höchstens vier“ bei „Für den Start“ entfällt.
 - Sammelbestellung: Eine Rüsthaus-Nummer von Hand ist schneller geprüft (nur bis zur gesuchten Größe), die Größe wird vorgeschlagen; Bestellungen mit solchen Artikeln scheitern nicht mehr am Zeitlimit.
 - Sammelbestellung: „Alle aktualisieren“ läuft im Hintergrund und holt die Daten frisch beim Rüsthaus; den Stand zeigt die Artikelliste.
+- Kalender: „Termine abonnieren“ – alle Termine und Veranstaltungen als Kalender-Abo (iPhone, Android, Outlook), aktualisiert sich von selbst.
+- Website: Suche über Seiten, Beiträge, Veranstaltungen, Termine und Downloads, mit Bereichen zum Eingrenzen.
+- Umfragen: neuer Fragetyp „Terminfindung“ – je Terminvorschlag „Ja“, „Wenn nötig“ oder „Nein“; die Auswertung zeigt den besten Termin.
+- Rollen mit Ablaufdatum: Beim Vergeben lässt sich „gültig bis“ setzen (z. B. Ende der Amtszeit). 30 und 7 Tage vorher gibt es einen Hinweis, danach wird die Rolle entfernt. „Meine Rollen und Rechte“ zeigt das Datum.
+- Prävention (Funktion, Standard aus): Führungszeugnis, Präventionsschulung und Juleica der Leitenden mit Ablaufdatum und Ampel; Erinnerung 90 und 30 Tage vorher. Nur Daten, keine Dokumente.
+- Auslagen erstatten (Funktion, Standard aus): Auslagen mit Foto der Quittung und Fahrtkosten einreichen; die Kasse gibt frei und überweist gesammelt per SEPA-Datei.
+- Materialverleih (Funktion, Standard aus): Material mit Belegungskalender, Reservierungen mit Konfliktprüfung, Zusage per Mail, Rückgabe mit Mängeln; auf Wunsch Anfragen über die Website (/material).
+- Veranstaltungen: Familienanmeldung – mehrere Personen in einem Formular, eine Bestätigungsmail, je Person eine Anmeldung (Schalter je Veranstaltung).
+- Startseite im Backend: „Was steht an“ – Freigaben, neue Nachrichten, hängende Anmeldungen, überfällige Zahlungen, Zuschussfristen und die nächsten Veranstaltungen, je nach Rolle.
+- Veranstaltungen: Reiter „Fotos“ – Leitende laden hoch, eine zweite Person gibt frei; dann erscheinen die Fotos als Galerie auf der Veranstaltungsseite.
+- Veranstaltungen: „Liste für unterwegs (PDF)“ zum Ausdrucken für Lager und Fahrten, mit Kästchen für die Anwesenheit je Tag.
+- Seiten und Beiträge: Nach dem Speichern gibt es Hinweise zur Barrierefreiheit (Bilder ohne Alternativtext, Links wie „hier“, Überschriften-Reihenfolge, sehr lange Sätze).
 - Veranstaltungen: „Nachricht an Teilnehmende“ im Reiter Teilnehmende – eine Mail je Person an Bestätigte, Warteliste oder Unbestätigte, Antworten gehen an die Kontaktadresse. Dazu eine automatische Erinnerung einige Tage vor Beginn (je Veranstaltung einstellbar).
 - Veranstaltungen: Info-Mails an das Team. Bei jeder bestätigten Anmeldung, beim Nachrücken und bei der Abmeldung bekommen die Sammeladresse (einstellbar unter Veranstaltungen → „Sammeladresse“) und die verantwortliche Person eine kurze Mail mit Link ins Backend. Je Veranstaltung abschaltbar.
 - Vorab freigegebene Anmeldungen (vor dem Livegang): Besucher*innen sehen einen schlichten Rahmen ohne Menü, die Infos zur Aktion stehen zum Aufklappen direkt am Formular.

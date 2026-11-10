@@ -124,16 +124,21 @@ ein eigenes Sitzungsprotokoll-System (dafür ist die Nextcloud da).
 
 | Nr. | Thema | Stand |
 |---|---|---|
-| 1 | Nachricht an Teilnehmende, Erinnerung | gebaut (`feature/teilnehmende-nachricht`) |
-| 2 | Kalender-Abo | offen |
-| 3 | Suche | offen |
-| 4 | Terminfindung | offen |
-| 5 | Rollen mit Ablauf | offen |
-| 6 | Präventions-Nachweise | offen |
-| 7 | Auslagen | offen |
-| 8 | Materialverleih | offen |
-| 9 | Familienanmeldung | offen |
-| 10 | Was steht an | offen |
-| 11 | Fotogalerie | offen |
-| 12 | Liste für unterwegs | offen |
-| 13 | Barrierefreiheit | offen |
+| 1 | Nachricht an Teilnehmende, Erinnerung | gebaut, PR #36 |
+| 2 | Kalender-Abo | gebaut, PR #37 |
+| 3 | Suche | gebaut, PR #38 |
+| 4 | Terminfindung | gebaut, PR #39 |
+| 5 | Rollen mit Ablauf | gebaut, PR #40 |
+| 6 | Präventions-Nachweise | gebaut, PR #41 |
+| 7 | Auslagen | gebaut, PR #42 |
+| 8 | Materialverleih | gebaut, PR #43 |
+| 9 | Familienanmeldung | gebaut, PR #44 |
+| 10 | Was steht an | gebaut, PR #45 |
+| 11 | Fotogalerie | gebaut, PR #46 |
+| 12 | Liste für unterwegs | gebaut, PR #47 |
+| 13 | Barrierefreiheit | gebaut, PR #48 |
+
+Alle PRs gehen einzeln gegen `claude/kluft-instanzen` und hängen nicht
+voneinander ab. Nach dem Mergen von 5–8 bekommt „Was steht an“ (10) noch
+die Einträge zu auslaufenden Rollen und Nachweisen, offenen Auslagen und
+Material-Anfragen.

@@ -35,7 +35,7 @@ class ZuschuesseUebersichtPage extends Page
     {
         $user = Filament::auth()->user();
 
-        return Zuschuesse::aktiv() && $user && ($user->isRedaktion() || $user->isKasse());
+        return Zuschuesse::aktiv() && $user && ($user->darf('zuschuesse') || $user->isKasse());
     }
 
     public static function getNavigationBadge(): ?string

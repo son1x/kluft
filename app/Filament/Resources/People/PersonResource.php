@@ -209,7 +209,7 @@ class PersonResource extends Resource
                 ->columnSpanFull()
                 ->collapsible()
                 ->collapsed()
-                ->visible(fn () => Zuschuesse::aktiv() && (bool) Filament::auth()->user()?->isRedaktion())
+                ->visible(fn () => Zuschuesse::aktiv() && (bool) Filament::auth()->user()?->darf('zuschuesse'))
                 ->components([
                     TextInput::make('zuschuss_daten.strasse')->label('Straße und Hausnummer')->maxLength(150),
                     TextInput::make('zuschuss_daten.plz')->label('PLZ')->maxLength(10),
@@ -241,7 +241,7 @@ class PersonResource extends Resource
                     ->formatStateUsing(fn (string $state) => config("dpsg.gremien.{$state}.label", $state)),
                 TextColumn::make('subgroup')->label('Zwischenüberschrift')->toggleable(),
                 TextColumn::make('juleica_bis')->label('Juleica bis')->toggleable()
-                    ->visible(fn () => Zuschuesse::aktiv() && (bool) Filament::auth()->user()?->isRedaktion())
+                    ->visible(fn () => Zuschuesse::aktiv() && (bool) Filament::auth()->user()?->darf('zuschuesse'))
                     ->state(fn (Person $record) => ($d = (array) $record->zuschuss_daten) && ($d['juleica'] ?? false)
                         ? (filled($d['juleica_bis'] ?? null) ? Carbon::parse($d['juleica_bis'])->format('d.m.Y') : 'ja') : null)
                     ->color(fn (Person $record) => filled($b = ((array) $record->zuschuss_daten)['juleica_bis'] ?? null) && Carbon::parse($b)->lt(now()->addMonths(2)) ? 'danger' : null)

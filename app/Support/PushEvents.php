@@ -45,11 +45,11 @@ class PushEvents
     public static function availableFor(User $user): array
     {
         $allowed = [
-            self::ANMELDUNGEN => $user->isRedaktion() || $user->hasRole('stufenadmin') || $user->hasRole('sektionsadmin'),
+            self::ANMELDUNGEN => $user->darf('veranstaltungen.lesen'),
             self::BEITRAEGE_FREIGABE => Gate::forUser($user)->allows('publish', Post::class),
             self::BEITRAEGE_NEU => $user->roleAssignments->isNotEmpty(),
             self::RECHTE => true,
-            self::BENUTZER => $user->isVerwaltung(),
+            self::BENUTZER => $user->darf('benutzer'),
             self::SYSTEM => $user->isAdmin(),
             self::WHATSAPP => WhatsAppMode::api() && WhatsAppAccess::manage($user),
             self::SPAMVERDACHT => MailEvents::spamverdachtErlaubt($user),

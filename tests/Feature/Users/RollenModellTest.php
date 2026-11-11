@@ -79,15 +79,42 @@ class RollenModellTest extends TestCase
         $this->get(EventResource::getUrl('create'))->assertForbidden();
 
         Livewire::test(RegistrationsRelationManager::class, ['ownerRecord' => $this->woe, 'pageClass' => ViewEvent::class])
-            ->assertCanSeeTableRecords([$this->kim])
-            ->assertTableActionVisible('details', $this->kim)
-            ->assertTableActionHidden('confirmManually', $this->kim)
-            ->assertTableActionHidden('nachricht')
-            ->assertTableActionHidden('export')
-            ->assertTableActionHidden('liste')
-            ->assertTableActionHidden('addParticipant')
-            ->assertTableBulkActionHidden('confirmManuallyBulk');
+            ->assertCanNotSeeTableRecords([$this->kim]) // unbestätigt: nicht in der sparsamen Ansicht
+            // Schreib- und Detailaktionen gibt es in der sparsamen Ansicht gar nicht.
+            ->assertTableActionDoesNotExist('details')
+            ->assertTableActionDoesNotExist('confirmManually')
+            ->assertTableActionDoesNotExist('nachricht')
+            ->assertTableActionDoesNotExist('export')
+            ->assertTableActionDoesNotExist('liste')
+            ->assertTableActionDoesNotExist('addParticipant')
+            ->assertTableBulkActionDoesNotExist('confirmManuallyBulk');
         $this->assertSame('pending', $this->kim->fresh()->status);
+    }
+
+    #[TestDox('Sparsame Ansicht für Lesende: Name, Stamm, Tage, Status – keine E-Mail, kein Geburtsjahr, keine Gesundheits- oder sonstigen Angaben, keine Sorgeberechtigten')]
+    public function test_sparsame_ansicht(): void
+    {
+        $this->woe->update(['form_fields' => ['birth_year' => 'required', 'stamm' => 'optional', 'eigene' => [
+            ['schluessel' => 'eigen_allergien', 'label' => 'Allergien', 'typ' => 'text', 'pflicht' => false],
+        ]]]);
+        $this->woe->registrations()->create([
+            'status' => 'confirmed', 'first_name' => 'Lea', 'last_name' => 'Berg', 'email' => 'lea.berg@example.org', 'birth_year' => 2016,
+            'data' => ['stamm' => 'Stamm Sankt Georg', 'eigen_allergien' => 'Erdnüsse'], 'guardian_name' => 'Petra Berg',
+            'confirmed_at' => now(), 'consent_text_version' => 'v1', 'consent_at' => now(),
+        ]);
+        $this->assertArrayHasKey('eigen_allergien', $this->woe->fresh()->formFields());
+        $this->actingAs($this->user('dl@example.org', [['stufenadmin', 'stage', 'woelflinge']]));
+
+        $html = Livewire::test(RegistrationsRelationManager::class, ['ownerRecord' => $this->woe->fresh(), 'pageClass' => ViewEvent::class])
+            ->assertSee('sparsame Ansicht')->assertSee('Berg, Lea')->assertSee('Stamm Sankt Georg')
+            ->assertDontSee('lea.berg@example.org')->assertDontSee('2016')->assertDontSee('Erdnüsse')->assertDontSee('Allergien')->assertDontSee('Petra Berg')
+            ->html();
+        $this->assertStringNotContainsString('kim@example.org', $html);
+
+        // Wer bearbeiten darf, sieht weiter alles.
+        $this->actingAs($this->user('br@example.org', [['verwaltung', 'global', null]]));
+        Livewire::test(RegistrationsRelationManager::class, ['ownerRecord' => $this->woe->fresh(), 'pageClass' => EditEvent::class])
+            ->assertSee('lea.berg@example.org')->assertDontSee('sparsame Ansicht');
     }
 
     #[TestDox('„Veranstaltungen bearbeiten – Bereich“ erlaubt Anlegen, Bearbeiten und Teilnehmende verwalten im Bereich')]

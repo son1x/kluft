@@ -45,13 +45,7 @@ class PostPolicy
      */
     public function publish(User $user): bool
     {
-        if ($user->isRedaktion()) {
-            return true;
-        }
-
-        return $user->hasRole('stufenadmin')
-            || $user->hasRole('sektionsadmin')
-            || $user->hasRole('vorstand');
+        return $user->darf('beitraege');
     }
 
     /**
@@ -65,32 +59,11 @@ class PostPolicy
             return false;
         }
 
-        if ($user->isRedaktion() || $user->hasRole('vorstand')) {
-            return true;
-        }
-
-        return ($post->stage && $user->hasRoleInScope('stufenadmin', 'stage', $post->stage))
-            || ($post->section && $user->hasRoleInScope('sektionsadmin', 'section', $post->section));
+        return $user->darfFuer('beitraege', $post->stage, $post->section);
     }
 
     private function canManage(User $user, Post $post): bool
     {
-        if ($user->isRedaktion() || $user->hasRole('vorstand')) {
-            return true;
-        }
-
-        if ($post->author_id === $user->id) {
-            return true;
-        }
-
-        if ($post->stage && $user->hasRoleInScope('stufenadmin', 'stage', $post->stage)) {
-            return true;
-        }
-
-        if ($post->section && $user->hasRoleInScope('sektionsadmin', 'section', $post->section)) {
-            return true;
-        }
-
-        return false;
+        return $post->author_id === $user->id || $user->darfFuer('beitraege', $post->stage, $post->section);
     }
 }

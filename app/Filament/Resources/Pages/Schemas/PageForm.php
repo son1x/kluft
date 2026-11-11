@@ -133,13 +133,13 @@ class PageForm
 
     private static function isGlobal(): bool
     {
-        return (bool) Filament::auth()->user()?->isRedaktion();
+        return (bool) Filament::auth()->user()?->darfUeberall('seiten');
     }
 
     /** Vorstand ohne Verwaltungsrechte bearbeitet eine Vorstandsseite. */
     private static function nurVorstandsseite(?Page $record): bool
     {
-        return ! self::isGlobal() && (bool) Filament::auth()->user()?->hasRole('vorstand') && (bool) $record?->istVorstandsseite();
+        return ! self::isGlobal() && (bool) Filament::auth()->user()?->darf('vorstandsseiten') && (bool) $record?->istVorstandsseite();
     }
 
     /**
@@ -153,7 +153,7 @@ class PageForm
 
         return self::isGlobal()
             ? $all->all()
-            : $all->only(Filament::auth()->user()?->scopeKeysFor('stufenadmin') ?? [])->all();
+            : $all->only(Filament::auth()->user()?->bereicheFuer('seiten', 'stage') ?? [])->all();
     }
 
     /**
@@ -166,7 +166,7 @@ class PageForm
 
         return self::isGlobal()
             ? $all->all()
-            : $all->only(Filament::auth()->user()?->scopeKeysFor('sektionsadmin') ?? [])->all();
+            : $all->only(Filament::auth()->user()?->bereicheFuer('seiten', 'section') ?? [])->all();
     }
 
     /**
@@ -188,7 +188,7 @@ class PageForm
         // Bereichs selbst (wie Beiträge, PostPolicy::publish); welche Seiten das
         // sind, regeln PagePolicy und PageResource. Vorstand: Vorstandsseiten
         // direkt veröffentlichen (wie News freigeben, 5.4).
-        if ($user && ($user->isRedaktion() || $user->hasRole('stufenadmin') || $user->hasRole('sektionsadmin') || self::nurVorstandsseite($record))) {
+        if ($user && ($user->darf('seiten') || self::nurVorstandsseite($record))) {
             $options['published'] = 'Veröffentlicht';
         }
 

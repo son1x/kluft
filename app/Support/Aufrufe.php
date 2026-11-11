@@ -34,7 +34,7 @@ class Aufrufe
     {
         return Features::enabled(Features::AUFRUFE)
             && $user instanceof User && $user->isActive()
-            && ($user->isRedaktion() || $user->hasRole('vorstand'));
+            && $user->darf('aufrufe');
     }
 
     /**

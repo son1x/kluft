@@ -14,6 +14,7 @@ use App\Support\Ausbau;
 use App\Support\Embeds;
 use App\Support\Galerie;
 use App\Support\Mailformular;
+use App\Support\RollenRegister;
 use App\Support\StufenAlter;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -34,6 +35,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        // Eigene Rollen der Rechte-Matrix: je Anfrage einmal laden.
+        $this->app->scoped(RollenRegister::class);
         // Mitgliederverwaltung je nach Treiber (docs/mitgliederabgleich.md).
         // Jitsi-Links (docs/videokonferenzen.md); bind statt singleton, damit Config-Änderungen greifen.
         $this->app->bind(Jitsi::class, fn () => Jitsi::ausConfig());

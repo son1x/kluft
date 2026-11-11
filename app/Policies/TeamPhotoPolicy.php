@@ -12,26 +12,26 @@ class TeamPhotoPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->isRedaktion();
+        return $user->darf('website');
     }
 
     public function view(User $user, TeamPhoto $record): bool
     {
-        return $user->isRedaktion();
+        return $user->darf('website');
     }
 
     public function create(User $user): bool
     {
-        return $user->isRedaktion();
+        return $user->darf('website');
     }
 
     public function update(User $user, TeamPhoto $record): bool
     {
-        return $user->isRedaktion();
+        return $user->darf('website');
     }
 
     public function delete(User $user, TeamPhoto $record): bool
     {
-        return $user->isRedaktion();
+        return $user->darf('website');
     }
 }

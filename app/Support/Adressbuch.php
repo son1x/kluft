@@ -21,7 +21,7 @@ class Adressbuch
             return false;
         }
 
-        return $user->isRedaktion() || $user->hasRole('vorstand') || $user->hasRole('stufenadmin') || $user->hasRole('sektionsadmin');
+        return $user->darf('adressbuch');
     }
 
     /**
@@ -30,7 +30,7 @@ class Adressbuch
     public static function sichtbareVerteiler(?User $user): Builder
     {
         $query = AdressbuchVerteiler::query();
-        if ($user?->isRedaktion()) {
+        if ($user?->darf('adressbuch.alle')) {
             return $query;
         }
 
@@ -39,7 +39,7 @@ class Adressbuch
 
     public static function darfBearbeiten(?User $user, AdressbuchVerteiler $v): bool
     {
-        return self::zugriff($user) && ($user->isRedaktion() || $v->user_id === $user->id || ($v->user_id === null && ! $v->privat));
+        return self::zugriff($user) && ($user->darf('adressbuch.alle') || $v->user_id === $user->id || ($v->user_id === null && ! $v->privat));
     }
 
     /**

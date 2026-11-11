@@ -18,12 +18,12 @@ class Videokonferenzen
             return false;
         }
 
-        return $user->isRedaktion() || $user->hasRole('vorstand') || $user->hasRole('stufenadmin') || $user->hasRole('sektionsadmin');
+        return $user->darf('videokonferenzen');
     }
 
     public static function alleSehen(?User $user): bool
     {
-        return $user !== null && $user->isRedaktion();
+        return $user !== null && $user->darf('videokonferenzen.alle');
     }
 
     public static function darf(?User $user, Videokonferenz $k): bool

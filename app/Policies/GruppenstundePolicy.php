@@ -12,7 +12,7 @@ class GruppenstundePolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->isRedaktion() || $user->scopeKeysFor('stufenadmin') !== [];
+        return $user->darf('gruppenstunden');
     }
 
     public function view(User $user, Gruppenstunde $gruppe): bool
@@ -37,6 +37,6 @@ class GruppenstundePolicy
 
     private function darfStufe(User $user, string $stage): bool
     {
-        return $user->isRedaktion() || in_array($stage, $user->scopeKeysFor('stufenadmin'), true);
+        return $user->darfUeberall('gruppenstunden') || in_array($stage, $user->bereicheFuer('gruppenstunden', 'stage'), true);
     }
 }

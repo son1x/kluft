@@ -29,7 +29,7 @@ class Zahlungen
             return false;
         }
 
-        return config('dpsg.site.level') === 'Stamm' ? $user->isKasse() : ($user->isKasse() || $user->isVerwaltung());
+        return $user->isKasse() || $user->darf('kasse');
     }
 
     /**

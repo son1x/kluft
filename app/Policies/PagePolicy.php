@@ -25,7 +25,7 @@ class PagePolicy
 
     public function create(User $user): bool
     {
-        return $user->isRedaktion() || $user->hasRole('stufenadmin') || $user->hasRole('sektionsadmin');
+        return $user->darf('seiten');
     }
 
     public function update(User $user, Page $page): bool
@@ -35,23 +35,15 @@ class PagePolicy
 
     public function delete(User $user, Page $page): bool
     {
-        return $user->isRedaktion();
+        return $user->darfUeberall('seiten');
     }
 
     private function canManage(User $user, Page $page): bool
     {
-        if ($user->isRedaktion()) {
+        if ($user->darfFuer('seiten', $page->stage, $page->section)) {
             return true;
         }
 
-        if ($page->stage && $user->hasRoleInScope('stufenadmin', 'stage', $page->stage)) {
-            return true;
-        }
-
-        if ($page->section && $user->hasRoleInScope('sektionsadmin', 'section', $page->section)) {
-            return true;
-        }
-
-        return $user->hasRole('vorstand') && $page->istVorstandsseite();
+        return $user->darf('vorstandsseiten') && $page->istVorstandsseite();
     }
 }

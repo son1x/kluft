@@ -216,11 +216,11 @@ class PostForm
         // Mit Domain, wenn die Sektion eine eigene Website hat.
         $all = collect(RoleCatalog::sections())->map(fn (string $label, string $key) => Websites::domainFor($key) === Websites::mainDomain() ? $label : $label.' ('.Websites::domainFor($key).')');
 
-        if (! $user || $user->isRedaktion() || $user->hasRole('vorstand')) {
+        if (! $user || $user->darfUeberall('beitraege')) {
             return $all->all();
         }
 
-        return $all->only([...$user->scopeKeysFor('sektionsadmin'), ...$user->scopeKeysFor('autor')])->all();
+        return $all->only([...$user->bereicheFuer('beitraege', 'section'), ...$user->scopeKeysFor('autor')])->all();
     }
 
     /**

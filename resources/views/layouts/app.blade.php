@@ -276,8 +276,8 @@
 
     @if ($schlicht)
         <footer class="mt-20 bg-dpsg-blau text-white">
-            <div class="mx-auto flex max-w-6xl flex-wrap gap-x-6 gap-y-2 px-4 py-4 text-sm">
-                <span>© {{ date('Y') }} {{ config('dpsg.contact.name') }}</span>
+            <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 px-4 py-2 text-sm sm:py-3">
+                <span class="w-full py-2 sm:w-auto">© {{ date('Y') }} {{ config('dpsg.contact.name') }}</span>
                 <a href="{{ url('/impressum') }}" class="inline-flex min-h-11 items-center hover:underline">Impressum</a>
                 <a href="{{ url('/datenschutz') }}" class="inline-flex min-h-11 items-center hover:underline">Datenschutz</a>
             </div>
@@ -298,7 +298,7 @@
                     @if (filled($contact['street'] ?? null)){{ $contact['street'] }}<br />@endif
                     {{ $contact['city'] }}
                 </p>
-                <ul class="mt-3 space-y-2">
+                <ul class="mt-3 space-y-2 pointer-coarse:space-y-0">
                     @if (filled($contact['phone'] ?? null))
                         <li class="flex items-center gap-2"><x-heroicon-o-phone class="h-4 w-4 shrink-0" aria-hidden="true" /><a href="tel:{{ $contact['phone_href'] }}" class="hover:underline">{{ $contact['phone'] }}</a></li>
                     @endif
@@ -307,7 +307,8 @@
             </div>
             <div>
                 <h2 class="mb-4 font-serif text-base font-bold">Service</h2>
-                <ul class="space-y-2">
+                {{-- Handy: zwei Spalten, 44-pt-Zeilen ohne zusätzlichen Abstand (Apple HIG). --}}
+                <ul class="grid grid-cols-2 gap-x-4 gap-y-2 pointer-coarse:gap-y-0 md:block md:space-y-2 md:pointer-coarse:space-y-0">
                     <li><a href="{{ url('/kontakt') }}" class="hover:underline">Kontakt</a></li>
                     @if (\App\Support\Ausbau::gruppen())
                         <li><a href="{{ \App\Support\Site::officeUrl() }}" class="hover:underline">{{ \App\Support\Site::officeLabel() }}</a></li>
@@ -316,7 +317,7 @@
                         <li><a href="{{ url('/meine-anmeldungen') }}" class="hover:underline">Meine Anmeldungen</a></li>
                     @endif
                     <li>
-                        <button type="button" x-data @click="$dispatch('open-consent-settings')" class="hover:underline">Datenschutz-Einstellungen</button>
+                        <button type="button" x-data @click="$dispatch('open-consent-settings')" class="text-left hover:underline">Datenschutz-Einstellungen</button>
                     </li>
                     <li><a href="{{ url('/admin') }}" class="hover:underline">Redaktions-Login</a></li>
                     <li><a href="{{ url('/status') }}" class="hover:underline">Systemstatus</a></li>
@@ -374,11 +375,12 @@
             @endif
         </div>
         <div class="bg-dpsg-blau text-white">
-            <div class="mx-auto flex max-w-6xl flex-wrap gap-x-6 gap-y-2 px-4 py-4 text-sm">
-                <span>© {{ date('Y') }} {{ $contact['name'] }}</span>
+            {{-- Handy: © oben, Impressum und Datenschutz nebeneinander (44-pt-Zeile), Bildnachweis darunter. --}}
+            <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 px-4 py-2 text-sm sm:py-3">
+                <span class="w-full py-2 sm:w-auto">© {{ date('Y') }} {{ $contact['name'] }}</span>
                 <a href="{{ url('/impressum') }}" class="inline-flex min-h-11 items-center hover:underline">Impressum</a>
                 <a href="{{ url('/datenschutz') }}" class="inline-flex min-h-11 items-center hover:underline">Datenschutz</a>
-                <span class="sm:ml-auto">Stufen-Maskottchen, Rover- und Inklusions-Lilie: DPSG (dpsg.de, rover.de)</span>
+                <span class="w-full py-2 sm:ml-auto sm:w-auto">Stufen-Maskottchen, Rover- und Inklusions-Lilie: DPSG (dpsg.de, rover.de)</span>
             </div>
         </div>
     </footer>

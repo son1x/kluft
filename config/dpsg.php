@@ -26,6 +26,12 @@ return array_replace([
     */
     'directory' => ['path' => 'staemme', 'title' => 'Unsere Stämme'],
 
+    // Rechte (docs/rollen.md): Dürfen Stufen- und Sektionsadmins Veranstaltungen
+    // ihres Bereichs anlegen und bearbeiten ('bearbeiten') oder nur samt
+    // Teilnehmenden ansehen ('lesen')? Schreiben gibt dann je Person die Rolle
+    // „Veranstaltungen bearbeiten – Bereich“.
+    'rechte' => ['leitung_veranstaltungen' => 'bearbeiten'],
+
     /*
     | Zusätzliche Kacheln auf Übersichtsseiten (Slug der Übersicht => Slugs
     | weiterer Seiten), z. B. eine Seite, die woanders im Menü hängt.

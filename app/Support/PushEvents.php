@@ -45,7 +45,7 @@ class PushEvents
     public static function availableFor(User $user): array
     {
         $allowed = [
-            self::ANMELDUNGEN => $user->isVerwaltung() || $user->hasRole('stufenadmin') || $user->hasRole('sektionsadmin'),
+            self::ANMELDUNGEN => $user->isRedaktion() || $user->hasRole('stufenadmin') || $user->hasRole('sektionsadmin'),
             self::BEITRAEGE_FREIGABE => Gate::forUser($user)->allows('publish', Post::class),
             self::BEITRAEGE_NEU => $user->roleAssignments->isNotEmpty(),
             self::RECHTE => true,

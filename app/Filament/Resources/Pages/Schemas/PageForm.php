@@ -133,7 +133,7 @@ class PageForm
 
     private static function isGlobal(): bool
     {
-        return (bool) Filament::auth()->user()?->isVerwaltung();
+        return (bool) Filament::auth()->user()?->isRedaktion();
     }
 
     /** Vorstand ohne Verwaltungsrechte bearbeitet eine Vorstandsseite. */
@@ -188,7 +188,7 @@ class PageForm
         // Bereichs selbst (wie Beiträge, PostPolicy::publish); welche Seiten das
         // sind, regeln PagePolicy und PageResource. Vorstand: Vorstandsseiten
         // direkt veröffentlichen (wie News freigeben, 5.4).
-        if ($user && ($user->isVerwaltung() || $user->hasRole('stufenadmin') || $user->hasRole('sektionsadmin') || self::nurVorstandsseite($record))) {
+        if ($user && ($user->isRedaktion() || $user->hasRole('stufenadmin') || $user->hasRole('sektionsadmin') || self::nurVorstandsseite($record))) {
             $options['published'] = 'Veröffentlicht';
         }
 

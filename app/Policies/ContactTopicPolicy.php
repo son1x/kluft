@@ -12,26 +12,26 @@ class ContactTopicPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->isVerwaltung();
+        return $user->isRedaktion();
     }
 
     public function view(User $user, ContactTopic $topic): bool
     {
-        return $user->isVerwaltung();
+        return $user->isRedaktion();
     }
 
     public function create(User $user): bool
     {
-        return $user->isVerwaltung();
+        return $user->isRedaktion();
     }
 
     public function update(User $user, ContactTopic $topic): bool
     {
-        return $user->isVerwaltung();
+        return $user->isRedaktion();
     }
 
     public function delete(User $user, ContactTopic $topic): bool
     {
-        return $user->isVerwaltung();
+        return $user->isRedaktion();
     }
 }

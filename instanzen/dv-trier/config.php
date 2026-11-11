@@ -63,6 +63,8 @@ return [
     ],
 
     'directory' => ['path' => 'bezirke-staemme', 'title' => 'Bezirke & Stämme'],
+    // DL schreibt Texte, Veranstaltungen stellen die Bildungsreferent*innen ein.
+    'rechte' => ['leitung_veranstaltungen' => 'lesen'],
 
     // Diözesanbüro hängt unter „Kontakt“, erscheint aber auch als Kachel
     // unten auf „Diözesanverband“.

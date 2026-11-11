@@ -162,9 +162,27 @@ class User extends Authenticatable implements FilamentUser
      *
      * @return list<string>
      */
-    public function scopeKeysFor(string $role): array
+    public function scopeKeysFor(string $role, ?string $scopeType = null): array
     {
-        return $this->roleAssignments->where('role', $role)->pluck('scope_key')->filter()->values()->all();
+        return $this->roleAssignments->where('role', $role)
+            ->when($scopeType !== null, fn ($c) => $c->where('scope_type', $scopeType))
+            ->pluck('scope_key')->filter()->values()->all();
+    }
+
+    /**
+     * Bildungsreferent*in: das Tagesgeschäft wie die Verwaltung (Inhalte,
+     * Veranstaltungen, Nachrichten), aber ohne Kasse, Prävention,
+     * Datenschutz-Anfragen und Rollenvergabe außer Autor:innen (docs/rollen.md).
+     */
+    public function isBildungsreferent(): bool
+    {
+        return $this->hasRole('bildungsreferent');
+    }
+
+    /** Alle Inhalte und Veranstaltungen: Verwaltung (samt Admins) oder Bildungsreferent*in. */
+    public function isRedaktion(): bool
+    {
+        return $this->isVerwaltung() || $this->isBildungsreferent();
     }
 
     public function isSuperAdmin(): bool

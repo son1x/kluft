@@ -25,7 +25,7 @@ class RollenVorschlag
     public function fuer(Person $person): array
     {
         $user = $person->user;
-        if (! $user instanceof User || $user->status !== 'active' || $user->isRolle() || $user->isVerwaltung()) {
+        if (! $user instanceof User || $user->status !== 'active' || $user->isRolle() || $user->isRedaktion()) {
             return [];
         }
 

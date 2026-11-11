@@ -53,7 +53,7 @@ class GruppenstundeResource extends Resource
         $user = auth()->user();
         $query = parent::getEloquentQuery();
 
-        return $user && ! $user->isVerwaltung() ? $query->whereIn('stage', $user->scopeKeysFor('stufenadmin')) : $query;
+        return $user && ! $user->isRedaktion() ? $query->whereIn('stage', $user->scopeKeysFor('stufenadmin')) : $query;
     }
 
     /** @return array<string, string> */
@@ -62,7 +62,7 @@ class GruppenstundeResource extends Resource
         $user = auth()->user();
         $alle = collect(config('dpsg.stages'))->map(fn (array $s) => $s['label']);
 
-        return ($user && ! $user->isVerwaltung() ? $alle->only($user->scopeKeysFor('stufenadmin')) : $alle)->all();
+        return ($user && ! $user->isRedaktion() ? $alle->only($user->scopeKeysFor('stufenadmin')) : $alle)->all();
     }
 
     public static function form(Schema $schema): Schema

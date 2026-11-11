@@ -36,6 +36,6 @@ class MailEvents
     /** Zurückgehaltene Nachrichten sieht die Verwaltung (alle Nachrichten im Eingang). */
     public static function spamverdachtErlaubt(User $user): bool
     {
-        return Features::enabled(Features::NACHRICHTEN) && $user->isVerwaltung();
+        return Features::enabled(Features::NACHRICHTEN) && $user->isRedaktion();
     }
 }

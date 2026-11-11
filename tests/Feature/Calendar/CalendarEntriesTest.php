@@ -50,6 +50,8 @@ class CalendarEntriesTest extends TestCase
     #[TestDox('Kommende Termine mit „Anmeldung anlegen“; nach dem Anlegen verknüpft und im Kalender nur einmal')]
     public function test_create_registration_from_calendar_entry(): void
     {
+        // Stufenadmins bearbeiten Veranstaltungen (Standard; im DV lesen sie nur, s. RollenModellTest).
+        config(['dpsg.rechte.leitung_veranstaltungen' => 'bearbeiten']);
         $this->actingAs($this->user('stufenadmin', 'stage', 'woelflinge'));
 
         $this->get(CalendarEntryResource::getUrl('index'))->assertOk()->assertSee('Wölflingstag')->assertDontSee('Vergangen');

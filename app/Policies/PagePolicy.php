@@ -25,7 +25,7 @@ class PagePolicy
 
     public function create(User $user): bool
     {
-        return $user->isVerwaltung() || $user->hasRole('stufenadmin') || $user->hasRole('sektionsadmin');
+        return $user->isRedaktion() || $user->hasRole('stufenadmin') || $user->hasRole('sektionsadmin');
     }
 
     public function update(User $user, Page $page): bool
@@ -35,12 +35,12 @@ class PagePolicy
 
     public function delete(User $user, Page $page): bool
     {
-        return $user->isVerwaltung();
+        return $user->isRedaktion();
     }
 
     private function canManage(User $user, Page $page): bool
     {
-        if ($user->isVerwaltung()) {
+        if ($user->isRedaktion()) {
             return true;
         }
 

@@ -43,7 +43,7 @@ class Umfragen
             return false;
         }
 
-        return $user->isVerwaltung() || $user->hasRole('vorstand') || $user->hasRole('stufenadmin') || $user->hasRole('sektionsadmin');
+        return $user->isRedaktion() || $user->hasRole('vorstand') || $user->hasRole('stufenadmin') || $user->hasRole('sektionsadmin');
     }
 
     /**

@@ -81,7 +81,7 @@ class ListContactMessages extends ListRecords
     public function getSubheading(): ?string
     {
         $user = Filament::auth()->user();
-        $alle = $user instanceof User && $user->isVerwaltung();
+        $alle = $user instanceof User && $user->isRedaktion();
 
         return ($alle ? 'Alle Nachrichten aus dem Kontaktformular und Fragen zu Veranstaltungen.' : 'Fragen zu den Veranstaltungen deiner Stufe bzw. deines Bereichs.')
             .(Mailversand::nurProtokoll()

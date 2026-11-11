@@ -1,6 +1,6 @@
 # Datenschutz: Risiken und Einstellungen (Überblick)
 
-Stand 11.11.2026, Code-Stand nach PR #53. Fokus DV Trier, gilt sinngemäß für
+Stand 11.11.2026, Code-Stand nach PR #53 und der sparsamen Teilnehmendenansicht. Fokus DV Trier, gilt sinngemäß für
 alle Kluft-Websites. Das ist eine technische Bestandsaufnahme, **keine
 Rechtsberatung**. Die Datenschutzerklärung und die Verträge (AVV) gehören zur
 oder zum Datenschutzbeauftragten des Verbands bzw. Bistums.
@@ -36,7 +36,7 @@ Legende Verschlüsselung: **ja** = in der Datenbank verschlüsselt (Laravel
 
 | Daten | Wer sieht sie im Backend | Verschlüsselt | Löschung (automatisch) | Einstellung |
 |---|---|---|---|---|
-| **Anmeldungen**: Name, E-Mail, Geburtsjahr, Sorgeberechtigte | Redaktion (Verwaltung, BR, Admin) alle; DL im eigenen Bereich (DV: nur lesen); Vorstand nur Anzahlen | Grunddaten **nein**, Zusatzangaben aus dem Baukasten **ja** | unbestätigt nach 48 h; sonst *Löschfrist der Veranstaltung* (Standard 90 Tage nach Ende, 1–365) | je Veranstaltung „Anmeldedaten löschen nach … Tagen“ |
+| **Anmeldungen**: Name, E-Mail, Geburtsjahr, Sorgeberechtigte | Redaktion (Verwaltung, BR, Admin) alle; DL im eigenen Bereich nur **sparsam** (Name, Stamm, Tage, Status); Vorstand nur Anzahlen | Grunddaten **nein**, Zusatzangaben aus dem Baukasten **ja** | unbestätigt nach 48 h; sonst *Löschfrist der Veranstaltung* (Standard 90 Tage nach Ende, 1–365) | je Veranstaltung „Anmeldedaten löschen nach … Tagen“ |
 | Hochgeladene Dokumente zur Anmeldung (Rechnungen, Bescheinigungen) | wie Anmeldungen | Ablage privat (nicht öffentlich erreichbar) | mit der Anmeldung | – |
 | **Nachrichten** (Kontaktformular, Fragen zu Veranstaltungen) | Redaktion; Stufen-/Sektionsadmins ihre | Nachrichtentext **ja** | nach 6 Monaten (`NACHRICHTEN_AUFBEWAHRUNG_MONATE`) | Funktion „Nachrichten-Eingang“ |
 | **Benutzerkonten** (Name, E-Mail, Rollen, letzte Anmeldung) | Verwaltung, Admins; BR/Stufenadmins nur Autor:innen | 2FA-Geheimnis, NaMi-Zugang, Push-Thema **ja** | nicht automatisch | Rollen mit „gültig bis“ |
@@ -70,7 +70,7 @@ bewusst nur deaktiviert. Nur Verwaltung und Admins.
 | Rolle | Teilnehmende | Personen/Konten | Nachrichten | Kasse, Auslagen | Prävention | Datenschutz-Anfragen | Protokoll, Backups |
 |---|---|---|---|---|---|---|---|
 | Autor:in | – | – | – | eigene Auslagen | – | – | – |
-| Stufen-/Sektionsadmin (DV: DL) | eigener Bereich, **nur lesen** | Autor:innen des Bereichs | des Bereichs | eigene Auslagen | – | – | – |
+| Stufen-/Sektionsadmin (DV: DL) | eigener Bereich, **nur lesen, sparsam**: Name, Stamm, Tage, Status | Autor:innen des Bereichs | des Bereichs | eigene Auslagen | – | – | – |
 | Veranstaltungen bearbeiten – Bereich | eigener Bereich, verwalten | – | Fragen der eigenen Veranstaltungen | eigene | – | – | – |
 | Vorstand | nur Anzahlen | – | – | eigene | **ja** | – | – |
 | Bildungsreferent*in | **alle** | Personen; Konten nur Autor:innen | alle | eigene | – | – | – |
@@ -83,9 +83,13 @@ bewusst nur deaktiviert. Nur Verwaltung und Admins.
   alle Anmeldungen. Das ist für das Tagesgeschäft gewollt, betrifft aber
   viele Datensätze. → Rollen sparsam vergeben, „gültig bis“ nutzen (Ende
   Amtszeit/Arbeitsvertrag), täglicher Lauf entfernt abgelaufene Rollen.
-- **DL liest nur** (DV): Schreib- und Exportaktionen sind serverseitig
-  gesperrt, nicht nur ausgeblendet. Exporte (Excel/PDF) machen damit nur
-  Redaktion und „Veranstaltungen bearbeiten“.
+- **DL liest nur und sparsam** (DV): Ehrenamtliche Stufen- und
+  Sektionsadmins sehen nur Name, Stamm, gewählte Tage und Status
+  (bestätigt/Warteliste). Keine Kontaktdaten, kein Geburtsjahr, keine
+  weiteren Formularangaben (z. B. Gesundheit), keine Sorgeberechtigten,
+  Dokumente oder Zahlungen; Schreib-, Detail- und Exportaktionen gibt es in
+  dieser Ansicht nicht. Die volle Liste sehen die datenschutzgeschulten
+  Bildungsreferent*innen, die Verwaltung und „Veranstaltungen bearbeiten“.
 - **Vergabe:** Admins bekommen bei weitreichenden Rollen (Verwaltung,
   Bildungsreferent*in, Kasse, WhatsApp, Admin) einen Sicherheitshinweis.
   Jede Vergabe/Entzug steht im Protokoll.

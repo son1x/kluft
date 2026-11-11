@@ -67,7 +67,8 @@ class UsersTable
                     ->options(UserForm::STATUS_OPTIONS),
                 SelectFilter::make('assignment')
                     ->label('Rolle / Bereich')
-                    ->options(RoleCatalog::all())
+                    ->options(RoleCatalog::gruppiert(RoleCatalog::all()))
+                    ->searchable()
                     ->query(function (Builder $query, array $data) {
                         if (blank($data['value'] ?? null)) {
                             return $query;

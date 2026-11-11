@@ -141,7 +141,9 @@ class UserForm
                         ->schema([
                             Select::make('assignment')
                                 ->label('Rolle')
-                                ->options($grantable)
+                                ->options(RoleCatalog::gruppiert($grantable))
+                                ->searchable()
+                                ->searchPrompt('Rolle oder Bereich eintippen, z. B. „Bildung“ oder „Wölflinge“')
                                 ->in(array_keys($grantable))
                                 ->required()
                                 ->distinct()

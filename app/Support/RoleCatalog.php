@@ -91,6 +91,33 @@ class RoleCatalog
     }
 
     /**
+     * Auswahl gruppiert für Select-Felder: Rollen für die ganze Website
+     * zuerst, dann Bereiche, Autor:innen, eigene Rollen, Technik.
+     *
+     * @param  array<string, string>  $optionen  Schlüssel => Beschriftung (z. B. aus grantableBy())
+     * @return array<string, array<string, string>>
+     */
+    public static function gruppiert(array $optionen): array
+    {
+        $gruppen = ['Ganze Website' => [], 'Leitung je Stufe/Sektion' => [], 'Veranstaltungen je Bereich' => [],
+            'Autor:innen' => [], 'Eigene Rollen' => [], 'Technik' => []];
+        foreach ($optionen as $key => $label) {
+            $role = self::decode($key)['role'];
+            $gruppe = match (true) {
+                in_array($role, ['admin', 'superadmin'], true) => 'Technik',
+                Rechte::istEigen($role) => 'Eigene Rollen',
+                in_array($role, ['stufenadmin', 'sektionsadmin'], true) => 'Leitung je Stufe/Sektion',
+                $role === 'veranstaltungen' => 'Veranstaltungen je Bereich',
+                $role === 'autor' => 'Autor:innen',
+                default => 'Ganze Website',
+            };
+            $gruppen[$gruppe][$key] = $label;
+        }
+
+        return array_filter($gruppen);
+    }
+
+    /**
      * Zuweisungen, die $actor vergeben bzw. entziehen darf.
      *
      * @return array<string, string>

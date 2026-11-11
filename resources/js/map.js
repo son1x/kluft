@@ -191,6 +191,9 @@ function initDirectory(container) {
         });
 
         fitToFeatures();
+        // Für den Lader (karte-laden.js): Karte samt Standorten ist bereit.
+        container.dataset.bereit = '1';
+        container.dispatchEvent(new CustomEvent('karte-bereit', { bubbles: true }));
     });
 
     const fitToFeatures = () => {

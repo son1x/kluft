@@ -16,6 +16,8 @@ Schedule::command('calendar:sync')->everyFifteenMinutes()->withoutOverlapping();
 // Löschfristen der Veranstaltungsanmeldungen (Pflichtenheft 9.3, 11.4).
 Schedule::command('registrations:purge --unconfirmed')->hourly();
 Schedule::command('registrations:purge')->dailyAt('03:00');
+Schedule::command('registrations:sensible-loeschen')->dailyAt('03:05');
+Schedule::command('konten:inaktive')->dailyAt('04:15');
 
 // Audit-Log nach 12 Monaten bereinigen (Pflichtenheft 8.2, 11.4).
 Schedule::command('audit:prune')->dailyAt('03:30');

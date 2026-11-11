@@ -95,6 +95,7 @@ class User extends Authenticatable implements FilamentUser
         return [
             'email_verified_at' => 'datetime',
             'last_login_at' => 'datetime',
+            'inaktiv_gewarnt_at' => 'datetime',
             'password' => 'hashed',
             'is_local_admin' => 'boolean',
             'totp_secret' => 'encrypted',
@@ -115,6 +116,10 @@ class User extends Authenticatable implements FilamentUser
         static::saving(function (User $user) {
             if ($user->isDirty('status') && $user->status === 'disabled') {
                 $user->forceFill(['nami_user' => null, 'nami_password' => null, 'nami_checked_at' => null, 'nami_error' => null]);
+            }
+            // Wieder angemeldet oder entsperrt: Vorwarnung zurücksetzen (konten:inaktive).
+            if ($user->isDirty('last_login_at') || ($user->isDirty('status') && $user->status === 'active')) {
+                $user->inaktiv_gewarnt_at = null;
             }
         });
 

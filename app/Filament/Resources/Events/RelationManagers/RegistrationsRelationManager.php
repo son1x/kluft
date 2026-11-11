@@ -147,6 +147,7 @@ class RegistrationsRelationManager extends RelationManager
                 TextColumn::make('status')->label('Status')->badge()
                     ->formatStateUsing(fn (string $state) => EventRegistration::STATUSES[$state] ?? $state)
                     ->color(fn (string $state) => $state === 'confirmed' ? 'success' : 'warning'),
+                $this->fotoSpalte($event),
                 TextColumn::make('confirmed_at')->label('Bestätigt am')->date('d.m.Y')->sortable(),
             ])
             ->defaultSort('last_name')
@@ -155,6 +156,19 @@ class RegistrationsRelationManager extends RelationManager
                     ->options(array_intersect_key(EventRegistration::STATUSES, array_flip(['confirmed', 'waitlist']))),
             ])
             ->emptyStateHeading('Noch keine bestätigten Anmeldungen');
+    }
+
+    /** Freiwillige Foto-Einwilligung (nur wenn bei der Veranstaltung abgefragt). */
+    private function fotoSpalte(Event $event): TextColumn
+    {
+        return TextColumn::make('foto_einwilligung')->label('Fotos')->badge()
+            ->state(fn (EventRegistration $record) => match ($record->foto_einwilligung) {
+                true => 'ja', false => 'nein', default => 'offen',
+            })
+            ->formatStateUsing(fn (string $state) => ['ja' => 'Ja', 'nein' => 'Nein', 'offen' => 'nicht gefragt'][$state])
+            ->color(fn (string $state) => ['ja' => 'success', 'nein' => 'danger', 'offen' => 'gray'][$state])
+            ->tooltip(fn (string $state) => $state === 'nein' ? 'Keine Fotos zeigen, auf denen die Person zu erkennen ist.' : null)
+            ->visible((bool) $event->foto_einwilligung);
     }
 
     public function table(Table $table): Table
@@ -186,6 +200,7 @@ class RegistrationsRelationManager extends RelationManager
                         'cancelled' => 'danger',
                         default => 'gray',
                     }),
+                $this->fotoSpalte($event),
                 TextColumn::make('preis_cent')->label('Beitrag')->alignEnd()
                     ->formatStateUsing(fn (?int $state) => Zahlungen::euro($state))->placeholder('–')
                     ->description(fn (EventRegistration $record) => $record->preis_bezeichnung)
@@ -453,14 +468,23 @@ class RegistrationsRelationManager extends RelationManager
                 Action::make('export')
                     ->label('Teilnehmerliste (.xlsx)')
                     ->icon('heroicon-o-arrow-down-tray')
-                    ->action(function (ParticipantExport $export): StreamedResponse {
+                    // Sensible Angaben (z. B. Gesundheit) nur, wenn ausdrücklich gewählt.
+                    ->modalHeading('Teilnehmerliste herunterladen')
+                    ->modalDescription('Die Datei verlässt Kluft: nur auf eigenen Geräten speichern und nach der Veranstaltung löschen. Der Abruf wird protokolliert.')
+                    ->modalSubmitActionLabel('Herunterladen')
+                    ->schema(fn () => $this->getOwnerRecord()->sensibleFelder() === [] ? [] : [
+                        Toggle::make('sensibel')->label('Sensible Angaben mitnehmen ('.collect($this->getOwnerRecord()->formFields())->filter(fn (array $f) => $f['sensibel'] ?? false)->pluck('label')->implode(', ').')')
+                            ->helperText('Nur, wenn ihr sie in dieser Form wirklich braucht.'),
+                    ])
+                    ->action(function (ParticipantExport $export, array $data): StreamedResponse {
                         $event = $this->getOwnerRecord();
                         abort_unless(Filament::auth()->user()?->can('manageParticipants', $event), 403);
+                        $sensibel = (bool) ($data['sensibel'] ?? false);
 
-                        // Jeder Export wird protokolliert (F-EV-21).
-                        AuditLogger::log('event.export', Filament::auth()->user(), Event::class, $event->getKey(), request());
+                        // Jeder Export wird protokolliert (F-EV-21), mit sensiblen Angaben gesondert.
+                        AuditLogger::log($sensibel ? 'event.export.sensibel' : 'event.export', Filament::auth()->user(), Event::class, $event->getKey(), request());
 
-                        return response()->streamDownload(fn () => $export->write($event), $export->filename($event), [
+                        return response()->streamDownload(fn () => $export->write($event, $sensibel), $export->filename($event), [
                             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                         ]);
                     }),

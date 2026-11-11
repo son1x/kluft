@@ -168,6 +168,9 @@
                             @default
                                 <input id="{{ $key }}" name="{{ $key }}" type="text" @required($field['required']) value="{{ old($key) }}" class="{{ $input }}" />
                         @endswitch
+                        @if ($field['sensibel'] ?? false)
+                            <p class="mt-1 flex items-start gap-1.5 text-xs text-text-secondary"><x-heroicon-o-lock-closed class="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />Besonders geschützt: Diese Angabe sieht nur die Veranstaltungsleitung. Wir löschen sie {{ \App\Models\Event::sensibleTage() }} Tage nach der Veranstaltung.</p>
+                        @endif
                         @if (($field['eigen'] ?? false) && filled($field['hint'] ?? null))
                             <p class="mt-1 text-xs text-text-secondary">{{ $field['hint'] }}</p>
                         @endif
@@ -220,11 +223,21 @@
                                         </select>
                                     </div>
                                 @endif
+                                @if ($event->foto_einwilligung)
+                                    <div>
+                                        <label class="block text-sm font-bold" :for="'weitere-' + i + '-foto'">Fotos veröffentlichen? *</label>
+                                        <select required class="{{ $input }} sm:max-w-40" :id="'weitere-' + i + '-foto'" :name="'weitere[' + i + '][foto]'" x-model="person.foto">
+                                            <option value="">Bitte wählen</option>
+                                            <option value="ja">Ja</option>
+                                            <option value="nein">Nein</option>
+                                        </select>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     </template>
                     <button type="button" x-show="weitere.length < max"
-                            @click="weitere.push({ first_name: '', last_name: document.getElementById('last_name')?.value ?? '', birth_year: '', preis: '' }); $nextTick(() => document.getElementById('weitere-' + (weitere.length - 1) + '-vorname')?.focus())"
+                            @click="weitere.push({ first_name: '', last_name: document.getElementById('last_name')?.value ?? '', birth_year: '', preis: '', foto: '' }); $nextTick(() => document.getElementById('weitere-' + (weitere.length - 1) + '-vorname')?.focus())"
                             class="inline-flex min-h-11 items-center gap-2 border border-dpsg-blau bg-white px-4 py-2 font-bold text-dpsg-blau hover:bg-dpsg-blau hover:text-white">
                         <x-heroicon-o-user-plus class="h-5 w-5" aria-hidden="true" />
                         Weitere Person hinzufügen
@@ -269,6 +282,26 @@
                         <p class="text-xs text-text-secondary">Nach der Bestätigung deines Platzes bekommst du eine Zahlungsaufforderung mit Kontodaten und QR-Code für die Banking-App.</p>
                     @endif
                     @error('preis')<p id="preis-error" class="text-sm text-dpsg-rot">{{ $message }}</p>@enderror
+                </fieldset>
+            @endif
+
+            @if ($event->foto_einwilligung)
+                {{-- Freiwillige Foto-Einwilligung je Person (docs/datenschutz-ueberblick.md). --}}
+                <fieldset class="space-y-2 border-t border-dpsg-mittelbeige pt-5" @error('foto') aria-describedby="foto-error" @enderror>
+                    <legend class="font-bold">Fotos *</legend>
+                    <p class="text-sm text-text-secondary">
+                        Dürfen wir Fotos von der Veranstaltung, auf denen {{ $event->adults_only ? 'du' : 'die angemeldete Person' }} zu erkennen {{ $event->adults_only ? 'bist' : 'ist' }}, auf unserer Website und in unseren Kanälen zeigen?
+                        Das ist freiwillig; ein „Nein“ hat keine Nachteile, und du kannst die Einwilligung jederzeit widerrufen.
+                    </p>
+                    <div class="flex flex-wrap gap-2">
+                        @foreach (['ja' => 'Ja, gern', 'nein' => 'Nein'] as $wert => $text)
+                            <label class="flex min-h-11 items-center gap-3 border border-dpsg-mittelbeige bg-white px-4 text-sm">
+                                <input type="radio" name="foto" value="{{ $wert }}" required class="h-5 w-5 shrink-0" @checked(old('foto') === $wert) />
+                                <span>{{ $text }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                    @error('foto')<p id="foto-error" class="text-sm text-dpsg-rot">{{ $message }}</p>@enderror
                 </fieldset>
             @endif
 

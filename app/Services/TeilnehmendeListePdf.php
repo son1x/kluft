@@ -28,7 +28,7 @@ class TeilnehmendeListePdf
     {
         return collect($event->formFields())
             ->reject(fn (array $f) => in_array($f['type'], self::OHNE, true))
-            ->map(fn (array $f) => $f['label'])
+            ->map(fn (array $f) => $f['label'].(($f['sensibel'] ?? false) ? ' (sensibel)' : ''))
             ->all();
     }
 
@@ -65,6 +65,7 @@ class TeilnehmendeListePdf
             ->map(fn (EventRegistration $r) => [
                 'name' => $r->last_name.', '.$r->first_name,
                 'warteliste' => $r->status === 'waitlist',
+                'keineFotos' => $event->foto_einwilligung && $r->foto_einwilligung !== true,
                 'werte' => array_map(fn (string $k) => $k === 'birth_year'
                     ? (string) $r->birth_year
                     : (string) $event->fieldValueLabel($alle[$k], $r->data[$k] ?? null), $schluessel),

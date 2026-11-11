@@ -36,7 +36,7 @@ class EventRegistration extends Model
         'guardian_name', 'guardian_consent', 'consent_text_version', 'consent_at',
         'confirm_token_hash', 'confirmed_at', 'cancel_token_hash', 'cancelled_at', 'purge_at',
         'preis_bezeichnung', 'preis_cent', 'anmeldung_gruppe',
-        'funktion', 'kreis', 'juleica', 'anwesend', 'anwesend_tage',
+        'funktion', 'kreis', 'juleica', 'anwesend', 'anwesend_tage', 'foto_einwilligung',
     ];
 
     // member_* setzt nur der Mitgliederabgleich (forceFill), nie ein Formular.
@@ -48,6 +48,7 @@ class EventRegistration extends Model
         return [
             'data' => 'encrypted:array',
             'guardian_consent' => 'boolean',
+            'foto_einwilligung' => 'boolean',
             'birth_year' => 'integer',
             'consent_at' => 'datetime',
             'confirmed_at' => 'datetime',

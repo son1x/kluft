@@ -48,7 +48,7 @@
             @forelse ($personen as $p)
                 <tr>
                     <td class="nr">{{ $loop->iteration }}</td>
-                    <td><strong>{{ $p['name'] }}</strong>@if ($p['warteliste'])<br><span class="wl">Warteliste</span>@endif</td>
+                    <td><strong>{{ $p['name'] }}</strong>{!! $p['warteliste'] ? '<br><span class="wl">Warteliste</span>' : '' !!}{!! ($p['keineFotos'] ?? false) ? '<br><span class="wl">Keine Fotos</span>' : '' !!}</td>
                     @foreach ($p['werte'] as $wert)<td>{{ $wert }}</td>@endforeach
                     @if ($mitSorge)<td>{{ $p['sorge'] }}</td>@endif
                     @foreach ($tage as $tag)<td class="tag"><span class="kasten"></span></td>@endforeach

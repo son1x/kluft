@@ -32,6 +32,14 @@ return array_replace([
     // „Veranstaltungen bearbeiten – Bereich“.
     'rechte' => ['leitung_veranstaltungen' => 'bearbeiten'],
 
+    // Sensible Formularangaben (z. B. Gesundheit) so viele Tage nach dem Ende
+    // der Veranstaltung löschen; der Rest der Anmeldung folgt der Löschfrist.
+    'sensible_tage' => (int) env('SENSIBLE_TAGE', 14),
+
+    // Ungenutzte Backend-Konten: nach so vielen Monaten ohne Anmeldung
+    // sperren, einen Monat vorher warnen (0 = aus). Lokale Notfall-Admins nie.
+    'konten_sperren_monate' => (int) env('KONTEN_SPERREN_MONATE', 12),
+
     /*
     | Zusätzliche Kacheln auf Übersichtsseiten (Slug der Übersicht => Slugs
     | weiterer Seiten), z. B. eine Seite, die woanders im Menü hängt.

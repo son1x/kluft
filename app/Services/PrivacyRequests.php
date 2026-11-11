@@ -111,6 +111,7 @@ class PrivacyRequests
                 'angemeldet_durch' => $r->guardian_name,
                 'einwilligung' => $r->consent_at?->toIso8601String(),
                 'einwilligungstext_version' => $r->consent_text_version,
+                'foto_einwilligung' => $r->foto_einwilligung === null ? null : ($r->foto_einwilligung ? 'ja' : 'nein'),
                 'mitgliederabgleich' => $r->member_status ? [
                     'ergebnis' => MitgliederAbgleich::STATUSES[$r->member_status] ?? $r->member_status,
                     'mitgliedsnummer' => $r->member_number,

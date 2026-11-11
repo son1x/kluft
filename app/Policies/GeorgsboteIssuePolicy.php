@@ -12,26 +12,26 @@ class GeorgsboteIssuePolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->isVerwaltung();
+        return $user->isRedaktion();
     }
 
     public function view(User $user, GeorgsboteIssue $issue): bool
     {
-        return $user->isVerwaltung();
+        return $user->isRedaktion();
     }
 
     public function create(User $user): bool
     {
-        return $user->isVerwaltung();
+        return $user->isRedaktion();
     }
 
     public function update(User $user, GeorgsboteIssue $issue): bool
     {
-        return $user->isVerwaltung();
+        return $user->isRedaktion();
     }
 
     public function delete(User $user, GeorgsboteIssue $issue): bool
     {
-        return $user->isVerwaltung();
+        return $user->isRedaktion();
     }
 }

@@ -171,7 +171,7 @@ class WasStehtAn
     /** @return list<array<string, mixed>> */
     private static function naechsteVeranstaltungen(User $user): array
     {
-        if (! EventResource::canViewAny() || ! ($user->isVerwaltung() || $user->hasRole('stufenadmin') || $user->hasRole('sektionsadmin'))) {
+        if (! EventResource::canViewAny() || ! ($user->isRedaktion() || $user->hasRole('stufenadmin') || $user->hasRole('sektionsadmin'))) {
             return [];
         }
 

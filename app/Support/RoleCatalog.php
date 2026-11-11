@@ -36,6 +36,15 @@ class RoleCatalog
         foreach (self::sections() as $key => $label) {
             $options["sektionsadmin|section|{$key}"] = "Sektionsadmin – {$label}";
         }
+        // Lesen die Leitungen Veranstaltungen nur, gibt es das Schreiben je Bereich einzeln.
+        if (self::leitungLiestVeranstaltungen()) {
+            foreach ($stages as $key => $label) {
+                $options["veranstaltungen|stage|{$key}"] = "Veranstaltungen bearbeiten – {$label}";
+            }
+            foreach (self::sections() as $key => $label) {
+                $options["veranstaltungen|section|{$key}"] = "Veranstaltungen bearbeiten – {$label}";
+            }
+        }
 
         $options['autor|own|'] = 'Autor:in (ohne Zuordnung)';
         foreach ($stages as $key => $label) {
@@ -46,6 +55,9 @@ class RoleCatalog
         }
 
         $options['vorstand|global|'] = 'Vorstand';
+        if (config('dpsg.site.level') !== 'Stamm') {
+            $options['bildungsreferent|global|'] = 'Bildungsreferent*in';
+        }
         $options['verwaltung|global|'] = 'Verwaltung';
         if (Features::verfuegbar(Features::MITGLIEDSBEITRAEGE)) {
             $options['kasse|global|'] = 'Kasse (Mitgliedsbeiträge)';
@@ -90,11 +102,17 @@ class RoleCatalog
             return $all;
         }
 
+        // Bildungsreferent*innen: Autor:innen aller Bereiche, auch ohne Zuordnung.
         // Stufen-/Sektionsadmins: nur Autor:innen im eigenen Scope (5.5).
+        $keys = self::delegatedScopeKeys($actor);
+        if ($actor->isBildungsreferent()) {
+            $keys[] = '';
+        }
+
         return collect($all)
             ->filter(fn ($label, string $key) => in_array($key, array_map(
                 fn (string $scopeKey) => "autor|own|{$scopeKey}",
-                self::delegatedScopeKeys($actor)
+                $keys
             ), true))
             ->all();
     }
@@ -107,6 +125,11 @@ class RoleCatalog
      */
     public static function delegatedScopeKeys(User $actor): array
     {
+        // Bildungsreferent*innen schalten Autor:innen in allen Bereichen frei.
+        if ($actor->isBildungsreferent() && ! $actor->isVerwaltung()) {
+            return array_values(array_unique([...array_keys((array) config('dpsg.stages')), ...array_keys(self::sections())]));
+        }
+
         return $actor->roleAssignments
             ->whereIn('role', ['stufenadmin', 'sektionsadmin'])
             ->pluck('scope_key')
@@ -155,6 +178,8 @@ class RoleCatalog
             'stufenadmin' => 'Stufenseite, Beiträge und Veranstaltungen der Stufe pflegen, Autor:innen freischalten',
             'sektionsadmin' => 'Seiten, Beiträge und Veranstaltungen des Bereichs pflegen, Autor:innen freischalten',
             'material' => 'Material und Reservierungen im Materialverleih pflegen',
+            'veranstaltungen' => 'Veranstaltungen des Bereichs anlegen und bearbeiten, Teilnehmende verwalten',
+            'bildungsreferent' => 'alle Seiten, Beiträge und Veranstaltungen samt Teilnehmenden, Nachrichten, Autor:innen freischalten',
             'vorstand' => 'Vorstandsseiten pflegen, Beiträge freigeben',
             'verwaltung' => 'alle Inhalte und Veranstaltungen, Benutzer und Datenschutz-Anfragen',
             'kasse' => 'Mitgliedsbeiträge: offene und bezahlte Beiträge, Abgleich mit NaMi und der Rechnung des Bundesverbands',
@@ -165,12 +190,18 @@ class RoleCatalog
         ][$role] ?? null;
     }
 
+    /** Lesen Stufen- und Sektionsadmins Veranstaltungen nur (config dpsg.rechte)? */
+    public static function leitungLiestVeranstaltungen(): bool
+    {
+        return config('dpsg.rechte.leitung_veranstaltungen', 'bearbeiten') === 'lesen';
+    }
+
     /**
      * Rollen, bei deren Vergabe die Technik-Admins informiert werden.
      */
     public static function isPrivileged(string $key): bool
     {
-        return in_array(self::decode($key)['role'], ['verwaltung', 'kasse', 'whatsapp', 'admin', 'superadmin'], true);
+        return in_array(self::decode($key)['role'], ['verwaltung', 'bildungsreferent', 'kasse', 'whatsapp', 'admin', 'superadmin'], true);
     }
 
     public static function label(RoleAssignment $assignment): string

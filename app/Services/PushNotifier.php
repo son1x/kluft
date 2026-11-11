@@ -34,7 +34,7 @@ class PushNotifier
         }
         $event = $registration->event;
         $recipients = $this->subscribers(PushEvents::ANMELDUNGEN)
-            ->filter(fn (User $user) => Gate::forUser($user)->allows('manageParticipants', $event));
+            ->filter(fn (User $user) => Gate::forUser($user)->allows('viewParticipants', $event));
         if ($recipients->isEmpty()) {
             return;
         }

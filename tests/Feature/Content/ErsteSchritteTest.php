@@ -61,6 +61,8 @@ class ErsteSchritteTest extends TestCase
     #[TestDox('Wer freigeben darf, sieht wartende Beiträge seines Bereichs und den eigenen Bereich')]
     public function test_freigebende(): void
     {
+        // Stufenadmins bearbeiten Veranstaltungen (Standard; im DV lesen sie nur, s. RollenModellTest).
+        config(['dpsg.rechte.leitung_veranstaltungen' => 'bearbeiten']);
         [$stufe, $andere] = array_map('strval', array_slice(array_keys((array) config('dpsg.stages')), 0, 2));
         $this->beitrag(['status' => 'review', 'scope' => 'stage', 'stage' => $stufe]);
         $this->beitrag(['status' => 'review', 'scope' => 'stage', 'stage' => $andere]);

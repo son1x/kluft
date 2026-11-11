@@ -26,7 +26,7 @@ class Materialverleih
 
     public static function zugriff(?User $user): bool
     {
-        return self::aktiv() && $user !== null && ($user->hasRole('material') || $user->isVerwaltung());
+        return self::aktiv() && $user !== null && ($user->hasRole('material') || $user->isRedaktion());
     }
 
     /**

@@ -12,26 +12,26 @@ class PersonPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->isVerwaltung();
+        return $user->isRedaktion();
     }
 
     public function view(User $user, Person $record): bool
     {
-        return $user->isVerwaltung();
+        return $user->isRedaktion();
     }
 
     public function create(User $user): bool
     {
-        return $user->isVerwaltung();
+        return $user->isRedaktion();
     }
 
     public function update(User $user, Person $record): bool
     {
-        return $user->isVerwaltung();
+        return $user->isRedaktion();
     }
 
     public function delete(User $user, Person $record): bool
     {
-        return $user->isVerwaltung();
+        return $user->isRedaktion();
     }
 }

@@ -46,7 +46,7 @@ class MediaPolicy
 
     private function voll(User $user): bool
     {
-        return $user->isVerwaltung() || $user->hasRole('vorstand');
+        return $user->isRedaktion() || $user->hasRole('vorstand');
     }
 
     private function eigene(User $user, Media $media): bool

@@ -394,6 +394,8 @@ class EventRegistrationTest extends TestCase
     #[TestDox('Teilnehmendenlisten nur für Berechtigte; Export wird protokolliert')]
     public function test_participant_access_follows_scope_and_export_is_audited_and_masked(): void
     {
+        // Stufenadmins bearbeiten Veranstaltungen (Standard; im DV lesen sie nur, s. RollenModellTest).
+        config(['dpsg.rechte.leitung_veranstaltungen' => 'bearbeiten']);
         Filament::setCurrentPanel('admin');
         $woelflinge = $this->event();
         $rover = $this->event(['slug' => 'rover-hike', 'title' => 'Rover-Hike', 'stage' => 'rover']);
@@ -442,6 +444,8 @@ class EventRegistrationTest extends TestCase
     #[TestDox('Stufenadmins legen Veranstaltungen nur für die eigene Stufe an')]
     public function test_stufenadmin_creates_event_only_for_own_stage(): void
     {
+        // Stufenadmins bearbeiten Veranstaltungen (Standard; im DV lesen sie nur, s. RollenModellTest).
+        config(['dpsg.rechte.leitung_veranstaltungen' => 'bearbeiten']);
         Filament::setCurrentPanel('admin');
         $this->actingAs($this->user('woe@dpsg-trier.de', 'stufenadmin', 'stage', 'woelflinge'));
 

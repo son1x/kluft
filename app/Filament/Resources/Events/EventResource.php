@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Events;
 use App\Filament\Resources\Events\Pages\CreateEvent;
 use App\Filament\Resources\Events\Pages\EditEvent;
 use App\Filament\Resources\Events\Pages\ListEvents;
+use App\Filament\Resources\Events\Pages\ViewEvent;
 use App\Filament\Resources\Events\Pages\ZuschussAntrag;
 use App\Filament\Resources\Events\RelationManagers\FotosRelationManager;
 use App\Filament\Resources\Events\RelationManagers\QuestionsRelationManager;
@@ -51,13 +52,13 @@ class EventResource extends Resource
         $query = parent::getEloquentQuery();
         $user = Filament::auth()->user();
 
-        if (! $user || $user->isVerwaltung() || $user->hasRole('vorstand')) {
+        if (! $user || $user->isRedaktion() || $user->hasRole('vorstand')) {
             return $query;
         }
 
         return $query->where(fn (Builder $q) => $q
-            ->whereIn('stage', $user->scopeKeysFor('stufenadmin'))
-            ->orWhereIn('section', $user->scopeKeysFor('sektionsadmin')));
+            ->whereIn('stage', [...$user->scopeKeysFor('stufenadmin'), ...$user->scopeKeysFor('veranstaltungen', 'stage')])
+            ->orWhereIn('section', [...$user->scopeKeysFor('sektionsadmin'), ...$user->scopeKeysFor('veranstaltungen', 'section')]));
     }
 
     public static function form(Schema $schema): Schema
@@ -84,6 +85,7 @@ class EventResource extends Resource
         return [
             'index' => ListEvents::route('/'),
             'create' => CreateEvent::route('/create'),
+            'view' => ViewEvent::route('/{record}'),
             'edit' => EditEvent::route('/{record}/edit'),
             'zuschuss' => ZuschussAntrag::route('/{record}/zuschuss'),
         ];

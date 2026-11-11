@@ -49,6 +49,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Auth\Access\Response;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Mail;
@@ -75,9 +76,32 @@ class RegistrationsRelationManager extends RelationManager
 
     protected static ?string $pluralModelLabel = 'Anmeldungen';
 
+    /** Nur lesen (docs/rollen.md): diese Aktionen bleiben, alle anderen sind gesperrt. */
+    public const NUR_LESEN = ['details'];
+
     public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
     {
-        return (bool) Filament::auth()->user()?->can('manageParticipants', $ownerRecord);
+        return (bool) Filament::auth()->user()?->can('viewParticipants', $ownerRecord);
+    }
+
+    private function darfVerwalten(): bool
+    {
+        return (bool) Filament::auth()->user()?->can('manageParticipants', $this->getOwnerRecord());
+    }
+
+    /**
+     * Wer Teilnehmende nur ansehen darf, bekommt keine Schreibaktionen
+     * (bestätigen, eintragen, Mails, Export, Zuschuss …) – auch nicht per
+     * manipulierter Anfrage: nicht erlaubte Aktionen sind gesperrt, nicht nur
+     * ausgeblendet.
+     */
+    public function getDefaultActionAuthorizationResponse(Action $action): ?Response
+    {
+        if (! $this->darfVerwalten() && ! in_array($action->getName(), self::NUR_LESEN, true)) {
+            return Response::deny('Nur lesen: Teilnehmende verwaltet die Veranstaltungsleitung.');
+        }
+
+        return parent::getDefaultActionAuthorizationResponse($action);
     }
 
     /** Zahl im Reiter: aktive Anmeldungen (bestätigt, Warteliste, unbestätigt). */
@@ -90,7 +114,7 @@ class RegistrationsRelationManager extends RelationManager
 
     public function isReadOnly(): bool
     {
-        return false;
+        return ! $this->darfVerwalten();
     }
 
     public function table(Table $table): Table

@@ -13,26 +13,26 @@ class GruppierungPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->isVerwaltung();
+        return $user->isRedaktion();
     }
 
     public function view(User $user, Gruppierung $gruppierung): bool
     {
-        return $user->isVerwaltung();
+        return $user->isRedaktion();
     }
 
     public function create(User $user): bool
     {
-        return $user->isVerwaltung();
+        return $user->isRedaktion();
     }
 
     public function update(User $user, Gruppierung $gruppierung): bool
     {
-        return $user->isVerwaltung();
+        return $user->isRedaktion();
     }
 
     public function delete(User $user, Gruppierung $gruppierung): bool
     {
-        return $user->isVerwaltung();
+        return $user->isRedaktion();
     }
 }

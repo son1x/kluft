@@ -208,6 +208,8 @@ class NachrichtenEingangTest extends TestCase
     #[TestDox('Stufenadmins sehen die Fragen zu ihren Veranstaltungen gebündelt – im Eingang und als Reiter „Fragen“ bei der Veranstaltung')]
     public function test_fragen_fuer_veranstaltungsverantwortliche(): void
     {
+        // Stufenadmins bearbeiten Veranstaltungen (Standard; im DV lesen sie nur, s. RollenModellTest).
+        config(['dpsg.rechte.leitung_veranstaltungen' => 'bearbeiten']);
         $termin = fn (string $slug, string $stage) => Event::query()->create([
             'title' => ucfirst($slug), 'slug' => $slug, 'location' => 'Trier', 'status' => 'open', 'stage' => $stage,
             'starts_at' => now()->addMonth()->setTime(10, 0), 'ends_at' => now()->addMonth()->setTime(17, 0), 'contact_email' => $stage.'@example.org',

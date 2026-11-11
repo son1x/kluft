@@ -48,7 +48,7 @@ class PostResource extends Resource
         $query = parent::getEloquentQuery();
         $user = Filament::auth()->user();
 
-        if (! $user || $user->isVerwaltung() || $user->hasRole('vorstand')) {
+        if (! $user || $user->isRedaktion() || $user->hasRole('vorstand')) {
             return $query;
         }
 

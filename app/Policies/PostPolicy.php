@@ -45,7 +45,7 @@ class PostPolicy
      */
     public function publish(User $user): bool
     {
-        if ($user->isVerwaltung()) {
+        if ($user->isRedaktion()) {
             return true;
         }
 
@@ -65,7 +65,7 @@ class PostPolicy
             return false;
         }
 
-        if ($user->isVerwaltung() || $user->hasRole('vorstand')) {
+        if ($user->isRedaktion() || $user->hasRole('vorstand')) {
             return true;
         }
 
@@ -75,7 +75,7 @@ class PostPolicy
 
     private function canManage(User $user, Post $post): bool
     {
-        if ($user->isVerwaltung() || $user->hasRole('vorstand')) {
+        if ($user->isRedaktion() || $user->hasRole('vorstand')) {
             return true;
         }
 

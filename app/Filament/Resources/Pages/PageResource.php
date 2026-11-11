@@ -42,7 +42,7 @@ class PageResource extends Resource
         $query = parent::getEloquentQuery();
         $user = Filament::auth()->user();
 
-        if (! $user || $user->isVerwaltung()) {
+        if (! $user || $user->isRedaktion()) {
             return $query;
         }
 

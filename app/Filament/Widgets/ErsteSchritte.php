@@ -44,12 +44,12 @@ class ErsteSchritte extends Widget
 
         $bereich = array_filter([
             PageResource::canCreate() || $user->hasRole('vorstand') ? ['Seiten pflegen', PageResource::getUrl('index'), match (true) {
-                $user->isVerwaltung() => 'Alle Seiten der Website bearbeiten, anlegen und veröffentlichen.',
+                $user->isRedaktion() => 'Alle Seiten der Website bearbeiten, anlegen und veröffentlichen.',
                 PageResource::canCreate() => 'Seiten deiner Stufe bzw. deines Fachbereichs bearbeiten und veröffentlichen.',
                 default => 'Die Vorstandsseite und ihre Unterseiten bearbeitest du selbst.',
             }] : null,
             EventResource::canCreate() ? ['Veranstaltung anlegen', EventResource::getUrl('create'), 'Mit Online-Anmeldung, Teilnahmebeitrag und Teilnehmerliste.'] : null,
-            UserResource::canViewAny() && ! $user->isVerwaltung() ? ['Autor:innen freischalten', UserResource::getUrl('index'), 'Wer für deinen Bereich schreiben soll, bekommt von dir die Rolle Autor:in.'] : null,
+            UserResource::canViewAny() && ! $user->isRedaktion() ? ['Autor:innen freischalten', UserResource::getUrl('index'), 'Wer für deinen Bereich schreiben soll, bekommt von dir die Rolle Autor:in.'] : null,
         ]);
 
         return [

@@ -164,3 +164,23 @@ personensorgeberechtigte Person und auf Wunsch leere Kästchen für die
 Anwesenheit je Tag. Mit dem Hinweis „Vertraulich, nach der Veranstaltung
 vernichten“; jeder Abruf wird protokolliert („Liste für unterwegs (PDF)
 abgerufen“).
+
+## Küchenliste (PDF)
+
+Unter „Teilnehmende“ → **Küchenliste (PDF)**: zum Aushängen in der Küche.
+Datensparsam – nur, was die Küche braucht:
+
+- **Essen je Tag**: bestätigte Teilnehmende je Tag (ohne Tage-Auswahl zählt
+  die ganze Zeit; Warteliste nicht).
+- **Verpflegung je Tag**: Verteilung jedes gewählten Auswahlfelds (z. B.
+  „Esse alles / Vegetarisch / Vegan“), bei mehrtägigen Veranstaltungen je Tag.
+- **Besonderheiten**: nur Personen, die etwas Besonderes angegeben haben
+  (Freitext ausgefüllt oder bei Auswahlfeldern nicht die erste Antwort), mit
+  Vorname und Anfangsbuchstabe (auf Wunsch voller Name) und ggf. Stamm.
+
+Vorausgewählt sind „Verpflegung“ und Felder, deren Beschriftung nach Essen
+klingt (Allergie, Unverträglichkeit, vegan …); änderbar im Dialog. Keine
+E-Mail, kein Telefon, kein Geburtsjahr, keine anderen Angaben. Sensible Felder
+dürfen hinein – genau dafür sind sie da –, die Liste trägt den Hinweis „Nur in
+der Küche aushängen, nach der Veranstaltung vernichten“. Nur mit „Veranstaltungen
+bearbeiten“; jeder Abruf wird protokolliert („Küchenliste heruntergeladen“).

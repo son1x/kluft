@@ -13,6 +13,7 @@ use App\Models\RegistrationDocument;
 use App\Models\User;
 use App\Models\Zahlung;
 use App\Services\EventRegistrations;
+use App\Services\KuechenlistePdf;
 use App\Services\Mitglieder\MitgliederAbgleich;
 use App\Services\Mitglieder\Mitgliederverzeichnis;
 use App\Services\Mitglieder\MitgliederverzeichnisException;
@@ -462,6 +463,31 @@ class RegistrationsRelationManager extends RelationManager
                         abort_unless(Filament::auth()->user()?->can('manageParticipants', $event), 403);
                         AuditLogger::log('event.liste', Filament::auth()->user(), Event::class, $event->getKey(), request());
                         $pdf = $liste->pdf($event, array_values((array) ($data['felder'] ?? [])), (bool) $data['anwesenheit'], (bool) $data['warteliste']);
+
+                        return response()->streamDownload(fn () => print ($pdf), $liste->dateiname($event), ['Content-Type' => 'application/pdf']);
+                    }),
+                Action::make('kuechenliste')
+                    ->label('Küchenliste (PDF)')
+                    ->icon('heroicon-o-cake')
+                    ->modalHeading('Küchenliste')
+                    ->modalDescription('Zum Aushängen in der Küche: Anzahl Essen je Tag, Verpflegung und nur die Personen mit Besonderheiten – ohne Kontaktdaten und andere Angaben. Enthält ggf. Gesundheitsangaben; der Abruf wird protokolliert.')
+                    ->modalSubmitActionLabel('PDF herunterladen')
+                    ->fillForm(fn () => [
+                        'felder' => KuechenlistePdf::standardFelder($this->getOwnerRecord()),
+                        'voller_name' => false,
+                    ])
+                    ->schema([
+                        CheckboxList::make('felder')->label('Angaben für die Küche')->columns(2)
+                            ->options(fn () => KuechenlistePdf::felder($this->getOwnerRecord()))
+                            ->helperText('Vorausgewählt ist, was nach Essen klingt. Personen erscheinen nur, wenn sie hier etwas Besonderes angegeben haben (bei Auswahlfeldern: nicht die erste Antwort, z. B. „Esse alles“).'),
+                        Toggle::make('voller_name')->label('Voller Nachname')
+                            ->helperText('Sonst Vorname und Anfangsbuchstabe (z. B. „Mia M.“) – reicht in der Küche meist.'),
+                    ])
+                    ->action(function (array $data, KuechenlistePdf $liste): StreamedResponse {
+                        $event = $this->getOwnerRecord();
+                        abort_unless(Filament::auth()->user()?->can('manageParticipants', $event), 403);
+                        AuditLogger::log('event.kuechenliste', Filament::auth()->user(), Event::class, $event->getKey(), request());
+                        $pdf = $liste->pdf($event, array_values((array) ($data['felder'] ?? [])), (bool) ($data['voller_name'] ?? false));
 
                         return response()->streamDownload(fn () => print ($pdf), $liste->dateiname($event), ['Content-Type' => 'application/pdf']);
                     }),

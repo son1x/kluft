@@ -81,7 +81,7 @@ class RollenAblaufTest extends TestCase
         $this->actingAs($admin);
 
         Livewire::test(EditUser::class, ['record' => $kim->getRouteKey()])
-            ->fillForm(['roleAssignments' => [['assignment' => 'vorstand|global|', 'gueltig_bis' => '2027-03-31']]])
+            ->fillForm(['roleAssignments' => [['rolle' => 'vorstand', 'gueltig_bis' => '2027-03-31']]])
             ->call('save')->assertHasNoFormErrors();
         $this->assertSame('2027-03-31', $kim->roleAssignments()->sole()->gueltig_bis?->toDateString());
 

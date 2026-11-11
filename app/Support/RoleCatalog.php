@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Models\RoleAssignment;
 use App\Models\User;
+use Illuminate\Support\Str;
 
 /**
  * Alle vergebbaren Rollen-Zuweisungen (Rolle + Scope) und wer welche
@@ -88,6 +89,72 @@ class RoleCatalog
         $options['superadmin|global|'] = 'Super-Admin';
 
         return $options;
+    }
+
+    /**
+     * Auswahl gruppiert für Select-Felder: Rollen für die ganze Website
+     * zuerst, dann Bereiche, Autor:innen, eigene Rollen, Technik.
+     *
+     * @param  array<string, string>  $optionen  Schlüssel => Beschriftung (z. B. aus grantableBy())
+     * @return array<string, array<string, string>>
+     */
+    public static function gruppiert(array $optionen): array
+    {
+        $gruppen = ['Ganze Website' => [], 'Leitung je Stufe/Sektion' => [], 'Veranstaltungen je Bereich' => [],
+            'Autor:innen' => [], 'Eigene Rollen' => [], 'Technik' => []];
+        foreach ($optionen as $key => $label) {
+            $role = self::decode($key)['role'];
+            $gruppe = match (true) {
+                in_array($role, ['admin', 'superadmin'], true) => 'Technik',
+                Rechte::istEigen($role) => 'Eigene Rollen',
+                in_array($role, ['stufenadmin', 'sektionsadmin'], true) => 'Leitung je Stufe/Sektion',
+                $role === 'veranstaltungen' => 'Veranstaltungen je Bereich',
+                $role === 'autor' => 'Autor:innen',
+                default => 'Ganze Website',
+            };
+            $gruppen[$gruppe][$key] = $label;
+        }
+
+        return array_filter($gruppen);
+    }
+
+    /**
+     * Zweistufige Auswahl (erst Rolle, dann Bereich) aus kombinierten
+     * Schlüsseln „rolle|typ|bereich“. Rollen in der Reihenfolge von
+     * gruppiert(); Bereiche je Rolle nach Stufen und Sektionen gruppiert.
+     * Rollen nur für die ganze Website haben keine Bereiche.
+     *
+     * @param  array<string, string>  $optionen
+     * @return array{rollen: array<string, string>, bereiche: array<string, array<string, array<string, string>>>}
+     */
+    public static function rollenAuswahl(array $optionen): array
+    {
+        $stufen = array_keys((array) config('dpsg.stages'));
+        $rollen = [];
+        $bereiche = [];
+        foreach (array_merge(...array_values(self::gruppiert($optionen))) as $key => $label) {
+            ['role' => $role, 'scope_type' => $typ, 'scope_key' => $bereich] = self::decode($key);
+            if ($typ === 'global') {
+                $rollen[$role] = $label;
+
+                continue;
+            }
+            $rollen[$role] ??= trim(Str::before(Str::before($label, ' – '), ' ('));
+            $gruppe = match (true) {
+                $bereich === null => 'Allgemein',
+                $typ === 'stage' || in_array($bereich, $stufen, true) => 'Stufen',
+                default => 'Sektionen',
+            };
+            $bereiche[$role][$gruppe][$typ.'|'.$bereich] = $bereich === null ? 'ohne Zuordnung' : Str::after($label, ' – ');
+        }
+
+        return ['rollen' => $rollen, 'bereiche' => $bereiche];
+    }
+
+    /** Kombinierter Schlüssel aus den beiden Feldern der Auswahl. */
+    public static function ausAuswahl(?string $rolle, ?string $bereich): string
+    {
+        return $rolle.'|'.(filled($bereich) ? $bereich : 'global|');
     }
 
     /**

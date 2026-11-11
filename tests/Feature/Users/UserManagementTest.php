@@ -52,7 +52,7 @@ class UserManagementTest extends TestCase
                 'name' => 'Neue Referentin',
                 'email' => 'Neue.Referentin@DPSG-Trier.de',
                 'status' => 'active',
-                'roleAssignments' => [['assignment' => 'stufenadmin|stage|woelflinge']],
+                'roleAssignments' => [['rolle' => 'stufenadmin', 'bereich' => 'stage|woelflinge']],
             ])
             ->call('create')
             ->assertHasNoFormErrors();
@@ -73,7 +73,7 @@ class UserManagementTest extends TestCase
         $undo = Repeater::fake();
 
         Livewire::test(EditUser::class, ['record' => $pending->getRouteKey()])
-            ->fillForm(['roleAssignments' => [['assignment' => 'autor|own|biber']]])
+            ->fillForm(['roleAssignments' => [['rolle' => 'autor', 'bereich' => 'own|biber']]])
             ->call('save')
             ->assertHasNoFormErrors();
         $undo();
@@ -93,7 +93,7 @@ class UserManagementTest extends TestCase
 
         Livewire::test(EditUser::class, ['record' => $person->getRouteKey()])
             ->assertFormSet(['roleAssignments' => [
-                'record-'.$person->roleAssignments->firstWhere('scope_key', 'biber')->id => ['assignment' => 'autor|own|biber', 'gueltig_bis' => null],
+                'record-'.$person->roleAssignments->firstWhere('scope_key', 'biber')->id => ['rolle' => 'autor', 'bereich' => 'own|biber', 'gueltig_bis' => null],
             ]])
             ->fillForm(['roleAssignments' => []])
             ->call('save')
@@ -118,7 +118,7 @@ class UserManagementTest extends TestCase
             ->fillForm([
                 'name' => 'Versuch',
                 'email' => 'versuch@dpsg-trier.de',
-                'roleAssignments' => [['assignment' => 'verwaltung|global|']],
+                'roleAssignments' => [['rolle' => 'verwaltung']],
             ])
             ->call('create')
             ->assertHasFormErrors();

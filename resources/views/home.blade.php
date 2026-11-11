@@ -19,9 +19,9 @@
             <div class="absolute inset-0 bg-gradient-to-r from-black/55 via-black/25 to-transparent" aria-hidden="true"></div>
             @if ($titelbild['credit'])
                 @if ($titelbild['link'])
-                    <a href="{{ $titelbild['link'] }}" target="_blank" rel="noopener" class="absolute bottom-1 right-2 max-w-[55%] bg-black/50 px-1 text-right text-[10px] leading-tight text-white hover:underline md:bottom-9 md:max-w-none">© {{ $titelbild['credit'] }}</a>
+                    <a href="{{ $titelbild['link'] }}" target="_blank" rel="noopener" class="absolute bottom-1 right-2 max-w-[55%] bg-black/50 px-1 text-right text-[11px] leading-tight text-white hover:underline md:bottom-9 md:max-w-none">© {{ $titelbild['credit'] }}</a>
                 @else
-                    <span class="absolute bottom-1 right-2 max-w-[55%] bg-black/50 px-1 text-right text-[10px] leading-tight text-white md:bottom-9 md:max-w-none">© {{ $titelbild['credit'] }}</span>
+                    <span class="absolute bottom-1 right-2 max-w-[55%] bg-black/50 px-1 text-right text-[11px] leading-tight text-white md:bottom-9 md:max-w-none">© {{ $titelbild['credit'] }}</span>
                 @endif
             @endif
         @else
@@ -75,7 +75,7 @@
                     </p>
                 </div>
                 {{-- Visitenkarte (Ausbaustufe 1): zum Kontaktformular statt zur Seite des Vorstands. --}}
-                <a href="{{ \App\Support\Site::officeUrl() }}" class="self-start border border-dpsg-rot px-4 py-2 text-dpsg-rot hover:bg-dpsg-rot hover:text-white">{{ \App\Support\Ausbau::gruppen() ? \App\Support\Site::office('zu', capitalize: true) : 'Kontakt aufnehmen' }}</a>
+                <a href="{{ \App\Support\Site::officeUrl() }}" class="inline-flex min-h-11 items-center self-start border border-dpsg-rot px-4 py-2 text-dpsg-rot hover:bg-dpsg-rot hover:text-white">{{ \App\Support\Ausbau::gruppen() ? \App\Support\Site::office('zu', capitalize: true) : 'Kontakt aufnehmen' }}</a>
             </aside>
         </div>
     </section>
@@ -113,7 +113,7 @@
                                 <p class="mt-2"><span class="inline-flex items-center gap-1 rounded-full bg-dpsg-blau px-2 py-0.5 text-xs font-bold text-white"><x-heroicon-o-ticket class="h-3.5 w-3.5" aria-hidden="true" />Anmeldung offen</span></p>
                             @endif
                             <p class="mt-3 flex-1">{{ $post->teaser }}</p>
-                            <a href="{{ url('/aktuelles/'.$post->slug) }}" class="mt-5 self-start border border-dpsg-rot px-3 py-1 text-sm text-dpsg-rot hover:bg-dpsg-rot hover:text-white">
+                            <a href="{{ url('/aktuelles/'.$post->slug) }}" class="mt-5 self-start inline-flex min-h-11 items-center border border-dpsg-rot px-4 py-2 text-sm text-dpsg-rot hover:bg-dpsg-rot hover:text-white">
                                 Mehr<span class="sr-only"> zu „{{ $post->title }}“</span>
                             </a>
                         </div>
@@ -122,7 +122,7 @@
             </div>
         @endif
 
-        <a href="{{ url('/aktuelles') }}" class="mt-8 inline-block border border-dpsg-rot px-4 py-2 text-dpsg-rot hover:bg-dpsg-rot hover:text-white">Alle Meldungen</a>
+        <a href="{{ url('/aktuelles') }}" class="mt-8 inline-flex min-h-11 items-center border border-dpsg-rot px-4 py-2 text-dpsg-rot hover:bg-dpsg-rot hover:text-white">Alle Meldungen</a>
     </section>
     @endif
 
@@ -170,13 +170,13 @@
             </p>
             <div class="mt-6 flex flex-wrap gap-3">
                 @if (Route::has('gruppierungen.index'))
-                    <a href="{{ route('gruppierungen.index') }}" class="inline-block bg-white px-5 py-2 font-bold text-dpsg-blau hover:bg-dpsg-hellbeige">Stamm in der Nähe finden</a>
-                    <a href="{{ url('/kontakt') }}" class="inline-block border border-white px-5 py-2 font-bold text-white hover:bg-white hover:text-dpsg-blau">Kontakt aufnehmen</a>
+                    <a href="{{ route('gruppierungen.index') }}" class="inline-flex min-h-11 items-center bg-white px-5 py-2 font-bold text-dpsg-blau hover:bg-dpsg-hellbeige">Stamm in der Nähe finden</a>
+                    <a href="{{ url('/kontakt') }}" class="inline-flex min-h-11 items-center border border-white px-5 py-2 font-bold text-white hover:bg-white hover:text-dpsg-blau">Kontakt aufnehmen</a>
                 @else
                     {{-- Stammes-Website: direkt zum Schnuppern anfragen. --}}
-                    <a href="{{ url('/kontakt') }}" class="inline-block bg-white px-5 py-2 font-bold text-dpsg-blau hover:bg-dpsg-hellbeige">Schnupperstunde anfragen</a>
+                    <a href="{{ url('/kontakt') }}" class="inline-flex min-h-11 items-center bg-white px-5 py-2 font-bold text-dpsg-blau hover:bg-dpsg-hellbeige">Schnupperstunde anfragen</a>
                     @if ($leiterUrl = \App\Support\Leitergewinnung::url())
-                        <a href="{{ $leiterUrl }}" class="inline-block border border-white px-5 py-2 font-bold text-white hover:bg-white hover:text-dpsg-blau">{{ \App\Support\Leitergewinnung::TITEL }}</a>
+                        <a href="{{ $leiterUrl }}" class="inline-flex min-h-11 items-center border border-white px-5 py-2 font-bold text-white hover:bg-white hover:text-dpsg-blau">{{ \App\Support\Leitergewinnung::TITEL }}</a>
                     @endif
                 @endif
             </div>
@@ -197,7 +197,7 @@
                             @endif
                             <h2 class="font-serif text-xl font-bold">{{ $highlight->title }}</h2>
                             <p class="mt-3 flex-1">{{ \Illuminate\Support\Str::limit(trim(\Illuminate\Support\Str::before(strip_tags($highlight->body), '[TODO')), 260) }}</p>
-                            <a href="{{ url('/'.$highlight->slug) }}" class="mt-5 self-start border border-dpsg-rot px-3 py-1 text-sm text-dpsg-rot hover:bg-dpsg-rot hover:text-white">{{ $tile['button'] ?? 'Mehr erfahren' }}</a>
+                            <a href="{{ url('/'.$highlight->slug) }}" class="mt-5 self-start inline-flex min-h-11 items-center border border-dpsg-rot px-4 py-2 text-sm text-dpsg-rot hover:bg-dpsg-rot hover:text-white">{{ $tile['button'] ?? 'Mehr erfahren' }}</a>
                         </article>
                     @endif
                 @endforeach

@@ -38,6 +38,38 @@ for (const vp of [{ name: 'Desktop', width: 1280, height: 900 }, { name: 'Handy'
     }
     await ctx.close();
 }
+
+// 1b. Handy nach Apple HIG: keine seitliche Verschiebung auf 320 px (iPhone SE),
+// Eingabefelder ≥ 16 px (sonst zoomt Safari), Tippflächen ≥ 44 pt (nur Hinweis).
+const hig = { breit: [], zoom: [], klein: new Set() };
+{
+    const ctx = await browser.newContext({ viewport: { width: 320, height: 568 }, hasTouch: true, isMobile: true });
+    await ctx.addInitScript(() => localStorage.setItem('dpsg-consent-v1', JSON.stringify({ prefs: { stats: false, external: false }, savedAt: Date.now() })));
+    for (const path of PAGES) {
+        const page = await ctx.newPage();
+        await page.goto(SITE + path, { waitUntil: 'networkidle' }).catch(() => {});
+        const r = await page.evaluate(() => {
+            const sichtbar = (el) => { const b = el.getBoundingClientRect(); return b.width > 0 && b.height > 0 && getComputedStyle(el).visibility !== 'hidden'; };
+            const zoom = [...document.querySelectorAll('input:not([type=checkbox]):not([type=radio]):not([type=hidden]), select, textarea')]
+                .filter((el) => sichtbar(el) && parseFloat(getComputedStyle(el).fontSize) < 16).map((el) => el.name || el.id || el.tagName);
+            const klein = [...document.querySelectorAll('button, input[type=submit], summary, nav a')]
+                .filter((el) => sichtbar(el) && !el.closest('.maplibregl-ctrl') && !el.classList.contains('sr-only'))
+                .filter((el) => { const b = el.getBoundingClientRect(); return b.height < 43.5 || b.width < 43.5; })
+                .map((el) => (el.getAttribute('aria-label') || el.innerText || el.tagName).trim().slice(0, 30));
+            return { breite: document.documentElement.scrollWidth, zoom, klein };
+        });
+        if (r.breite > 320) hig.breit.push(`${path} (${r.breite} px)`);
+        r.zoom.forEach((z) => hig.zoom.push(`${path}: ${z}`));
+        r.klein.forEach((k) => hig.klein.add(`${path}: ${k}`));
+        await page.close();
+    }
+    await ctx.close();
+}
+summary('\n## Handy (Apple HIG, 320 px)');
+summary(hig.breit.length ? `- **Seite breiter als der Bildschirm:** ${hig.breit.join(', ')}` : '- Keine Seite breiter als 320 px.');
+summary(hig.zoom.length ? `- **Felder unter 16 px (Safari zoomt):** ${hig.zoom.join(', ')}` : '- Alle Eingabefelder mit mindestens 16 px.');
+summary(hig.klein.size ? `- Hinweis – Tippflächen unter 44 pt: ${[...hig.klein].slice(0, 15).join(', ')}` : '- Alle Knöpfe mit mindestens 44 pt.');
+console.log('HIG: zu breit', hig.breit, 'Feldschrift', hig.zoom, 'kleine Ziele', hig.klein.size);
 await browser.close();
 
 summary('## Barrierefreiheit (axe, WCAG 2.2 AA)');
@@ -67,5 +99,5 @@ for (const path of LIGHTHOUSE_PAGES) {
 }
 await chrome.kill();
 
-// Rot, wenn es Verstöße gibt oder die Barrierefreiheit unter 95 fällt.
-process.exit(Object.keys(violations).length > 0 || lowA11y ? 1 : 0);
+// Rot bei axe-Verstößen, Barrierefreiheit unter 95, seitlichem Überlauf oder zu kleiner Feldschrift.
+process.exit(Object.keys(violations).length > 0 || lowA11y || hig.breit.length > 0 || hig.zoom.length > 0 ? 1 : 0);

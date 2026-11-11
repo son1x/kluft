@@ -86,7 +86,8 @@
                 </ul>
             </nav>
 
-            <button type="button" class="md:hidden" @click="navOpen = !navOpen" :aria-expanded="navOpen" aria-controls="mobile-nav">
+            {{-- 44×44-Tippfläche (Apple HIG), das Symbol bleibt 28 px. --}}
+            <button type="button" class="-mr-2 flex h-11 w-11 items-center justify-center md:hidden" @click="navOpen = !navOpen" :aria-expanded="navOpen" aria-controls="mobile-nav">
                 <span class="sr-only">Menü</span>
                 <x-heroicon-o-bars-3 class="h-7 w-7" x-show="!navOpen" />
                 <x-heroicon-o-x-mark class="h-7 w-7" x-show="navOpen" x-cloak />
@@ -101,8 +102,8 @@
                 <li class="px-4 pb-3">
                     <form method="get" action="{{ route('suche') }}" role="search" class="flex gap-2">
                         <label for="suche-mobil" class="sr-only">Suchbegriff</label>
-                        <input id="suche-mobil" type="search" name="q" maxlength="100" placeholder="Suchen …" class="min-w-0 flex-1 border border-dpsg-mittelbeige bg-white px-3 py-2 font-normal" />
-                        <button type="submit" class="bg-dpsg-blau px-4 py-2 text-white">Los</button>
+                        <input id="suche-mobil" type="search" name="q" maxlength="100" placeholder="Suchen …" class="min-h-11 min-w-0 flex-1 border border-dpsg-mittelbeige bg-white px-3 py-2 font-normal" />
+                        <button type="submit" class="min-h-11 bg-dpsg-blau px-4 py-2 text-white">Los</button>
                     </form>
                 </li>
                 @foreach ($navPages ?? [] as $navPage)
@@ -111,7 +112,7 @@
                         @if ($navPage->navChildren->isNotEmpty())
                             <ul class="-mt-2 pb-2 font-normal">
                                 @foreach ($navPage->navChildren as $child)
-                                    <li><a href="{{ url('/'.$child->slug) }}" @class(['block py-1.5 pr-4 pl-8', 'text-dpsg-rot font-bold' => request()->is($child->slug)])>{{ $child->title }}</a></li>
+                                    <li><a href="{{ url('/'.$child->slug) }}" @class(['block py-2.5 pr-4 pl-8', 'text-dpsg-rot font-bold' => request()->is($child->slug)])>{{ $child->title }}</a></li>
                                 @endforeach
                             </ul>
                         @endif
@@ -123,10 +124,10 @@
                         @if (\App\Support\Ausbau::anmeldungen() || \App\Support\Site::kalenderUnterTerminen())
                             <ul class="-mt-2 pb-2 font-normal">
                                 @if (\App\Support\Site::kalenderUnterTerminen())
-                                    <li><a href="{{ url('/kalender') }}" @class(['block py-1.5 pr-4 pl-8', 'text-dpsg-rot font-bold' => request()->is('kalender')])>Kalender</a></li>
+                                    <li><a href="{{ url('/kalender') }}" @class(['block py-2.5 pr-4 pl-8', 'text-dpsg-rot font-bold' => request()->is('kalender')])>Kalender</a></li>
                                 @endif
                                 @if (\App\Support\Ausbau::anmeldungen())
-                                    <li><a href="{{ url('/meine-anmeldungen') }}" @class(['block py-1.5 pr-4 pl-8', 'text-dpsg-rot font-bold' => request()->is('meine-anmeldungen*')])>Meine Anmeldungen</a></li>
+                                    <li><a href="{{ url('/meine-anmeldungen') }}" @class(['block py-2.5 pr-4 pl-8', 'text-dpsg-rot font-bold' => request()->is('meine-anmeldungen*')])>Meine Anmeldungen</a></li>
                                 @endif
                             </ul>
                         @endif
@@ -277,8 +278,8 @@
         <footer class="mt-20 bg-dpsg-blau text-white">
             <div class="mx-auto flex max-w-6xl flex-wrap gap-x-6 gap-y-2 px-4 py-4 text-sm">
                 <span>© {{ date('Y') }} {{ config('dpsg.contact.name') }}</span>
-                <a href="{{ url('/impressum') }}" class="hover:underline">Impressum</a>
-                <a href="{{ url('/datenschutz') }}" class="hover:underline">Datenschutz</a>
+                <a href="{{ url('/impressum') }}" class="inline-flex min-h-11 items-center hover:underline">Impressum</a>
+                <a href="{{ url('/datenschutz') }}" class="inline-flex min-h-11 items-center hover:underline">Datenschutz</a>
             </div>
         </footer>
     @else
@@ -375,8 +376,8 @@
         <div class="bg-dpsg-blau text-white">
             <div class="mx-auto flex max-w-6xl flex-wrap gap-x-6 gap-y-2 px-4 py-4 text-sm">
                 <span>© {{ date('Y') }} {{ $contact['name'] }}</span>
-                <a href="{{ url('/impressum') }}" class="hover:underline">Impressum</a>
-                <a href="{{ url('/datenschutz') }}" class="hover:underline">Datenschutz</a>
+                <a href="{{ url('/impressum') }}" class="inline-flex min-h-11 items-center hover:underline">Impressum</a>
+                <a href="{{ url('/datenschutz') }}" class="inline-flex min-h-11 items-center hover:underline">Datenschutz</a>
                 <span class="sm:ml-auto">Stufen-Maskottchen, Rover- und Inklusions-Lilie: DPSG (dpsg.de, rover.de)</span>
             </div>
         </div>

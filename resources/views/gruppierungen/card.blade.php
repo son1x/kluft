@@ -49,7 +49,7 @@
 
     @if ($g->hasPosition())
         {{-- Erst per JavaScript sichtbar (ohne Karte sinnlos). --}}
-        <button type="button" data-show-on-map="{{ $g->id }}" hidden class="mt-3 border border-dpsg-rot px-3 py-1 text-sm text-dpsg-rot hover:bg-dpsg-rot hover:text-white">Auf der Karte zeigen</button>
+        <button type="button" data-show-on-map="{{ $g->id }}" hidden class="mt-3 inline-flex min-h-11 items-center border border-dpsg-rot px-4 py-2 text-sm text-dpsg-rot hover:bg-dpsg-rot hover:text-white">Auf der Karte zeigen</button>
         @if ($g->hasApproximatePosition())
             <p class="mt-2 text-xs text-text-secondary">Standort ungefähr (Ortsmitte)</p>
         @endif

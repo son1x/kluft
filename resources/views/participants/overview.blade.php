@@ -113,7 +113,7 @@
                         @endif
 
                         @if ($registration->purge_at && $registration->status !== 'pending')
-                            <p class="mt-4 text-xs text-text-secondary">Wird am {{ $registration->purge_at->format('d.m.Y') }} gelöscht – speichere Dokumente, die du behalten möchtest.</p>
+                            <p class="mt-4 text-sm text-text-secondary">Wird am {{ $registration->purge_at->format('d.m.Y') }} gelöscht – speichere Dokumente, die du behalten möchtest.</p>
                         @endif
                     </li>
                 @endforeach

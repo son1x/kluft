@@ -78,7 +78,7 @@
                                 <p class="mt-1 text-sm">
                                     <a href="{{ \App\Support\Mailformular::href($person->publicEmail() ?: config('dpsg.contact.email')) }}" class="break-all text-dpsg-rot underline">{{ $person->publicEmail() ?: config('dpsg.contact.email') }}</a>
                                 </p>
-                                <a href="{{ $person->pageUrl() }}" class="mt-1 inline-block text-sm underline hover:text-dpsg-rot">Mehr über {{ \Illuminate\Support\Str::before($person->name, ' ') }}</a>
+                                <a href="{{ $person->pageUrl() }}" class="mt-1 inline-flex min-h-11 items-center text-sm underline hover:text-dpsg-rot">Mehr über {{ \Illuminate\Support\Str::before($person->name, ' ') }}</a>
                             </div>
                         </li>
                     @endforeach

@@ -93,7 +93,7 @@
                     </a>
                     <div class="p-5">
                         <p class="text-sm">Lieber regelmäßig kurz informiert? Der <strong>{{ config('dpsg.newsletter.name') }}</strong> ist unser Newsletter mit Terminen und Neuigkeiten aus dem {{ config('dpsg.site.level') }} – direkt ins Postfach.</p>
-                        <a href="{{ route('newsletter.index') }}" class="mt-4 inline-block bg-dpsg-blau px-4 py-2 text-sm font-bold text-white hover:bg-dpsg-rot">Zum {{ config('dpsg.newsletter.name') }}</a>
+                        <a href="{{ route('newsletter.index') }}" class="mt-4 inline-flex min-h-11 items-center bg-dpsg-blau px-4 py-2 text-sm font-bold text-white hover:bg-dpsg-rot">Zum {{ config('dpsg.newsletter.name') }}</a>
                     </div>
                 </aside>
             @endif

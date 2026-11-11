@@ -51,19 +51,19 @@
             </label>
             <button type="submit" class="bg-dpsg-blau px-4 py-2 font-bold text-white hover:bg-dpsg-rot">Filtern</button>
             <div class="ml-auto flex" role="group" aria-label="Ansicht">
-                <a href="{{ route('calendar.index', [...$filter, 'ansicht' => 'liste']) }}" @class(['border border-dpsg-blau px-4 py-2 font-bold', 'bg-dpsg-blau text-white' => $ansicht === 'liste', 'bg-white text-dpsg-blau' => $ansicht !== 'liste']) @if ($ansicht === 'liste') aria-current="page" @endif>Liste</a>
-                <a href="{{ route('calendar.index', [...$filter, 'ansicht' => 'monat']) }}" @class(['border border-dpsg-blau px-4 py-2 font-bold', 'bg-dpsg-blau text-white' => $ansicht === 'monat', 'bg-white text-dpsg-blau' => $ansicht !== 'monat']) @if ($ansicht === 'monat') aria-current="page" @endif>Monat</a>
+                <a href="{{ route('calendar.index', [...$filter, 'ansicht' => 'liste']) }}" @class(['inline-flex min-h-11 items-center border border-dpsg-blau px-4 py-2 font-bold', 'bg-dpsg-blau text-white' => $ansicht === 'liste', 'bg-white text-dpsg-blau' => $ansicht !== 'liste']) @if ($ansicht === 'liste') aria-current="page" @endif>Liste</a>
+                <a href="{{ route('calendar.index', [...$filter, 'ansicht' => 'monat']) }}" @class(['inline-flex min-h-11 items-center border border-dpsg-blau px-4 py-2 font-bold', 'bg-dpsg-blau text-white' => $ansicht === 'monat', 'bg-white text-dpsg-blau' => $ansicht !== 'monat']) @if ($ansicht === 'monat') aria-current="page" @endif>Monat</a>
             </div>
         </form>
 
         {{-- Kalender-Abo (ICS) mit der gewählten Stufe bzw. nur Veranstaltungen (docs/plan-ehrenamt.md Nr. 2). --}}
         @php($abo = route('calendar.ics', array_filter(['stufe' => $stufe, 'kalender' => $kalender === 'veranstaltungen' ? 'veranstaltungen' : null])))
         <details class="mt-3 text-sm">
-            <summary class="cursor-pointer font-bold text-dpsg-blau">Kalender abonnieren{{ $stufe ? ' ('.config("dpsg.stages.{$stufe}.label").')' : '' }}</summary>
+            <summary class="flex min-h-11 cursor-pointer items-center font-bold text-dpsg-blau">Kalender abonnieren{{ $stufe ? ' ('.config("dpsg.stages.{$stufe}.label").')' : '' }}</summary>
             <div class="mt-2 max-w-3xl space-y-2 bg-surface-muted p-4">
                 <p>Die Termine erscheinen dann im Kalender deines Handys oder in Outlook und bleiben von selbst aktuell.</p>
                 <p class="flex flex-wrap gap-3">
-                    <a href="{{ preg_replace('#^https?://#', 'webcal://', $abo) }}" class="bg-dpsg-blau px-4 py-2 font-bold text-white hover:bg-dpsg-rot">Im Kalender abonnieren</a>
+                    <a href="{{ preg_replace('#^https?://#', 'webcal://', $abo) }}" class="inline-flex min-h-11 items-center bg-dpsg-blau px-4 py-2 font-bold text-white hover:bg-dpsg-rot">Im Kalender abonnieren</a>
                     <a href="{{ $abo }}" class="border border-dpsg-blau px-4 py-2 font-bold text-dpsg-blau">ICS-Datei</a>
                 </p>
                 <p class="text-text-secondary">Google Kalender: „Weitere Kalender“ → „Per URL“ und diese Adresse einfügen: <span class="break-all font-mono text-xs">{{ $abo }}</span></p>
@@ -108,7 +108,7 @@
                 <p class="mt-8 text-text-secondary">Keine Termine in den nächsten zwölf Monaten.</p>
             @endforelse
             @if ($events->isNotEmpty())
-                <p class="mt-8 text-sm text-text-secondary">
+                <p class="mt-8 max-w-3xl text-sm text-text-secondary">
                     Die Liste zeigt Termine bis {{ $to->locale('de')->isoFormat('D. MMMM YYYY') }}. Spätere Termine findest du in der
                     <a href="{{ route('calendar.index', [...$filter, 'ansicht' => 'monat', 'monat' => $to->addMonth()->format('Y-m')]) }}" class="text-dpsg-rot underline">Monatsansicht</a>.
                 </p>

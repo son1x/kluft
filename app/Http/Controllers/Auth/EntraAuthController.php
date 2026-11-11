@@ -57,6 +57,9 @@ class EntraAuthController extends Controller
         }
 
         $request->session()->put('entra.flow', 'verzeichnis');
+        // Rückweg, z. B. zur Veranstaltung (Personensuche); nur Seiten im Backend dieser Website.
+        $zurueck = (string) $request->query('zurueck', '');
+        $request->session()->put('entra.zurueck', str_starts_with($zurueck, url('/admin').'/') ? $zurueck : null);
 
         /** @var AbstractProvider $driver */
         $driver = Socialite::driver('microsoft');
@@ -145,7 +148,7 @@ class EntraAuthController extends Controller
 
     private function directoryCallback(Request $request, User $user): RedirectResponse
     {
-        $back = redirect(UserResource::getUrl('create'));
+        $back = redirect($request->session()->pull('entra.zurueck') ?: UserResource::getUrl('create'));
 
         try {
             if ($request->filled('error')) {

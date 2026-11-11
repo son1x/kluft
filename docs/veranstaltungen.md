@@ -94,6 +94,12 @@ standardmäßig an (auch bei bestehenden Veranstaltungen, in allen Instanzen):
 - **Verantwortliche Person informieren:** Feld „Verantwortlich (E-Mail)“ mit
   Vorschlägen aus Benutzer*innen und Leitung & Büro. Neue Veranstaltungen
   tragen die eigene Adresse ein; leer: wer die Veranstaltung angelegt hat.
+- **Suchen (Lupe)** an „Verantwortlich (E-Mail)“ und „Kontaktperson“: Name
+  oder Adresse eintippen, Treffer aus aktiven Benutzerkonten und Personen der
+  Website; **Admins** mit verbundener Verzeichnissuche („mit Microsoft
+  verbinden“, einmal je Sitzung) finden zusätzlich Personen im M365-Verzeichnis.
+  Bei „Verantwortlich“ wird die E-Mail übernommen, bei der Kontaktperson nur
+  der Name – die öffentliche Kontakt-E-Mail bleibt eine Funktionsadresse.
 
 Eine Info-Mail (`AnmeldungInfoMail`) kommt nach der Bestätigung (bestätigt oder
 Warteliste), beim Nachrücken und bei der Abmeldung, nicht schon bei der

@@ -10,6 +10,7 @@ use App\Services\Mitglieder\Mitgliederverzeichnis;
 use App\Services\Mitglieder\NamiVerzeichnis;
 use App\Support\AnmeldeInfos;
 use App\Support\Features;
+use App\Support\PersonenSuche;
 use App\Support\RoleCatalog;
 use App\Support\Slug;
 use App\Support\Teilnahmebeitraege;
@@ -17,6 +18,8 @@ use App\Support\TeilnehmendeNachrichten;
 use App\Support\Testsystem;
 use App\Support\Zuschuesse;
 use App\Support\Zuschuesse\Geber;
+use Closure;
+use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DateTimePicker;
@@ -31,7 +34,9 @@ use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
+use Illuminate\Support\HtmlString;
 
 class EventForm
 {
@@ -121,7 +126,9 @@ class EventForm
                         ->live(),
                     TextInput::make('target_group')->label('Zielgruppe')->placeholder('z. B. Leitende aller Stufen')->maxLength(255),
                     TextInput::make('cost_info')->label('Kostenbeitrag (Info)')->placeholder('z. B. 45 € inkl. Verpflegung')->maxLength(255),
-                    TextInput::make('contact_name')->label('Kontaktperson')->maxLength(255),
+                    TextInput::make('contact_name')->label('Kontaktperson')->maxLength(255)
+                        // Nur der Name; die öffentliche Kontakt-E-Mail bleibt eine Funktionsadresse.
+                        ->suffixAction(self::personSuchen('kontakt', 'Kontaktperson suchen', fn (array $person, Set $set) => $set('contact_name', $person['name']))),
                     TextInput::make('contact_email')->label('Kontakt-E-Mail')->email()->maxLength(255)
                         ->helperText('Bitte eine Funktionsadresse (z. B. woelflinge@'.config('dpsg.site.domain').').'),
                     Fieldset::make('Info-Mails an das Team')
@@ -136,6 +143,7 @@ class EventForm
                                 ->default(fn () => Filament::auth()->user()?->email)
                                 ->placeholder(fn (?Event $record) => $record?->creator?->email ?? Filament::auth()->user()?->email)
                                 ->datalist(fn () => AnmeldeInfos::vorschlaege())
+                                ->suffixAction(self::personSuchen('verantwortlich', 'Verantwortliche Person suchen', fn (array $person, Set $set) => $set('verantwortlich_email', $person['email'])))
                                 ->visible(fn (Get $get) => (bool) $get('info_verantwortlich'))
                                 ->columnSpan(2),
                         ]),
@@ -316,6 +324,44 @@ class EventForm
                             .($get('zuschuss') ? ' Zuschuss: Die Frist muss bis nach der Abrechnung reichen. Die eingereichte Teilnahmeliste und den Verwendungsnachweis bewahrt ihr nach den Vorgaben des Zuschussgebers gesondert auf (oft mehrere Jahre) – nicht hier.' : '')),
                 ]),
         ]);
+    }
+
+    /**
+     * Lupe am Feld: Person aus Benutzern, Personen und – nur für Admins mit
+     * Microsoft-Verbindung – dem M365-Verzeichnis suchen und übernehmen.
+     *
+     * @param  Closure(array{name: string, email: string}, Set): void  $uebernehmen
+     */
+    private static function personSuchen(string $name, string $titel, Closure $uebernehmen): Action
+    {
+        return Action::make('suchen_'.$name)
+            ->label('Suchen')
+            ->icon('heroicon-o-magnifying-glass')
+            ->modalHeading($titel)
+            ->modalSubmitActionLabel('Übernehmen')
+            ->modalWidth('lg')
+            ->schema([
+                Select::make('person')
+                    ->label('Name oder E-Mail')
+                    ->placeholder('Mindestens zwei Buchstaben eintippen …')
+                    ->searchable()
+                    ->required()
+                    ->searchPrompt('Mindestens zwei Buchstaben eintippen')
+                    ->noSearchResultsMessage('Niemand gefunden. Du kannst die Angabe auch von Hand eintragen.')
+                    ->getSearchResultsUsing(fn (string $search) => PersonenSuche::suchen($search, Filament::auth()->user()))
+                    ->getOptionLabelUsing(fn (?string $value) => PersonenSuche::label($value, Filament::auth()->user()))
+                    ->helperText(fn () => match (true) {
+                        PersonenSuche::m365Verbunden(Filament::auth()->user()) => 'Sucht in Benutzern, Personen der Website und im M365-Verzeichnis.',
+                        PersonenSuche::m365Erlaubt(Filament::auth()->user()) => new HtmlString('Sucht in Benutzern und Personen der Website. Für das M365-Verzeichnis zuerst <a href="'.e(route('auth.entra.verzeichnis', ['zurueck' => request()->header('Referer') ?: url()->current()])).'" class="underline">mit Microsoft verbinden</a> (vorher speichern).'),
+                        default => 'Sucht in Benutzern und Personen der Website.',
+                    }),
+            ])
+            ->action(function (array $data, Set $set) use ($uebernehmen) {
+                $person = PersonenSuche::finden($data['person'] ?? null, Filament::auth()->user());
+                if ($person) {
+                    $uebernehmen($person, $set);
+                }
+            });
     }
 
     private static function isGlobal(): bool

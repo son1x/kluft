@@ -28,10 +28,24 @@ Prävention, Datenschutz-Anfragen, Rollen außer Autor:in, Technik.
 - **bearbeiten** (Standard, z. B. Stämme): Stufen- und Sektionsadmins legen
   Veranstaltungen ihres Bereichs an und verwalten die Teilnehmenden.
 - **lesen** (DV Trier): Stufen- und Sektionsadmins sehen Veranstaltungen
-  ihres Bereichs und die Teilnehmendenliste (mit Details), können aber nichts
+  ihres Bereichs und eine **sparsame Teilnehmendenliste**, können aber nichts
   anlegen, ändern, bestätigen, exportieren oder Mails senden. Neue Anmeldungen
-  melden Push-Nachrichten trotzdem. Wer im Bereich doch schreiben soll,
-  bekommt zusätzlich „Veranstaltungen bearbeiten – Bereich“.
+  melden Push-Nachrichten trotzdem (nur Titel und Platzzahlen). Wer im Bereich
+  doch schreiben soll, bekommt zusätzlich „Veranstaltungen bearbeiten –
+  Bereich“ und sieht dann alles.
+
+### Sparsame Teilnehmendenliste (nur lesen)
+
+Für Ehrenamtliche, die Anmeldungen nur im Blick behalten sollen. Gezeigt wird,
+was zum Planen nötig ist:
+
+| sichtbar | nicht sichtbar |
+| --- | --- |
+| Name, Stamm/Gruppierung, gewählte Tage, Status (bestätigt/Warteliste), bestätigt am, Zählung je Tag | E-Mail, Geburtsjahr, alle weiteren Formularangaben (z. B. Ernährung, Gesundheit, Telefon, Anschrift), Sorgeberechtigte, Dokumente, Beitrag/Zahlung, Mitgliedsstatus, Bescheinigungen, Zuschussdaten, Detailfenster; unbestätigte und stornierte Anmeldungen |
+
+Die Schreib- und Detailaktionen gibt es in dieser Ansicht gar nicht (nicht nur
+ausgeblendet). Bildungsreferent*innen (datenschutzgeschult), Verwaltung und
+„Veranstaltungen bearbeiten“ sehen die volle Liste.
 
 Gesperrt ist im Lesemodus nicht nur die Anzeige: Schreibaktionen werden auch
 bei manipulierten Anfragen abgelehnt.

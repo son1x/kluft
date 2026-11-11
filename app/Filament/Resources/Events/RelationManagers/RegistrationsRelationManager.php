@@ -77,7 +77,7 @@ class RegistrationsRelationManager extends RelationManager
     protected static ?string $pluralModelLabel = 'Anmeldungen';
 
     /** Nur lesen (docs/rollen.md): diese Aktionen bleiben, alle anderen sind gesperrt. */
-    public const NUR_LESEN = ['details'];
+    public const NUR_LESEN = [];
 
     public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
     {
@@ -117,11 +117,55 @@ class RegistrationsRelationManager extends RelationManager
         return ! $this->darfVerwalten();
     }
 
+    /**
+     * Sparsame Ansicht für alle, die Teilnehmende nur lesen (z. B. ehrenamtliche
+     * Stufen- und Sektionsadmins, docs/rollen.md): nur, was zum Planen nötig
+     * ist – Name, Stamm, Tage, Status. Keine Kontaktdaten, kein Geburtsjahr,
+     * keine weiteren Formularangaben (Gesundheit, Ernährung, Anschrift …),
+     * keine Sorgeberechtigten, Dokumente, Zahlungen oder Details; nur
+     * bestätigte Anmeldungen und Warteliste.
+     *
+     * @param  array<string, array<string, mixed>>  $fields
+     */
+    private function sparsameTabelle(Table $table, Event $event, array $fields): Table
+    {
+        return $table
+            ->modifyQueryUsing(fn ($query) => $query->whereIn('status', ['confirmed', 'waitlist']))
+            ->heading('Teilnehmende (sparsame Ansicht)')
+            ->description(fn () => trim(($this->attendancePerDay($event, $fields) ?? '').' Kontaktdaten und weitere Angaben sehen die Veranstaltungsleitung und die Bildungsreferent*innen.'))
+            ->recordTitle(fn (EventRegistration $record) => $record->fullName())
+            ->columns([
+                TextColumn::make('last_name')->label('Name')
+                    ->formatStateUsing(fn (EventRegistration $record) => $record->last_name.', '.$record->first_name)
+                    ->searchable(['first_name', 'last_name'])
+                    ->sortable(),
+                ...collect($fields)->filter(fn (array $f) => in_array($f['type'], ['stamm', 'days'], true))
+                    ->map(fn (array $f, string $key) => TextColumn::make("data.{$key}")
+                        ->label($f['type'] === 'days' ? 'Tage' : $f['label'])
+                        ->state(fn (EventRegistration $record) => $event->fieldValueLabel($f, $record->data[$key] ?? null))
+                        ->placeholder('–'))->values()->all(),
+                TextColumn::make('status')->label('Status')->badge()
+                    ->formatStateUsing(fn (string $state) => EventRegistration::STATUSES[$state] ?? $state)
+                    ->color(fn (string $state) => $state === 'confirmed' ? 'success' : 'warning'),
+                TextColumn::make('confirmed_at')->label('Bestätigt am')->date('d.m.Y')->sortable(),
+            ])
+            ->defaultSort('last_name')
+            ->filters([
+                SelectFilter::make('status')->label('Status')
+                    ->options(array_intersect_key(EventRegistration::STATUSES, array_flip(['confirmed', 'waitlist']))),
+            ])
+            ->emptyStateHeading('Noch keine bestätigten Anmeldungen');
+    }
+
     public function table(Table $table): Table
     {
         /** @var Event $event */
         $event = $this->getOwnerRecord();
         $fields = $event->formFields();
+
+        if (! $this->darfVerwalten()) {
+            return $this->sparsameTabelle($table, $event, $fields);
+        }
 
         return $table
             ->modifyQueryUsing(fn ($query) => $query->with(['documents', 'zahlungen']))

@@ -28,7 +28,7 @@ class MailGrussTest extends TestCase
         $this->assertStringContainsString('Gut Pfad', $html);
         $this->assertStringContainsString('DPSG Diözesanverband Trier', $html);
         $this->assertStringContainsString('Falls der Knopf „Zum Redaktionsbereich“ nicht funktioniert', $html);
-        foreach (['Regards', 'Hello!', "having trouble", 'All rights reserved'] as $englisch) {
+        foreach (['Regards', 'Hello!', 'having trouble', 'All rights reserved'] as $englisch) {
             $this->assertStringNotContainsString($englisch, $html);
         }
     }

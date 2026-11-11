@@ -36,7 +36,6 @@ use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
-use Illuminate\Support\HtmlString;
 
 class EventForm
 {
@@ -327,8 +326,8 @@ class EventForm
     }
 
     /**
-     * Lupe am Feld: Person aus Benutzern, Personen und – nur für Admins mit
-     * Microsoft-Verbindung – dem M365-Verzeichnis suchen und übernehmen.
+     * Lupe am Feld: Person aus Benutzerkonten und Personen der Website suchen
+     * und übernehmen.
      *
      * @param  Closure(array{name: string, email: string}, Set): void  $uebernehmen
      */
@@ -350,11 +349,7 @@ class EventForm
                     ->noSearchResultsMessage('Niemand gefunden. Du kannst die Angabe auch von Hand eintragen.')
                     ->getSearchResultsUsing(fn (string $search) => PersonenSuche::suchen($search, Filament::auth()->user()))
                     ->getOptionLabelUsing(fn (?string $value) => PersonenSuche::label($value, Filament::auth()->user()))
-                    ->helperText(fn () => match (true) {
-                        PersonenSuche::m365Verbunden(Filament::auth()->user()) => 'Sucht in Benutzern, Personen der Website und im M365-Verzeichnis.',
-                        PersonenSuche::m365Erlaubt(Filament::auth()->user()) => new HtmlString('Sucht in Benutzern und Personen der Website. Für das M365-Verzeichnis zuerst <a href="'.e(route('auth.entra.verzeichnis', ['zurueck' => request()->header('Referer') ?: url()->current()])).'" class="underline">mit Microsoft verbinden</a> (vorher speichern).'),
-                        default => 'Sucht in Benutzern und Personen der Website.',
-                    }),
+                    ->helperText('Sucht in Benutzerkonten und Personen der Website.'),
             ])
             ->action(function (array $data, Set $set) use ($uebernehmen) {
                 $person = PersonenSuche::finden($data['person'] ?? null, Filament::auth()->user());

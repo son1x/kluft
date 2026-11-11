@@ -4,30 +4,14 @@ namespace App\Support;
 
 use App\Models\Person;
 use App\Models\User;
-use App\Services\DirectoryUnavailable;
-use App\Services\EntraDirectory;
 
 /**
  * Personensuche für Formularfelder (z. B. „Verantwortlich“ und
- * „Kontaktperson“ bei Veranstaltungen): aktive Benutzerkonten, Personen der
- * Website und – nur für Admins mit verbundener Verzeichnissuche – das
- * M365-Verzeichnis. Treffer-Schlüssel: „u:<id>“, „p:<id>“, „m:<Entra-ID>“.
+ * „Kontaktperson“ bei Veranstaltungen): aktive Benutzerkonten und Personen
+ * der Website. Treffer-Schlüssel: „u:<id>“, „p:<id>“.
  */
 class PersonenSuche
 {
-    public const TREFFER = 'personensuche.m365';
-
-    /** Darf die Person im M365-Verzeichnis suchen (nur Admins)? */
-    public static function m365Erlaubt(?User $user): bool
-    {
-        return $user instanceof User && $user->isAdmin();
-    }
-
-    public static function m365Verbunden(?User $user): bool
-    {
-        return self::m365Erlaubt($user) && app(EntraDirectory::class)->connected();
-    }
-
     /**
      * @return array<string, string> Schlüssel => „Name – E-Mail (Quelle)“
      */
@@ -58,23 +42,6 @@ class PersonenSuche
             $treffer['p:'.$p->id] = $p->name.' – '.$email.' (Person)';
         }
 
-        if (self::m365Verbunden($user)) {
-            try {
-                $m365 = [];
-                foreach (app(EntraDirectory::class)->search($suche) as $m) {
-                    $m365[$m['id']] = $m;
-                    if (! isset($gesehen[$m['email']])) {
-                        $gesehen[$m['email']] = true;
-                        $treffer['m:'.$m['id']] = $m['name'].' – '.$m['email'].' (M365)';
-                    }
-                }
-                // Für die Übernahme merken (nur in der Sitzung).
-                session()->put(self::TREFFER, $m365);
-            } catch (DirectoryUnavailable) {
-                // Ohne Verzeichnis weiter mit den lokalen Treffern.
-            }
-        }
-
         return $treffer;
     }
 
@@ -91,7 +58,6 @@ class PersonenSuche
             'u' => ($u = User::query()->where('status', 'active')->find((int) $id)) ? ['name' => $u->name, 'email' => mb_strtolower((string) $u->email)] : null,
             'p' => ($p = Person::query()->where('active', true)->find((int) $id)) && ($p->email || Person::suggestedEmail($p->name))
                 ? ['name' => $p->name, 'email' => mb_strtolower((string) ($p->email ?: Person::suggestedEmail($p->name)))] : null,
-            'm' => self::m365Erlaubt($user) && is_array($m = session(self::TREFFER.'.'.$id)) ? ['name' => $m['name'], 'email' => $m['email']] : null,
             default => null,
         };
     }

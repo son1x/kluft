@@ -173,6 +173,7 @@ bewusst nur deaktiviert. Nur Verwaltung und Admins.
 | Push (ntfy) | **nur** Titel und Platzzahlen, keine Namen | wer Teilnehmende sehen darf und Push eingerichtet hat |
 | Nachricht an Teilnehmende | Text der Leitung, je Person einzeln (Adressen unsichtbar) | Teilnehmende |
 | Excel-Export / Liste für unterwegs (PDF) | alles außer sensiblen Feldern (nur auf Wunsch) bzw. gewählte Spalten; „Keine Fotos“ markiert | Gerät der Person; **protokolliert** |
+| Küchenliste (PDF) | Essen je Tag, Verpflegung, nur Personen mit Besonderheiten (Vorname + Initial, ggf. Stamm, z. B. Allergien) – keine Kontaktdaten | Aushang in der Küche; **protokolliert** |
 | Mitgliederabgleich (NaMi) | Name, Geburtsjahr | NaMi (DPSG), nur wenn eingeschaltet |
 | Teilnahmebeiträge | Name, Betrag, Verwendungszweck | Kasse; Mail mit GiroCode an die Person |
 

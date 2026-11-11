@@ -6,7 +6,7 @@
 @section('seo_description', 'Wo finde ich meinen Stamm? Alle '.($mehrereBezirke ? 'Bezirke und ' : '').'Stämme der DPSG im '.config('dpsg.site.region').' mit Adresse, Kontakt und Karte.')
 
 @push('head')
-    @vite('resources/js/map.js')
+    @vite('resources/js/karte-laden.js')
 @endpush
 
 @section('content')

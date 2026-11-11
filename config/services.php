@@ -60,6 +60,8 @@ return [
     'ntfy' => [
         'server' => env('NTFY_SERVER') ?: 'https://ntfy.sh',
         'token' => env('NTFY_TOKEN'),
+        // Präfix neuer Themen; leer = aus der Domain (APP_URL), z. B. „dpsg-trier-“.
+        'prefix' => env('NTFY_PREFIX'),
     ],
 
     'microsoft' => [

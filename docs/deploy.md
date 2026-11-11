@@ -64,7 +64,7 @@ Diese Werte dürfen auch als Secret eingetragen sein; der Deploy nimmt die Varia
 | Mail | `BREVO_SMTP_LOGIN`, `BREVO_SMTP_KEY`, `MAIL_TEST_REDIRECT_TO`, `MAIL_TEST_ALLOWLIST` | Siehe „Mail“ unten |
 | Newsletter | `BREVO_API_KEY`, `BREVO_NEWSLETTER_LIST_ID`, `BREVO_DOI_TEMPLATE_ID` | optional |
 | Backup | `BACKUP_PASSWORD`, `BACKUP_WEBDAV_URL`, `BACKUP_WEBDAV_USER`, `BACKUP_WEBDAV_PASSWORD` | Passwort zusätzlich offline aufbewahren |
-| Push | `NTFY_SERVER`, `NTFY_TOKEN` | optional |
+| Push | `NTFY_SERVER`, `NTFY_TOKEN`, `NTFY_PREFIX` (leer = aus der Domain) | optional |
 | WhatsApp | `WHATSAPP_MODE`, `WHATSAPP_CHANNEL_URL`, `WHATSAPP_TEST_ALLOWLIST` | Standard aus |
 | Kalender | `NEXTCLOUD_ALLOWED_HOSTS` | optional |
 | Mitglieder | `MITGLIEDER_DRIVER`, `NAMI_AUTH`, `NAMI_USER`, `NAMI_PASSWORD`, `HITOBITO_URL`, `HITOBITO_TOKEN`, `HITOBITO_MEMBER_NUMBER_ATTRIBUTE` | Standard aus; für NaMi 2 mit persönlicher Anmeldung genügt `MITGLIEDER_DRIVER=nami`, siehe docs/mitgliederabgleich.md |

@@ -155,6 +155,6 @@ class PushSettings extends Page
     private static function newTopic(): string
     {
         // Wirkt wie ein Passwort: wer das Thema kennt, liest mit.
-        return 'dpsg-trier-'.Str::lower(Str::random(28));
+        return NtfyChannel::praefix().Str::lower(Str::random(28));
     }
 }

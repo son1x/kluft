@@ -68,8 +68,12 @@ docker compose exec ntfy ntfy access everyone 'dpsg-trier-*' read-only
 docker compose exec ntfy ntfy token add kluft
 ```
 
-- Kluft erzeugt Themen der Form `dpsg-trier-<28 Zufallszeichen>` (Mein Konto →
-  Push). Der Zufallsteil wirkt wie ein Passwort: Lesen darf jede*r, die oder
+- Kluft erzeugt Themen der Form `<präfix><28 Zufallszeichen>` (Mein Konto →
+  Push). Der Präfix kommt aus der Domain der Website ohne Subdomain und
+  Endung: `test.dpsg-trier.de` und `dpsg-trier.de` ergeben beide
+  `dpsg-trier-`, `stamm-roden.de` ergibt `stamm-roden-`. So passt dieselbe
+  Regel für Test und Live. Mit `NTFY_PREFIX` lässt er sich festlegen; bereits
+  angelegte Themen behalten ihren Namen. Der Zufallsteil wirkt wie ein Passwort: Lesen darf jede*r, die oder
   der das Thema kennt, schreiben nur Kluft.
 - Den Token **nicht** in Chats oder Tickets kopieren, nur in die Umgebung.
 

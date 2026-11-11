@@ -7,6 +7,7 @@ use App\Mail\EventRegistrationMail;
 use App\Models\Event;
 use App\Models\Post;
 use App\Models\User;
+use App\Notifications\Channels\NtfyChannel;
 use App\Notifications\RolesGrantedNotification;
 use App\Support\Ausbau;
 use App\Support\PushEvents;
@@ -161,6 +162,7 @@ class NtfyPushTest extends TestCase
     #[TestDox('Einstellungsseite: einschalten, nur erlaubte Ereignisse speichern, Test senden, ausschalten')]
     public function test_settings_page(): void
     {
+        config(['app.url' => 'https://test.dpsg-trier.de']);
         $user = $this->user('woe@dpsg-trier.de', 'stufenadmin', 'stage', 'woelflinge');
         $this->actingAs($user);
 
@@ -196,5 +198,16 @@ class NtfyPushTest extends TestCase
 
         Http::assertSentCount(1);
         $this->assertTrue(true);
+    }
+
+    #[TestDox('Themen-Präfix aus der Domain ohne Subdomain; NTFY_PREFIX überschreibt')]
+    public function test_praefix(): void
+    {
+        foreach (['https://test.dpsg-trier.de' => 'dpsg-trier-', 'https://www.stamm-roden.de/' => 'stamm-roden-', 'http://localhost:8000' => 'kluft-', '' => 'kluft-'] as $url => $erwartet) {
+            config(['app.url' => $url, 'services.ntfy.prefix' => null]);
+            $this->assertSame($erwartet, NtfyChannel::praefix(), $url);
+        }
+        config(['services.ntfy.prefix' => 'Saar Hochwald']);
+        $this->assertSame('saar-hochwald-', NtfyChannel::praefix());
     }
 }

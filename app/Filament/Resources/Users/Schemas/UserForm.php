@@ -42,6 +42,7 @@ class UserForm
         $actor = Filament::auth()->user();
         $global = RoleCatalog::canManageUsersGlobally($actor);
         $grantable = RoleCatalog::grantableBy($actor);
+        $auswahl = RoleCatalog::rollenAuswahl($grantable);
         $codeLogin = Features::enabled(Features::CODE_LOGIN);
         $rolle = fn (Get $get) => $codeLogin && $get('kind') === 'rolle';
         $perCode = fn (Get $get) => $codeLogin && $get('login') === 'email';
@@ -138,16 +139,28 @@ class UserForm
                             'roleAssignments',
                             modifyQueryUsing: fn (Builder $query) => $global ? $query : self::scopeToGrantable($query, $grantable),
                         )
+                        // Zweistufig: erst die Rolle, dann – bei Bereichsrollen – Stufe bzw. Sektion.
                         ->schema([
-                            Select::make('assignment')
+                            Select::make('rolle')
                                 ->label('Rolle')
-                                ->options(RoleCatalog::gruppiert($grantable))
-                                ->searchable()
-                                ->searchPrompt('Rolle oder Bereich eintippen, z. B. „Bildung“ oder „Wölflinge“')
-                                ->in(array_keys($grantable))
+                                ->options($auswahl['rollen'])
+                                ->in(array_keys($auswahl['rollen']))
                                 ->required()
-                                ->distinct()
-                                ->native(false),
+                                ->native(false)
+                                ->live()
+                                ->afterStateUpdated(function (?string $state, Set $set) use ($auswahl) {
+                                    $bereiche = array_merge([], ...array_values($auswahl['bereiche'][$state] ?? []));
+                                    // Nur ein möglicher Bereich (z. B. Autor:in für Stufenadmins): gleich setzen.
+                                    $set('bereich', count($bereiche) === 1 ? array_key_first($bereiche) : null);
+                                }),
+                            Select::make('bereich')
+                                ->label('Bereich')
+                                ->options(fn (Get $get) => $auswahl['bereiche'][$get('rolle')] ?? [])
+                                ->visible(fn (Get $get) => isset($auswahl['bereiche'][$get('rolle')]))
+                                ->required(fn (Get $get) => isset($auswahl['bereiche'][$get('rolle')]))
+                                ->searchable()
+                                ->native(false)
+                                ->placeholder('Stufe oder Sektion wählen'),
                             DatePicker::make('gueltig_bis')
                                 ->label('Gültig bis')
                                 ->placeholder('unbegrenzt')
@@ -155,8 +168,18 @@ class UserForm
                                 ->native(false)
                                 ->displayFormat('d.m.Y'),
                         ])
-                        ->columns(2)
-                        ->mutateRelationshipDataBeforeFillUsing(fn (array $data) => ['assignment' => RoleCatalog::encode($data), 'gueltig_bis' => $data['gueltig_bis'] ?? null])
+                        ->columns(3)
+                        ->rules([fn () => function (string $attribute, mixed $value, \Closure $fail) {
+                            $schluessel = collect((array) $value)->map(fn ($item) => RoleCatalog::ausAuswahl($item['rolle'] ?? null, $item['bereich'] ?? null));
+                            if ($schluessel->duplicates()->isNotEmpty()) {
+                                $fail('Jede Rolle mit Bereich nur einmal vergeben.');
+                            }
+                        }])
+                        ->mutateRelationshipDataBeforeFillUsing(fn (array $data) => [
+                            'rolle' => $data['role'],
+                            'bereich' => $data['scope_type'] === 'global' ? null : $data['scope_type'].'|'.($data['scope_key'] ?? ''),
+                            'gueltig_bis' => $data['gueltig_bis'] ?? null,
+                        ])
                         ->mutateRelationshipDataBeforeCreateUsing(fn (array $data) => self::toColumns($data, $grantable))
                         ->mutateRelationshipDataBeforeSaveUsing(fn (array $data) => self::toColumns($data, $grantable))
                         ->addActionLabel('Rolle hinzufügen')
@@ -283,11 +306,12 @@ class UserForm
         // Zweite Prüfung zusätzlich zur Formular-Validierung: niemand darf
         // per manipuliertem Request eine Rolle außerhalb des eigenen
         // Vergaberechts setzen.
-        if (! array_key_exists($data['assignment'] ?? '', $grantable)) {
+        $schluessel = RoleCatalog::ausAuswahl($data['rolle'] ?? null, $data['bereich'] ?? null);
+        if (! array_key_exists($schluessel, $grantable)) {
             throw ValidationException::withMessages(['roleAssignments' => 'Diese Rolle darfst du nicht vergeben.']);
         }
 
-        return [...RoleCatalog::decode($data['assignment']), 'gueltig_bis' => filled($data['gueltig_bis'] ?? null) ? $data['gueltig_bis'] : null, 'granted_by' => Filament::auth()->id()];
+        return [...RoleCatalog::decode($schluessel), 'gueltig_bis' => filled($data['gueltig_bis'] ?? null) ? $data['gueltig_bis'] : null, 'granted_by' => Filament::auth()->id()];
     }
 
     /**

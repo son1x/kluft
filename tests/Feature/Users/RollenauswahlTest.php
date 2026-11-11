@@ -33,6 +33,18 @@ class RollenauswahlTest extends TestCase
         $this->assertArrayHasKey('vorstand|global|', $gruppen['Ganze Website']);
         $this->assertArrayHasKey('admin|global|', $gruppen['Technik']);
         $this->assertSame(count($alle), array_sum(array_map('count', $gruppen)));
+
+        // Zweistufig: Rollen ohne Bereichsvarianten, Bereiche je Rolle.
+        $auswahl = RoleCatalog::rollenAuswahl($alle);
+        $this->assertSame('Vorstand', $auswahl['rollen']['vorstand']);
+        $this->assertSame('Stufenadmin', $auswahl['rollen']['stufenadmin']);
+        $this->assertSame('Autor:in', $auswahl['rollen']['autor']);
+        $this->assertArrayNotHasKey('vorstand', $auswahl['bereiche']);
+        $this->assertArrayHasKey('stage|woelflinge', $auswahl['bereiche']['stufenadmin']['Stufen']);
+        $this->assertSame(['own|' => 'ohne Zuordnung'], $auswahl['bereiche']['autor']['Allgemein']);
+        $this->assertSame('superadmin', array_key_last($auswahl['rollen']), 'Technik zuletzt');
+        $this->assertSame('autor|own|', RoleCatalog::ausAuswahl('autor', 'own|'));
+        $this->assertSame('vorstand|global|', RoleCatalog::ausAuswahl('vorstand', null));
     }
 
     #[Group('dv-trier')]
@@ -43,6 +55,7 @@ class RollenauswahlTest extends TestCase
             $this->markTestSkipped('Nur auf Ebene Bezirk/DV.');
         }
         $this->assertSame('Bildungsreferent*in', RoleCatalog::gruppiert(RoleCatalog::all())['Ganze Website']['bildungsreferent|global|']);
+        $this->assertSame('Bildungsreferent*in', RoleCatalog::rollenAuswahl(RoleCatalog::all())['rollen']['bildungsreferent']);
 
         Notification::fake();
         Filament::setCurrentPanel('admin');
@@ -52,11 +65,40 @@ class RollenauswahlTest extends TestCase
         $undo = Repeater::fake();
 
         Livewire::test(CreateUser::class)
-            ->fillForm(['name' => 'Bildungsreferentin', 'email' => 'br@example.org', 'status' => 'active', 'roleAssignments' => [['assignment' => 'bildungsreferent|global|']]])
+            ->fillForm(['name' => 'Bildungsreferentin', 'email' => 'br@example.org', 'status' => 'active', 'roleAssignments' => [['rolle' => 'bildungsreferent']]])
             ->call('create')
             ->assertHasNoFormErrors();
         $undo();
 
         $this->assertTrue(User::query()->where('email', 'br@example.org')->sole()->isBildungsreferent());
+    }
+
+    #[TestDox('Bereichsrolle ohne Bereich wird abgelehnt; doppelte Zuweisung auch')]
+    public function test_pruefung(): void
+    {
+        Notification::fake();
+        Filament::setCurrentPanel('admin');
+        $admin = User::query()->create(['name' => 'Admin', 'email' => 'admin@example.org', 'status' => 'active']);
+        $admin->roleAssignments()->create(['role' => 'admin', 'scope_type' => 'global']);
+        $this->actingAs($admin->fresh());
+        $undo = Repeater::fake();
+        $basis = ['name' => 'Leitung', 'email' => 'leitung@example.org', 'status' => 'active'];
+
+        Livewire::test(CreateUser::class)
+            ->fillForm([...$basis, 'roleAssignments' => [['rolle' => 'stufenadmin']]])
+            ->call('create')
+            ->assertHasFormErrors(['roleAssignments.0.bereich' => 'required']);
+        Livewire::test(CreateUser::class)
+            ->fillForm([...$basis, 'roleAssignments' => [['rolle' => 'stufenadmin', 'bereich' => 'stage|woelflinge'], ['rolle' => 'stufenadmin', 'bereich' => 'stage|woelflinge']]])
+            ->call('create')
+            ->assertHasFormErrors(['roleAssignments']);
+        Livewire::test(CreateUser::class)
+            ->fillForm([...$basis, 'roleAssignments' => [['rolle' => 'stufenadmin', 'bereich' => 'stage|woelflinge'], ['rolle' => 'autor', 'bereich' => 'own|']]])
+            ->call('create')
+            ->assertHasNoFormErrors();
+        $undo();
+
+        $this->assertEqualsCanonicalizing(['stufenadmin|stage|woelflinge', 'autor|own|'],
+            User::query()->where('email', 'leitung@example.org')->sole()->roleAssignments->map(fn ($a) => RoleCatalog::encode($a))->all());
     }
 }

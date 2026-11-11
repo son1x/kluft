@@ -179,7 +179,7 @@ class CodeLoginTest extends TestCase
         $undo = Repeater::fake();
         Livewire::test(CreateUser::class)
             ->assertSee('Art des Zugangs')
-            ->fillForm(['kind' => 'rolle', 'name' => 'Wölflingsleitung', 'login' => 'email', 'email' => 'Woelflinge@Example.org', 'status' => 'active', 'roleAssignments' => [['assignment' => 'stufenadmin|stage|woelflinge']]])
+            ->fillForm(['kind' => 'rolle', 'name' => 'Wölflingsleitung', 'login' => 'email', 'email' => 'Woelflinge@Example.org', 'status' => 'active', 'roleAssignments' => [['rolle' => 'stufenadmin', 'bereich' => 'stage|woelflinge']]])
             ->call('create')
             ->assertHasNoFormErrors();
         $undo();

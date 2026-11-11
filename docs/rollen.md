@@ -2,7 +2,10 @@
 
 Vergeben unter Benutzer → Person → „Rollen“ (Verwaltung und Admins; Stufen-
 und Sektionsadmins sowie Bildungsreferent*innen nur Autor:innen). Jede
-Zuweisung kann ein „gültig bis“ haben. Was jemand hat, zeigt Mein Konto →
+Zuweisung kann ein „gültig bis“ haben. Die Auswahl ist zweistufig: erst die
+**Rolle** (z. B. Bildungsreferent*in, Stufenadmin), dann – nur bei
+Bereichsrollen – der **Bereich** (Stufe oder Sektion; bei Autor:innen auch
+„ohne Zuordnung“). Gibt es nur einen möglichen Bereich, ist er vorbelegt. Was jemand hat, zeigt Mein Konto →
 „Meine Rollen und Rechte“.
 
 ## Rollen und Rechte (Matrix)

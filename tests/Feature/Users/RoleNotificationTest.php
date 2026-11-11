@@ -49,7 +49,7 @@ class RoleNotificationTest extends TestCase
         $undo = Repeater::fake();
 
         Livewire::test(CreateUser::class)
-            ->fillForm(['name' => 'Neue Leitung', 'email' => 'neu@dpsg-trier.de', 'status' => 'active', 'roleAssignments' => [['assignment' => 'stufenadmin|stage|woelflinge']]])
+            ->fillForm(['name' => 'Neue Leitung', 'email' => 'neu@dpsg-trier.de', 'status' => 'active', 'roleAssignments' => [['rolle' => 'stufenadmin', 'bereich' => 'stage|woelflinge']]])
             ->call('create')
             ->assertHasNoFormErrors();
         $undo();
@@ -94,7 +94,7 @@ class RoleNotificationTest extends TestCase
         $undo = Repeater::fake();
 
         Livewire::test(EditUser::class, ['record' => $target->getRouteKey()])
-            ->fillForm(['roleAssignments' => [['assignment' => 'autor|own|'], ['assignment' => 'verwaltung|global|']]])
+            ->fillForm(['roleAssignments' => [['rolle' => 'autor', 'bereich' => 'own|'], ['rolle' => 'verwaltung']]])
             ->call('save')
             ->assertHasNoFormErrors();
         $undo();
@@ -113,7 +113,7 @@ class RoleNotificationTest extends TestCase
         $undo = Repeater::fake();
 
         Livewire::test(EditUser::class, ['record' => $target->getRouteKey()])
-            ->fillForm(['name' => 'Umbenannt', 'roleAssignments' => [['assignment' => 'autor|own|']]])
+            ->fillForm(['name' => 'Umbenannt', 'roleAssignments' => [['rolle' => 'autor', 'bereich' => 'own|']]])
             ->call('save')
             ->assertHasNoFormErrors();
         $undo();

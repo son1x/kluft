@@ -28,9 +28,9 @@
             </ul>
             <datalist id="gruppierungen">@foreach ($gruppierungen as $option)<option value="{{ $option['value'] }}">{{ $option['hint'] }}</option>@endforeach</datalist>
         </div>
-        <p class="mt-1 text-xs text-text-secondary" x-show="! gast">Tippe den Namen deines Stamms oder Bezirks oder den Ort – oder trag etwas anderes ein.</p>
+        <p class="mt-1 text-sm text-text-secondary" x-show="! gast">Tippe den Namen deines Stamms oder Bezirks oder den Ort – oder trag etwas anderes ein.</p>
         @if ($mitGast)
-            <p class="mt-1 text-xs text-text-secondary" x-show="gast" x-cloak>Bitte Diözesanverband bzw. Verband und Gruppe eintragen, z. B. „DV Köln, Stamm Sankt Georg“ oder „VCP Saarbrücken“.</p>
+            <p class="mt-1 text-sm text-text-secondary" x-show="gast" x-cloak>Bitte Diözesanverband bzw. Verband und Gruppe eintragen, z. B. „DV Köln, Stamm Sankt Georg“ oder „VCP Saarbrücken“.</p>
         @endif
         @error($key)<p class="mt-1 text-sm text-dpsg-rot">{{ $message }}</p>@enderror
     </div>

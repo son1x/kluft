@@ -43,7 +43,7 @@
               class="mt-1 w-full border border-dpsg-mittelbeige bg-white px-3 py-2">{{ old('nachricht') }}</textarea>
     @error('nachricht', $bag)<p id="{{ $p }}-nachricht-error" class="mt-1 text-sm text-dpsg-rot">{{ $message }}</p>@enderror
 </div>
-<p class="text-xs text-text-secondary">
+<p class="text-sm text-text-secondary">
     @if (\App\Support\Features::enabled(\App\Support\Features::NACHRICHTEN))
         Deine Angaben gehen per E-Mail an die zuständigen Ansprechpersonen, damit sie dir antworten können. Zur Bearbeitung speichern wir die Nachricht höchstens {{ \App\Models\ContactMessage::aufbewahrungMonate() }} Monate; sehen können sie nur die Ansprechpersonen und unsere Verwaltung.
     @else

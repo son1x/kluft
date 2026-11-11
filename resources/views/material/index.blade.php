@@ -103,7 +103,7 @@
                             <label for="material-zweck" class="block text-sm font-bold">Wofür? <span class="font-normal text-text-secondary">(optional)</span></label>
                             <textarea id="material-zweck" name="zweck" maxlength="500" rows="3" class="{{ $feld }}">{{ old('zweck') }}</textarea>
                         </div>
-                        <p class="text-xs text-text-secondary">
+                        <p class="text-sm text-text-secondary">
                             Deine Angaben speichern wir nur für den Verleih und löschen sie {{ \App\Support\Materialverleih::LOESCHEN_MONATE }} Monate nach der Rückgabe.
                             Mehr in der <a href="{{ url('/datenschutz') }}" class="text-dpsg-rot underline">Datenschutzerklärung</a>.
                         </p>

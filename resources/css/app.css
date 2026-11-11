@@ -205,6 +205,20 @@ abbr.glossar:focus::after,
 abbr.glossar:focus-visible::after {
     opacity: 1;
 }
+/* Handy: Erklärung als Leiste unten statt über dem Wort – ragt nicht über den
+   Rand (sonst ließ sich die Seite seitlich verschieben) und ist besser lesbar. */
+@media (max-width: 639px) {
+    abbr.glossar::after {
+        position: fixed;
+        left: 1rem;
+        right: 1rem;
+        bottom: calc(1rem + env(safe-area-inset-bottom));
+        width: auto;
+        max-width: none;
+        transform: none;
+        font-size: 0.9375rem;
+    }
+}
 
 /* Bilderreihen im redaktionellen Text (App\Support\Galerie) */
 .galerie { display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); gap: 1rem; margin: 1.5rem 0; padding: 0; list-style: none; }
@@ -214,6 +228,34 @@ abbr.glossar:focus-visible::after {
 
 /* Lange Adressen und Befehle in <code> umbrechen statt die Seite zu verbreitern */
 code { overflow-wrap: anywhere; }
+
+/*
+ * Apple HIG / Lesbarkeit auf dem Handy (docs/barrierefreiheit.md):
+ * - Lange deutsche Wörter („Weihnachtspostkartenaktion“) trennen bzw.
+ *   umbrechen statt die Seite seitlich zu verbreitern. `anywhere` greift
+ *   nur, wenn ein Wort gar nicht passt (und ohne Silbentrennung im Browser).
+ * - Eingabefelder auf Touch-Geräten mit mindestens 16 px, sonst zoomt
+ *   Safari beim Antippen in die Seite (wichtig: !important in der
+ *   Basis-Schicht schlägt Utilities wie text-sm).
+ * - Tippflächen ≥ 44 pt: Links und Knöpfe in Listen der Fußzeile und
+ *   Ankreuzfelder.
+ */
+@layer base {
+    main, footer, [role="dialog"] { overflow-wrap: anywhere; }
+    h1, h2, h3, h4, .prose { hyphens: auto; -webkit-hyphens: auto; hyphenate-limit-chars: 12 5 5; -webkit-hyphenate-limit-before: 5; -webkit-hyphenate-limit-after: 5; }
+    input[type="checkbox"], input[type="radio"] { width: 1.25rem; height: 1.25rem; flex-shrink: 0; }
+    /* Lesbare Zeilen (~75 Zeichen) auch in breiten Textbereichen; Tabellen, Bilder, Galerien bleiben breit. */
+    .prose.max-w-none > :is(p, ul, ol, blockquote, h2, h3, h4, dl) { max-width: 75ch; }
+    @media (pointer: coarse) {
+        input:not([type="checkbox"], [type="radio"], [type="range"], [type="hidden"]), select, textarea { font-size: 1rem !important; }
+        footer ul a, footer ul button { display: inline-flex; min-height: 2.75rem; align-items: center; }
+        main :is(input:not([type="checkbox"], [type="radio"], [type="range"], [type="hidden"], [type="file"]), select),
+        main button:not(.maplibregl-ctrl button),
+        [role="dialog"] button { min-height: 2.75rem; }
+        nav[aria-label="Brotkrumen"] a { display: inline-flex; min-height: 2.75rem; align-items: center; }
+        main label:has(> input[type="checkbox"], > input[type="radio"]) { min-height: 2.75rem; }
+    }
+}
 
 /*
  * Diözesanlager (Rubrik /dioezesanlager): Jedes Lager behält im

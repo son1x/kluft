@@ -7,6 +7,7 @@
 <div
     x-data="{
         open: false,
+        details: false,
         prefs: { stats: false, external: false },
         STORAGE_KEY: 'dpsg-consent-v1',
         init() {
@@ -16,7 +17,8 @@
             } else {
                 this.prefs = stored.prefs;
             }
-            window.addEventListener('open-consent-settings', () => { this.open = true; });
+            // Aus der Fußzeile geöffnet: gleich mit der Einzelauswahl.
+            window.addEventListener('open-consent-settings', () => { this.details = true; this.open = true; });
         },
         readStored() {
             try {
@@ -51,35 +53,38 @@
     aria-modal="true"
     aria-labelledby="consent-heading"
 >
-    <div class="max-w-4xl mx-auto px-4 py-5 sm:py-6">
-        <h2 id="consent-heading" class="font-serif text-lg font-bold mb-2">Datenschutz-Einstellungen</h2>
-        <p class="text-sm text-white/85 mb-4">
-            Notwendige Cookies sind für den Betrieb der Seite immer aktiv. Videos und Karten
-            anderer Anbieter werden nur mit deiner Einwilligung geladen. Eine Statistik oder
-            Reichweitenmessung gibt es nicht. Mehr dazu in
-            unserer <a href="{{ url('/datenschutz') }}" class="underline">Datenschutzerklärung</a>.
+    {{-- Kompakt (Apple HIG: Inhalte nicht verdecken): kurzer Text, zwei
+         gleichwertige 44-pt-Knöpfe; die Einzelauswahl erst auf Wunsch. --}}
+    <div class="mx-auto max-w-4xl px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+        <h2 id="consent-heading" class="mb-1 font-serif text-base font-bold">Datenschutz-Einstellungen</h2>
+        <p class="mb-3 text-sm text-white/85">
+            Videos und Karten anderer Anbieter laden wir nur mit deiner Einwilligung. Keine Statistik, keine Werbung.
+            Mehr in der <a href="{{ url('/datenschutz') }}" class="underline">Datenschutzerklärung</a>.
         </p>
 
-        <div class="space-y-2 mb-4 text-sm">
-            <label class="flex items-center gap-2 opacity-70">
+        <div x-show="details" x-cloak class="mb-3 text-sm">
+            <label class="flex min-h-11 items-center gap-3 opacity-70">
                 <input type="checkbox" checked disabled class="rounded">
                 Notwendig (immer aktiv)
             </label>
-            <label class="flex items-center gap-2">
+            <label class="flex min-h-11 items-center gap-3">
                 <input type="checkbox" x-model="prefs.external" class="rounded">
                 Externe Inhalte (z. B. eingebettete Karten/Videos)
             </label>
         </div>
 
-        <div class="flex flex-wrap gap-3">
-            <button type="button" @click="acceptAll()" class="rounded bg-dpsg-rot px-4 py-2 text-sm font-medium">
+        <div class="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap">
+            <button type="button" @click="acceptAll()" class="min-h-11 rounded bg-dpsg-rot px-4 py-2 text-sm font-bold">
                 Alle akzeptieren
             </button>
-            <button type="button" @click="save()" class="rounded border border-white/40 px-4 py-2 text-sm font-medium">
+            <button type="button" @click="acceptNecessaryOnly()" class="min-h-11 rounded border border-white/60 px-4 py-2 text-sm font-bold">
+                Nur notwendige
+            </button>
+            <button type="button" x-show="details" x-cloak @click="save()" class="col-span-2 min-h-11 rounded border border-white/60 px-4 py-2 text-sm font-bold">
                 Auswahl speichern
             </button>
-            <button type="button" @click="acceptNecessaryOnly()" class="rounded border border-white/40 px-4 py-2 text-sm font-medium">
-                Nur notwendige
+            <button type="button" x-show="!details" @click="details = true" class="col-span-2 min-h-11 px-2 text-sm underline sm:ml-auto">
+                Einstellungen
             </button>
         </div>
     </div>

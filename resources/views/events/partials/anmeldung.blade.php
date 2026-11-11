@@ -94,7 +94,7 @@
                         @switch($field['type'])
                             @case('year')
                                 <input id="{{ $key }}" name="{{ $key }}" type="number" inputmode="numeric" min="{{ now()->year - 100 }}" max="{{ now()->year }}" @required($field['required']) value="{{ old($key) }}" class="{{ $input }} sm:max-w-40" aria-describedby="{{ $key }}-hint" />
-                                <p id="{{ $key }}-hint" class="mt-1 text-xs text-text-secondary">Das Jahr reicht – wir fragen kein vollständiges Geburtsdatum ab.</p>
+                                <p id="{{ $key }}-hint" class="mt-1 text-sm text-text-secondary">Das Jahr reicht – wir fragen kein vollständiges Geburtsdatum ab.</p>
                                 @break
                             @case('select')
                                 <select id="{{ $key }}" name="{{ $key }}" @required($field['required']) class="{{ $input }}">
@@ -107,7 +107,7 @@
                             @case('textarea')
                                 <textarea id="{{ $key }}" name="{{ $key }}" rows="3" maxlength="1000" @required($field['required']) class="{{ $input }}" aria-describedby="{{ $key }}-hint">{{ old($key) }}</textarea>
                                 @unless ($field['eigen'] ?? false)
-                                    <p id="{{ $key }}-hint" class="mt-1 text-xs text-text-secondary">Bitte keine Gesundheitsangaben hier eintragen – die klären wir bei Bedarf persönlich.</p>
+                                    <p id="{{ $key }}-hint" class="mt-1 text-sm text-text-secondary">Bitte keine Gesundheitsangaben hier eintragen – die klären wir bei Bedarf persönlich.</p>
                                 @endunless
                                 @break
                             @case('zahl')
@@ -154,7 +154,7 @@
                                         Nur an einzelnen Tagen
                                     </label>
                                     <fieldset class="ml-6 flex flex-wrap gap-2" x-show="modus === 'teilweise'" x-transition.opacity>
-                                        <legend class="mb-1 text-xs text-text-secondary">An welchen Tagen bist du dabei?</legend>
+                                        <legend class="mb-1 text-sm text-text-secondary">An welchen Tagen bist du dabei?</legend>
                                         @foreach ($days as $date => $dayLabel)
                                             <label class="inline-flex items-center gap-2 border border-dpsg-mittelbeige bg-white px-3 py-1.5 text-sm has-[:checked]:border-dpsg-blau has-[:checked]:bg-dpsg-blau has-[:checked]:text-white">
                                                 <input type="checkbox" name="{{ $key }}[]" value="{{ $date }}" @checked(in_array($date, (array) old($key, []), true)) class="accent-white" />
@@ -169,10 +169,10 @@
                                 <input id="{{ $key }}" name="{{ $key }}" type="text" @required($field['required']) value="{{ old($key) }}" class="{{ $input }}" />
                         @endswitch
                         @if ($field['sensibel'] ?? false)
-                            <p class="mt-1 flex items-start gap-1.5 text-xs text-text-secondary"><x-heroicon-o-lock-closed class="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />Besonders geschützt: Diese Angabe sieht nur die Veranstaltungsleitung. Wir löschen sie {{ \App\Models\Event::sensibleTage() }} Tage nach der Veranstaltung.</p>
+                            <p class="mt-1 flex items-start gap-1.5 text-sm text-text-secondary"><x-heroicon-o-lock-closed class="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />Besonders geschützt: Diese Angabe sieht nur die Veranstaltungsleitung. Wir löschen sie {{ \App\Models\Event::sensibleTage() }} Tage nach der Veranstaltung.</p>
                         @endif
                         @if (($field['eigen'] ?? false) && filled($field['hint'] ?? null))
-                            <p class="mt-1 text-xs text-text-secondary">{{ $field['hint'] }}</p>
+                            <p class="mt-1 text-sm text-text-secondary">{{ $field['hint'] }}</p>
                         @endif
                         @error($key)<p class="mt-1 text-sm text-dpsg-rot">{{ $message }}</p>@enderror
                     </div>
@@ -279,7 +279,7 @@
                         </label>
                     @endforeach
                     @if (\App\Support\Teilnahmebeitraege::aktiv())
-                        <p class="text-xs text-text-secondary">Nach der Bestätigung deines Platzes bekommst du eine Zahlungsaufforderung mit Kontodaten und QR-Code für die Banking-App.</p>
+                        <p class="text-sm text-text-secondary">Nach der Bestätigung deines Platzes bekommst du eine Zahlungsaufforderung mit Kontodaten und QR-Code für die Banking-App.</p>
                     @endif
                     @error('preis')<p id="preis-error" class="text-sm text-dpsg-rot">{{ $message }}</p>@enderror
                 </fieldset>
@@ -308,7 +308,7 @@
             <div class="border-t border-dpsg-mittelbeige pt-5">
                 <label for="email" class="block text-sm font-bold">E-Mail-Adresse *</label>
                 <input id="email" name="email" type="email" required autocomplete="email" value="{{ old('email') }}" class="{{ $input }}" aria-describedby="email-hint" />
-                <p id="email-hint" class="mt-1 text-xs text-text-secondary">Hierhin schicken wir den Bestätigungslink und alle Infos zur Anmeldung.</p>
+                <p id="email-hint" class="mt-1 text-sm text-text-secondary">Hierhin schicken wir den Bestätigungslink und alle Infos zur Anmeldung.</p>
                 @error('email')<p class="mt-1 text-sm text-dpsg-rot">{{ $message }}</p>@enderror
             </div>
 

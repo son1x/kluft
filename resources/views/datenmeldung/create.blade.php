@@ -42,7 +42,7 @@
                 <div><label for="telefon" class="block text-sm font-bold">Telefon</label><input id="telefon" name="telefon" type="tel" maxlength="40" value="{{ old('telefon') }}" class="{{ $input }}" /></div>
                 <div><label for="email" class="block text-sm font-bold">E-Mail des Mitglieds</label><input id="email" name="email" type="email" maxlength="254" value="{{ old('email') }}" class="{{ $input }}" /></div>
                 <div class="sm:col-span-2"><label for="email_eltern" class="block text-sm font-bold">E-Mail der Erziehungsberechtigten</label><input id="email_eltern" name="email_eltern" type="email" maxlength="254" value="{{ old('email_eltern') }}" class="{{ $input }}" />
-                    <p class="mt-1 text-xs text-text-secondary">An die Adresse der Person, die ausfüllt, schicken wir den Bestätigungslink.</p></div>
+                    <p class="mt-1 text-sm text-text-secondary">An die Adresse der Person, die ausfüllt, schicken wir den Bestätigungslink.</p></div>
             </fieldset>
 
             <label class="flex gap-3 text-sm">

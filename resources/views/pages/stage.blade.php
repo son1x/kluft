@@ -40,7 +40,7 @@
             </div>
         </div>
         @if ($page->coverMedia?->credit)
-            <span class="absolute bottom-9 right-2 bg-black/50 px-1 text-[10px] text-white">© {{ $page->coverMedia->credit }}</span>
+            <span class="absolute bottom-9 right-2 bg-black/50 px-1 text-[11px] text-white">© {{ $page->coverMedia->credit }}</span>
         @endif
     </section>
 @endsection

@@ -121,6 +121,8 @@ kurze Wartungsmodus bei Deploy und Update (`artisan down`) ist davon getrennt.
   - Fortschritt unter `/einspielen/stand/<token>`, ohne Anmeldung und auch im Wartungsmodus erreichbar.
   - Einspielen ersetzt Datenbank, `storage/app/private` (samt `app.key`) und `public/uploads`; der Schlüssel kommt in die `.env`; danach `migrate`, `optimize:clear`, `media:variants --all`. Danach neu anmelden.
   - Zum Einspielen auf einer anderen Website muss `BACKUP_PASSWORD` dort **dasselbe** sein.
+- **Herunterladen:** Verwaltung → Backups → „Herunterladen“ (nur Admins, nur Backups dieser Website). Die `.dpsgbak`-Datei bleibt **verschlüsselt**; der Download läuft über eine 5 Minuten gültige, signierte Adresse und wird protokolliert. Nur auf eigenen, verschlüsselten Geräten bzw. Speichern ablegen.
+- **Ohne Website entschlüsseln** (z. B. wenn der Server weg ist): `php scripts/backup-entschluesseln.php <datei.dpsgbak> [ziel.zip]` – braucht nur PHP 8 mit libsodium; fragt das Passwort ab (oder `BACKUP_PASSWORD` als Umgebungsvariable). Ergebnis: normales ZIP mit Datenbank und Dateien.
 - **Per SSH:** `php artisan backup:run`, `backup:status`, `backup:verify`, `backup:einspielen <datei>`, `backup:restore <datei> --to=<ordner>` (nur entpacken).
 - **Ohne Backend:** Actions → „Server-Prüfung“ → `backup:run` bzw. `backup:status`.
 

@@ -28,6 +28,7 @@ use App\Http\Controllers\Public\StatusController;
 use App\Http\Controllers\Public\SucheController;
 use App\Http\Controllers\Public\UmfrageController;
 use App\Http\Controllers\Public\WhatsAppController;
+use App\Http\Controllers\Redaktion\BackupDownloadController;
 use App\Http\Controllers\Redaktion\BackupStandController;
 use App\Http\Controllers\Redaktion\GeorgsboteTitelbildController;
 use App\Http\Controllers\Redaktion\KatalogBildController;
@@ -108,6 +109,8 @@ Route::get('/api/calendar/events', [CalendarController::class, 'api'])
 // Stand eines Backup-Auftrags (Verwaltung → Backups). Ohne Anmeldung und auch im
 // Wartungsmodus erreichbar, weil beim Einspielen Datenbank und Sitzung ersetzt
 // werden; geschützt durch das Token aus dem Auftrag.
+Route::get('/admin/backups/download/{datei}', BackupDownloadController::class)
+    ->where('datei', 'backup-[A-Za-z0-9_.-]+\\.dpsgbak')->middleware(['auth', 'signed', 'throttle:10,1'])->name('backup.download');
 Route::get('/einspielen/stand/{token}', BackupStandController::class)->where('token', '[A-Za-z0-9]{40}')->name('backup.stand');
 
 // Suche auf der Website (docs/plan-ehrenamt.md Nr. 3).

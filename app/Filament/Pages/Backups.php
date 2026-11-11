@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Http\Controllers\Redaktion\BackupDownloadController;
 use App\Models\User;
 use App\Services\Backup\BackupEinspielen;
 use App\Services\Backup\BackupService;
@@ -9,6 +10,7 @@ use App\Support\AuditLogger;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
+use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
@@ -16,6 +18,7 @@ use Filament\Pages\Page;
 use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Facades\URL;
 use RuntimeException;
 use UnitEnum;
 
@@ -56,6 +59,30 @@ class Backups extends Page
                 ->requiresConfirmation()
                 ->modalDescription('Sichert Datenbank, geschützte Dateien und Uploads verschlüsselt. Startet innerhalb einer Minute im Hintergrund; danach steht es unten in der Liste, auch zum Einspielen auf einer anderen Website im selben Webspace (z. B. Test → Live).')
                 ->action(fn () => $this->beauftragen('backup')),
+            Action::make('herunterladen')
+                ->label('Herunterladen')
+                ->icon('heroicon-o-arrow-down-tray')
+                ->color('gray')
+                ->visible(fn () => $this->eigene() !== [])
+                ->modalHeading('Backup herunterladen')
+                ->modalDescription('Die Datei bleibt verschlüsselt (.dpsgbak). Öffnen lässt sie sich nur mit dem Backup-Passwort, z. B. mit scripts/backup-entschluesseln.php. Sie enthält alle Daten der Website: nur auf eigenen, verschlüsselten Geräten bzw. Speichern ablegen. Der Download wird protokolliert.')
+                ->schema([
+                    Select::make('datei')->label('Backup')->required()
+                        ->options(fn () => $this->eigene())
+                        ->default(fn () => array_key_first($this->eigene())),
+                    Checkbox::make('sicher')->label('Ich lege die Datei nur an einem sicheren Ort ab.')->accepted(),
+                ])
+                ->modalSubmitActionLabel('Herunterladen')
+                ->action(function (array $data) {
+                    abort_unless(static::canAccess(), 403);
+                    $datei = (string) $data['datei'];
+                    if (! array_key_exists($datei, $this->eigene())) {
+                        Notification::make()->danger()->title('Dieses Backup gibt es nicht (mehr).')->send();
+
+                        return;
+                    }
+                    $this->redirect(URL::temporarySignedRoute('backup.download', now()->addMinutes(5), ['datei' => $datei]));
+                }),
             Action::make('einspielen')
                 ->label('Backup einspielen')
                 ->icon('heroicon-o-arrow-path-rounded-square')
@@ -114,6 +141,20 @@ class Backups extends Page
             'backup' => 'backup.angefordert', 'uebertragen' => 'backup.uebertragen', default => 'backup.einspielen'
         }, $user instanceof User ? $user : null, request: request());
         $this->redirect(route('backup.stand', $token));
+    }
+
+    /**
+     * Backups dieser Website zum Herunterladen: Dateiname => Beschriftung.
+     *
+     * @return array<string, string>
+     */
+    public function eigene(): array
+    {
+        $backups = app(BackupService::class);
+
+        return collect(app(BackupEinspielen::class)->quellen())
+            ->filter(fn (string $label, string $pfad) => BackupDownloadController::pfad($backups, basename($pfad)) === $pfad)
+            ->mapWithKeys(fn (string $label, string $pfad) => [basename($pfad) => $label])->all();
     }
 
     /**

@@ -6,6 +6,7 @@ use App\Support\AuditLogger;
 use App\Support\Features;
 use App\Support\MailEvents;
 use App\Support\PushEvents;
+use App\Support\Rechte;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
@@ -177,6 +178,39 @@ class User extends Authenticatable implements FilamentUser
     public function isBildungsreferent(): bool
     {
         return $this->hasRole('bildungsreferent');
+    }
+
+    /**
+     * Rechte-Matrix (docs/rollen.md): Hat die Person das Recht irgendwo bzw.
+     * im Bereich ($typ = stage|section, $key)? Globale Rollen gelten überall.
+     */
+    public function darf(string $recht, ?string $typ = null, ?string $key = null): bool
+    {
+        return Rechte::darf($this, $recht, $typ, $key);
+    }
+
+    /** Recht für die ganze Website (nicht nur für Bereiche). */
+    public function darfUeberall(string $recht): bool
+    {
+        return Rechte::ueberall($this, $recht);
+    }
+
+    /**
+     * Bereiche (Stufen: stage, Fachbereiche: section), in denen das Recht gilt.
+     *
+     * @return list<string>
+     */
+    public function bereicheFuer(string $recht, string $typ): array
+    {
+        return Rechte::bereiche($this, $recht, $typ);
+    }
+
+    /** Recht für den Bereich eines Inhalts (Stufe oder Fachbereich) oder überall. */
+    public function darfFuer(string $recht, ?string $stage, ?string $section): bool
+    {
+        return ($stage && $this->darf($recht, 'stage', $stage))
+            || ($section && $this->darf($recht, 'section', $section))
+            || $this->darfUeberall($recht);
     }
 
     /** Alle Inhalte und Veranstaltungen: Verwaltung (samt Admins) oder Bildungsreferent*in. */

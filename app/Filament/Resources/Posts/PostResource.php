@@ -48,14 +48,14 @@ class PostResource extends Resource
         $query = parent::getEloquentQuery();
         $user = Filament::auth()->user();
 
-        if (! $user || $user->isRedaktion() || $user->hasRole('vorstand')) {
+        if (! $user || $user->darfUeberall('beitraege')) {
             return $query;
         }
 
         return $query->where(fn (Builder $q) => $q
             ->where('author_id', $user->id)
-            ->orWhereIn('stage', $user->scopeKeysFor('stufenadmin'))
-            ->orWhereIn('section', $user->scopeKeysFor('sektionsadmin')));
+            ->orWhereIn('stage', $user->bereicheFuer('beitraege', 'stage'))
+            ->orWhereIn('section', $user->bereicheFuer('beitraege', 'section')));
     }
 
     public static function form(Schema $schema): Schema

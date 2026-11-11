@@ -52,13 +52,15 @@ class EventResource extends Resource
         $query = parent::getEloquentQuery();
         $user = Filament::auth()->user();
 
-        if (! $user || $user->isRedaktion() || $user->hasRole('vorstand')) {
+        if (! $user || $user->darfUeberall('veranstaltungen.lesen') || $user->darfUeberall('veranstaltungen.bearbeiten') || $user->darf('veranstaltungen.uebersicht')) {
             return $query;
         }
 
+        $bereiche = fn (string $typ) => [...$user->bereicheFuer('veranstaltungen.lesen', $typ), ...$user->bereicheFuer('veranstaltungen.bearbeiten', $typ)];
+
         return $query->where(fn (Builder $q) => $q
-            ->whereIn('stage', [...$user->scopeKeysFor('stufenadmin'), ...$user->scopeKeysFor('veranstaltungen', 'stage')])
-            ->orWhereIn('section', [...$user->scopeKeysFor('sektionsadmin'), ...$user->scopeKeysFor('veranstaltungen', 'section')]));
+            ->whereIn('stage', $bereiche('stage'))
+            ->orWhereIn('section', $bereiche('section')));
     }
 
     public static function form(Schema $schema): Schema

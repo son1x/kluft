@@ -12,7 +12,7 @@ class WhatsAppAccess
     /** Aussendungen entwerfen. */
     public static function draft(?User $user): bool
     {
-        return $user !== null && ($user->isWhatsAppAdmin() || $user->isRedaktion() || $user->hasRole('vorstand'));
+        return $user !== null && ($user->isWhatsAppAdmin() || $user->darf('whatsapp.entwurf'));
     }
 
     /** Freigeben, versenden, Vorlagen und Abonnent:innen verwalten. */

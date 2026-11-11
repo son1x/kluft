@@ -315,7 +315,7 @@ class EventForm
 
     private static function isGlobal(): bool
     {
-        return (bool) Filament::auth()->user()?->isRedaktion();
+        return (bool) Filament::auth()->user()?->darfUeberall('veranstaltungen.bearbeiten');
     }
 
     /**
@@ -327,7 +327,7 @@ class EventForm
 
         return self::isGlobal()
             ? $all->all()
-            : $all->only([...(Filament::auth()->user()?->scopeKeysFor('stufenadmin') ?? []), ...(Filament::auth()->user()?->scopeKeysFor('veranstaltungen', 'stage') ?? [])])->all();
+            : $all->only(Filament::auth()->user()?->bereicheFuer('veranstaltungen.bearbeiten', 'stage') ?? [])->all();
     }
 
     /**
@@ -339,6 +339,6 @@ class EventForm
 
         return self::isGlobal()
             ? $all->all()
-            : $all->only([...(Filament::auth()->user()?->scopeKeysFor('sektionsadmin') ?? []), ...(Filament::auth()->user()?->scopeKeysFor('veranstaltungen', 'section') ?? [])])->all();
+            : $all->only(Filament::auth()->user()?->bereicheFuer('veranstaltungen.bearbeiten', 'section') ?? [])->all();
     }
 }

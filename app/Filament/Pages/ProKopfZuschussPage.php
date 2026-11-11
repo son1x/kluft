@@ -70,7 +70,7 @@ class ProKopfZuschussPage extends Page
     {
         $user = Filament::auth()->user();
 
-        return Zuschuesse::aktiv() && config('dpsg.site.level') === 'Stamm' && $user && ($user->isRedaktion() || $user->isKasse());
+        return Zuschuesse::aktiv() && config('dpsg.site.level') === 'Stamm' && $user && ($user->darf('zuschuesse') || $user->isKasse());
     }
 
     public function mount(): void

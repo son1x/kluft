@@ -66,7 +66,7 @@ class ContactMessageResource extends Resource
         $user = self::nutzer();
 
         return Features::enabled(Features::NACHRICHTEN) && $user !== null
-            && ($user->isRedaktion() || $user->hasRole('stufenadmin') || $user->hasRole('sektionsadmin'));
+            && $user->darf('nachrichten');
     }
 
     public static function darf(ContactMessage $record): bool
@@ -76,16 +76,16 @@ class ContactMessageResource extends Resource
             return false;
         }
 
-        return $user->isRedaktion() || ($record->event !== null && $user->can('manageParticipants', $record->event));
+        return $user->darfUeberall('nachrichten') || ($record->event !== null && $user->can('manageParticipants', $record->event));
     }
 
     public static function getEloquentQuery(): Builder
     {
         $query = parent::getEloquentQuery();
         $user = self::nutzer();
-        if ($user !== null && ! $user->isRedaktion()) {
-            $stufen = $user->scopeKeysFor('stufenadmin');
-            $bereiche = $user->scopeKeysFor('sektionsadmin');
+        if ($user !== null && ! $user->darfUeberall('nachrichten')) {
+            $stufen = $user->bereicheFuer('nachrichten', 'stage');
+            $bereiche = $user->bereicheFuer('nachrichten', 'section');
             $query->where('art', 'veranstaltung')
                 ->whereHas('event', fn (Builder $e) => $e->where(fn (Builder $w) => $w->whereIn('stage', $stufen ?: [''])->orWhereIn('section', $bereiche ?: [''])));
         }

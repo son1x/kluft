@@ -20,7 +20,7 @@ class Praevention
     public static function zugriff(?User $user): bool
     {
         return Features::enabled(Features::PRAEVENTION) && $user !== null
-            && ($user->isVerwaltung() || $user->hasRole('vorstand'));
+            && $user->darf('praevention');
     }
 
     /**

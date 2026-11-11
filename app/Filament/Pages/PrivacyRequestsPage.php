@@ -52,7 +52,7 @@ class PrivacyRequestsPage extends Page
 
     public static function canAccess(): bool
     {
-        return (bool) Filament::auth()->user()?->isVerwaltung();
+        return (bool) Filament::auth()->user()?->darf('datenschutz');
     }
 
     public function search(): void

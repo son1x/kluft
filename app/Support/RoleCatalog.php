@@ -71,6 +71,19 @@ class RoleCatalog
         if (Features::enabled(Features::MATERIALVERLEIH)) {
             $options['material|global|'] = 'Materialwart*in';
         }
+        // Eigene Rollen aus der Rechte-Matrix (docs/rollen.md).
+        foreach (Rechte::eigene() as $schluessel => $rolle) {
+            if ($rolle->geltung === 'bereich') {
+                foreach ($stages as $key => $label) {
+                    $options["{$schluessel}|stage|{$key}"] = "{$rolle->name} – {$label}";
+                }
+                foreach (self::sections() as $key => $label) {
+                    $options["{$schluessel}|section|{$key}"] = "{$rolle->name} – {$label}";
+                }
+            } else {
+                $options["{$schluessel}|global|"] = $rolle->name;
+            }
+        }
         $options['admin|global|'] = 'Admin (Technik)';
         $options['superadmin|global|'] = 'Super-Admin';
 
@@ -96,16 +109,17 @@ class RoleCatalog
             return $all;
         }
 
-        if ($actor->isVerwaltung()) {
+        if ($actor->darf('benutzer')) {
             unset($all['admin|global|'], $all['superadmin|global|']);
 
             return $all;
         }
 
-        // Bildungsreferent*innen: Autor:innen aller Bereiche, auch ohne Zuordnung.
-        // Stufen-/Sektionsadmins: nur Autor:innen im eigenen Scope (5.5).
+        // „Autor:innen freischalten“ für die ganze Website (z. B. Bildungsreferent*innen):
+        // alle Bereiche, auch ohne Zuordnung. Je Bereich (Stufen-/Sektionsadmins):
+        // nur Autor:innen im eigenen Bereich (5.5).
         $keys = self::delegatedScopeKeys($actor);
-        if ($actor->isBildungsreferent()) {
+        if ($actor->darfUeberall('autoren')) {
             $keys[] = '';
         }
 
@@ -125,22 +139,17 @@ class RoleCatalog
      */
     public static function delegatedScopeKeys(User $actor): array
     {
-        // Bildungsreferent*innen schalten Autor:innen in allen Bereichen frei.
-        if ($actor->isBildungsreferent() && ! $actor->isVerwaltung()) {
+        // „Autor:innen freischalten“ für die ganze Website: alle Bereiche.
+        if ($actor->darfUeberall('autoren') && ! $actor->darf('benutzer')) {
             return array_values(array_unique([...array_keys((array) config('dpsg.stages')), ...array_keys(self::sections())]));
         }
 
-        return $actor->roleAssignments
-            ->whereIn('role', ['stufenadmin', 'sektionsadmin'])
-            ->pluck('scope_key')
-            ->filter()
-            ->values()
-            ->all();
+        return array_values(array_unique([...$actor->bereicheFuer('autoren', 'stage'), ...$actor->bereicheFuer('autoren', 'section')]));
     }
 
     public static function canManageUsersGlobally(User $actor): bool
     {
-        return $actor->isVerwaltung();
+        return $actor->darf('benutzer');
     }
 
     public static function encode(RoleAssignment|array $assignment): string
@@ -173,6 +182,12 @@ class RoleCatalog
     /** Was eine Rolle darf, in einem Satz (Mail bei neuen Rechten, „Meine Rollen und Rechte“). */
     public static function erklaerung(string $role): ?string
     {
+        if (Rechte::istEigen($role)) {
+            $rolle = Rechte::eigene()[$role] ?? null;
+
+            return $rolle ? ($rolle->beschreibung ?: collect($rolle->rechte)->map(fn (string $r) => Rechte::KATALOG[$r]['label'] ?? $r)->implode(', ')) : null;
+        }
+
         return [
             'autor' => 'eigene Beiträge schreiben und bearbeiten',
             'stufenadmin' => 'Stufenseite, Beiträge und Veranstaltungen der Stufe pflegen, Autor:innen freischalten',
@@ -201,7 +216,12 @@ class RoleCatalog
      */
     public static function isPrivileged(string $key): bool
     {
-        return in_array(self::decode($key)['role'], ['verwaltung', 'bildungsreferent', 'kasse', 'whatsapp', 'admin', 'superadmin'], true);
+        $role = self::decode($key)['role'];
+        if (Rechte::istEigen($role)) {
+            return Rechte::sensibel(Rechte::fuerRolle($role));
+        }
+
+        return in_array($role, ['verwaltung', 'bildungsreferent', 'kasse', 'whatsapp', 'admin', 'superadmin'], true);
     }
 
     public static function label(RoleAssignment $assignment): string

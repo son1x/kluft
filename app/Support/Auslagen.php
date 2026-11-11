@@ -43,7 +43,7 @@ class Auslagen
             return false;
         }
 
-        return config('dpsg.site.level') === 'Stamm' ? $user->isKasse() : ($user->isKasse() || $user->isVerwaltung());
+        return $user->isKasse() || $user->darf('kasse');
     }
 
     public static function kmSatzCent(): int

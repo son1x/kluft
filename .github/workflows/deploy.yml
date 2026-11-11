@@ -426,8 +426,29 @@ jobs:
           go install github.com/protomaps/go-pmtiles@v1.31.2
           scripts/build-map-data.sh "$(go env GOPATH)/bin/go-pmtiles"
 
+      # Robust gegen Störungen des Ubuntu-Spiegels auf dem Runner (z. B. DNS
+      # von azure.archive.ubuntu.com, 11.11.2026): erst die Paketquelle mit
+      # Zeitlimit, sonst das Paket direkt von anderen Ubuntu-Servern laden.
       - name: lftp installieren
-        run: command -v lftp >/dev/null || { sudo apt-get update && sudo apt-get install -y lftp; }
+        timeout-minutes: 8
+        run: |
+          command -v lftp >/dev/null && exit 0
+          if sudo timeout 120 apt-get install -y --no-install-recommends lftp \
+            || { sudo timeout 120 apt-get update -o Acquire::Retries=2 && sudo timeout 120 apt-get install -y --no-install-recommends lftp; }; then
+            exit 0
+          fi
+          echo "Paketquelle nicht erreichbar – lade lftp direkt."
+          for spiegel in http://archive.ubuntu.com http://de.archive.ubuntu.com http://security.ubuntu.com https://mirrors.edge.kernel.org; do
+            for datei in lftp_4.9.2-2ubuntu1.1_amd64.deb lftp_4.9.2-1build1_amd64.deb; do
+              if curl -fsSL --retry 2 --max-time 60 -o /tmp/lftp.deb "$spiegel/ubuntu/pool/main/l/lftp/$datei" \
+                && sudo dpkg -i /tmp/lftp.deb; then
+                lftp --version | head -1
+                exit 0
+              fi
+            done
+          done
+          echo "::error::lftp ließ sich nicht installieren (Ubuntu-Spiegel nicht erreichbar)."
+          exit 1
 
       # lftp meldet "hostname contains invalid characters", wenn im Secret
       # unsichtbare Zeichen stecken (typischerweise ein Windows-Zeilenende

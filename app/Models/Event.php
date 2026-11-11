@@ -59,6 +59,7 @@ class Event extends Model
         'status', 'extern_freigegeben', 'form_fields', 'retention_days', 'created_by', 'calendar_uid',
         'certificate_enabled', 'certificate_text', 'certificate_signer', 'preise', 'zahlungsfrist_tage',
         'zuschuss', 'zuschuss_art', 'zuschuss_geber', 'zuschuss_finanzen', 'zuschuss_fern', 'zuschuss_bericht', 'zuschuss_antrag', 'zuschuss_stand',
+        'foto_einwilligung',
     ];
 
     protected function casts(): array
@@ -73,6 +74,8 @@ class Event extends Model
             'adults_only' => 'boolean',
             'extern_freigegeben' => 'boolean',
             'info_sammeladresse' => 'boolean',
+            'foto_einwilligung' => 'boolean',
+            'sensible_geloescht_at' => 'datetime',
             'info_verantwortlich' => 'boolean',
             'erinnerung_tage' => 'integer',
             'erinnerung_gesendet_am' => 'datetime',
@@ -303,6 +306,9 @@ class Event extends Model
                 ...($optionen !== [] ? ['options' => array_combine($optionen, $optionen)] : []),
                 'hint' => filled($feld['hinweis'] ?? null) ? trim((string) $feld['hinweis']) : null,
                 'eigen' => true,
+                // Besonders schützenswert (z. B. Gesundheit): nicht im Export,
+                // früher gelöscht (docs/datenschutz-ueberblick.md).
+                'sensibel' => (bool) ($feld['sensibel'] ?? false),
             ];
         }
 
@@ -393,9 +399,28 @@ class Event extends Model
         return $this->zuschuss && Features::enabled(Features::ZUSCHUESSE);
     }
 
+    /**
+     * Schlüssel der sensiblen Felder (z. B. Gesundheit, Ernährung).
+     *
+     * @return list<string>
+     */
+    public function sensibleFelder(): array
+    {
+        return array_keys(array_filter($this->formFields(), fn (array $f) => $f['sensibel'] ?? false));
+    }
+
+    /** Sensible Angaben werden so viele Tage nach dem Ende gelöscht. */
+    public static function sensibleTage(): int
+    {
+        return max(1, (int) config('dpsg.sensible_tage', 14));
+    }
+
     public function consentText(): string
     {
         $text = __((string) config('dpsg.event_consent.text'), ['tage' => $this->retention_days]);
+        if ($this->sensibleFelder() !== []) {
+            $text .= ' Besonders geschützte Angaben (z. B. zur Gesundheit) sieht nur die Veranstaltungsleitung; wir löschen sie '.self::sensibleTage().' Tage nach der Veranstaltung.';
+        }
         if ($this->zuschussAktiv()) {
             $text .= ' '.Zuschuesse::EINWILLIGUNG;
         }
@@ -405,7 +430,7 @@ class Event extends Model
 
     public function consentVersion(): string
     {
-        $version = (string) config('dpsg.event_consent.version').($this->zuschussAktiv() ? '+zuschuss-1' : '');
+        $version = (string) config('dpsg.event_consent.version').($this->zuschussAktiv() ? '+zuschuss-1' : '').($this->sensibleFelder() !== [] ? '+sensibel-1' : '');
 
         return $this->checksMembers() ? $version.'+mitglieder-'.config('mitglieder.consent.version') : $version;
     }

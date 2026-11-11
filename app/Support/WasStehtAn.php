@@ -2,12 +2,15 @@
 
 namespace App\Support;
 
+use App\Filament\Pages\RechtePruefungPage;
 use App\Filament\Resources\ContactMessages\ContactMessageResource;
 use App\Filament\Resources\Events\EventResource;
 use App\Filament\Resources\Posts\PostResource;
+use App\Filament\Resources\Users\UserResource;
 use App\Filament\Resources\Zahlungen\ZahlungResource;
 use App\Models\Event;
 use App\Models\EventRegistration;
+use App\Models\RoleAssignment;
 use App\Models\User;
 use App\Models\Zahlung;
 use App\Policies\PostPolicy;
@@ -61,7 +64,42 @@ class WasStehtAn
             self::zahlungen(...),
             self::zuschussfristen(...),
             self::naechsteVeranstaltungen(...),
+            self::rechtePruefung(...),
+            self::ohneGueltigBis(...),
         ];
+    }
+
+    /** Jährliche Rechte-Prüfung fällig (docs/datenschutz-ueberblick.md). @return list<array<string, mixed>> */
+    private static function rechtePruefung(User $user): array
+    {
+        if (! RechtePruefung::zugriff($user) || ! RechtePruefung::faellig()) {
+            return [];
+        }
+        $letzte = RechtePruefung::letzte();
+
+        return [[
+            'titel' => 'Rechte-Prüfung fällig',
+            'text' => $letzte ? 'Zuletzt am '.$letzte['am']->format('d.m.Y').'. Durchsehen, wer sensible Rechte hat, und abschließen.' : 'Noch nie geprüft. Durchsehen, wer sensible Rechte hat, und abschließen.',
+            'url' => RechtePruefungPage::getUrl(),
+            'farbe' => 'warning', 'icon' => 'heroicon-o-shield-check',
+        ]];
+    }
+
+    /** Bereichsrollen ohne „gültig bis“ (Amtszeiten enden). @return list<array<string, mixed>> */
+    private static function ohneGueltigBis(User $user): array
+    {
+        if (! $user->darf('benutzer')) {
+            return [];
+        }
+        $n = RoleAssignment::query()->whereIn('scope_type', ['stage', 'section'])->whereNull('gueltig_bis')
+            ->whereHas('user', fn ($query) => $query->where('status', 'active'))->count();
+
+        return $n === 0 ? [] : [[
+            'titel' => $n === 1 ? '1 Bereichsrolle ohne „gültig bis“' : "{$n} Bereichsrollen ohne „gültig bis“",
+            'text' => 'Stufen- und Sektionsrollen enden mit der Amtszeit. Mit Datum laufen sie von selbst ab.',
+            'url' => UserResource::getUrl('index'),
+            'farbe' => 'info', 'icon' => 'heroicon-o-calendar', 'anzahl' => $n,
+        ]];
     }
 
     /** @return list<array<string, mixed>> */

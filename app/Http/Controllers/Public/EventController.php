@@ -144,10 +144,15 @@ class EventController extends Controller
             }];
         }
 
+        // Freiwillige Foto-Einwilligung: nur wenn eingeschaltet, Antwort ja oder nein.
+        if ($event->foto_einwilligung) {
+            $rules['foto'] = ['required', Rule::in(['ja', 'nein'])];
+        }
+
         // Familienanmeldung: weitere Personen; leere Zeilen zählen nicht.
         if ($event->mehrere_personen) {
             $weitere = array_values(array_filter((array) $request->input('weitere', []),
-                fn ($p) => is_array($p) && collect($p)->except('preis')->contains(fn ($v) => filled($v))));
+                fn ($p) => is_array($p) && collect($p)->except(['preis', 'foto'])->contains(fn ($v) => filled($v))));
             $request->merge(['weitere' => $weitere]);
             $rules['weitere'] = ['array', 'max:'.EventRegistrations::MAX_WEITERE];
             $rules['weitere.*.first_name'] = ['required', 'string', 'max:100'];
@@ -155,6 +160,9 @@ class EventController extends Controller
             $rules['weitere.*.birth_year'] = [($fields['birth_year']['required'] ?? false) ? 'required' : 'nullable', 'integer', 'between:'.(now()->year - 100).','.now()->year];
             if ($preise !== []) {
                 $rules['weitere.*.preis'] = ['required', Rule::in(array_map('strval', array_keys($preise)))];
+            }
+            if ($event->foto_einwilligung) {
+                $rules['weitere.*.foto'] = ['required', Rule::in(['ja', 'nein'])];
             }
         } else {
             $request->request->remove('weitere');
@@ -180,6 +188,8 @@ class EventController extends Controller
             'in' => 'Bitte wähle eine der angebotenen Möglichkeiten.',
             'integer' => 'Bitte gib eine ganze Zahl an.',
             'preis.required' => 'Bitte wähle den passenden Teilnahmebeitrag.',
+            'foto.required' => 'Bitte sag uns, ob wir Fotos zeigen dürfen (Ja oder Nein).',
+            'weitere.*.foto.required' => 'Bitte gib bei jeder weiteren Person an, ob wir Fotos zeigen dürfen.',
             'date_format' => 'Bitte gib ein gültiges Datum an.',
             'before_or_equal' => 'Bitte gib ein gültiges Geburtsdatum an.',
             'after' => 'Bitte gib ein gültiges Geburtsdatum an.',
@@ -223,11 +233,13 @@ class EventController extends Controller
             'guardian_name' => $request->boolean('by_guardian') ? $data['guardian_name'] : null,
             'guardian_consent' => $request->boolean('by_guardian') && $request->boolean('guardian_consent'),
             'preis' => $preise !== [] ? $preise[(int) $data['preis']] : null,
+            'foto_einwilligung' => isset($data['foto']) ? $data['foto'] === 'ja' : null,
         ], collect($data['weitere'] ?? [])->map(fn (array $p) => [
             'first_name' => $p['first_name'],
             'last_name' => $p['last_name'],
             'birth_year' => isset($p['birth_year']) ? (int) $p['birth_year'] : null,
             'preis' => $preise !== [] ? $preise[(int) $p['preis']] : null,
+            'foto_einwilligung' => isset($p['foto']) ? $p['foto'] === 'ja' : null,
         ])->all());
 
         return $done();

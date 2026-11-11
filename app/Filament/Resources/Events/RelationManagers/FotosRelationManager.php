@@ -68,6 +68,27 @@ class FotosRelationManager extends RelationManager
         return false;
     }
 
+    /** Hinweis, wer keine Foto-Einwilligung gegeben hat (nur wenn abgefragt). */
+    private function ohneEinwilligung(): ?string
+    {
+        /** @var Event $event */
+        $event = $this->getOwnerRecord();
+        if (! $event->foto_einwilligung) {
+            return null;
+        }
+        $ohne = $event->registrations()->whereIn('status', ['confirmed', 'waitlist'])
+            ->where(fn ($query) => $query->where('foto_einwilligung', false)->orWhereNull('foto_einwilligung'))
+            ->orderBy('last_name')->get();
+        if ($ohne->isEmpty()) {
+            return 'Alle Teilnehmenden haben in Fotos eingewilligt.';
+        }
+        $namen = $this->ich()->can('viewParticipants', $event)
+            ? ': '.$ohne->map(fn ($r) => $r->fullName())->implode(', ')
+            : '';
+
+        return $ohne->count().' '.($ohne->count() === 1 ? 'Person' : 'Personen').' ohne Foto-Einwilligung'.$namen.'. Bitte keine Fotos freigeben, auf denen sie zu erkennen sind.';
+    }
+
     private function ich(): User
     {
         $user = Filament::auth()->user();
@@ -88,6 +109,7 @@ class FotosRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->description(fn () => $this->ohneEinwilligung())
             ->defaultSort('sort')
             ->reorderable('sort')
             ->contentGrid(['default' => 2, 'md' => 3, 'xl' => 4])

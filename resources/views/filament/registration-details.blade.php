@@ -4,7 +4,7 @@
     <div><dt class="font-semibold">Status</dt><dd>{{ $registration->statusLabel() }}</dd></div>
     @foreach ($fields as $key => $field)
         @php($value = $key === 'birth_year' ? $registration->birth_year : ($registration->data[$key] ?? null))
-        <div><dt class="font-semibold">{{ $field['label'] }}</dt><dd>{{ $registration->event->fieldValueLabel($field, $value) ?? '–' }}</dd></div>
+        <div><dt class="font-semibold">{{ $field['label'] }}@if ($field['sensibel'] ?? false) <span class="text-xs font-normal text-danger-600">(sensibel)</span>@endif</dt><dd>{{ $registration->event->fieldValueLabel($field, $value) ?? '–' }}</dd></div>
     @endforeach
     @if ($registration->guardian_name)
         <div><dt class="font-semibold">Angemeldet durch (sorgeberechtigt)</dt><dd>{{ $registration->guardian_name }} – Einwilligung {{ $registration->guardian_consent ? 'erteilt' : 'fehlt' }}</dd></div>
@@ -16,6 +16,9 @@
     @endif
     @if ($registration->documents->isNotEmpty())
         <div><dt class="font-semibold">Dokumente</dt><dd>{{ $registration->documents->map(fn ($d) => $d->label().' ('.$d->created_at->format('d.m.Y').')')->implode(', ') }}</dd></div>
+    @endif
+    @if ($registration->event->foto_einwilligung)
+        <div><dt class="font-semibold">Fotos</dt><dd>{{ match ($registration->foto_einwilligung) { true => 'Einwilligung erteilt', false => 'Keine Einwilligung – nicht erkennbar zeigen', default => 'nicht gefragt' } }}</dd></div>
     @endif
     <div><dt class="font-semibold">Wird gelöscht am</dt><dd>{{ $registration->purge_at?->format('d.m.Y') }}</dd></div>
 </dl>

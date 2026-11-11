@@ -44,6 +44,7 @@ class AuditText
         'entra.verzeichnis.fehlgeschlagen' => 'Verzeichnissuche (Microsoft 365) fehlgeschlagen',
         'entra.verzeichnis.anderes_konto' => 'Verzeichnissuche: anderes Microsoft-Konto gewählt, abgelehnt',
         'event.export' => 'Teilnehmendenliste exportiert',
+        'event.export.sensibel' => 'Teilnehmendenliste exportiert (mit sensiblen Angaben)',
         'event.liste' => 'Liste für unterwegs (PDF) abgerufen',
         'event.member_check' => 'Mitgliederabgleich gestartet',
         'registration.manual' => 'Teilnehmende*n von Hand eingetragen',
@@ -134,6 +135,10 @@ class AuditText
             'role.expired' => 'Recht abgelaufen: '.self::rolle($rest),
             'feature.an' => 'Funktion eingeschaltet: '.(Features::KATALOG[$rest]['label'] ?? $rest),
             'feature.aus' => 'Funktion ausgeschaltet: '.(Features::KATALOG[$rest]['label'] ?? $rest),
+            'event.sensibel_geloescht' => 'Sensible Angaben gelöscht (Frist nach der Veranstaltung): '.$rest.' Anmeldungen',
+            'konto.vorwarnung' => 'Vorwarnung: Konto wird mangels Anmeldung bald gesperrt',
+            'konto.inaktiv_gesperrt' => 'Konto gesperrt: ein Jahr nicht angemeldet',
+            'rechte.geprueft' => 'Rechte-Prüfung abgeschlossen: '.$rest.' Personen mit sensiblen Rechten',
             'registrations.purge' => 'Automatisch gelöscht: '.($teile[0] ?? 0).' unbestätigte und '.($teile[1] ?? 0).' abgelaufene Anmeldungen',
             'privacy.delete' => count($teile) >= 4
                 ? 'Datenschutz: Daten gelöscht ('.$teile[0].' Anmeldungen, '.$teile[1].' Personen, '.$teile[2].' Nachrichten, '.$teile[3].' Mails)'

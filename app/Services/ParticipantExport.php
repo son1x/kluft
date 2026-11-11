@@ -20,10 +20,20 @@ class ParticipantExport
     /**
      * @return list<string>
      */
-    public function headings(Event $event): array
+    /**
+     * Felder der Liste; sensible (z. B. Gesundheit) nur auf ausdrücklichen Wunsch.
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public function felder(Event $event, bool $mitSensiblen = false): array
+    {
+        return array_filter($event->formFields(), fn (array $f) => $mitSensiblen || ! ($f['sensibel'] ?? false));
+    }
+
+    public function headings(Event $event, bool $mitSensiblen = false): array
     {
         // Bei der Tage-Abfrage zusätzlich eine Spalte je Tag (zum Zählen).
-        $fields = collect($event->formFields())
+        $fields = collect($this->felder($event, $mitSensiblen))
             ->flatMap(fn (array $field) => $field['type'] === 'days' ? [$field['label'], ...array_values($event->days())] : [$field['label']])
             ->all();
 
@@ -37,9 +47,9 @@ class ParticipantExport
     /**
      * @return list<list<string|int|null>>
      */
-    public function rows(Event $event): array
+    public function rows(Event $event, bool $mitSensiblen = false): array
     {
-        $fields = $event->formFields();
+        $fields = $this->felder($event, $mitSensiblen);
         $checksMembers = $event->checksMembers();
 
         return $event->registrations()
@@ -88,14 +98,14 @@ class ParticipantExport
     /**
      * Schreibt die Arbeitsmappe nach php://output (für streamDownload).
      */
-    public function write(Event $event): void
+    public function write(Event $event, bool $mitSensiblen = false): void
     {
         $writer = new Writer;
         $writer->openToFile('php://output');
         $writer->getCurrentSheet()->setName('Teilnehmende');
-        $writer->addRow(Row::fromValues($this->headings($event), (new Style)->setFontBold()));
+        $writer->addRow(Row::fromValues($this->headings($event, $mitSensiblen), (new Style)->setFontBold()));
 
-        foreach ($this->rows($event) as $row) {
+        foreach ($this->rows($event, $mitSensiblen) as $row) {
             $writer->addRow(Row::fromValues($row));
         }
 

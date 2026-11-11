@@ -171,6 +171,8 @@ class EventForm
                     Toggle::make('waitlist_enabled')->label('Warteliste, wenn ausgebucht'),
                     Toggle::make('mehrere_personen')->label('Mehrere Personen in einer Anmeldung (Familien)')
                         ->helperText('Im Formular „Weitere Person hinzufügen“: bis zu 5 weitere mit Vorname, Nachname, Geburtsjahr und Teilnahmebeitrag; alle übrigen Angaben werden von der ersten Person übernommen. Eine Bestätigungsmail, je Person eine Anmeldung.'),
+                    Toggle::make('foto_einwilligung')->label('Foto-Einwilligung abfragen')
+                        ->helperText('Im Formular eine freiwillige Ja/Nein-Frage je Person, ob Fotos auf der Website und in euren Kanälen gezeigt werden dürfen. Die Antwort steht in der Teilnehmendenliste und bei den Fotos.'),
                     Toggle::make('adults_only')->label('Für Erwachsene (eigenverantwortliche Anmeldung)')
                         ->helperText('Z. B. Elternabend, Leitungsrunde oder Schulung: Alle melden sich selbst an, ohne Abschnitt für Personensorgeberechtigte. Wer laut Geburtsjahr jünger als '.config('dpsg.guardian_consent_age').' sein könnte, kann sich nicht anmelden.'),
                     Toggle::make('member_check')->label('Mitgliedschaft mit der Mitgliederverwaltung abgleichen')
@@ -287,6 +289,8 @@ class EventForm
                                 ->required(fn (Get $get) => in_array($get('typ'), ['auswahl', 'mehrfach'], true))
                                 ->visible(fn (Get $get) => in_array($get('typ'), ['auswahl', 'mehrfach'], true)),
                             Toggle::make('pflicht')->label('Pflichtfeld')->inline(false),
+                            Toggle::make('sensibel')->label('Sensible Angabe')->inline(false)->columnSpan(2)
+                                ->helperText(fn () => 'Z. B. Gesundheit, Allergien, Medikamente, Ernährung. Nicht im Excel-Export und in der Liste für unterwegs (außer ausdrücklich gewählt), gelöscht '.Event::sensibleTage().' Tage nach der Veranstaltung, mit Hinweis im Formular.'),
                             TextInput::make('hinweis')->label('Hinweis unter dem Feld (optional)')->maxLength(300)->columnSpanFull(),
                         ])
                         ->columns(3)
@@ -294,7 +298,7 @@ class EventForm
                         ->defaultItems(0)
                         ->maxItems(Event::EIGENE_MAX)
                         ->collapsible()
-                        ->itemLabel(fn (array $state) => filled($state['label'] ?? null) ? $state['label'].' ('.(Event::EIGENE_TYPEN[$state['typ'] ?? ''] ?? '').')' : null)
+                        ->itemLabel(fn (array $state) => filled($state['label'] ?? null) ? $state['label'].' ('.(Event::EIGENE_TYPEN[$state['typ'] ?? ''] ?? '').')'.(($state['sensibel'] ?? false) ? ' · sensibel' : '') : null)
                         ->addActionLabel('Eigenes Feld hinzufügen'),
                 ]),
 
@@ -308,7 +312,8 @@ class EventForm
                         ->maxValue(365)
                         ->default(90)
                         ->required()
-                        ->helperText('Standard 90 Tage (Pflichtenheft 9.3). Unbestätigte Anmeldungen werden nach 48 Stunden gelöscht.'),
+                        ->helperText(fn (Get $get) => 'Standard 90 Tage (Pflichtenheft 9.3). Unbestätigte Anmeldungen werden nach 48 Stunden gelöscht. Als „sensibel“ markierte Angaben löschen wir schon '.Event::sensibleTage().' Tage nach der Veranstaltung.'
+                            .($get('zuschuss') ? ' Zuschuss: Die Frist muss bis nach der Abrechnung reichen. Die eingereichte Teilnahmeliste und den Verwendungsnachweis bewahrt ihr nach den Vorgaben des Zuschussgebers gesondert auf (oft mehrere Jahre) – nicht hier.' : '')),
                 ]),
         ]);
     }

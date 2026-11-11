@@ -76,6 +76,7 @@ class EventRegistrations
                 'guardian_consent' => (bool) ($input['guardian_consent'] ?? false),
                 'preis_bezeichnung' => $p['preis']['bezeichnung'] ?? null,
                 'preis_cent' => $p['preis']['cent'] ?? null,
+                'foto_einwilligung' => $p['foto_einwilligung'] ?? null,
                 'consent_text_version' => $event->consentVersion(),
                 'consent_at' => now(),
                 // Der Link bestätigt die ganze Gruppe; er hängt an der ersten Anmeldung.

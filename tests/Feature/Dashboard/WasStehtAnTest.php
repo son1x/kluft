@@ -8,6 +8,7 @@ use App\Models\Event;
 use App\Models\Post;
 use App\Models\User;
 use App\Support\Features;
+use App\Support\RechtePruefung;
 use App\Support\WasStehtAn;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -42,6 +43,7 @@ class WasStehtAnTest extends TestCase
         Features::setzen(Features::NACHRICHTEN, true);
         $buero = $this->user('buero@example.org', 'verwaltung');
         $this->actingAs($buero);
+        RechtePruefung::abschliessen($buero); // eigener Test: RechtePruefungTest
 
         $this->assertSame([], WasStehtAn::fuer($buero));
         Livewire::test(Widget::class)->assertSee('Alles erledigt');

@@ -8,23 +8,25 @@ use Filament\Forms\Components\TextInput;
  * URL-Pfade (Slugs) aus dem Backend bereinigen: Was beim Abtippen oder
  * Einfügen (z. B. aus Word oder Outlook) unsichtbar mitkommt, ließ die
  * Prüfung „nur Buchstaben, Ziffern, Binde- und Unterstriche“ scheitern,
- * obwohl der Slug richtig aussah. Bewusst sanft: bestehende Slugs (auch mit
- * Umlauten) bleiben, wie sie sind.
+ * obwohl der Slug richtig aussah. Nach dem Bereinigen erfüllt jeder Slug
+ * diese Regel; bestehende gültige Slugs (auch mit Umlauten) bleiben gleich.
  */
 class Slug
 {
     public static function bereinigen(?string $slug): string
     {
         $slug = (string) $slug;
-        // Weiche Trennzeichen und Zeichen ohne Breite entfernen.
-        $slug = (string) preg_replace('/[\x{00AD}\x{200B}-\x{200D}\x{2060}\x{FEFF}]/u', '', $slug);
+        // Unsichtbare Zeichen entfernen: weiche Trennzeichen, Zeichen ohne Breite,
+        // Richtungsmarken (Teams/Outlook kopieren z. B. U+2066…U+2069 mit),
+        // Varianten-Wähler (Steuerzeichen wie Tab werden unten zum Bindestrich).
+        $slug = (string) preg_replace('/[\p{Cf}\p{Co}\p{Cn}\x{FE00}-\x{FE0F}]/u', '', $slug);
         // Geschützte Bindestriche, Gedanken- und Minusstriche → Bindestrich.
         $slug = (string) preg_replace('/[\x{2010}-\x{2015}\x{2212}]/u', '-', $slug);
-        // Leerzeichen (auch geschützte) außen weg, innen → Bindestrich.
-        $slug = trim((string) preg_replace('/[\s\x{00A0}\x{202F}]+/u', ' ', $slug));
-        $slug = str_replace(' ', '-', $slug);
-        // Schrägstriche und Satzzeichen am Rand, doppelte Bindestriche.
-        $slug = (string) preg_replace('/-{2,}/', '-', trim($slug, '/-.,;:'));
+        // Alles, was kein Buchstabe, keine Ziffer, kein Binde- oder Unterstrich
+        // ist (Leerzeichen, Schrägstrich, Apostroph, Punkt, Emoji …) → Bindestrich.
+        $slug = (string) preg_replace('/[^\pL\pM\pN_-]+/u', '-', $slug);
+        // Doppelte Bindestriche zusammenfassen, Bindestriche am Rand weg.
+        $slug = trim((string) preg_replace('/-{2,}/', '-', $slug), '-');
 
         return $slug;
     }

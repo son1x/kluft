@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Events\Pages;
 
 use App\Filament\Actions\CopyForWhatsAppChannelAction;
 use App\Filament\Resources\Events\EventResource;
+use App\Filament\Resources\Events\Schemas\EventForm;
 use App\Support\Zuschuesse;
 use BackedEnum;
 use Filament\Actions\Action;
@@ -15,6 +16,19 @@ use Illuminate\Contracts\Support\Htmlable;
 class EditEvent extends EditRecord
 {
     protected static string $resource = EventResource::class;
+
+    /** Datum und Uhrzeit getrennt anzeigen (EventForm::zeitFelder). */
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        // Beginn/Ende als Ortszeit-Text (sonst stünde in den versteckten Feldern ein
+        // UTC-Zeitstempel, und jedes Speichern verschöbe die Uhrzeit).
+        return [
+            ...$data,
+            'starts_at' => $this->record->starts_at?->format('Y-m-d H:i:s'),
+            'ends_at' => $this->record->ends_at?->format('Y-m-d H:i:s'),
+            ...EventForm::zeitFelder($this->record->starts_at, $this->record->ends_at, (bool) $this->record->ganztaegig),
+        ];
+    }
 
     /**
      * Formular und Teilnehmende als Reiter oben statt untereinander: Bei großen

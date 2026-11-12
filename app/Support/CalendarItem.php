@@ -56,9 +56,10 @@ final class CalendarItem
 
         return new self(
             title: $e->title,
-            starts_at: $e->starts_at,
-            ends_at: $e->ends_at,
-            all_day: false,
+            // Ganztägig wie ICS: Beginn um 0 Uhr, Ende exklusiv am Folgetag.
+            starts_at: $e->ganztaegig ? $e->starts_at->copy()->startOfDay() : $e->starts_at,
+            ends_at: $e->ganztaegig ? ($e->ends_at ?? $e->starts_at)->copy()->startOfDay()->addDay() : $e->ends_at,
+            all_day: (bool) $e->ganztaegig,
             location: $e->location,
             description: $e->teaser,
             sourceLabel: 'Veranstaltung',

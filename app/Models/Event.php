@@ -59,7 +59,7 @@ class Event extends Model
         'status', 'extern_freigegeben', 'form_fields', 'retention_days', 'created_by', 'calendar_uid',
         'certificate_enabled', 'certificate_text', 'certificate_signer', 'preise', 'zahlungsfrist_tage',
         'zuschuss', 'zuschuss_art', 'zuschuss_geber', 'zuschuss_finanzen', 'zuschuss_fern', 'zuschuss_bericht', 'zuschuss_antrag', 'zuschuss_stand',
-        'foto_einwilligung',
+        'foto_einwilligung', 'ganztaegig',
     ];
 
     protected function casts(): array
@@ -75,6 +75,7 @@ class Event extends Model
             'extern_freigegeben' => 'boolean',
             'info_sammeladresse' => 'boolean',
             'foto_einwilligung' => 'boolean',
+            'ganztaegig' => 'boolean',
             'sensible_geloescht_at' => 'datetime',
             'info_verantwortlich' => 'boolean',
             'erinnerung_tage' => 'integer',
@@ -506,7 +507,7 @@ class Event extends Model
 
         if (! $end || $end->isSameDay($start)) {
             $label = $start->isoFormat('dd, D. MMMM YYYY');
-            $time = $start->format('H:i') !== '00:00' ? ', '.$start->format('H:i').($end ? '–'.$end->format('H:i') : '').' Uhr' : '';
+            $time = ! $this->ganztaegig && $start->format('H:i') !== '00:00' ? ', '.$start->format('H:i').($end ? '–'.$end->format('H:i') : '').' Uhr' : '';
 
             return $label.$time;
         }

@@ -22,6 +22,7 @@ use Closure;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
@@ -29,13 +30,16 @@ use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\TimePicker;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Fieldset;
+use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Carbon;
 
 class EventForm
 {
@@ -104,8 +108,52 @@ class EventForm
                     TextInput::make('location')->label('Ort')->maxLength(255),
                     // Nextcloud-Termin, aus dem die Veranstaltung angelegt wurde.
                     Hidden::make('calendar_uid'),
-                    DateTimePicker::make('starts_at')->label('Beginn')->required()->seconds(false),
-                    DateTimePicker::make('ends_at')->label('Ende')->seconds(false)->afterOrEqual('starts_at'),
+                    // Zeit wie im Apple-Kalender: Schalter „Ganztägig“, Datum und Uhrzeit
+                    // getrennt. Gespeichert werden weiter starts_at/ends_at (zusammengesetzt).
+                    Toggle::make('ganztaegig')->label('Ganztägig')->live()
+                        ->afterStateUpdated(fn (Get $get, Set $set) => self::zeitZusammensetzen($get, $set))
+                        ->columnSpanFull(),
+                    Hidden::make('starts_at'),
+                    Hidden::make('ends_at'),
+                    Grid::make(2)->columnSpan(1)->schema([
+                        DatePicker::make('beginn_datum')->label('Beginn')->dehydrated(false)
+                            ->required(fn (Get $get) => blank($get('starts_at')))
+                            ->validationMessages(['required' => 'Bitte das Datum des Beginns angeben.'])
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(function (?string $state, Get $get, Set $set) {
+                                // Wie im Apple-Kalender: Ende rückt mit, wenn es fehlt oder davor liegt.
+                                if ($state && (blank($get('ende_datum')) || $get('ende_datum') < $state)) {
+                                    $set('ende_datum', $state);
+                                }
+                                self::zeitZusammensetzen($get, $set);
+                            })
+                            ->columnSpan(fn (Get $get) => $get('ganztaegig') ? 2 : 1),
+                        TimePicker::make('beginn_zeit')->label('Uhrzeit')->seconds(false)->dehydrated(false)
+                            ->hidden(fn (Get $get) => (bool) $get('ganztaegig'))
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(function (?string $state, Get $get, Set $set) {
+                                // Ende eine Stunde später vorschlagen, solange keins gesetzt ist.
+                                if ($state && blank($get('ende_zeit')) && $get('ende_datum') === $get('beginn_datum')) {
+                                    $set('ende_zeit', Carbon::parse($state)->addHour()->format('H:i'));
+                                }
+                                self::zeitZusammensetzen($get, $set);
+                            }),
+                    ]),
+                    Grid::make(2)->columnSpan(1)->schema([
+                        DatePicker::make('ende_datum')->label('Ende')->dehydrated(false)
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(fn (Get $get, Set $set) => self::zeitZusammensetzen($get, $set))
+                            ->rule(fn (Get $get) => function (string $attribute, mixed $value, Closure $fail) use ($get) {
+                                if (filled($get('starts_at')) && filled($get('ends_at')) && $get('ends_at') < $get('starts_at')) {
+                                    $fail('Das Ende liegt vor dem Beginn.');
+                                }
+                            })
+                            ->columnSpan(fn (Get $get) => $get('ganztaegig') ? 2 : 1),
+                        TimePicker::make('ende_zeit')->label('Uhrzeit')->seconds(false)->dehydrated(false)
+                            ->hidden(fn (Get $get) => (bool) $get('ganztaegig'))
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(fn (Get $get, Set $set) => self::zeitZusammensetzen($get, $set)),
+                    ]),
                     Select::make('stage')
                         ->label('Stufe')
                         ->options(fn () => self::stageOptions())
@@ -357,6 +405,47 @@ class EventForm
                     $uebernehmen($person, $set);
                 }
             });
+    }
+
+    /**
+     * Felder für Datum und Uhrzeit aus Beginn/Ende (Bearbeiten, Kalender-Übernahme).
+     *
+     * @return array{beginn_datum: ?string, beginn_zeit: ?string, ende_datum: ?string, ende_zeit: ?string}
+     */
+    public static function zeitFelder(mixed $beginn, mixed $ende, bool $ganztaegig): array
+    {
+        // In der Zeitzone der Website (beim Bearbeiten kommen ISO-Zeitstempel in UTC).
+        $b = filled($beginn) ? Carbon::parse($beginn)->setTimezone(config('app.timezone')) : null;
+        $e = filled($ende) ? Carbon::parse($ende)->setTimezone(config('app.timezone')) : null;
+
+        return [
+            'beginn_datum' => $b?->toDateString(),
+            'beginn_zeit' => $b && ! $ganztaegig ? $b->format('H:i') : null,
+            'ende_datum' => $e?->toDateString(),
+            'ende_zeit' => $e && ! $ganztaegig ? $e->format('H:i') : null,
+        ];
+    }
+
+    /** Beginn und Ende aus Datum, Uhrzeit und „Ganztägig“ zusammensetzen. */
+    public static function zeitZusammensetzen(Get $get, Set $set): void
+    {
+        $zeit = fn (?string $z, string $sonst) => filled($z) ? substr((string) $z, 0, 5) : $sonst;
+        $datum = $get('beginn_datum');
+        if (blank($datum)) {
+            return;
+        }
+        $ganztaegig = (bool) $get('ganztaegig');
+        $set('starts_at', $datum.' '.($ganztaegig ? '00:00' : $zeit($get('beginn_zeit'), '00:00')).':00');
+
+        $endeDatum = $get('ende_datum');
+        $endeZeit = $get('ende_zeit');
+        if ($ganztaegig) {
+            $set('ends_at', ($endeDatum ?: $datum).' 23:59:00');
+        } elseif (blank($endeDatum) && blank($endeZeit)) {
+            $set('ends_at', null);
+        } else {
+            $set('ends_at', ($endeDatum ?: $datum).' '.$zeit($endeZeit, '23:59').':00');
+        }
     }
 
     private static function isGlobal(): bool

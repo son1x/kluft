@@ -28,7 +28,8 @@ Wünsche (November 2026):
 3. **Reihenfolge**: Stufe 1 online → Stufe 2 Unterschriften → Stufe 3 installierbar und offline → Stufe 4 Datenschutz offline.
 4. **Zusatzinfos fürs Team** (Zimmer, Zelt, Platz …) als frei benennbare Felder je Veranstaltung; Zusammengehörige ergeben sich aus gleichen Werten.
 5. **Kassieren** dürfen alle aus dem Team mit `manageParticipants` – sie nehmen das Geld vor Ort entgegen. Zahlungsart wählbar: Bar, Karte (SumUp), PayPal (je Instanz einstellbar); Kluft vermerkt sie nur, eine Anbindung an SumUp/PayPal ist später möglich.
-6. **Unterschrift**: eine je Person und **Veranstaltung** (nicht je Tag); Umsetzung mit signature_pad (Stufe 2).
+6. **Unterschrift**: eine je Person und **Veranstaltung** (nicht je Tag); die **teilnehmende Person unterschreibt selbst**; das Bild steht in der Zuschuss-Teilnahmeliste in der Zeile der Person. Umsetzung mit signature_pad (Stufe 2).
+7. **Aufbewahrung**: Mit dem Erzeugen des Antrags genügt die fertige Liste – sie wird festgeschrieben (als PDF abgelegt); die Einzelunterschriften werden **14 Tage danach** gelöscht.
 
 ## Verworfen
 
@@ -38,4 +39,4 @@ Wünsche (November 2026):
 
 ## Offen
 
-- Unterschrift: Wer unterschreibt bei Minderjährigen? Vorgegebener Bestätigungstext? Aufbewahrung über die Löschfrist der Anmeldung hinaus (Verwendungsnachweis)?
+- Anwesenheit aus „Vor Ort“ in den Zuschussantrag übernehmen.

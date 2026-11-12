@@ -26,7 +26,8 @@
         "altcha": "3.5.0",
         "maplibre-gl": "^6.11.2",
         "pdfjs-dist": "6.4.299",
-        "pmtiles": "^4.5.0"
+        "pmtiles": "^4.5.0",
+        "signature_pad": "5.1.4"
     },
     "overrides": {
         "shell-quote": "^1.11.0"

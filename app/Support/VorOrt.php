@@ -90,9 +90,10 @@ class VorOrt
         $tageFeld = collect($felder)->search(fn (array $f) => $f['type'] === 'days');
         $beitrag = $event->hatTeilnahmebeitrag();
 
-        $personen = $event->registrations()->where('status', 'confirmed')->with('zahlungen')
+        $unterschrift = Unterschriften::moeglich($event);
+        $personen = $event->registrations()->where('status', 'confirmed')->with(['zahlungen', 'unterschrift'])
             ->orderBy('last_name')->orderBy('first_name')->get()
-            ->map(function (EventRegistration $r) use ($event, $felder, $tage, $tageFeld, $beitrag) {
+            ->map(function (EventRegistration $r) use ($event, $felder, $tage, $tageFeld, $beitrag, $unterschrift) {
                 $data = (array) $r->data;
                 $zahlung = $beitrag ? $r->zahlung() : null;
 
@@ -107,6 +108,7 @@ class VorOrt
                         : array_keys($tage),
                     'da' => array_values((array) $r->vor_ort_tage),
                     'zusatz' => (object) array_intersect_key((array) $r->zusatz, $event->zusatzFelder()),
+                    'unterschrieben' => $unterschrift ? $r->unterschrift?->unterschrieben_am?->toIso8601String() : null,
                     'zahlung' => $zahlung === null ? null : [
                         'stand' => $zahlung->status,
                         'offen_cent' => $zahlung->offenCent(),
@@ -136,6 +138,11 @@ class VorOrt
                     default => null,
                 },
             ])->values()->all(),
+            // Digitale Unterschrift (Stufe 2): nur mit Zuschussantrag.
+            'unterschrift' => $unterschrift ? [
+                'text' => Unterschriften::text($event),
+                'festgeschrieben_am' => $event->teilnahmeliste_am?->toIso8601String(),
+            ] : null,
             // Zusatzinfos fürs Team (z. B. Zimmer); gleiche Werte = gleiche Gruppe.
             'zusatz_felder' => collect($event->zusatzFelder())->map(fn (string $label, string $k) => ['schluessel' => $k, 'label' => $label])->values()->all(),
             'verpflegung' => self::verpflegung($event, $felder, $personen->all()),
@@ -206,6 +213,7 @@ class VorOrt
                 'zahlung' => self::zahlung($user, $registration, $daten),
                 'angaben' => self::angaben($registration, $daten),
                 'zusatz' => self::zusatz($registration, $daten),
+                'unterschrift' => self::unterschrift($user, $registration, $daten, $e['zeit'] ?? null),
             },
         };
 
@@ -226,7 +234,7 @@ class VorOrt
             'erfasst_am' => $erfasst,
         ]);
 
-        if ($grund === null && in_array($typ, ['zahlung', 'angaben', 'zusatz'], true)) {
+        if ($grund === null && in_array($typ, ['zahlung', 'angaben', 'zusatz', 'unterschrift'], true)) {
             AuditLogger::log("vor_ort.{$typ}:".$registration->getKey(), $user, Event::class, $event->getKey(), request());
         }
 
@@ -241,6 +249,12 @@ class VorOrt
      */
     private static function protokollDaten(string $typ, array $daten, ?Event $event): array
     {
+        // Das Bild nicht doppelt speichern – nur seine Prüfsumme.
+        if ($typ === 'unterschrift') {
+            $png = is_string($daten['bild'] ?? null) ? base64_decode(substr($daten['bild'], strlen('data:image/png;base64,')), true) : false;
+
+            return ['pruefsumme' => $png === false ? null : hash('sha256', $png)];
+        }
         if ($typ !== 'angaben' || $event === null) {
             return $daten;
         }
@@ -286,6 +300,22 @@ class VorOrt
             return 'Der Betrag passt nicht zur offenen Forderung.';
         }
         $zahlung->eingang($cent, now(), $user->getKey(), $weg.' vor Ort');
+
+        return null;
+    }
+
+    /** @param  array<string, mixed>  $daten */
+    private static function unterschrift(User $user, EventRegistration $r, array $daten, mixed $zeit): ?string
+    {
+        if (! Unterschriften::moeglich($r->event)) {
+            return 'Für diese Veranstaltung gibt es keine Unterschriftenliste (kein Zuschussantrag).';
+        }
+        $fehler = Unterschriften::pruefen($daten['bild'] ?? null);
+        if ($fehler !== null) {
+            return $fehler;
+        }
+        $am = is_string($zeit) ? rescue(fn () => Carbon::parse($zeit), null, false) : null;
+        Unterschriften::speichern($r, (string) $daten['bild'], $user, $am !== null && $am->lte(now()) ? $am : now());
 
         return null;
     }

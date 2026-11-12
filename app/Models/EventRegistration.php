@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Carbon;
 
@@ -154,6 +155,12 @@ class EventRegistration extends Model
     }
 
     /** Die maßgebliche Zahlung: die jüngste, die nicht storniert ist. */
+    /** @return HasOne<VorOrtUnterschrift, $this> */
+    public function unterschrift(): HasOne
+    {
+        return $this->hasOne(VorOrtUnterschrift::class);
+    }
+
     public function zahlung(): ?Zahlung
     {
         return $this->zahlungen->where('status', '!=', 'storniert')->sortByDesc('id')->first();

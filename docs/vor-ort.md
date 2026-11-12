@@ -1,10 +1,10 @@
 # Vor Ort – Begleiter für die Durchführung von Veranstaltungen
 
-Ein eigener Bereich unter **`/vor-ort`** für die Arbeit am Veranstaltungsort: Anwesenheit abhaken, sehen, wer bezahlt hat, Zahlungen vor Ort kassieren (bar, Karte, PayPal), Verpflegung im Blick behalten, Angaben korrigieren und Zusatzinfos wie Zimmer oder Zelt pflegen.
+Ein eigener Bereich unter **`/vor-ort`** für die Arbeit am Veranstaltungsort: Anwesenheit abhaken, sehen, wer bezahlt hat, Zahlungen vor Ort kassieren (bar, Karte, PayPal), Unterschriften für die Zuschuss-Teilnahmeliste einsammeln, Verpflegung im Blick behalten, Angaben korrigieren und Zusatzinfos wie Zimmer oder Zelt pflegen.
 
 Gebaut für ein **Tablet des Büros** (quer: Liste links, Person rechts, beide scrollen getrennt); auf dem **Handy** als Ausweichgerät einspaltig. Alle Tippflächen mindestens 44 pt, keine seitliche Scrollleiste (Apple HIG, `docs/barrierefreiheit.md`).
 
-Inhalt: [Einrichten](#einrichten) · [Bedienung](#bedienung) · [Zusatzinfos fürs Team](#zusatzinfos-fürs-team) · [Zahlungsarten](#zahlungsarten-beim-kassieren) · [Rechte](#wer-darf-was) · [Technik](#technik) · [Datenschutz](#datenschutz) · [Entscheidungen und offene Punkte](#entscheidungen-und-offene-punkte) · [Ausbauplan](#ausbauplan)
+Inhalt: [Einrichten](#einrichten) · [Bedienung](#bedienung) · [Unterschrift](#digitale-unterschrift-zuschuss-teilnahmeliste) · [Zusatzinfos fürs Team](#zusatzinfos-fürs-team) · [Zahlungsarten](#zahlungsarten-beim-kassieren) · [Rechte](#wer-darf-was) · [Technik](#technik) · [Datenschutz](#datenschutz) · [Entscheidungen und offene Punkte](#entscheidungen-und-offene-punkte) · [Ausbauplan](#ausbauplan)
 
 ---
 
@@ -28,12 +28,13 @@ Die Startseite zeigt die Veranstaltungen, deren Teilnehmende man verwalten darf 
 - **Tagesreiter**: ein Reiter je Veranstaltungstag, „heute“ ist vorausgewählt.
 - **„x von y da“**: wie viele der für diesen Tag Angemeldeten schon abgehakt sind.
 - **„n noch nicht bezahlt“** (nur mit Teilnahmebeitrag).
+- **„x von y unterschrieben“** (nur mit Zuschussantrag).
 - **Verpflegung in Summe**, z. B. „Vegetarisch: 3 · Vegan: 1“ (nur, wenn „Verpflegung“ abgefragt wird).
 
 ### Liste
 
 - **Suche** nach Name – auch nach Zusatzinfos, z. B. „12“ findet alle in Zimmer 12.
-- **Filter**: Alle · Noch nicht da · Nicht bezahlt.
+- **Filter**: Alle · Nicht da · Nicht bezahlt · Ohne Unterschrift (die beiden letzten nur, wenn es Beitrag bzw. Zuschussantrag gibt).
 - **Ordnen**: nach Name oder nach einer Zusatzinfo (z. B. „nach Zimmer“) – dann mit Zwischenüberschriften „Zimmer 12 · 3“, ohne Wert am Ende („Ohne Zimmer“).
 - **„da?“-Knopf** rechts in jeder Zeile: hakt die Person für den gewählten Tag ab (grün „✓ da“); nochmal tippen nimmt den Haken zurück.
 - In der Zeile: Jahrgang, Zusatzinfos, „heute nicht angemeldet“ (wer laut Tage-Auswahl an dem Tag nicht kommt) und der Zahlungsstand (grün bezahlt, rot offen mit Betrag).
@@ -44,6 +45,7 @@ Antippen öffnet die Person (Tablet: rechte Spalte; Handy: eigene Ansicht mit �
 
 - **Anwesenheit**: alle Tage zum Abhaken; gestrichelt = an diesem Tag nicht angemeldet.
 - **Zusatzinfos** (nur Team): Felder direkt bearbeiten, gespeichert beim Verlassen des Felds oder mit Enter. Darunter „Mit dabei: …“ – alle mit dem gleichen Wert (z. B. die Zimmermitbewohnenden).
+- **Unterschrift** (nur bei Veranstaltungen mit Zuschussantrag): „Unterschreiben“ öffnet das Unterschriftsfeld im Vollbild; danach „✍ Unterschrieben am …“ und „Neu unterschreiben“. Siehe [Digitale Unterschrift](#digitale-unterschrift-zuschuss-teilnahmeliste).
 - **Teilnahmebeitrag**: Stand und **„45,00 € erhalten …“** → Zahlungsart wählen (Bar · Karte (SumUp) · PayPal) oder Abbrechen. Bucht den offenen Betrag als Zahlungseingang mit Zahlungsart und Namen der kassierenden Person.
 - **Angaben**: alle abgefragten Angaben; sensible sind markiert. **„Korrigieren“** öffnet ein Formular für Name, Verpflegung, Tage, Anmerkungen, eigene Felder. Die Person bekommt keine Mail.
 
@@ -56,6 +58,30 @@ Antippen öffnet die Person (Tablet: rechte Spalte; Handy: eigene Ansicht mit �
 | Offline · n warten | keine Verbindung; die Änderungen werden automatisch nachgesendet, sobald das Netz zurück ist – **die Seite dafür offen lassen** (noch nicht neu laden, siehe Ausbauplan) |
 
 Lehnt Kluft eine Änderung ab (z. B. Anmeldung inzwischen storniert), erscheint ein Hinweis mit Grund, und die Daten werden neu geladen.
+
+## Digitale Unterschrift (Zuschuss-Teilnahmeliste)
+
+Für Veranstaltungen **mit Zuschussantrag**: Die **teilnehmende Person unterschreibt selbst**, **einmal je Veranstaltung** (nicht je Tag), auf dem Tablet. Die Unterschrift erscheint in der Zuschuss-Teilnahmeliste (PDF) **in der Zeile der Person** (Name, Anschrift, Geburtsdatum …) im Feld „Unterschrift“.
+
+### Ablauf
+
+1. **Vor Ort** bei der Person **„Unterschreiben“** antippen. Es öffnet sich ein großes Feld mit dem Namen und dem Satz *„Ich bestätige meine Teilnahme an „<Veranstaltung>“ (<Datum>).“*
+2. Die Person unterschreibt mit Finger oder Stift. **„Löschen“** setzt das Feld zurück, **„Abbrechen“** schließt ohne Speichern, **„Fertig“** speichert.
+3. In der Liste steht dann „✍ unterschrieben“; der Filter **„Ohne Unterschrift“** zeigt, wer noch fehlt. „Neu unterschreiben“ ersetzt eine Unterschrift.
+4. Im Backend unter **Zuschussantrag → Unterlagen → Teilnahmeliste (PDF)** stehen die Unterschriften in den Zeilen; wer nicht digital unterschrieben hat, unterschreibt auf dem Ausdruck nach. Die Bestätigung unten („Die Richtigkeit der Angaben …“) unterschreibt weiter die antragstellende Person.
+
+### Festschreiben und Löschen
+
+5. Ist die Liste vollständig: **Zuschussantrag → „Teilnahmeliste festschreiben“**. Kluft legt die Teilnahmeliste mit den Unterschriften als PDF ab (`storage/app/private/zuschuss/teilnahmeliste-<id>.pdf`). „Teilnahmeliste (PDF)“ und das ZIP liefern ab dann **diese Fassung**.
+6. Die **Einzelunterschriften werden 14 Tage nach dem Festschreiben gelöscht** (täglich 03:10, Befehl `vor-ort:unterschriften-loeschen`; Frist `UNTERSCHRIFT_LOESCHEN_TAGE`). Bis dahin lässt sich nachunterschreiben und **neu festschreiben**. Wer nach dem Festschreiben neu unterschreibt, wird erst mit dem nächsten Festschreiben wieder zum Löschen vorgemerkt.
+7. Die festgeschriebene PDF bleibt beim Zuschussantrag (Verwendungsnachweis) und wird mit der Veranstaltung gelöscht.
+
+### Technik
+
+- Zeichnen mit der Bibliothek [signature_pad](https://github.com/szimek/signature_pad) 5.1.4 (MIT), über Vite gebündelt – nichts von fremden Servern, CSP-konform.
+- Das Bild wird auf den beschriebenen Bereich zugeschnitten (höchstens 1200 × 500 Pixel) und als PNG geschickt (Ereignis `unterschrift`, Pakete zu 20).
+- Kluft prüft Format und Größe (PNG, höchstens 300 KB), speichert es **verschlüsselt** in `vor_ort_unterschriften` mit **SHA-256-Prüfsumme**, Zeitpunkt (Gerätezeit) und der Person, die das Tablet bedient. In die Liste kommen nur Bilder, deren Prüfsumme stimmt.
+- Rechtlich eine einfache elektronische Unterschrift; nach Rückmeldung von den Zuschussgebern anerkannt.
 
 ## Zusatzinfos fürs Team
 
@@ -134,10 +160,11 @@ Jede Änderung schickt die Oberfläche als **Ereignis** mit eigener Kennung (UUI
 | `zahlung` | `cent`, `weg` (`bar`, `karte`, `paypal` …) | Funktion „Zahlungen“, offene Forderung, Betrag > 0 und ≤ offen, bekannte Zahlungsart | `Zahlung::eingang()` mit Notiz „<Zahlungsart> vor Ort“ (z. B. „Karte (SumUp) vor Ort“), erfasst von der Person; Protokoll `vor_ort.zahlung` |
 | `angaben` | `first_name`, `last_name`, `data` (nur abgefragte Felder) | Name nicht leer; Auswahl/Tage/Jahr/Zahl gültig | Anmeldung; Protokoll `vor_ort.angaben` |
 | `zusatz` | `feld`, `wert` | Feld gehört zur Veranstaltung, ≤ 100 Zeichen | Spalte `event_registrations.zusatz` (leer = entfernen); Protokoll `vor_ort.zusatz` |
+| `unterschrift` | `bild` (PNG als Data-URI) | Veranstaltung mit Zuschussantrag; gültiges PNG ≤ 300 KB | Tabelle `vor_ort_unterschriften` (ersetzt eine vorhandene); im Ereignis-Protokoll nur die Prüfsumme; Protokoll `vor_ort.unterschrift` |
 
 Für alle gilt: Recht `manageParticipants`, Anmeldung bestätigt. Jede Kennung wird **genau einmal** verarbeitet (eindeutiger Index), erneutes Senden ergibt `doppelt`. Damit ist Offline vorbereitet: Haken und Zahlungen können sich beim Nachsenden nicht widersprechen; bei Angaben gilt die zuletzt verarbeitete Änderung.
 
-Die Oberfläche wendet Änderungen sofort an (optimistisch), legt sie in eine Warteschlange, sendet in Paketen bis 50 und wiederholt automatisch (alle 3 s bei offener Warteschlange, sonst alle 15 s und beim Wiederverbinden).
+Die Oberfläche wendet Änderungen sofort an (optimistisch), legt sie in eine Warteschlange, sendet in Paketen bis 20 und wiederholt automatisch (alle 3 s bei offener Warteschlange, sonst alle 15 s und beim Wiederverbinden).
 
 ### Datenmodell
 
@@ -146,17 +173,20 @@ Die Oberfläche wendet Änderungen sofort an (optimistisch), legt sie in eine Wa
 | `event_registrations.vor_ort_tage` | JSON-Liste der Tage, an denen die Person vor Ort abgehakt ist |
 | `event_registrations.zusatz` | JSON `{schlüssel: wert}` der Zusatzinfos |
 | `events.zusatz_felder` | JSON-Liste der Bezeichnungen (Schlüssel = `Str::slug(Bezeichnung, '_')`) |
+| `vor_ort_unterschriften` | je Anmeldung höchstens eine: `bild` (verschlüsselt), `pruefsumme` (SHA-256), Person am Tablet, `unterschrieben_am`, `loeschen_am` (gesetzt beim Festschreiben) |
+| `events.teilnahmeliste_datei`, `teilnahmeliste_am` | abgelegte, festgeschriebene Teilnahmeliste |
 | `vor_ort_ereignisse` | `uuid` (eindeutig), Veranstaltung, Anmeldung, Person, `typ`, `daten` (verschlüsselt), `ergebnis` (ok/abgelehnt), `erfasst_am` (Gerätezeit) |
 
-Migrationen: `2026_11_13_100000_create_vor_ort`, `2026_11_13_110000_add_zusatz_felder`.
+Migrationen: `2026_11_13_100000_create_vor_ort`, `2026_11_13_110000_add_zusatz_felder`, `2026_11_13_120000_create_vor_ort_unterschriften`.
 
-`vor_ort_tage` ist bewusst getrennt von `anwesend`/`anwesend_tage` des Zuschussantrags (dort bedeutet „leer“ = alle Tage). Eine Übernahme „Anwesenheit aus Vor Ort in den Zuschussantrag“ ist mit der Unterschriften-Stufe geplant.
+`vor_ort_tage` ist bewusst getrennt von `anwesend`/`anwesend_tage` des Zuschussantrags (dort bedeutet „leer“ = alle Tage). Eine Übernahme „Anwesenheit aus Vor Ort in den Zuschussantrag“ ist noch offen.
 
 ## Datenschutz
 
 - **Gerät**: Stufe 1 speichert nichts dauerhaft auf dem Gerät; die Daten kommen bei jedem Öffnen frisch vom Server. Die Warteschlange lebt nur, solange die Seite offen ist.
 - **Ereignisse** enthalten nur, was geändert wurde (verschlüsselt gespeichert). Sensible Angaben (z. B. Allergien) stehen dort nicht im Klartext, sondern nur „(sensibel, geändert)“. Die Ereignisse werden mit der Anmeldung gelöscht (Löschfristen der Veranstaltung).
-- **Protokoll**: Zahlungen, Korrekturen und Zusatzinfos stehen mit Namen im Protokoll (`vor_ort.*`, `registration.bearbeitet`).
+- **Unterschriften**: verschlüsselt mit Prüfsumme; im Ereignis-Protokoll nur die Prüfsumme. Gelöscht 14 Tage nach dem Festschreiben der Teilnahmeliste, spätestens mit der Anmeldung. Danach existiert die Unterschrift nur noch in der festgeschriebenen PDF, die zum Zuschussantrag gehört (Aufbewahrung wie der Antrag) und mit der Veranstaltung gelöscht wird.
+- **Protokoll**: Zahlungen, Korrekturen, Zusatzinfos, Unterschriften und Festschreiben stehen mit Namen im Protokoll (`vor_ort.*`, `registration.bearbeitet`).
 - **Anzeige**: Sensible Angaben zeigt „Vor Ort“ wie die Detailansicht im Backend, gekennzeichnet – für dieselben Personen.
 - Seite mit `noindex`, gleiche Sicherheits-Header (CSP) wie die Website.
 
@@ -170,13 +200,15 @@ Für die Datenschutzbewertung (`docs/datenschutz-bewertung.md`): keine neue Date
 | Zahlungsarten | Bar, Karte (SumUp), PayPal – nur vermerkt, keine Anbindung | Anbindung an SumUp/PayPal (siehe unten) |
 | Eigene App oder Bereich in Kluft? | Bereich in Kluft (gleiche Anmeldung, Rechte, Daten; kein App-Store) | – |
 | Offline nötig? | ja – ein zentraler Platz ist ohne Internet | Stufe 3 |
-| Digitale Unterschriften | werden laut Rückmeldung anerkannt, oft gewünscht; **eine Unterschrift je Person und Veranstaltung** (nicht je Tag) | Stufe 2: wer unterschreibt bei Minderjährigen, Bestätigungstext, Aufbewahrung |
+| Digitale Unterschriften | **entschieden:** anerkannt; eine je Person und Veranstaltung; **die teilnehmende Person unterschreibt selbst** (auch Minderjährige); in der Zeile der Person; Standardtext „Ich bestätige meine Teilnahme …“ | – |
+| Aufbewahrung der Unterschriften | **entschieden:** festgeschriebene Liste genügt; Einzelunterschriften 14 Tage nach dem Festschreiben gelöscht | – |
+| Anwesenheit in den Zuschussantrag übernehmen | noch nicht | Übernahme `vor_ort_tage` → `anwesend_tage` |
 | Wartende/stornierte Anmeldungen | nicht in „Vor Ort“ | ggf. Nachmeldung vor Ort als eigene Funktion |
 | Gerät | Tablet des Büros, Handy als Ausweich | – |
 
 ## Ausbauplan
 
 1. ~~**Stufe 1 – online**: Auswahl, Anwesenheit je Tag, Zahlungsstand und Barzahlung, Verpflegung, Angaben korrigieren, Zusatzinfos.~~ (PR „Vor Ort, Stufe 1“)
-2. **Stufe 2 – digitale Unterschrift** je Person und **Veranstaltung** (mit Finger oder Stift auf dem Tablet, Bibliothek [signature_pad](https://github.com/szimek/signature_pad), MIT, über Vite gebündelt), gespeichert als PNG (verschlüsselt, mit Zeitpunkt, bedienender Person und Prüfsumme) als Ereignis `unterschrift`, eingesetzt in die Zuschuss-Teilnahmeliste (PDF) in der Spalte „Unterschrift“; Löschen/neu einholen im Backend mit Protokoll; Übernahme der Anwesenheit in den Zuschussantrag.
+2. ~~**Stufe 2 – digitale Unterschrift** je Person und **Veranstaltung** (mit Finger oder Stift auf dem Tablet, Bibliothek [signature_pad](https://github.com/szimek/signature_pad), MIT, über Vite gebündelt), gespeichert als PNG (verschlüsselt, mit Zeitpunkt, bedienender Person und Prüfsumme) als Ereignis `unterschrift`, eingesetzt in die Zuschuss-Teilnahmeliste (PDF) in der Spalte „Unterschrift“; Festschreiben der Liste, Einzelunterschriften 14 Tage danach gelöscht.~~ (PR „Vor Ort, Stufe 2“)
 3. **Stufe 3 – installierbar und offline**: Web-App-Manifest und Service Worker, Liste der gewählten Veranstaltung auf dem Gerät, Warteschlange dauerhaft (IndexedDB), Nachsenden beim Wiederverbinden, Anzeige „Stand von …“.
 4. **Stufe 4 – Datenschutz offline**: Gerätespeicher verschlüsselt, Löschen beim Abmelden und nach der Veranstaltung, sensible Angaben offline nur nach ausdrücklicher Freigabe, Ergänzung der Datenschutzbewertung.

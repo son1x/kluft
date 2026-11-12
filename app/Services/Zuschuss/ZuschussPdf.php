@@ -3,6 +3,7 @@
 namespace App\Services\Zuschuss;
 
 use App\Models\Event;
+use App\Support\Unterschriften;
 use App\Support\Zuschuesse;
 use App\Support\Zuschuesse\Antrag;
 use App\Support\Zuschuesse\Foerderrechner;
@@ -115,11 +116,20 @@ class ZuschussPdf
             'portrait', 'Pro-Kopf-Zuschuss '.$stichtag->year);
     }
 
-    public function teilnahmeliste(Event $event): string
+    /**
+     * Teilnahmeliste. Ist sie festgeschrieben (Vor Ort, docs/vor-ort.md),
+     * kommt die abgelegte Fassung; sonst neu erzeugt mit den vorhandenen
+     * digitalen Unterschriften.
+     */
+    public function teilnahmeliste(Event $event, bool $festschreiben = false): string
     {
+        if (! $festschreiben && ($abgelegt = Unterschriften::festgeschrieben($event)) !== null) {
+            return $abgelegt;
+        }
         $personen = Zuschuesse::personen($event);
 
         return $this->render('pdf.zuschuss-teilnahmeliste', [
+            'unterschriften' => Unterschriften::fuerListe($event),
             'event' => $event,
             'betreuung' => $personen->filter(fn (array $p) => $p['funktion'] !== 'TN')->values(),
             'teilnehmende' => $personen->where('funktion', 'TN')->values(),

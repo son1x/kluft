@@ -74,6 +74,7 @@
                     <div class="mt-2 flex flex-wrap items-baseline gap-x-5 gap-y-1 text-sm">
                         <span><strong class="text-lg text-dpsg-blau" x-text="zahlen.da"></strong> von <span x-text="zahlen.erwartet"></span> da</span>
                         <span x-show="v.beitrag"><strong class="text-lg text-dpsg-rot" x-text="zahlen.offen"></strong> noch nicht bezahlt</span>
+                        <span x-show="v.unterschrift"><strong class="text-lg text-dpsg-blau" x-text="zahlen.unterschrieben"></strong> von <span x-text="v.personen.length"></span> unterschrieben</span>
                         <template x-for="k in v.verpflegung" x-bind:key="k.label">
                             <span class="text-gray-700" x-text="k.label + ': ' + k.anzahl"></span>
                         </template>
@@ -88,10 +89,10 @@
                             <label class="sr-only" for="vo-suche">Name suchen</label>
                             <input id="vo-suche" type="search" x-model="suche" placeholder="Name suchen …" autocomplete="off"
                                    class="min-h-11 w-full rounded-lg border border-dpsg-mittelbeige bg-white px-3 text-base">
-                            <div class="flex gap-2" role="group" aria-label="Filter">
-                                <template x-for="[k, l] in [['alle', 'Alle'], ['fehlt', 'Noch nicht da'], ['offen', 'Nicht bezahlt']]" x-bind:key="k">
-                                    <button type="button" x-show="k !== 'offen' || v.beitrag" x-on:click="filter = k" x-bind:aria-pressed="filter === k"
-                                            class="min-h-11 flex-1 rounded-lg border px-2 text-sm font-semibold"
+                            <div class="flex flex-wrap gap-2" role="group" aria-label="Filter">
+                                <template x-for="[k, l] in [['alle', 'Alle'], ['fehlt', 'Nicht da'], ['offen', 'Nicht bezahlt'], ['unterschrift', 'Ohne Unterschrift']]" x-bind:key="k">
+                                    <button type="button" x-show="(k !== 'offen' || v.beitrag) && (k !== 'unterschrift' || v.unterschrift)" x-on:click="filter = k" x-bind:aria-pressed="filter === k"
+                                            class="min-h-11 flex-1 basis-[calc(50%-0.25rem)] rounded-lg border px-2 text-sm font-semibold"
                                             x-bind:class="filter === k ? 'border-dpsg-blau bg-dpsg-blau text-white' : 'border-dpsg-mittelbeige bg-white text-dpsg-blau'"
                                             x-text="l"></button>
                                 </template>
@@ -119,6 +120,7 @@
                                             <span x-show="p.jahrgang" x-text="'Jg. ' + p.jahrgang"></span>
                                             <template x-for="z in zusatzText(p)" x-bind:key="z"><span class="rounded border border-dpsg-mittelbeige bg-white px-1.5 text-dpsg-blau" x-text="z"></span></template>
                                             <span x-show="!erwartet(p)" class="rounded bg-gray-100 px-1.5">heute nicht angemeldet</span>
+                                            <span x-show="v.unterschrift && p.unterschrieben" class="rounded bg-green-100 px-1.5 text-green-900">✍ unterschrieben</span>
                                             <span x-show="p.zahlung" class="rounded px-1.5" x-bind:class="zahlungFarbe(p)" x-text="zahlungText(p)"></span>
                                         </span>
                                     </button>
@@ -162,6 +164,18 @@
                                         </template>
                                     </div>
                                     <p class="mt-2 text-xs text-gray-600">Gestrichelt: an diesem Tag nicht angemeldet.</p>
+                                </section>
+
+                                <section x-show="v.unterschrift" class="rounded-xl bg-white p-4 shadow-sm">
+                                    <div class="flex flex-wrap items-center justify-between gap-2">
+                                        <h3 class="font-semibold">Unterschrift <span class="text-xs font-normal text-gray-600">(Zuschuss-Teilnahmeliste)</span></h3>
+                                        <button type="button" x-on:click="unterschreibenStarten(auswahl)"
+                                                class="min-h-11 rounded-lg px-4 font-semibold"
+                                                x-bind:class="auswahl.unterschrieben ? 'border border-dpsg-blau text-dpsg-blau' : 'bg-dpsg-blau text-white'"
+                                                x-text="auswahl.unterschrieben ? 'Neu unterschreiben' : 'Unterschreiben'"></button>
+                                    </div>
+                                    <p class="mt-1 text-sm" x-bind:class="auswahl.unterschrieben ? 'text-green-800' : 'text-gray-700'"
+                                       x-text="auswahl.unterschrieben ? '✍ Unterschrieben am ' + new Date(auswahl.unterschrieben).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' }) : 'Noch nicht unterschrieben.'"></p>
                                 </section>
 
                                 <section x-show="v.zusatz_felder.length" class="rounded-xl bg-white p-4 shadow-sm">
@@ -270,6 +284,26 @@
             </section>
         </template>
     </main>
+</div>
+
+{{-- Unterschriftsfeld im Vollbild: die teilnehmende Person unterschreibt selbst. --}}
+<div x-show="unterschreiben" x-transition.opacity class="fixed inset-0 z-50 flex flex-col bg-white" role="dialog" aria-modal="true" aria-labelledby="vo-u-titel">
+    <template x-if="unterschreiben">
+        <div class="flex min-h-0 flex-1 flex-col p-4 sm:p-6">
+            <h2 id="vo-u-titel" class="text-2xl font-bold text-dpsg-blau" x-text="unterschreiben.name"></h2>
+            <p class="mt-1 text-gray-800" x-text="v.unterschrift.text"></p>
+            <div class="relative mt-4 min-h-48 flex-1 rounded-xl border-2 border-dashed border-dpsg-mittelbeige bg-surface">
+                <canvas x-ref="unterschriftFeld" class="absolute inset-0 size-full touch-none" aria-label="Unterschriftsfeld"></canvas>
+                <div class="pointer-events-none absolute inset-x-6 bottom-10 border-b border-gray-400"></div>
+                <p class="pointer-events-none absolute bottom-3 left-6 text-sm text-gray-500">Hier mit Finger oder Stift unterschreiben</p>
+            </div>
+            <div class="mt-4 flex flex-wrap gap-2">
+                <button type="button" x-on:click="unterschriftFertig()" class="min-h-12 flex-1 rounded-lg bg-dpsg-blau px-6 text-lg font-semibold text-white sm:flex-none">Fertig</button>
+                <button type="button" x-on:click="unterschriftLoeschen()" class="min-h-12 rounded-lg border border-dpsg-mittelbeige px-5 font-semibold">Löschen</button>
+                <button type="button" x-on:click="unterschriftAbbrechen()" class="min-h-12 rounded-lg px-5 font-semibold text-gray-700">Abbrechen</button>
+            </div>
+        </div>
+    </template>
 </div>
 </body>
 </html>

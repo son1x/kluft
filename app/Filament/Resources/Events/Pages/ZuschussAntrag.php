@@ -8,6 +8,7 @@ use App\Models\Event;
 use App\Services\Zuschuss\ZuschussExcel;
 use App\Services\Zuschuss\ZuschussPdf;
 use App\Support\AuditLogger;
+use App\Support\Unterschriften;
 use App\Support\Zuschuesse;
 use App\Support\Zuschuesse\Antrag;
 use App\Support\Zuschuesse\Foerderrechner;
@@ -21,6 +22,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Section;
@@ -185,6 +187,30 @@ class ZuschussAntrag extends EditRecord
                     }),
             ])->label('Unterlagen')->icon('heroicon-o-printer')->button()
                 ->visible(fn () => $this->event()->zuschussAktiv() && $this->darfUnterlagen()),
+            // Vor Ort, Stufe 2 (docs/vor-ort.md): Liste mit digitalen Unterschriften ablegen.
+            Action::make('festschreiben')
+                ->label(fn () => $this->event()->teilnahmeliste_am ? 'Teilnahmeliste neu festschreiben' : 'Teilnahmeliste festschreiben')
+                ->icon('heroicon-o-lock-closed')->color('gray')
+                ->visible(fn () => $this->event()->zuschussAktiv() && $this->darfUnterlagen())
+                ->requiresConfirmation()
+                ->modalHeading('Teilnahmeliste mit Unterschriften festschreiben?')
+                ->modalDescription(function () {
+                    $event = $this->event();
+                    $anzahl = count(Unterschriften::fuerListe($event));
+                    $bestaetigt = $event->registrations()->where('status', 'confirmed')->count();
+
+                    return "{$anzahl} von {$bestaetigt} Teilnehmenden haben digital unterschrieben (unter „Vor Ort“). "
+                        .'Die Teilnahmeliste wird mit diesen Unterschriften als PDF abgelegt; „Teilnahmeliste (PDF)“ und das ZIP liefern ab dann diese Fassung. '
+                        .'Die Einzelunterschriften werden '.Unterschriften::loeschTage().' Tage danach gelöscht – bis dahin lässt sich nachunterschreiben und neu festschreiben.'
+                        .($event->teilnahmeliste_am ? ' Zuletzt festgeschrieben am '.$event->teilnahmeliste_am->format('d.m.Y H:i').'.' : '');
+                })
+                ->modalSubmitActionLabel('Festschreiben')
+                ->action(function () {
+                    abort_unless($this->darfUnterlagen() && $this->event()->zuschussAktiv(), 403);
+                    $anzahl = Unterschriften::festschreiben($this->event(), Filament::auth()->user());
+                    Notification::make()->success()->title("Teilnahmeliste festgeschrieben ({$anzahl} Unterschriften).")
+                        ->body('Die Einzelunterschriften werden in '.Unterschriften::loeschTage().' Tagen gelöscht.')->send();
+                }),
         ];
     }
 

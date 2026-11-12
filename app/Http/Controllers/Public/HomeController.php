@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Public;
 use App\Http\Controllers\Controller;
 use App\Models\Page;
 use App\Models\Post;
+use App\Models\StartseitenHinweis;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 
@@ -45,6 +46,8 @@ class HomeController extends Controller
             'page' => $startPage,
             'highlightPages' => $highlightPages,
             'posts' => $posts,
+            // Hinweise unter dem Titelbild (Inhalte → Startseiten-Hinweise).
+            'hinweise' => StartseitenHinweis::query()->sichtbar()->get(),
         ]);
     }
 }

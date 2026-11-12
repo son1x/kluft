@@ -141,6 +141,7 @@ class AuditText
             'konto.inaktiv_gesperrt' => 'Konto gesperrt: ein Jahr nicht angemeldet',
             'backup.download' => 'Backup heruntergeladen: '.$rest,
             'registration.geloescht' => 'Anmeldungen endgültig gelöscht: '.$rest,
+            'registration.bearbeitet' => 'Angaben einer Anmeldung bearbeitet (Nr. '.$rest.')',
             'rechte.geprueft' => 'Rechte-Prüfung abgeschlossen: '.$rest.' Personen mit sensiblen Rechten',
             'registrations.purge' => 'Automatisch gelöscht: '.($teile[0] ?? 0).' unbestätigte und '.($teile[1] ?? 0).' abgelaufene Anmeldungen',
             'privacy.delete' => count($teile) >= 4

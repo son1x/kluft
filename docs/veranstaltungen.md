@@ -13,6 +13,10 @@ Bildungsreferent*innen, Verwaltung und Admins wie gewohnt, dazu der
 **Vorstand** lesend (sparsame Liste). Stufenadmins sehen sie nicht. Keine
 eigene Stufenseite – die Stufen bleiben Biber bis Rover.
 
+## Angaben einer Anmeldung bearbeiten
+
+In der Teilnehmendenliste über **„Angaben bearbeiten“** (Stift) bei der Person: Name, E-Mail und alle abgefragten Angaben lassen sich nachträglich ändern – z. B. wenn jemand nur an einzelnen Tagen dabei ist (Feld „Anwesenheit (Tage)“). Die Person bekommt keine Mail; die Änderung wird protokolliert. Darf jeder, der die Teilnehmenden der Veranstaltung verwalten darf.
+
 ## Anmeldungen endgültig löschen (nur Admins)
 
 Unter „Teilnehmende“ einzeln (Aktion **Endgültig löschen**) oder für

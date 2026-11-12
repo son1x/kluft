@@ -526,6 +526,26 @@ class RegistrationsRelationManager extends RelationManager
                         'registration' => $record,
                         'fields' => $fields,
                     ])->render())),
+                // Angaben nachträglich ändern, z. B. wenn jemand nur an einzelnen Tagen kann.
+                Action::make('bearbeiten')
+                    ->label('Angaben bearbeiten')
+                    ->icon('heroicon-o-pencil-square')
+                    ->visible(fn () => (bool) Filament::auth()->user()?->can('manageParticipants', $event))
+                    ->modalHeading(fn (EventRegistration $record) => 'Anmeldung von '.$record->fullName().' bearbeiten')
+                    ->modalDescription('Die Person bekommt keine Mail. Die Änderung wird mit deinem Namen protokolliert.')
+                    ->modalSubmitActionLabel('Speichern')
+                    ->fillForm(fn (EventRegistration $record) => [
+                        'first_name' => $record->first_name, 'last_name' => $record->last_name, 'email' => $record->email,
+                        'birth_year' => $record->birth_year, 'data' => (array) $record->data,
+                    ])
+                    ->schema(fn () => [
+                        TextInput::make('first_name')->label('Vorname')->required()->maxLength(255),
+                        TextInput::make('last_name')->label('Nachname')->required()->maxLength(255),
+                        TextInput::make('email')->label('E-Mail-Adresse')->email()->maxLength(255)
+                            ->helperText('An diese Adresse gehen künftige Mails zur Anmeldung.'),
+                        ...$this->eventFieldInputs($event),
+                    ])
+                    ->action(fn (EventRegistration $record, array $data) => $this->angabenSpeichern($record, $data)),
                 ActionGroup::make([
                     Action::make('approveCertificate')
                         ->label('Bescheinigung freigeben')
@@ -1014,6 +1034,23 @@ class RegistrationsRelationManager extends RelationManager
         if ($event->checksMembers() && ! NamiVerzeichnis::persoenlich()) {
             CheckEventMembers::dispatch($event->getKey());
         }
+    }
+
+    /** Angaben einer Anmeldung speichern; nicht abgefragte Angaben bleiben erhalten. */
+    private function angabenSpeichern(EventRegistration $record, array $data): void
+    {
+        $event = $this->veranstaltung();
+        abort_unless($record->event_id === $event->getKey() && Filament::auth()->user()?->can('manageParticipants', $event), 403);
+
+        $record->update([
+            'first_name' => trim((string) $data['first_name']),
+            'last_name' => trim((string) $data['last_name']),
+            'email' => trim((string) ($data['email'] ?? '')),
+            'birth_year' => array_key_exists('birth_year', $data) ? (filled($data['birth_year']) ? (int) $data['birth_year'] : null) : $record->birth_year,
+            'data' => [...(array) $record->data, ...(array) ($data['data'] ?? [])],
+        ]);
+        AuditLogger::log('registration.bearbeitet:'.$record->getKey(), Filament::auth()->user(), Event::class, $event->getKey(), request());
+        Notification::make()->success()->title('Angaben von '.$record->fullName().' gespeichert')->send();
     }
 
     private function veranstaltung(): Event

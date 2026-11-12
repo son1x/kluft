@@ -59,7 +59,7 @@ class Event extends Model
         'status', 'extern_freigegeben', 'form_fields', 'retention_days', 'created_by', 'calendar_uid',
         'certificate_enabled', 'certificate_text', 'certificate_signer', 'preise', 'zahlungsfrist_tage',
         'zuschuss', 'zuschuss_art', 'zuschuss_geber', 'zuschuss_finanzen', 'zuschuss_fern', 'zuschuss_bericht', 'zuschuss_antrag', 'zuschuss_stand',
-        'foto_einwilligung', 'ganztaegig',
+        'foto_einwilligung', 'ganztaegig', 'zusatz_felder',
     ];
 
     protected function casts(): array
@@ -84,6 +84,7 @@ class Event extends Model
             'certificate_enabled' => 'boolean',
             'form_fields' => 'array',
             'preise' => 'array',
+            'zusatz_felder' => 'array',
             'zahlungsfrist_tage' => 'integer',
             'zuschuss' => 'boolean',
             'zuschuss_geber' => 'array',
@@ -552,6 +553,30 @@ class Event extends Model
             ->map(fn (array $p) => ['bezeichnung' => mb_substr(trim((string) $p['bezeichnung']), 0, 100), 'cent' => (int) $p['cent']])
             ->values()
             ->all();
+    }
+
+    /** Höchstzahl der Zusatzinfos je Veranstaltung. */
+    public const ZUSATZ_MAX = 6;
+
+    /**
+     * Zusatzinfos fürs Team (docs/vor-ort.md), z. B. „Zimmer“ oder „Zelt“:
+     * nicht im Anmeldeformular, Werte trägt das Team ein. Schlüssel aus der
+     * Bezeichnung, damit Werte beim Umsortieren erhalten bleiben.
+     *
+     * @return array<string, string> Schlüssel => Bezeichnung
+     */
+    public function zusatzFelder(): array
+    {
+        $felder = [];
+        foreach ((array) $this->zusatz_felder as $label) {
+            $label = mb_substr(trim((string) $label), 0, 60);
+            $key = Str::slug($label, '_');
+            if ($label !== '' && $key !== '' && ! isset($felder[$key]) && count($felder) < self::ZUSATZ_MAX) {
+                $felder[$key] = $label;
+            }
+        }
+
+        return $felder;
     }
 
     public function hatTeilnahmebeitrag(): bool

@@ -96,14 +96,28 @@
                                             x-text="l"></button>
                                 </template>
                             </div>
+                            <label x-show="v.zusatz_felder.length" class="flex items-center gap-2 text-sm">
+                                <span class="shrink-0 font-semibold">Ordnen:</span>
+                                <select x-model="gruppe" aria-label="Liste ordnen" class="min-h-11 w-full rounded-lg border border-dpsg-mittelbeige bg-white px-3">
+                                    <option value="">nach Name</option>
+                                    <template x-for="f in v.zusatz_felder" x-bind:key="f.schluessel">
+                                        <option x-bind:value="f.schluessel" x-text="'nach ' + f.label"></option>
+                                    </template>
+                                </select>
+                            </label>
                         </div>
                         <ul class="min-h-0 flex-1 divide-y divide-dpsg-mittelbeige/60 overflow-y-auto bg-white">
-                            <template x-for="p in gefiltert" x-bind:key="p.id">
+                          <template x-for="g in gruppen" x-bind:key="'g' + g.wert">
+                           <li class="contents">
+                            <ul class="divide-y divide-dpsg-mittelbeige/60">
+                            <li x-show="gruppe" class="sticky top-0 z-10 bg-dpsg-blau px-4 py-2 text-sm font-bold text-white" x-text="gruppenTitel(g)"></li>
+                            <template x-for="p in g.personen" x-bind:key="p.id">
                                 <li class="flex items-stretch" x-bind:class="auswahlId === p.id ? 'bg-dpsg-hellbeige' : ''">
                                     <button type="button" x-on:click="waehlen(p)" class="flex min-h-16 min-w-0 flex-1 flex-col justify-center px-4 py-2 text-left">
                                         <span class="truncate font-semibold" x-text="p.nachname + ', ' + p.vorname"></span>
                                         <span class="flex flex-wrap gap-1.5 text-xs text-gray-700">
                                             <span x-show="p.jahrgang" x-text="'Jg. ' + p.jahrgang"></span>
+                                            <template x-for="z in zusatzText(p)" x-bind:key="z"><span class="rounded border border-dpsg-mittelbeige bg-white px-1.5 text-dpsg-blau" x-text="z"></span></template>
                                             <span x-show="!erwartet(p)" class="rounded bg-gray-100 px-1.5">heute nicht angemeldet</span>
                                             <span x-show="p.zahlung" class="rounded px-1.5" x-bind:class="zahlungFarbe(p)" x-text="zahlungText(p)"></span>
                                         </span>
@@ -116,6 +130,9 @@
                                     </button>
                                 </li>
                             </template>
+                            </ul>
+                           </li>
+                          </template>
                             <li x-show="gefiltert.length === 0" class="p-6 text-center text-sm text-gray-700"
                                 x-text="v.personen.length === 0 ? 'Noch keine bestätigten Anmeldungen.' : 'Niemand passt zu Suche und Filter.'"></li>
                         </ul>
@@ -145,6 +162,22 @@
                                         </template>
                                     </div>
                                     <p class="mt-2 text-xs text-gray-600">Gestrichelt: an diesem Tag nicht angemeldet.</p>
+                                </section>
+
+                                <section x-show="v.zusatz_felder.length" class="rounded-xl bg-white p-4 shadow-sm">
+                                    <h3 class="mb-2 font-semibold">Zusatzinfos <span class="text-xs font-normal text-gray-600">(nur Team)</span></h3>
+                                    <div class="grid gap-3 sm:grid-cols-2">
+                                        <template x-for="f in v.zusatz_felder" x-bind:key="auswahl.id + f.schluessel">
+                                            <div>
+                                                <label class="block"><span class="text-sm font-semibold" x-text="f.label"></span>
+                                                    <input type="text" maxlength="100" x-bind:value="auswahl.zusatz[f.schluessel] ?? ''"
+                                                           x-on:change="zusatzSetzen(auswahl, f.schluessel, $event.target.value)" x-on:keydown.enter.prevent="$event.target.blur()"
+                                                           class="mt-1 min-h-11 w-full rounded-lg border border-dpsg-mittelbeige px-3"></label>
+                                                <p x-show="gemeinsam(auswahl, f.schluessel).length" class="mt-1 text-sm text-gray-700"
+                                                   x-text="'Mit dabei: ' + gemeinsam(auswahl, f.schluessel).join(', ')"></p>
+                                            </div>
+                                        </template>
+                                    </div>
                                 </section>
 
                                 <section x-show="v.beitrag" class="rounded-xl bg-white p-4 shadow-sm">

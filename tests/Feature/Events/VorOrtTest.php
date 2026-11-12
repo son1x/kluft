@@ -190,4 +190,27 @@ class VorOrtTest extends TestCase
         $this->senden($b)->assertJsonPath("ergebnisse.{$b['id']}.ergebnis", 'abgelehnt');
         $this->assertNull($mia->fresh()->vor_ort_tage);
     }
+
+    #[TestDox('Zusatzinfos fürs Team (z. B. Zimmer): eintragen, leeren, nur bekannte Felder; in den Daten je Person')]
+    public function test_zusatz(): void
+    {
+        $this->event->update(['zusatz_felder' => ['Zimmer', 'Zelt', 'Zimmer', ' ']]);
+        $this->assertSame(['zimmer' => 'Zimmer', 'zelt' => 'Zelt'], $this->event->fresh()->zusatzFelder());
+        $mia = $this->anmeldung('Mia');
+        $ben = $this->anmeldung('Ben');
+        $this->actingAs($this->team());
+
+        $a = $this->ereignis($mia, 'zusatz', ['feld' => 'zimmer', 'wert' => ' 12 ']);
+        $b = $this->ereignis($ben, 'zusatz', ['feld' => 'zimmer', 'wert' => '12']);
+        $c = $this->ereignis($ben, 'zusatz', ['feld' => 'bett', 'wert' => 'oben']);
+        $this->senden($a, $b, $c)->assertJsonPath("ergebnisse.{$c['id']}.ergebnis", 'abgelehnt');
+        $this->assertSame(['zimmer' => '12'], $mia->fresh()->zusatz);
+
+        $d = $this->getJson('/vor-ort/api/veranstaltungen/'.$this->event->getKey())->json();
+        $this->assertSame([['schluessel' => 'zimmer', 'label' => 'Zimmer'], ['schluessel' => 'zelt', 'label' => 'Zelt']], $d['zusatz_felder']);
+        $this->assertSame(['zimmer' => '12'], collect($d['personen'])->firstWhere('vorname', 'Ben')['zusatz']);
+
+        $this->senden($this->ereignis($mia, 'zusatz', ['feld' => 'zimmer', 'wert' => '']));
+        $this->assertNull($mia->fresh()->zusatz);
+    }
 }

@@ -193,6 +193,9 @@ class RegistrationsRelationManager extends RelationManager
                     ->sortable(),
                 TextColumn::make('email')->label('E-Mail')->searchable()->toggleable()->placeholder('–'),
                 TextColumn::make('birth_year')->label('Jg.')->visible(isset($fields['birth_year'])),
+                // Zusatzinfos fürs Team (z. B. Zimmer).
+                ...collect($event->zusatzFelder())->map(fn (string $label, string $key) => TextColumn::make('zusatz_'.$key)->label($label)
+                    ->state(fn (EventRegistration $record) => ((array) $record->zusatz)[$key] ?? null)->placeholder('–')->toggleable())->values()->all(),
                 TextColumn::make('status')->label('Status')->badge()
                     ->formatStateUsing(fn (string $state) => EventRegistration::STATUSES[$state] ?? $state)
                     ->color(fn (string $state) => match ($state) {
@@ -536,7 +539,7 @@ class RegistrationsRelationManager extends RelationManager
                     ->modalSubmitActionLabel('Speichern')
                     ->fillForm(fn (EventRegistration $record) => [
                         'first_name' => $record->first_name, 'last_name' => $record->last_name, 'email' => $record->email,
-                        'birth_year' => $record->birth_year, 'data' => (array) $record->data,
+                        'birth_year' => $record->birth_year, 'data' => (array) $record->data, 'zusatz' => (array) $record->zusatz,
                     ])
                     ->schema(fn () => [
                         TextInput::make('first_name')->label('Vorname')->required()->maxLength(255),
@@ -544,6 +547,8 @@ class RegistrationsRelationManager extends RelationManager
                         TextInput::make('email')->label('E-Mail-Adresse')->email()->maxLength(255)
                             ->helperText('An diese Adresse gehen künftige Mails zur Anmeldung.'),
                         ...$this->eventFieldInputs($event),
+                        // Zusatzinfos fürs Team (z. B. Zimmer), nicht im Anmeldeformular.
+                        ...collect($event->zusatzFelder())->map(fn (string $label, string $key) => TextInput::make('zusatz.'.$key)->label($label.' (nur Team)')->maxLength(100))->values()->all(),
                     ])
                     ->action(fn (EventRegistration $record, array $data) => $this->angabenSpeichern($record, $data)),
                 ActionGroup::make([
@@ -1048,9 +1053,23 @@ class RegistrationsRelationManager extends RelationManager
             'email' => trim((string) ($data['email'] ?? '')),
             'birth_year' => array_key_exists('birth_year', $data) ? (filled($data['birth_year']) ? (int) $data['birth_year'] : null) : $record->birth_year,
             'data' => [...(array) $record->data, ...(array) ($data['data'] ?? [])],
+            'zusatz' => self::zusatzBereinigen([...(array) $record->zusatz, ...(array) ($data['zusatz'] ?? [])]),
         ]);
         AuditLogger::log('registration.bearbeitet:'.$record->getKey(), Filament::auth()->user(), Event::class, $event->getKey(), request());
         Notification::make()->success()->title('Angaben von '.$record->fullName().' gespeichert')->send();
+    }
+
+    /**
+     * Leere Zusatzinfos weglassen.
+     *
+     * @param  array<string, mixed>  $zusatz
+     * @return array<string, string>|null
+     */
+    private static function zusatzBereinigen(array $zusatz): ?array
+    {
+        $zusatz = array_filter(array_map(fn ($w) => trim((string) $w), $zusatz), fn (string $w) => $w !== '');
+
+        return $zusatz === [] ? null : $zusatz;
     }
 
     private function veranstaltung(): Event

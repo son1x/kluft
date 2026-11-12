@@ -94,6 +94,7 @@ class VorOrt
                         ? array_values(array_intersect(array_keys($tage), (array) $data[$tageFeld]))
                         : array_keys($tage),
                     'da' => array_values((array) $r->vor_ort_tage),
+                    'zusatz' => (object) array_intersect_key((array) $r->zusatz, $event->zusatzFelder()),
                     'zahlung' => $zahlung === null ? null : [
                         'stand' => $zahlung->status,
                         'offen_cent' => $zahlung->offenCent(),
@@ -122,6 +123,8 @@ class VorOrt
                     default => null,
                 },
             ])->values()->all(),
+            // Zusatzinfos fürs Team (z. B. Zimmer); gleiche Werte = gleiche Gruppe.
+            'zusatz_felder' => collect($event->zusatzFelder())->map(fn (string $label, string $k) => ['schluessel' => $k, 'label' => $label])->values()->all(),
             'verpflegung' => self::verpflegung($event, $felder, $personen->all()),
             'personen' => $personen->all(),
         ];
@@ -189,6 +192,7 @@ class VorOrt
                 'anwesend' => self::anwesend($registration, $daten),
                 'bar' => self::bar($user, $registration, $daten),
                 'angaben' => self::angaben($registration, $daten),
+                'zusatz' => self::zusatz($registration, $daten),
             },
         };
 
@@ -209,7 +213,7 @@ class VorOrt
             'erfasst_am' => $erfasst,
         ]);
 
-        if ($grund === null && in_array($typ, ['bar', 'angaben'], true)) {
+        if ($grund === null && in_array($typ, ['bar', 'angaben', 'zusatz'], true)) {
             AuditLogger::log("vor_ort.{$typ}:".$registration->getKey(), $user, Event::class, $event->getKey(), request());
         }
 
@@ -265,6 +269,28 @@ class VorOrt
             return 'Der Betrag passt nicht zur offenen Forderung.';
         }
         $zahlung->eingang($cent, now(), $user->getKey(), 'Bar vor Ort');
+
+        return null;
+    }
+
+    /** @param  array<string, mixed>  $daten */
+    private static function zusatz(EventRegistration $r, array $daten): ?string
+    {
+        $feld = (string) ($daten['feld'] ?? '');
+        if (! array_key_exists($feld, $r->event->zusatzFelder())) {
+            return 'Unbekanntes Feld.';
+        }
+        $wert = trim((string) ($daten['wert'] ?? ''));
+        if (mb_strlen($wert) > 100) {
+            return 'Höchstens 100 Zeichen.';
+        }
+        $zusatz = (array) $r->zusatz;
+        if ($wert === '') {
+            unset($zusatz[$feld]);
+        } else {
+            $zusatz[$feld] = $wert;
+        }
+        $r->update(['zusatz' => $zusatz === [] ? null : $zusatz]);
 
         return null;
     }

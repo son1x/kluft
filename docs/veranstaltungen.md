@@ -15,7 +15,11 @@ eigene Stufenseite – die Stufen bleiben Biber bis Rover.
 
 ## Angaben einer Anmeldung bearbeiten
 
-In der Teilnehmendenliste über **„Angaben bearbeiten“** (Stift) bei der Person: Name, E-Mail und alle abgefragten Angaben lassen sich nachträglich ändern – z. B. wenn jemand nur an einzelnen Tagen dabei ist (Feld „Anwesenheit (Tage)“). Die Person bekommt keine Mail; die Änderung wird protokolliert. Darf jeder, der die Teilnehmenden der Veranstaltung verwalten darf.
+In der Teilnehmendenliste über **„Angaben bearbeiten“** (Stift) bei der Person: Name, E-Mail und alle abgefragten Angaben lassen sich nachträglich ändern – z. B. wenn jemand nur an einzelnen Tagen dabei ist (Feld „Anwesenheit (Tage)“). Die Person bekommt keine Mail; die Änderung wird protokolliert. Darf jeder, der die Teilnehmenden der Veranstaltung verwalten darf. Hat die Veranstaltung **Zusatzinfos fürs Team** (z. B. Zimmer, Zelt), stehen sie hier ebenfalls zur Bearbeitung und als Spalten in der Liste.
+
+## Vor Ort (Tablet und Handy)
+
+Für die Durchführung: Anwesenheit je Tag, Zahlungsstand und Barzahlung, Verpflegung, Korrekturen und Zusatzinfos wie Zimmer – siehe [docs/vor-ort.md](vor-ort.md).
 
 ## Anmeldungen endgültig löschen (nur Admins)
 

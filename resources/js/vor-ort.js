@@ -42,6 +42,7 @@ Alpine.data('vorOrt', () => ({
     tag: null,
     suche: '',
     filter: 'alle',
+    gruppe: '',
     auswahlId: null,
     bearbeiten: null,
     warteschlange: [],
@@ -90,6 +91,9 @@ Alpine.data('vorOrt', () => ({
             this.tag = tage.includes(this.v.heute) ? this.v.heute : tage[0];
             this.auswahlId = null;
             this.bearbeiten = null;
+            if (!this.v.zusatz_felder.some((f) => f.schluessel === this.gruppe)) {
+                this.gruppe = '';
+            }
             if (merken) {
                 history.pushState({}, '', '?v=' + id);
             }
@@ -120,7 +124,7 @@ Alpine.data('vorOrt', () => ({
         const s = this.suche.trim().toLowerCase();
 
         return this.v.personen.filter((p) => {
-            if (s && !(p.vorname + ' ' + p.nachname).toLowerCase().includes(s)) {
+            if (s && !(p.vorname + ' ' + p.nachname + ' ' + Object.values(p.zusatz).join(' ')).toLowerCase().includes(s)) {
                 return false;
             }
             if (this.filter === 'fehlt') {
@@ -132,6 +136,57 @@ Alpine.data('vorOrt', () => ({
 
             return true;
         });
+    },
+
+    // Liste, nach einer Zusatzinfo (z. B. Zimmer) gruppiert oder als eine Gruppe.
+    get gruppen() {
+        if (!this.gruppe) {
+            return [{ wert: '', personen: this.gefiltert }];
+        }
+        const map = new Map();
+        this.gefiltert.forEach((p) => {
+            const w = p.zusatz[this.gruppe] ?? '';
+            map.set(w, [...(map.get(w) ?? []), p]);
+        });
+
+        return [...map.entries()]
+            .sort(([a], [b]) => (a === '' ? 1 : b === '' ? -1 : a.localeCompare(b, 'de', { numeric: true })))
+            .map(([wert, personen]) => ({ wert, personen }));
+    },
+
+    gruppenTitel(g) {
+        const label = this.v.zusatz_felder.find((f) => f.schluessel === this.gruppe)?.label ?? '';
+
+        return g.wert === '' ? 'Ohne ' + label : label + ' ' + g.wert + ' · ' + g.personen.length;
+    },
+
+    // Wer den gleichen Wert hat (z. B. im selben Zimmer).
+    gemeinsam(p, feld) {
+        const w = p.zusatz[feld];
+        if (!w) {
+            return [];
+        }
+
+        return this.v.personen.filter((x) => x.id !== p.id && x.zusatz[feld] === w).map((x) => x.vorname + ' ' + x.nachname);
+    },
+
+    zusatzSetzen(p, feld, wert) {
+        wert = wert.trim();
+        if ((p.zusatz[feld] ?? '') === wert) {
+            return;
+        }
+        const z = { ...p.zusatz };
+        if (wert === '') {
+            delete z[feld];
+        } else {
+            z[feld] = wert;
+        }
+        p.zusatz = z;
+        this.ereignis(p, 'zusatz', { feld, wert });
+    },
+
+    zusatzText(p) {
+        return this.v.zusatz_felder.filter((f) => p.zusatz[f.schluessel]).map((f) => f.label + ' ' + p.zusatz[f.schluessel]);
     },
 
     erwartet(p, tag = this.tag) {

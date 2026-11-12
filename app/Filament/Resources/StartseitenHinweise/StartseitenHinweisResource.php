@@ -14,6 +14,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\ToggleButtons;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
@@ -53,6 +54,10 @@ class StartseitenHinweisResource extends Resource
                 ->components([
                     TextInput::make('titel')->label('Titel')->required()->maxLength(120)->columnSpanFull()
                         ->placeholder('z. B. Aufarbeitung sexualisierter Gewalt in der DPSG'),
+                    ToggleButtons::make('art')->label('Darstellung')->options(StartseitenHinweis::ARTEN)->default('kasten')->required()->inline()
+                        ->icons(['kasten' => 'heroicon-o-rectangle-stack', 'zeile' => 'heroicon-o-bars-2'])
+                        ->helperText('Kasten: groß und farbig, für Wichtiges. Zeile: schmal und unauffällig, z. B. für Termine oder „Büro geschlossen“.')
+                        ->columnSpanFull(),
                     Textarea::make('text')->label('Text')->rows(3)->maxLength(400)->columnSpanFull()
                         ->helperText('Ein bis zwei Sätze, höchstens 400 Zeichen.'),
                     TextInput::make('link_url')->label('Link')->maxLength(500)->live(onBlur: true)
@@ -80,6 +85,8 @@ class StartseitenHinweisResource extends Resource
             ->columns([
                 TextColumn::make('titel')->label('Titel')->weight('bold')->wrap()
                     ->description(fn (StartseitenHinweis $record) => $record->link_url),
+                TextColumn::make('art')->label('Darstellung')
+                    ->formatStateUsing(fn (string $state) => $state === 'zeile' ? 'Zeile' : 'Kasten'),
                 TextColumn::make('farbe')->label('Farbe')->badge()
                     ->formatStateUsing(fn (string $state) => StartseitenHinweis::FARBEN[$state] ?? $state)
                     ->color(fn (string $state) => match ($state) {

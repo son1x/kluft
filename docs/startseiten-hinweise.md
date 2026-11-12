@@ -11,6 +11,9 @@ Anmeldeschluss.
   ein **Link** mit Knopf-Beschriftung. Links auf andere Websites (`https://…`)
   öffnen in einem neuen Tab, Pfade dieser Website beginnen mit `/`
   (z. B. `/praevention`).
+- **Darstellung:** **Kasten** (groß und farbig, für Wichtiges) oder **Zeile**
+  (schmal und dezent mit Info-Symbol, z. B. für Termine wie ein digitales
+  Treffen oder „Büro geschlossen“). Beide lassen sich mischen.
 - **Farbe:** DPSG-Rot (wichtig), DPSG-Blau oder Beige (zurückhaltend).
 - **Auf der Startseite zeigen** an/aus, dazu optional **Zeigen ab** und
   **Zeigen bis** (jeweils einschließlich). Abgelaufene Hinweise verschwinden

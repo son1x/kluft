@@ -63,7 +63,10 @@ class TeilnehmendeLoeschenTest extends TestCase
         $lea = $this->anmeldung('Lea');
         $this->actingAs($this->user('admin'));
 
-        $this->liste()->callAction(TestAction::make('loeschen')->table($mia));
+        // Auch stornierte Anmeldungen lassen sich löschen.
+        $mia->update(['status' => 'cancelled', 'cancelled_at' => now()]);
+        $this->liste()->assertActionVisible(TestAction::make('loeschen')->table($mia))
+            ->callAction(TestAction::make('loeschen')->table($mia));
         $this->assertNull($mia->fresh());
         $this->assertSame(0, RegistrationDocument::query()->count());
 

@@ -65,6 +65,12 @@ class StartseitenHinweiseTest extends TestCase
         $this->assertMatchesRegularExpression('/<article class="[^"]*p-6[^"]*">\s*<div class="min-w-0">\s*<h2[^>]*text-xl[^>]*>Wichtig/s', $antwort->getContent());
     }
 
+    #[TestDox('Farben in der Auswahl nach Wichtigkeit: Rot, Beige, Blau')]
+    public function test_farbreihenfolge(): void
+    {
+        $this->assertSame(['rot', 'beige', 'blau'], array_keys(StartseitenHinweis::FARBEN));
+    }
+
     #[TestDox('Ohne Hinweise kein leerer Kasten')]
     public function test_ohne(): void
     {

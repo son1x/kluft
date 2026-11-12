@@ -32,7 +32,7 @@ class AnmeldungBearbeitenTest extends TestCase
         Filament::setCurrentPanel('admin');
         Mail::fake();
         $this->event = Event::query()->create(['title' => 'Pfingstlager', 'slug' => 'pfingstlager', 'starts_at' => '2027-05-14 10:00', 'ends_at' => '2027-05-17 14:00',
-            'status' => 'open', 'stage' => $this->stufe(), 'form_fields' => ['tage' => 'optional', 'comment' => 'optional']]);
+            'status' => 'open', 'stage' => $this->stufe(), 'form_fields' => ['tage' => 'optional', 'diet' => 'optional', 'comment' => 'optional']]);
     }
 
     /** Erste Stufe der Instanz (die Instanzen haben unterschiedliche Stufen). */
@@ -44,7 +44,7 @@ class AnmeldungBearbeitenTest extends TestCase
     private function anmeldung(): EventRegistration
     {
         return $this->event->registrations()->create(['status' => 'confirmed', 'confirmed_at' => now(), 'first_name' => 'Mia', 'last_name' => 'Test',
-            'email' => 'mia@example.org', 'data' => ['tage' => ['2027-05-14', '2027-05-15', '2027-05-16', '2027-05-17'], 'intern' => 'bleibt'],
+            'email' => 'mia@example.org', 'data' => ['tage' => ['2027-05-14', '2027-05-15', '2027-05-16', '2027-05-17'], 'diet' => 'alles', 'intern' => 'bleibt'],
             'consent_text_version' => 'v1', 'consent_at' => now(), 'purge_at' => now()->addYear()]);
     }
 
@@ -61,7 +61,7 @@ class AnmeldungBearbeitenTest extends TestCase
         return Livewire::test(RegistrationsRelationManager::class, ['ownerRecord' => $this->event, 'pageClass' => EditEvent::class]);
     }
 
-    #[TestDox('Stufenverantwortliche ändern Tage, Name und Anmerkung; andere Angaben bleiben, keine Mail, protokolliert')]
+    #[TestDox('Stufenverantwortliche ändern Tage, Verpflegung, Name und Anmerkung; andere Angaben bleiben, keine Mail, protokolliert')]
     public function test_bearbeiten(): void
     {
         $mia = $this->anmeldung();
@@ -72,12 +72,13 @@ class AnmeldungBearbeitenTest extends TestCase
             ->assertSchemaStateSet(['first_name' => 'Mia', 'data.tage' => ['2027-05-14', '2027-05-15', '2027-05-16', '2027-05-17']]);
         $this->liste()->callAction(TestAction::make('bearbeiten')->table($mia), [
             'first_name' => 'Mia-Sophie', 'last_name' => 'Test', 'email' => 'mia@example.org',
-            'data' => ['tage' => ['2027-05-15', '2027-05-16'], 'comment' => 'Kommt erst Samstag'],
+            'data' => ['tage' => ['2027-05-15', '2027-05-16'], 'diet' => 'vegan', 'comment' => 'Kommt erst Samstag'],
         ])->assertHasNoFormErrors();
 
         $mia->refresh();
         $this->assertSame('Mia-Sophie', $mia->first_name);
         $this->assertSame(['2027-05-15', '2027-05-16'], $mia->data['tage']);
+        $this->assertSame('vegan', $mia->data['diet']);
         $this->assertSame('Kommt erst Samstag', $mia->data['comment']);
         $this->assertSame('bleibt', $mia->data['intern']);
         Mail::assertNothingSent();

@@ -67,7 +67,7 @@ class PostForm
                         ->live(onBlur: true)
                         ->afterStateUpdated(fn ($state, $set, $get) => $get('slug') ?: $set(
                             'slug',
-                            str($state)->slug()
+                            Slug::ausTitel($state)
                         ))
                         ->columnSpan(2),
 

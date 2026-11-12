@@ -48,7 +48,7 @@ class GruppierungForm
                         ->required()
                         ->maxLength(255)
                         ->live(onBlur: true)
-                        ->afterStateUpdated(fn (?string $state, Get $get, Set $set) => $get('slug') ?: $set('slug', str($state)->slug()))
+                        ->afterStateUpdated(fn (?string $state, Get $get, Set $set) => $get('slug') ?: $set('slug', Slug::ausTitel($state)))
                         ->helperText(fn (Get $get) => $get('typ') === 'bezirk' ? 'Ohne „Bezirk“ davor, z. B. „Saar-Hochwald“.' : 'z. B. „Stamm St. Georg Musterstadt“'),
                     Slug::feld(TextInput::make('slug'))
                         ->label('Kurzname (URL)')

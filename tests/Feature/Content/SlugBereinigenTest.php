@@ -60,10 +60,31 @@ class SlugBereinigenTest extends TestCase
             ->call('create')->assertHasNoFormErrors();
         $this->assertSame('spiritueller-hike-2027', Event::query()->sole()->slug);
 
-        // Aus Teams kopiert: unsichtbare Richtungsmarken um den Text (Rückmeldung Lisa).
+        // Aus Teams kopiert: unsichtbare Richtungsmarken um den Text – mit Hinweis.
         Livewire::test(CreateEvent::class)
             ->fillForm(['title' => 'Spiritueller Hike', 'slug' => "\u{2066}spirihike\u{2069}", 'starts_at' => '2027-05-05 18:00', 'status' => 'open', 'retention_days' => 60])
+            ->assertNotified('Unsichtbare Zeichen entfernt')
             ->call('create')->assertHasNoFormErrors();
         $this->assertTrue(Event::query()->where('slug', 'spirihike')->exists());
+    }
+
+    #[TestDox('Slug aus dem Titel (nichts von Hand eingetragen) wird gespeichert – Ursache von Lisas Fehler')]
+    public function test_slug_aus_titel(): void
+    {
+        Filament::setCurrentPanel('admin');
+        $user = User::query()->create(['name' => 'Admin', 'email' => 'admin@example.org', 'status' => 'active']);
+        $user->roleAssignments()->create(['role' => 'superadmin', 'scope_type' => 'global']);
+        $this->actingAs($user->fresh());
+
+        // Erst den Titel (der Vorschlag füllt den Slug), dann der Rest – wie im Browser.
+        Livewire::test(CreateEvent::class)
+            ->fillForm(['title' => 'Spiritueller Hike Test'])
+            ->assertFormSet(['slug' => 'spiritueller-hike-test'])
+            ->fillForm(['starts_at' => '2027-05-05 18:00', 'status' => 'open', 'retention_days' => 60])
+            ->call('create')->assertHasNoFormErrors();
+        $this->assertSame('spiritueller-hike-test', Event::query()->sole()->slug);
+
+        // Auch ein Stringable im Formularzustand besteht die Prüfung.
+        $this->assertSame('a-b', Slug::bereinigen(str('a b')));
     }
 }

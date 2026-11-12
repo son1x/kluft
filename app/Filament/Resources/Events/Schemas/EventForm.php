@@ -93,7 +93,7 @@ class EventForm
                         ->required()
                         ->maxLength(255)
                         ->live(onBlur: true)
-                        ->afterStateUpdated(fn ($state, $set, $get) => $get('slug') ?: $set('slug', str($state)->slug()))
+                        ->afterStateUpdated(fn ($state, $set, $get) => $get('slug') ?: $set('slug', Slug::ausTitel($state)))
                         ->columnSpan(2),
                     Slug::feld(TextInput::make('slug'))
                         ->label('URL-Pfad (Slug)')

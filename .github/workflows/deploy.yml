@@ -549,7 +549,10 @@ jobs:
               echo "Datenbank nach dem Deploy: $DB_NEU"
             fi
             db_probe
-            if [ -f artisan ] && [ -f vendor/autoload.php ]; then
+            # Kluft-Installation erkennen – auch wenn vendor/ nach einem
+            # abgebrochenen Deploy fehlt (dann steht KLUFT_INSTANZ in der .env).
+            if [ -f artisan ] && { [ -f vendor/autoload.php ] || grep -q '^KLUFT_INSTANZ=' .env 2>/dev/null; }; then
+              [ -f vendor/autoload.php ] || echo "::warning::vendor/ fehlt (abgebrochener Deploy?) – wird jetzt neu eingespielt.
               echo "Installiert: $("${{ env.PHP_BIN }}" artisan --version 2>/dev/null)"
               grep -m1 '^KLUFT_INSTANZ=' .env 2>/dev/null || echo "KLUFT_INSTANZ in .env: (noch nicht gesetzt – bisheriger Stand vor Kluft)"
               # Schutz: Liegt hier schon eine andere Instanz (gleicher Server,
@@ -694,8 +697,26 @@ jobs:
           script: |
             set -e
             cd "${{ env.SSH_TARGET_DIR }}"
-            rm -rf vendor
-            tar xzf vendor-bundle.tar.gz
+            # Erst daneben entpacken, dann tauschen: Bricht das Entpacken ab
+            # (auf dem geteilten Hosting beendet der Server den Entpacker bei
+            # Speicherknappheit mit Signal 9), bleibt das alte vendor/ und
+            # die Seite läuft weiter. Bis zu drei Versuche.
+            ok=0
+            for versuch in 1 2 3; do
+              rm -rf .vendor-neu && mkdir .vendor-neu
+              if tar xzf vendor-bundle.tar.gz -C .vendor-neu && [ -f .vendor-neu/vendor/autoload.php ]; then ok=1; break; fi
+              echo "Entpacken fehlgeschlagen (Versuch $versuch) – neuer Versuch in 15 s."
+              sleep 15
+            done
+            if [ "$ok" != 1 ]; then
+              rm -rf .vendor-neu
+              echo "::error::vendor/ ließ sich nicht entpacken – die bisherige Version bleibt aktiv."
+              exit 1
+            fi
+            rm -rf .vendor-alt
+            if [ -d vendor ]; then mv vendor .vendor-alt; fi
+            mv .vendor-neu/vendor vendor
+            rm -rf .vendor-neu .vendor-alt
             rm -f vendor-bundle.tar.gz
             rm -f bootstrap/cache/config.php bootstrap/cache/routes-v7.php bootstrap/cache/services.php bootstrap/cache/packages.php
             rm -f storage/framework/views/*.php

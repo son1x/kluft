@@ -11,6 +11,7 @@
         'bg-stufe-jupfi text-(--stufe-ink-jupfi)' => $stage === 'jupfi',
         'bg-stufe-pfadi text-(--stufe-ink-pfadi)' => $stage === 'pfadi',
         'bg-stufe-rover text-(--stufe-ink-rover)' => $stage === 'rover',
+        'bg-farbe-leiter text-text' => $stage === \App\Models\Event::LEITENDE,
     ])>
         {{ match ($stage) {
             'biber' => 'Biber',
@@ -18,6 +19,7 @@
             'jupfi' => 'Jungpfadfinder',
             'pfadi' => 'Pfadfinder',
             'rover' => 'Rover',
+            \App\Models\Event::LEITENDE => 'Leiter*innen',
             default => $stage,
         } }}
     </span>

@@ -36,7 +36,7 @@ class CalendarController extends Controller
         $calendars = Calendar::query()->where('active', true)->orderBy('label')->get();
         $nurVeranstaltungen = $request->query('kalender') === self::EVENTS;
         $kalender = $nurVeranstaltungen ? null : $calendars->firstWhere('id', (int) $request->query('kalender'))?->id;
-        $stufe = array_key_exists((string) $request->query('stufe'), config('dpsg.stages')) ? $request->query('stufe') : null;
+        $stufe = array_key_exists((string) $request->query('stufe'), Event::stufen()) ? $request->query('stufe') : null;
         $ansicht = $request->query('ansicht') === 'monat' ? 'monat' : 'liste';
 
         $monat = rescue(fn () => CarbonImmutable::createFromFormat('!Y-m', (string) $request->query('monat')), null, false)
@@ -94,9 +94,9 @@ class CalendarController extends Controller
     public function ics(Request $request): Response
     {
         $nurVeranstaltungen = $request->query('kalender') === self::EVENTS;
-        $stufe = array_key_exists((string) $request->query('stufe'), config('dpsg.stages')) ? (string) $request->query('stufe') : null;
+        $stufe = array_key_exists((string) $request->query('stufe'), Event::stufen()) ? (string) $request->query('stufe') : null;
         $von = CarbonImmutable::now()->subMonth()->startOfDay();
-        $name = config('dpsg.site.name').($stufe ? ' – '.config("dpsg.stages.{$stufe}.label") : '').($nurVeranstaltungen ? ' – Veranstaltungen' : '');
+        $name = config('dpsg.site.name').($stufe ? ' – '.Event::stufen()[$stufe] : '').($nurVeranstaltungen ? ' – Veranstaltungen' : '');
 
         $inhalt = Cache::remember('kalender-ics:'.($stufe ?? '-').':'.(int) $nurVeranstaltungen, now()->addMinutes(15),
             fn () => IcsKalender::erzeugen($this->items($von, $von->addMonths(13), null, $stufe, $nurVeranstaltungen)->take(2000), $name));

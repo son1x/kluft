@@ -46,7 +46,7 @@ eigene Rollen in der Tabelle `rollen` (Schlüssel `r_…` in
 | Autor:in (Bereich) | eigene Beiträge schreiben und zur Prüfung geben |
 | Stufenadmin / Sektionsadmin | Seiten und Beiträge des Bereichs pflegen und freigeben, Autor:innen des Bereichs freischalten; Veranstaltungen des Bereichs **je nach Website** (siehe unten) |
 | Veranstaltungen bearbeiten – Bereich | Veranstaltungen des Bereichs anlegen und bearbeiten, Teilnehmende verwalten (nur wo die Leitungen sonst nur lesen) |
-| Vorstand | Vorstandsseiten pflegen, Beiträge freigeben, Veranstaltungen ohne Teilnehmerdaten sehen, Prävention; bekommt Vorstands-Mails (z. B. Prävention) |
+| Vorstand | Vorstandsseiten pflegen, Beiträge freigeben, Veranstaltungen ohne Teilnehmerdaten sehen (Ausnahme: Veranstaltungen für Leiter*innen, dort sparsame Liste), Prävention; bekommt Vorstands-Mails (z. B. Prävention) |
 | Bildungsreferent*in (DV, Bezirk) | alle Seiten, Beiträge, Veranstaltungen samt Teilnehmenden, Mediathek, Personen, Downloads, Georgsbote, Nachrichten, Umfragen, Adressbuch, Materialverleih, Zuschussanträge; Autor:innen freischalten |
 | Verwaltung | wie Bildungsreferent*in, dazu Benutzer und alle Rollen (außer Admin), Datenschutz-Anfragen, im DV/Bezirk Zahlungen und Auslagen, Prävention, Mail-Warteschlange, Weiterleitungen, Fußzeile, Zuschussgeber |
 | Admin (Technik) | wie Verwaltung, dazu Funktionen, Backups, Updates, Wartungsmodus, Protokoll, Instagram, Stufen |

@@ -21,7 +21,7 @@ class EventController extends Controller
     public function index(Request $request): View
     {
         $stufe = $request->string('stufe')->toString();
-        $stufe = array_key_exists($stufe, config('dpsg.stages')) ? $stufe : null;
+        $stufe = array_key_exists($stufe, Event::stufen()) ? $stufe : null;
 
         return view('events.index', [
             'events' => Event::query()->visible()->upcoming()

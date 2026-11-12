@@ -3,6 +3,16 @@
 Backend → Veranstaltungen. Anforderungen: Pflichtenheft 6.7 (F-EV-01 ff.).
 Hier steht, was beim Pflegen einer Anmeldung wichtig ist.
 
+## Stufe „Leiter*innen“
+
+Für Veranstaltungen, die sich an Leitende richten (Leiterrunden, Schulungen):
+Stufe **„Leiter*innen“** (nur wer Veranstaltungen für die ganze Website
+anlegt, nicht Stufenadmins). Auf der Website als graues Kennzeichen und als
+Filter bei Veranstaltungen und im Kalender. Teilnehmende sehen
+Bildungsreferent*innen, Verwaltung und Admins wie gewohnt, dazu der
+**Vorstand** lesend (sparsame Liste). Stufenadmins sehen sie nicht. Keine
+eigene Stufenseite – die Stufen bleiben Biber bis Rover.
+
 ## Datum und Uhrzeit
 
 Wie im Apple-Kalender: **Beginn** und **Ende** jeweils mit Datum und Uhrzeit

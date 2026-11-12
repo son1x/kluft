@@ -25,8 +25,8 @@
                 Stufe
                 <select name="stufe" class="mt-1 min-w-48 border border-dpsg-mittelbeige bg-white px-3 py-2 font-normal">
                     <option value="">Alle Veranstaltungen</option>
-                    @foreach (config('dpsg.stages') as $key => $s)
-                        <option value="{{ $key }}" @selected($stufe === $key)>{{ $s['label'] }}</option>
+                    @foreach (\App\Models\Event::stufen() as $key => $label)
+                        <option value="{{ $key }}" @selected($stufe === $key)>{{ $label }}</option>
                     @endforeach
                 </select>
             </label>
@@ -49,6 +49,7 @@
                                 'bg-stufe-jupfi' => $event->stage === 'jupfi',
                                 'bg-stufe-pfadi' => $event->stage === 'pfadi',
                                 'bg-stufe-rover' => $event->stage === 'rover',
+                                'bg-farbe-leiter' => $event->stage === \App\Models\Event::LEITENDE,
                             ])>
                                 @if ($event->coverMedia)
                                     <x-picture :media="$event->coverMedia" alt="" sizes="(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw" class="h-full w-full object-cover" />

@@ -552,7 +552,7 @@ jobs:
             # Kluft-Installation erkennen – auch wenn vendor/ nach einem
             # abgebrochenen Deploy fehlt (dann steht KLUFT_INSTANZ in der .env).
             if [ -f artisan ] && { [ -f vendor/autoload.php ] || grep -q '^KLUFT_INSTANZ=' .env 2>/dev/null; }; then
-              [ -f vendor/autoload.php ] || echo "::warning::vendor/ fehlt (abgebrochener Deploy?) – wird jetzt neu eingespielt.
+              [ -f vendor/autoload.php ] || echo "::warning::vendor/ fehlt (abgebrochener Deploy?) – wird jetzt neu eingespielt."
               echo "Installiert: $("${{ env.PHP_BIN }}" artisan --version 2>/dev/null)"
               grep -m1 '^KLUFT_INSTANZ=' .env 2>/dev/null || echo "KLUFT_INSTANZ in .env: (noch nicht gesetzt – bisheriger Stand vor Kluft)"
               # Schutz: Liegt hier schon eine andere Instanz (gleicher Server,

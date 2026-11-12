@@ -65,8 +65,10 @@ class TeilnehmendeLoeschenTest extends TestCase
 
         // Auch stornierte Anmeldungen lassen sich löschen.
         $mia->update(['status' => 'cancelled', 'cancelled_at' => now()]);
-        $this->liste()->assertActionVisible(TestAction::make('loeschen')->table($mia))
-            ->callAction(TestAction::make('loeschen')->table($mia));
+        $liste = $this->liste()->assertActionVisible(TestAction::make('loeschen')->table($mia));
+        // Admins sehen den Hinweis im Stornieren-Fenster nicht.
+        $this->assertStringNotContainsString('nur Admins', (string) $liste->mountAction(TestAction::make('cancel')->table($ben))->instance()->getMountedAction()->getModalDescription());
+        $this->liste()->callAction(TestAction::make('loeschen')->table($mia));
         $this->assertNull($mia->fresh());
         $this->assertSame(0, RegistrationDocument::query()->count());
 
@@ -84,8 +86,11 @@ class TeilnehmendeLoeschenTest extends TestCase
         $mia = $this->anmeldung('Mia');
         $this->actingAs($this->user('verwaltung'));
 
-        $this->liste()->assertActionHidden(TestAction::make('loeschen')->table($mia))
-            ->assertTableBulkActionHidden('loeschenBulk');
+        $liste = $this->liste()->assertActionHidden(TestAction::make('loeschen')->table($mia))
+            ->assertTableBulkActionHidden('loeschenBulk')
+            ->mountAction(TestAction::make('cancel')->table($mia));
+        // Hinweis im Stornieren-Fenster, an wen man sich wenden kann.
+        $this->assertStringContainsString('Endgültig löschen (z. B. Testanmeldungen oder Doppelte) können nur Admins.', (string) $liste->instance()->getMountedAction()->getModalDescription());
         $this->assertNotNull($mia->fresh());
     }
 }

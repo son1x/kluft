@@ -705,7 +705,9 @@ class RegistrationsRelationManager extends RelationManager
                     ->color('danger')
                     ->visible(fn (EventRegistration $record) => in_array($record->status, ['confirmed', 'waitlist'], true))
                     ->requiresConfirmation()
-                    ->modalDescription('Die Person bekommt eine Stornierungsmail; ein frei werdender Platz geht an die Warteliste.')
+                    ->modalDescription(fn () => 'Die Person bekommt eine Stornierungsmail; ein frei werdender Platz geht an die Warteliste.'
+                        // Wer nicht löschen darf, erfährt hier, an wen er sich wenden kann.
+                        .(self::darfLoeschen() ? '' : ' Endgültig löschen (z. B. Testanmeldungen oder Doppelte) können nur Admins.'))
                     ->action(fn (EventRegistration $record) => $this->changeStatus($record, 'cancel')),
                 // Endgültig löschen (nur Admins), z. B. Testanmeldungen oder Doppelte.
                 Action::make('loeschen')

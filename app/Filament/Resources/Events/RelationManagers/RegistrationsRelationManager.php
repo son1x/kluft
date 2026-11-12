@@ -705,8 +705,21 @@ class RegistrationsRelationManager extends RelationManager
                     ->color('danger')
                     ->visible(fn (EventRegistration $record) => in_array($record->status, ['confirmed', 'waitlist'], true))
                     ->requiresConfirmation()
-                    ->modalDescription('Die Person bekommt eine Stornierungsmail; ein frei werdender Platz geht an die Warteliste.')
+                    ->modalDescription(fn () => 'Die Person bekommt eine Stornierungsmail; ein frei werdender Platz geht an die Warteliste.'
+                        // Wer nicht löschen darf, erfährt hier, an wen er sich wenden kann.
+                        .(self::darfLoeschen() ? '' : ' Endgültig löschen (z. B. Testanmeldungen oder Doppelte) können nur Admins.'))
                     ->action(fn (EventRegistration $record) => $this->changeStatus($record, 'cancel')),
+                // Endgültig löschen (nur Admins), z. B. Testanmeldungen oder Doppelte.
+                Action::make('loeschen')
+                    ->label('Endgültig löschen')
+                    ->icon('heroicon-o-trash')
+                    ->color('danger')
+                    ->visible(fn () => self::darfLoeschen())
+                    ->requiresConfirmation()
+                    ->modalHeading(fn (EventRegistration $record) => 'Anmeldung von '.$record->fullName().' löschen?')
+                    ->modalDescription(self::LOESCHEN_TEXT)
+                    ->modalSubmitActionLabel('Endgültig löschen')
+                    ->action(fn (EventRegistration $record) => $this->loeschen(collect([$record]))),
             ])
             ->toolbarActions([
                 BulkAction::make('confirmManuallyBulk')
@@ -737,7 +750,42 @@ class RegistrationsRelationManager extends RelationManager
                         ->action(fn (Collection $records) => $this->revokeCertificates($records)),
                 ])->label('Bescheinigungen')->visible($event->bescheinigungAn()),
                 $this->zuschussSammelaktionen($event),
+                BulkAction::make('loeschenBulk')
+                    ->label('Endgültig löschen')
+                    ->icon('heroicon-o-trash')
+                    ->color('danger')
+                    ->visible(fn () => self::darfLoeschen())
+                    ->requiresConfirmation()
+                    ->modalHeading('Markierte Anmeldungen endgültig löschen?')
+                    ->modalDescription(self::LOESCHEN_TEXT)
+                    ->modalSubmitActionLabel('Endgültig löschen')
+                    ->deselectRecordsAfterCompletion()
+                    ->action(fn (Collection $records) => $this->loeschen($records)),
             ]);
+    }
+
+    private const LOESCHEN_TEXT = 'Löscht die Anmeldung mit allen Angaben und hochgeladenen Dokumenten unwiderruflich. Die Person bekommt keine Mail, und niemand rückt von der Warteliste nach – zum Absagen „Stornieren“ verwenden. Zahlungen bleiben für die Kasse erhalten. Wird protokolliert.';
+
+    /** Endgültiges Löschen nur für Admins. */
+    private static function darfLoeschen(): bool
+    {
+        return (bool) Filament::auth()->user()?->isAdmin();
+    }
+
+    /**
+     * @param  \Illuminate\Support\Collection<int, EventRegistration>  $records
+     */
+    private function loeschen(\Illuminate\Support\Collection $records): void
+    {
+        abort_unless(self::darfLoeschen(), 403);
+        /** @var Event $event */
+        $event = $this->getOwnerRecord();
+        $ids = $records->filter(fn (EventRegistration $r) => $r->event_id === $event->getKey())->pluck('id');
+        RegistrationDocument::purgeFor($ids);
+        $anzahl = EventRegistration::query()->whereIn('id', $ids)->delete();
+
+        AuditLogger::log("registration.geloescht:{$anzahl}", Filament::auth()->user(), Event::class, $event->getKey(), request());
+        Notification::make()->title($anzahl === 1 ? 'Anmeldung gelöscht' : "{$anzahl} Anmeldungen gelöscht")->success()->send();
     }
 
     /**

@@ -13,6 +13,16 @@ Bildungsreferent*innen, Verwaltung und Admins wie gewohnt, dazu der
 **Vorstand** lesend (sparsame Liste). Stufenadmins sehen sie nicht. Keine
 eigene Stufenseite – die Stufen bleiben Biber bis Rover.
 
+## Anmeldungen endgültig löschen (nur Admins)
+
+Unter „Teilnehmende“ einzeln (Aktion **Endgültig löschen**) oder für
+markierte Anmeldungen (Sammelaktion). Gedacht für Testanmeldungen, Doppelte
+oder Löschwünsche, die nicht über Verwaltung → Datenschutz laufen. Löscht die
+Anmeldung mit allen Angaben und hochgeladenen Dokumenten unwiderruflich;
+keine Mail an die Person, kein Nachrücken von der Warteliste (dafür
+„Stornieren“). Zahlungen bleiben für die Kasse erhalten. Jeder Vorgang steht
+im Protokoll („Anmeldungen endgültig gelöscht: N“).
+
 ## Datum und Uhrzeit
 
 Wie im Apple-Kalender: **Beginn** und **Ende** jeweils mit Datum und Uhrzeit

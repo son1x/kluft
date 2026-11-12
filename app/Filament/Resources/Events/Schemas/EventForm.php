@@ -40,6 +40,7 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\HtmlString;
 
 class EventForm
 {
@@ -104,7 +105,16 @@ class EventForm
                         ->required()
                         ->unique(ignoreRecord: true)
                         ->alphaDash()
-                        ->helperText('Erreichbar unter /veranstaltungen/{slug}'),
+                        // Ohne Jahreszahl ist die Adresse im nächsten Jahr belegt: Hinweis und Knopf.
+                        ->helperText(fn (Get $get) => self::ohneJahr($get('slug'))
+                            ? new HtmlString('Erreichbar unter /veranstaltungen/{slug}. <span class="font-medium text-warning-600 dark:text-warning-400">Ohne Jahreszahl ist die Adresse im nächsten Jahr schon belegt.</span>')
+                            : 'Erreichbar unter /veranstaltungen/{slug}')
+                        ->hintAction(Action::make('jahrAnhaengen')
+                            ->label(fn (Get $get) => 'Jahr anhängen ('.self::jahr($get).')')
+                            ->icon('heroicon-m-plus')
+                            ->color('warning')
+                            ->visible(fn (Get $get) => self::ohneJahr($get('slug')))
+                            ->action(fn (Get $get, Set $set) => $set('slug', Slug::bereinigen($get('slug').'-'.self::jahr($get))))),
                     TextInput::make('location')->label('Ort')->maxLength(255),
                     // Nextcloud-Termin, aus dem die Veranstaltung angelegt wurde.
                     Hidden::make('calendar_uid'),
@@ -405,6 +415,20 @@ class EventForm
                     $uebernehmen($person, $set);
                 }
             });
+    }
+
+    /** Slug ohne Jahreszahl (z. B. „spirihike“ statt „spirihike-2027“)? */
+    public static function ohneJahr(mixed $slug): bool
+    {
+        return filled($slug) && ! preg_match('/(?<!\d)(19|20)\d{2}(?!\d)/', (string) $slug);
+    }
+
+    /** Jahr der Veranstaltung (Beginn), sonst das aktuelle. */
+    private static function jahr(Get $get): string
+    {
+        $datum = $get('beginn_datum') ?: $get('starts_at');
+
+        return filled($datum) ? Carbon::parse($datum)->format('Y') : now()->format('Y');
     }
 
     /**

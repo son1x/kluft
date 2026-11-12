@@ -17,6 +17,7 @@ Schedule::command('calendar:sync')->everyFifteenMinutes()->withoutOverlapping();
 Schedule::command('registrations:purge --unconfirmed')->hourly();
 Schedule::command('registrations:purge')->dailyAt('03:00');
 Schedule::command('registrations:sensible-loeschen')->dailyAt('03:05');
+Schedule::command('vor-ort:unterschriften-loeschen')->dailyAt('03:10');
 Schedule::command('konten:inaktive')->dailyAt('04:15');
 
 // Audit-Log nach 12 Monaten bereinigen (Pflichtenheft 8.2, 11.4).

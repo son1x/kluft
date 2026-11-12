@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 /**
@@ -59,7 +60,7 @@ class Event extends Model
         'status', 'extern_freigegeben', 'form_fields', 'retention_days', 'created_by', 'calendar_uid',
         'certificate_enabled', 'certificate_text', 'certificate_signer', 'preise', 'zahlungsfrist_tage',
         'zuschuss', 'zuschuss_art', 'zuschuss_geber', 'zuschuss_finanzen', 'zuschuss_fern', 'zuschuss_bericht', 'zuschuss_antrag', 'zuschuss_stand',
-        'foto_einwilligung', 'ganztaegig', 'zusatz_felder',
+        'foto_einwilligung', 'ganztaegig', 'zusatz_felder', 'teilnahmeliste_datei', 'teilnahmeliste_am',
     ];
 
     protected function casts(): array
@@ -85,6 +86,7 @@ class Event extends Model
             'form_fields' => 'array',
             'preise' => 'array',
             'zusatz_felder' => 'array',
+            'teilnahmeliste_am' => 'datetime',
             'zahlungsfrist_tage' => 'integer',
             'zuschuss' => 'boolean',
             'zuschuss_geber' => 'array',
@@ -189,7 +191,13 @@ class Event extends Model
     protected static function booted(): void
     {
         // Anmeldungen fallen per Fremdschlüssel weg; deren Dateien hier.
-        static::deleting(fn (self $event) => RegistrationDocument::purgeFor($event->registrations()->pluck('id')));
+        static::deleting(function (self $event) {
+            RegistrationDocument::purgeFor($event->registrations()->pluck('id'));
+            // Festgeschriebene Teilnahmeliste (Vor Ort) mit löschen.
+            if (filled($event->teilnahmeliste_datei)) {
+                Storage::disk('local')->delete($event->teilnahmeliste_datei);
+            }
+        });
 
         // Eigene Felder bekommen einen festen Schlüssel, unter dem die Antworten
         // in den Anmeldungen stehen. So bleiben sie zugeordnet, auch wenn die

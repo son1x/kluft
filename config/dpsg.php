@@ -36,6 +36,10 @@ return array_replace([
     // der Veranstaltung löschen; der Rest der Anmeldung folgt der Löschfrist.
     'sensible_tage' => (int) env('SENSIBLE_TAGE', 14),
 
+    // Vor Ort, Stufe 2: Einzelunterschriften so viele Tage nach dem Festschreiben
+    // der Teilnahmeliste löschen (die festgeschriebene PDF bleibt).
+    'unterschrift_loeschen_tage' => (int) env('UNTERSCHRIFT_LOESCHEN_TAGE', 14),
+
     // Vor Ort (docs/vor-ort.md): Zahlungsarten beim Kassieren am Veranstaltungsort.
     // Je Instanz anpassbar (z. B. ohne PayPal, wenn es kein Konto gibt).
     'vor_ort_zahlwege' => $instanzConfig['vor_ort_zahlwege'] ?? [

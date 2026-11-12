@@ -2,6 +2,7 @@
 // Änderungen gehen als Ereignisse mit eigener Kennung an den Server; was
 // (noch) nicht ankommt, bleibt in der Warteschlange und wird erneut geschickt.
 import Alpine from 'alpinejs';
+import SignaturePad from 'signature_pad';
 
 const csrf = () => document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
 
@@ -16,6 +17,42 @@ async function holen(url) {
     }
 
     return antwort.json();
+}
+
+// Unterschriftsfeld außerhalb von Alpine halten (keine reaktive Hülle um das Canvas-Objekt).
+let pad = null;
+
+// Unterschrift auf den beschriebenen Bereich zuschneiden (kleineres Bild, passt in die Listenzeile).
+function zuschneiden(canvas) {
+    const ctx = canvas.getContext('2d');
+    const { width, height } = canvas;
+    const daten = ctx.getImageData(0, 0, width, height).data;
+    let [x0, y0, x1, y1] = [width, height, -1, -1];
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            if (daten[(y * width + x) * 4 + 3] > 0) {
+                if (x < x0) x0 = x;
+                if (x > x1) x1 = x;
+                if (y < y0) y0 = y;
+                if (y > y1) y1 = y;
+            }
+        }
+    }
+    if (x1 < 0) {
+        return null;
+    }
+    const rand = 8;
+    x0 = Math.max(0, x0 - rand); y0 = Math.max(0, y0 - rand);
+    x1 = Math.min(width - 1, x1 + rand); y1 = Math.min(height - 1, y1 + rand);
+    const w = x1 - x0 + 1;
+    const h = y1 - y0 + 1;
+    const faktor = Math.min(1, 1200 / w, 500 / h);
+    const ziel = document.createElement('canvas');
+    ziel.width = Math.max(20, Math.round(w * faktor));
+    ziel.height = Math.max(10, Math.round(h * faktor));
+    ziel.getContext('2d').drawImage(canvas, x0, y0, w, h, 0, 0, ziel.width, ziel.height);
+
+    return ziel.toDataURL('image/png');
 }
 
 const euro = (cent) => (cent / 100).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
@@ -131,6 +168,9 @@ Alpine.data('vorOrt', () => ({
             if (this.filter === 'fehlt') {
                 return this.erwartet(p) && !this.istDa(p);
             }
+            if (this.filter === 'unterschrift') {
+                return !p.unterschrieben;
+            }
             if (this.filter === 'offen') {
                 return p.zahlung && p.zahlung.offen_cent > 0;
             }
@@ -202,6 +242,7 @@ Alpine.data('vorOrt', () => ({
         const p = this.v?.personen ?? [];
 
         return {
+            unterschrieben: p.filter((x) => x.unterschrieben).length,
             da: p.filter((x) => this.istDa(x)).length,
             erwartet: p.filter((x) => this.erwartet(x)).length,
             offen: p.filter((x) => x.zahlung && x.zahlung.offen_cent > 0).length,
@@ -238,6 +279,51 @@ Alpine.data('vorOrt', () => ({
         const da = !this.istDa(p, tag);
         p.da = da ? [...p.da, tag] : p.da.filter((t) => t !== tag);
         this.ereignis(p, 'anwesend', { tag, da });
+    },
+
+    // Unterschrift (Stufe 2): die teilnehmende Person unterschreibt auf dem Gerät.
+    unterschreiben: null,
+
+    unterschreibenStarten(p) {
+        this.unterschreiben = { id: p.id, name: p.vorname + ' ' + p.nachname };
+        this.$nextTick(() => {
+            const canvas = this.$refs.unterschriftFeld;
+            const dpr = Math.max(window.devicePixelRatio || 1, 1);
+            canvas.width = canvas.offsetWidth * dpr;
+            canvas.height = canvas.offsetHeight * dpr;
+            canvas.getContext('2d').scale(dpr, dpr);
+            pad?.off();
+            pad = new SignaturePad(canvas, { penColor: '#111827', minWidth: 0.8, maxWidth: 2.6 });
+        });
+    },
+
+    unterschriftLoeschen() {
+        pad?.clear();
+    },
+
+    unterschriftAbbrechen() {
+        pad?.off();
+        pad = null;
+        this.unterschreiben = null;
+    },
+
+    unterschriftFertig() {
+        const p = this.v.personen.find((x) => x.id === this.unterschreiben?.id);
+        if (!p || !pad || pad.isEmpty()) {
+            this.meldung = 'Bitte zuerst im Feld unterschreiben.';
+
+            return;
+        }
+        const bild = zuschneiden(this.$refs.unterschriftFeld);
+        if (!bild) {
+            this.meldung = 'Bitte zuerst im Feld unterschreiben.';
+
+            return;
+        }
+        p.unterschrieben = new Date().toISOString();
+        this.ereignis(p, 'unterschrift', { bild });
+        this.unterschriftAbbrechen();
+        this.meldung = 'Unterschrift von ' + p.vorname + ' ' + p.nachname + ' gespeichert.';
     },
 
     // Kassieren: Zahlungsart wählen (bar, Karte, PayPal …), dann bestätigen.
@@ -306,7 +392,8 @@ Alpine.data('vorOrt', () => ({
             return;
         }
         this.sendet = true;
-        const paket = this.warteschlange.slice(0, 50);
+        // Unterschriften sind größer: kleinere Pakete.
+        const paket = this.warteschlange.slice(0, 20);
         try {
             const antwort = await fetch('/vor-ort/api/ereignisse', {
                 method: 'POST',

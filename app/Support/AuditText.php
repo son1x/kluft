@@ -145,6 +145,9 @@ class AuditText
             'vor_ort.zahlung' => 'Vor Ort: Zahlung kassiert (Anmeldung Nr. '.$rest.')',
             'vor_ort.angaben' => 'Vor Ort: Angaben korrigiert (Anmeldung Nr. '.$rest.')',
             'vor_ort.zusatz' => 'Vor Ort: Zusatzinfo geändert (Anmeldung Nr. '.$rest.')',
+            'vor_ort.unterschrift' => 'Vor Ort: unterschrieben (Anmeldung Nr. '.$rest.')',
+            'zuschuss.liste_festgeschrieben' => 'Teilnahmeliste festgeschrieben ('.$rest.' Unterschriften)',
+            'vor_ort.unterschriften_geloescht' => 'Einzelunterschriften gelöscht (Frist nach dem Festschreiben): '.$rest,
             'rechte.geprueft' => 'Rechte-Prüfung abgeschlossen: '.$rest.' Personen mit sensiblen Rechten',
             'registrations.purge' => 'Automatisch gelöscht: '.($teile[0] ?? 0).' unbestätigte und '.($teile[1] ?? 0).' abgelaufene Anmeldungen',
             'privacy.delete' => count($teile) >= 4

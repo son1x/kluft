@@ -21,7 +21,8 @@
     table.liste th { background: #ecdfcb; font-size: 8.5pt; text-align: left; padding: 1.2mm 1.5mm; border: 0.2mm solid #c7bdad; }
     table.liste td { border: 0.2mm solid #c7bdad; padding: 1.8mm 1.5mm; height: 6mm; }
     .nr { width: 7mm; text-align: right; }
-    .sig { width: 42mm; }
+    td.sig { width: 42mm; padding-top: 0.5mm; padding-bottom: 0.5mm; }
+    .unterschrift-bild { max-width: 40mm; max-height: 9mm; }
     .klein { font-size: 8pt; color: #5c6670; }
     .summen td { padding: 0.8mm 6mm 0.8mm 0; }
     .unterschrift { margin-top: 10mm; width: 95mm; border-top: 0.3mm solid #1c1f26; padding-top: 1mm; font-size: 8.5pt; }
@@ -68,7 +69,7 @@
                 @php($z = $zeile($p, $juleica))
                 <tr><td class="nr">{{ $i + 1 }}</td><td>{{ $z['name'] }}</td><td>{{ $z['vorname'] }}</td><td>{{ $z['strasse'] }}</td><td>{{ $z['ort'] }}</td><td>{{ $z['geb'] }}</td><td>{{ $z['alter'] }}</td><td>{{ $z['g'] }}</td><td>{{ $z['funktion'] }}</td>
                     @if ($juleica)<td>{{ $z['juleica'] }}</td>@endif
-                    <td class="sig"></td></tr>
+                    <td class="sig">{!! isset($unterschriften[$p['id']]) ? '<img class="unterschrift-bild" src="'.e($unterschriften[$p['id']]).'" alt="">' : '' !!}</td></tr>
             @endforeach
             @for ($j = 0; $j < $leer; $j++)
                 <tr><td class="nr">{{ count($liste) + $j + 1 }}</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>@if ($juleica)<td></td>@endif<td class="sig"></td></tr>

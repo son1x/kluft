@@ -146,6 +146,7 @@ class AuditText
             'vor_ort.angaben' => 'Vor Ort: Angaben korrigiert (Anmeldung Nr. '.$rest.')',
             'vor_ort.zusatz' => 'Vor Ort: Zusatzinfo geändert (Anmeldung Nr. '.$rest.')',
             'vor_ort.unterschrift' => 'Vor Ort: unterschrieben (Anmeldung Nr. '.$rest.')',
+            'zuschuss.anwesenheit_vor_ort' => 'Anwesenheit aus Vor Ort übernommen: '.($teile[0] ?? 0).' Personen, '.($teile[1] ?? 0).' als nicht dabei',
             'zuschuss.liste_festgeschrieben' => 'Teilnahmeliste festgeschrieben ('.$rest.' Unterschriften)',
             'vor_ort.unterschriften_geloescht' => 'Einzelunterschriften gelöscht (Frist nach dem Festschreiben): '.$rest,
             'rechte.geprueft' => 'Rechte-Prüfung abgeschlossen: '.$rest.' Personen mit sensiblen Rechten',

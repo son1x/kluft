@@ -179,7 +179,7 @@ Die Oberfläche wendet Änderungen sofort an (optimistisch), legt sie in eine Wa
 
 Migrationen: `2026_11_13_100000_create_vor_ort`, `2026_11_13_110000_add_zusatz_felder`, `2026_11_13_120000_create_vor_ort_unterschriften`.
 
-`vor_ort_tage` ist bewusst getrennt von `anwesend`/`anwesend_tage` des Zuschussantrags (dort bedeutet „leer“ = alle Tage). Eine Übernahme „Anwesenheit aus Vor Ort in den Zuschussantrag“ ist noch offen.
+`vor_ort_tage` ist bewusst getrennt von `anwesend`/`anwesend_tage` des Zuschussantrags (dort bedeutet „leer“ = alle Tage). Übernahme in den Zuschussantrag: **Zuschussantrag → „Anwesenheit aus „Vor Ort“ übernehmen“**. Wer mindestens einmal abgehakt wurde, gilt an genau diesen Tagen als anwesend (alle Tage = Standard, wie im Zuschuss-Dialog). Wer nie abgehakt wurde, bleibt unverändert – oder gilt mit dem Schalter „Wer nie abgehakt wurde, gilt als ‚nicht dabei‘“ als nicht dabei. Protokoll `zuschuss.anwesenheit_vor_ort`.
 
 ## Datenschutz
 
@@ -202,7 +202,7 @@ Für die Datenschutzbewertung (`docs/datenschutz-bewertung.md`): keine neue Date
 | Offline nötig? | ja – ein zentraler Platz ist ohne Internet | Stufe 3 |
 | Digitale Unterschriften | **entschieden:** anerkannt; eine je Person und Veranstaltung; **die teilnehmende Person unterschreibt selbst** (auch Minderjährige); in der Zeile der Person; Standardtext „Ich bestätige meine Teilnahme …“ | – |
 | Aufbewahrung der Unterschriften | **entschieden:** festgeschriebene Liste genügt; Einzelunterschriften 14 Tage nach dem Festschreiben gelöscht | – |
-| Anwesenheit in den Zuschussantrag übernehmen | noch nicht | Übernahme `vor_ort_tage` → `anwesend_tage` |
+| Anwesenheit in den Zuschussantrag übernehmen | Knopf im Zuschussantrag (`VorOrt::anwesenheitUebernehmen`) | – |
 | Wartende/stornierte Anmeldungen | nicht in „Vor Ort“ | ggf. Nachmeldung vor Ort als eigene Funktion |
 | Gerät | Tablet des Büros, Handy als Ausweich | – |
 

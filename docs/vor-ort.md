@@ -1,17 +1,17 @@
 # Vor Ort – Begleiter für die Durchführung von Veranstaltungen
 
-Ein eigener Bereich unter **`/vor-ort`** für die Arbeit am Veranstaltungsort: Anwesenheit abhaken, sehen, wer bezahlt hat, Barzahlungen vermerken, Verpflegung im Blick behalten, Angaben korrigieren und Zusatzinfos wie Zimmer oder Zelt pflegen.
+Ein eigener Bereich unter **`/vor-ort`** für die Arbeit am Veranstaltungsort: Anwesenheit abhaken, sehen, wer bezahlt hat, Zahlungen vor Ort kassieren (bar, Karte, PayPal), Verpflegung im Blick behalten, Angaben korrigieren und Zusatzinfos wie Zimmer oder Zelt pflegen.
 
 Gebaut für ein **Tablet des Büros** (quer: Liste links, Person rechts, beide scrollen getrennt); auf dem **Handy** als Ausweichgerät einspaltig. Alle Tippflächen mindestens 44 pt, keine seitliche Scrollleiste (Apple HIG, `docs/barrierefreiheit.md`).
 
-Inhalt: [Einrichten](#einrichten) · [Bedienung](#bedienung) · [Zusatzinfos fürs Team](#zusatzinfos-fürs-team) · [Rechte](#wer-darf-was) · [Technik](#technik) · [Datenschutz](#datenschutz) · [Entscheidungen und offene Punkte](#entscheidungen-und-offene-punkte) · [Ausbauplan](#ausbauplan)
+Inhalt: [Einrichten](#einrichten) · [Bedienung](#bedienung) · [Zusatzinfos fürs Team](#zusatzinfos-fürs-team) · [Zahlungsarten](#zahlungsarten-beim-kassieren) · [Rechte](#wer-darf-was) · [Technik](#technik) · [Datenschutz](#datenschutz) · [Entscheidungen und offene Punkte](#entscheidungen-und-offene-punkte) · [Ausbauplan](#ausbauplan)
 
 ---
 
 ## Einrichten
 
 1. **Funktion einschalten:** Verwaltung → Funktionen → **„Vor Ort (Begleiter für Veranstaltungen)“** (Standard: aus).
-2. **Optional – Zahlungen:** Damit „bezahlt / offen“ und „bar erhalten“ erscheinen, braucht die Veranstaltung einen Teilnahmebeitrag (Preisstufen) und die Funktion „Zahlungen“ (`docs/zahlungen.md`).
+2. **Optional – Zahlungen:** Damit „bezahlt / offen“ und „… € erhalten“ erscheinen, braucht die Veranstaltung einen Teilnahmebeitrag (Preisstufen) und die Funktion „Zahlungen“ (`docs/zahlungen.md`). Welche Zahlungsarten zur Wahl stehen, legt die Instanz fest (siehe [Zahlungsarten](#zahlungsarten-beim-kassieren)).
 3. **Optional – Zusatzinfos:** In der Veranstaltung unter **„Zusatzinfos fürs Team“** Felder wie „Zimmer“, „Zelt“ oder „Platz“ anlegen (siehe unten).
 4. **Tablet vorbereiten:** `https://<domain>/vor-ort` im Browser öffnen, anmelden (Microsoft 365 oder E-Mail-Code) und als Lesezeichen bzw. „Zum Home-Bildschirm“ ablegen. Das Konto des Tablets braucht das Recht, die Teilnehmenden der Veranstaltung zu verwalten (z. B. ein Funktionskonto „Büro“ mit der passenden Rolle).
 
@@ -44,7 +44,7 @@ Antippen öffnet die Person (Tablet: rechte Spalte; Handy: eigene Ansicht mit �
 
 - **Anwesenheit**: alle Tage zum Abhaken; gestrichelt = an diesem Tag nicht angemeldet.
 - **Zusatzinfos** (nur Team): Felder direkt bearbeiten, gespeichert beim Verlassen des Felds oder mit Enter. Darunter „Mit dabei: …“ – alle mit dem gleichen Wert (z. B. die Zimmermitbewohnenden).
-- **Teilnahmebeitrag**: Stand und **„45,00 € bar erhalten“** (mit Rückfrage). Bucht den offenen Betrag als Zahlungseingang.
+- **Teilnahmebeitrag**: Stand und **„45,00 € erhalten …“** → Zahlungsart wählen (Bar · Karte (SumUp) · PayPal) oder Abbrechen. Bucht den offenen Betrag als Zahlungseingang mit Zahlungsart und Namen der kassierenden Person.
 - **Angaben**: alle abgefragten Angaben; sensible sind markiert. **„Korrigieren“** öffnet ein Formular für Name, Verpflegung, Tage, Anmerkungen, eigene Felder. Die Person bekommt keine Mail.
 
 ### Verbindungsanzeige (oben rechts)
@@ -66,6 +66,24 @@ Für Angaben, die **nicht** im Anmeldeformular stehen, sondern das Team vergibt:
 - **Zusammengehörige**: Wer den gleichen Wert hat, gehört zusammen – „Mit dabei: …“ bei der Person, „Ordnen: nach Zimmer“ in der Liste. Werte werden genau verglichen („12“ ≠ „Zimmer 12“); am besten nur die Nummer bzw. den Namen eintragen.
 - **Umbenennen**: Der interne Schlüssel kommt aus der Bezeichnung. Wird ein Feld umbenannt, sind die alten Werte darunter nicht mehr zu sehen (bei Rückbenennung wieder).
 - Zusatzinfos sehen die Teilnehmenden nicht; sie stehen nicht im Export.
+
+## Zahlungsarten beim Kassieren
+
+Kassieren dürfen alle, die die Teilnehmenden der Veranstaltung verwalten dürfen – sie nehmen das Geld vor Ort entgegen. Jede Buchung steht mit Namen und Zahlungsart in der Zahlung (Notiz, „erfasst von“) und im Protokoll; die Kasse sieht sie unter Kasse → Zahlungen.
+
+Zur Wahl stehen standardmäßig **Bar**, **Karte (SumUp)** und **PayPal**. Kluft **vermerkt** nur, wie bezahlt wurde – kassiert wird mit dem jeweiligen Gerät bzw. Konto (SumUp-Kartenleser, PayPal-App). Je Instanz anpassbar in `instanzen/<instanz>/config.php`:
+
+```php
+'vor_ort_zahlwege' => [
+    'bar' => 'Bar',
+    'karte' => 'Karte (SumUp)',
+    // 'paypal' => 'PayPal',  // weglassen, wenn es kein Konto gibt
+],
+```
+
+**Später möglich** (nicht gebaut):
+- **SumUp**: Über die „Payment Switch“-Schnittstelle kann Kluft die SumUp-App mit dem Betrag öffnen und bekommt das Ergebnis zurück (braucht einen Affiliate-Schlüssel von SumUp).
+- **PayPal**: QR-Code mit dem Betrag zum Scannen (PayPal.me-Link oder PayPal-QR des Kontos); die Zahlung muss dann trotzdem bestätigt werden.
 
 ## Wer darf was
 
@@ -113,7 +131,7 @@ Jede Änderung schickt die Oberfläche als **Ereignis** mit eigener Kennung (UUI
 | Typ | Daten | Prüfung | Wirkung |
 |---|---|---|---|
 | `anwesend` | `tag`, `da` (ja/nein) | Tag gehört zur Veranstaltung | Spalte `event_registrations.vor_ort_tage` |
-| `bar` | `cent` | Funktion „Zahlungen“, offene Forderung, Betrag > 0 und ≤ offen | `Zahlung::eingang()` mit Notiz „Bar vor Ort“, erfasst von der Person; Protokoll `vor_ort.bar` |
+| `zahlung` | `cent`, `weg` (`bar`, `karte`, `paypal` …) | Funktion „Zahlungen“, offene Forderung, Betrag > 0 und ≤ offen, bekannte Zahlungsart | `Zahlung::eingang()` mit Notiz „<Zahlungsart> vor Ort“ (z. B. „Karte (SumUp) vor Ort“), erfasst von der Person; Protokoll `vor_ort.zahlung` |
 | `angaben` | `first_name`, `last_name`, `data` (nur abgefragte Felder) | Name nicht leer; Auswahl/Tage/Jahr/Zahl gültig | Anmeldung; Protokoll `vor_ort.angaben` |
 | `zusatz` | `feld`, `wert` | Feld gehört zur Veranstaltung, ≤ 100 Zeichen | Spalte `event_registrations.zusatz` (leer = entfernen); Protokoll `vor_ort.zusatz` |
 
@@ -138,7 +156,7 @@ Migrationen: `2026_11_13_100000_create_vor_ort`, `2026_11_13_110000_add_zusatz_f
 
 - **Gerät**: Stufe 1 speichert nichts dauerhaft auf dem Gerät; die Daten kommen bei jedem Öffnen frisch vom Server. Die Warteschlange lebt nur, solange die Seite offen ist.
 - **Ereignisse** enthalten nur, was geändert wurde (verschlüsselt gespeichert). Sensible Angaben (z. B. Allergien) stehen dort nicht im Klartext, sondern nur „(sensibel, geändert)“. Die Ereignisse werden mit der Anmeldung gelöscht (Löschfristen der Veranstaltung).
-- **Protokoll**: Barzahlungen, Korrekturen und Zusatzinfos stehen mit Namen im Protokoll (`vor_ort.*`, `registration.bearbeitet`).
+- **Protokoll**: Zahlungen, Korrekturen und Zusatzinfos stehen mit Namen im Protokoll (`vor_ort.*`, `registration.bearbeitet`).
 - **Anzeige**: Sensible Angaben zeigt „Vor Ort“ wie die Detailansicht im Backend, gekennzeichnet – für dieselben Personen.
 - Seite mit `noindex`, gleiche Sicherheits-Header (CSP) wie die Website.
 
@@ -148,16 +166,17 @@ Für die Datenschutzbewertung (`docs/datenschutz-bewertung.md`): keine neue Date
 
 | Thema | Stand | Offen |
 |---|---|---|
-| Wer darf bar verbuchen? | alle mit `manageParticipants` (Team vor Ort kassiert), protokolliert mit Namen | Soll das nur die Kasse dürfen? |
+| Wer darf Zahlungen verbuchen? | **entschieden:** alle mit `manageParticipants` – das Team vor Ort nimmt das Geld entgegen; protokolliert mit Namen | – |
+| Zahlungsarten | Bar, Karte (SumUp), PayPal – nur vermerkt, keine Anbindung | Anbindung an SumUp/PayPal (siehe unten) |
 | Eigene App oder Bereich in Kluft? | Bereich in Kluft (gleiche Anmeldung, Rechte, Daten; kein App-Store) | – |
 | Offline nötig? | ja – ein zentraler Platz ist ohne Internet | Stufe 3 |
-| Digitale Unterschriften | werden laut Rückmeldung anerkannt, oft gewünscht | Stufe 2 |
+| Digitale Unterschriften | werden laut Rückmeldung anerkannt, oft gewünscht; **eine Unterschrift je Person und Veranstaltung** (nicht je Tag) | Stufe 2: wer unterschreibt bei Minderjährigen, Bestätigungstext, Aufbewahrung |
 | Wartende/stornierte Anmeldungen | nicht in „Vor Ort“ | ggf. Nachmeldung vor Ort als eigene Funktion |
 | Gerät | Tablet des Büros, Handy als Ausweich | – |
 
 ## Ausbauplan
 
 1. ~~**Stufe 1 – online**: Auswahl, Anwesenheit je Tag, Zahlungsstand und Barzahlung, Verpflegung, Angaben korrigieren, Zusatzinfos.~~ (PR „Vor Ort, Stufe 1“)
-2. **Stufe 2 – digitale Unterschrift** je Person und Tag (mit dem Finger auf dem Tablet), gespeichert als Bild, eingesetzt in die Zuschuss-Teilnahmeliste (PDF) an Stelle der Unterschriftsspalte; Übernahme der Anwesenheit in den Zuschussantrag.
+2. **Stufe 2 – digitale Unterschrift** je Person und **Veranstaltung** (mit Finger oder Stift auf dem Tablet, Bibliothek [signature_pad](https://github.com/szimek/signature_pad), MIT, über Vite gebündelt), gespeichert als PNG (verschlüsselt, mit Zeitpunkt, bedienender Person und Prüfsumme) als Ereignis `unterschrift`, eingesetzt in die Zuschuss-Teilnahmeliste (PDF) in der Spalte „Unterschrift“; Löschen/neu einholen im Backend mit Protokoll; Übernahme der Anwesenheit in den Zuschussantrag.
 3. **Stufe 3 – installierbar und offline**: Web-App-Manifest und Service Worker, Liste der gewählten Veranstaltung auf dem Gerät, Warteschlange dauerhaft (IndexedDB), Nachsenden beim Wiederverbinden, Anzeige „Stand von …“.
 4. **Stufe 4 – Datenschutz offline**: Gerätespeicher verschlüsselt, Löschen beim Abmelden und nach der Veranstaltung, sensible Angaben offline nur nach ausdrücklicher Freigabe, Ergänzung der Datenschutzbewertung.

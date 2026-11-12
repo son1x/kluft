@@ -185,9 +185,19 @@
                                     <p x-show="!auswahl.zahlung" class="text-sm text-gray-700">Keine Forderung angelegt.</p>
                                     <div x-show="auswahl.zahlung" class="flex flex-wrap items-center gap-3">
                                         <span class="rounded-full px-3 py-1 text-sm font-semibold" x-bind:class="zahlungFarbe(auswahl)" x-text="zahlungText(auswahl)"></span>
-                                        <button type="button" x-show="v.bar_moeglich && auswahl.zahlung && auswahl.zahlung.offen_cent > 0" x-on:click="bar(auswahl)"
+                                        <button type="button" x-show="Object.keys(v.zahlwege).length && auswahl.zahlung && auswahl.zahlung.offen_cent > 0 && !kassieren" x-on:click="kassierenStarten(auswahl)"
                                                 class="min-h-11 rounded-lg bg-dpsg-blau px-4 font-semibold text-white"
-                                                x-text="euro(auswahl.zahlung ? auswahl.zahlung.offen_cent : 0) + ' bar erhalten'"></button>
+                                                x-text="euro(auswahl.zahlung ? auswahl.zahlung.offen_cent : 0) + ' erhalten …'"></button>
+                                    </div>
+                                    <div x-show="kassieren && kassieren.id === auswahl.id" class="mt-3 rounded-lg border border-dpsg-mittelbeige bg-surface p-3">
+                                        <p class="mb-2 text-sm font-semibold" x-text="euro(auswahl.zahlung ? auswahl.zahlung.offen_cent : 0) + ' erhalten – wie?'"></p>
+                                        <div class="flex flex-wrap gap-2">
+                                            <template x-for="[weg, label] in Object.entries(v.zahlwege)" x-bind:key="weg">
+                                                <button type="button" x-on:click="kassierenMit(auswahl, weg)" class="min-h-11 rounded-lg bg-dpsg-blau px-4 font-semibold text-white" x-text="label"></button>
+                                            </template>
+                                            <button type="button" x-on:click="kassieren = null" class="min-h-11 rounded-lg border border-dpsg-mittelbeige bg-white px-4 font-semibold">Abbrechen</button>
+                                        </div>
+                                        <p class="mt-2 text-xs text-gray-600">Verbucht den offenen Betrag als Zahlungseingang mit Zahlungsart und deinem Namen.</p>
                                     </div>
                                 </section>
 

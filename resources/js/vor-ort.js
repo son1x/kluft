@@ -91,6 +91,7 @@ Alpine.data('vorOrt', () => ({
             this.tag = tage.includes(this.v.heute) ? this.v.heute : tage[0];
             this.auswahlId = null;
             this.bearbeiten = null;
+            this.kassieren = null;
             if (!this.v.zusatz_felder.some((f) => f.schluessel === this.gruppe)) {
                 this.gruppe = '';
             }
@@ -224,6 +225,7 @@ Alpine.data('vorOrt', () => ({
     waehlen(p) {
         this.auswahlId = p.id;
         this.bearbeiten = null;
+        this.kassieren = null;
     },
 
     // Ereignis lokal anwenden und in die Warteschlange legen.
@@ -238,13 +240,24 @@ Alpine.data('vorOrt', () => ({
         this.ereignis(p, 'anwesend', { tag, da });
     },
 
-    bar(p) {
+    // Kassieren: Zahlungsart wählen (bar, Karte, PayPal …), dann bestätigen.
+    kassieren: null,
+
+    kassierenStarten(p) {
+        if ((p.zahlung?.offen_cent ?? 0) > 0) {
+            this.kassieren = { id: p.id };
+        }
+    },
+
+    kassierenMit(p, weg) {
         const offen = p.zahlung?.offen_cent ?? 0;
-        if (offen <= 0 || !window.confirm(p.vorname + ' ' + p.nachname + ': ' + euro(offen) + ' bar erhalten?')) {
+        this.kassieren = null;
+        if (offen <= 0) {
             return;
         }
         p.zahlung = { ...p.zahlung, stand: 'bezahlt', offen_cent: 0 };
-        this.ereignis(p, 'bar', { cent: offen });
+        this.ereignis(p, 'zahlung', { cent: offen, weg });
+        this.meldung = p.vorname + ' ' + p.nachname + ': ' + euro(offen) + ' (' + this.v.zahlwege[weg] + ') verbucht.';
     },
 
     bearbeitenStarten(p) {

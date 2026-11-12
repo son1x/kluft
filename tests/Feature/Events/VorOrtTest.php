@@ -101,7 +101,7 @@ class VorOrtTest extends TestCase
         $this->assertSame([$tage[1]], $mia['erwartet']);
         $this->assertSame(['stand' => 'offen', 'offen_cent' => 4500, 'betrag_cent' => 4500], $mia['zahlung']);
         $this->assertSame([['label' => 'Vegan', 'anzahl' => 2]], $d['verpflegung']);
-        $this->assertTrue($d['bar_moeglich']);
+        $this->assertSame(['bar' => 'Bar', 'karte' => 'Karte (SumUp)', 'paypal' => 'PayPal'], $d['zahlwege']);
     }
 
     #[TestDox('Anwesenheit je Tag; dieselbe Kennung zweimal wird nur einmal verbucht')]
@@ -125,7 +125,7 @@ class VorOrtTest extends TestCase
         $this->assertSame(3, VorOrtEreignis::query()->count());
     }
 
-    #[TestDox('Bar bezahlt: Zahlungseingang mit Notiz, nur bei offener Forderung, protokolliert')]
+    #[TestDox('Kassieren vor Ort: Zahlungseingang mit Zahlungsart als Notiz, nur bei offener Forderung, protokolliert')]
     public function test_bar(): void
     {
         Features::setzen(Features::ZAHLUNGEN, true);
@@ -135,17 +135,19 @@ class VorOrtTest extends TestCase
         $team = $this->team();
         $this->actingAs($team);
 
-        $ok = $this->ereignis($mia, 'bar', ['cent' => 4500]);
-        $zuViel = $this->ereignis($mia, 'bar', ['cent' => 100]);
-        $ohne = $this->ereignis($ben, 'bar', ['cent' => 4500]);
-        $antwort = $this->senden($ok, $zuViel, $ohne);
-        $antwort->assertJsonPath("ergebnisse.{$ok['id']}.ergebnis", 'ok')
+        $falscherWeg = $this->ereignis($mia, 'zahlung', ['cent' => 4500, 'weg' => 'gold']);
+        $ok = $this->ereignis($mia, 'zahlung', ['cent' => 4500, 'weg' => 'karte']);
+        $zuViel = $this->ereignis($mia, 'zahlung', ['cent' => 100, 'weg' => 'bar']);
+        $ohne = $this->ereignis($ben, 'zahlung', ['cent' => 4500, 'weg' => 'bar']);
+        $antwort = $this->senden($falscherWeg, $ok, $zuViel, $ohne);
+        $antwort->assertJsonPath("ergebnisse.{$falscherWeg['id']}.grund", 'Unbekannte Zahlungsart.')
+            ->assertJsonPath("ergebnisse.{$ok['id']}.ergebnis", 'ok')
             ->assertJsonPath("ergebnisse.{$zuViel['id']}.ergebnis", 'abgelehnt')
             ->assertJsonPath("ergebnisse.{$ohne['id']}.grund", 'Es gibt keine offene Forderung.');
 
         $zahlung->refresh();
-        $this->assertSame(['bezahlt', 4500, 'Bar vor Ort', $team->getKey()], [$zahlung->status, $zahlung->bezahlt_cent, $zahlung->notiz, $zahlung->erfasst_von]);
-        $this->assertTrue(AuditLog::query()->where('action', 'vor_ort.bar:'.$mia->getKey())->exists());
+        $this->assertSame(['bezahlt', 4500, 'Karte (SumUp) vor Ort', $team->getKey()], [$zahlung->status, $zahlung->bezahlt_cent, $zahlung->notiz, $zahlung->erfasst_von]);
+        $this->assertTrue(AuditLog::query()->where('action', 'vor_ort.zahlung:'.$mia->getKey())->exists());
     }
 
     #[TestDox('Angaben korrigieren: Verpflegung, Tage, Name; ungültige Werte abgelehnt; sensible Werte nicht im Protokoll')]

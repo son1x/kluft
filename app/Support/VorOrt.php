@@ -18,6 +18,18 @@ use Illuminate\Support\Str;
  */
 class VorOrt
 {
+    /**
+     * Zahlungsarten beim Kassieren vor Ort (config dpsg.vor_ort_zahlwege).
+     *
+     * @return array<string, string>
+     */
+    public static function zahlwege(): array
+    {
+        return collect((array) config('dpsg.vor_ort_zahlwege'))
+            ->filter(fn ($label, $key) => is_string($key) && preg_match('/^[a-z_]{1,20}$/', $key) && filled($label))
+            ->map(fn ($label) => mb_substr((string) $label, 0, 40))->all();
+    }
+
     /** Wie lange nach dem Ende eine Veranstaltung noch erscheint (Nachträge). */
     public const TAGE_DANACH = 7;
 
@@ -113,7 +125,8 @@ class VorOrt
             'tage' => collect($tage)->map(fn (string $label, string $tag) => ['tag' => $tag, 'label' => $label])->values()->all(),
             'heute' => now()->toDateString(),
             'beitrag' => $beitrag,
-            'bar_moeglich' => $beitrag && Features::enabled(Features::ZAHLUNGEN),
+            // Kassieren vor Ort: nur mit Teilnahmebeitrag und Funktion „Zahlungen“.
+            'zahlwege' => $beitrag && Features::enabled(Features::ZAHLUNGEN) ? self::zahlwege() : (object) [],
             // Felder zum Korrigieren (Typ und Auswahl) – wie „Angaben bearbeiten“ im Backend.
             'felder' => collect($felder)->map(fn (array $f, string $k) => [
                 'schluessel' => $k, 'label' => $f['label'], 'typ' => $f['type'], 'sensibel' => (bool) ($f['sensibel'] ?? false),
@@ -190,7 +203,7 @@ class VorOrt
             $registration->status !== 'confirmed' => 'Die Anmeldung ist nicht (mehr) bestätigt.',
             default => match ($typ) {
                 'anwesend' => self::anwesend($registration, $daten),
-                'bar' => self::bar($user, $registration, $daten),
+                'zahlung' => self::zahlung($user, $registration, $daten),
                 'angaben' => self::angaben($registration, $daten),
                 'zusatz' => self::zusatz($registration, $daten),
             },
@@ -213,7 +226,7 @@ class VorOrt
             'erfasst_am' => $erfasst,
         ]);
 
-        if ($grund === null && in_array($typ, ['bar', 'angaben', 'zusatz'], true)) {
+        if ($grund === null && in_array($typ, ['zahlung', 'angaben', 'zusatz'], true)) {
             AuditLogger::log("vor_ort.{$typ}:".$registration->getKey(), $user, Event::class, $event->getKey(), request());
         }
 
@@ -258,9 +271,13 @@ class VorOrt
     }
 
     /** @param  array<string, mixed>  $daten */
-    private static function bar(User $user, EventRegistration $r, array $daten): ?string
+    private static function zahlung(User $user, EventRegistration $r, array $daten): ?string
     {
         $cent = (int) ($daten['cent'] ?? 0);
+        $weg = self::zahlwege()[(string) ($daten['weg'] ?? '')] ?? null;
+        if ($weg === null) {
+            return 'Unbekannte Zahlungsart.';
+        }
         $zahlung = Features::enabled(Features::ZAHLUNGEN) ? $r->zahlung() : null;
         if ($zahlung === null || ! in_array($zahlung->status, ['offen', 'teilweise'], true)) {
             return 'Es gibt keine offene Forderung.';
@@ -268,7 +285,7 @@ class VorOrt
         if ($cent <= 0 || $cent > $zahlung->offenCent()) {
             return 'Der Betrag passt nicht zur offenen Forderung.';
         }
-        $zahlung->eingang($cent, now(), $user->getKey(), 'Bar vor Ort');
+        $zahlung->eingang($cent, now(), $user->getKey(), $weg.' vor Ort');
 
         return null;
     }

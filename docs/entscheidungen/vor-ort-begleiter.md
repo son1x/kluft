@@ -10,7 +10,7 @@ Wünsche (November 2026):
 
 - Veranstaltung auswählen und deren Daten betreuen.
 - Sehen, wer bezahlt hat und wer nicht.
-- Unterschriften der Teilnehmenden digital einsammeln (Zuschuss-Teilnahmeliste).
+- Unterschriften der Teilnehmenden digital einsammeln (Zuschuss-Teilnahmeliste), eine je Veranstaltung.
 - Zusatzinfos wie Platz, Zimmer und Zimmermitbewohnende.
 
 ## Rahmenbedingungen (Rückmeldungen)
@@ -27,6 +27,8 @@ Wünsche (November 2026):
 2. **Ereignisse statt Direktänderungen** von Anfang an: Jede Änderung ist ein Ereignis mit eigener Kennung, das Kluft genau einmal verarbeitet. Damit wird Offline später ohne Konfliktauflösung möglich (Haken und Zahlungen widersprechen sich nicht; bei Angaben gilt die zuletzt verarbeitete).
 3. **Reihenfolge**: Stufe 1 online → Stufe 2 Unterschriften → Stufe 3 installierbar und offline → Stufe 4 Datenschutz offline.
 4. **Zusatzinfos fürs Team** (Zimmer, Zelt, Platz …) als frei benennbare Felder je Veranstaltung; Zusammengehörige ergeben sich aus gleichen Werten.
+5. **Kassieren** dürfen alle aus dem Team mit `manageParticipants` – sie nehmen das Geld vor Ort entgegen. Zahlungsart wählbar: Bar, Karte (SumUp), PayPal (je Instanz einstellbar); Kluft vermerkt sie nur, eine Anbindung an SumUp/PayPal ist später möglich.
+6. **Unterschrift**: eine je Person und **Veranstaltung** (nicht je Tag); Umsetzung mit signature_pad (Stufe 2).
 
 ## Verworfen
 
@@ -36,4 +38,4 @@ Wünsche (November 2026):
 
 ## Offen
 
-- Sollen Barzahlungen nur von der Kasse verbucht werden dürfen? (Derzeit: alle mit `manageParticipants`, protokolliert.)
+- Unterschrift: Wer unterschreibt bei Minderjährigen? Vorgegebener Bestätigungstext? Aufbewahrung über die Löschfrist der Anmeldung hinaus (Verwendungsnachweis)?

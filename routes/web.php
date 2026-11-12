@@ -32,6 +32,7 @@ use App\Http\Controllers\Redaktion\BackupDownloadController;
 use App\Http\Controllers\Redaktion\BackupStandController;
 use App\Http\Controllers\Redaktion\GeorgsboteTitelbildController;
 use App\Http\Controllers\Redaktion\KatalogBildController;
+use App\Http\Controllers\VorOrtController;
 use App\Http\Controllers\Webhooks\WhatsAppWebhookController;
 use App\Http\Middleware\Ausbaustufe;
 use App\Support\Ausbau;
@@ -114,6 +115,14 @@ Route::get('/admin/backups/download/{datei}', BackupDownloadController::class)
 Route::get('/einspielen/stand/{token}', BackupStandController::class)->where('token', '[A-Za-z0-9]{40}')->name('backup.stand');
 
 // Suche auf der Website (docs/plan-ehrenamt.md Nr. 3).
+// Vor Ort: Begleiter für die Durchführung von Veranstaltungen (docs/vor-ort.md).
+Route::middleware(['auth', 'throttle:240,1'])->prefix('vor-ort')->name('vor-ort.')->group(function () {
+    Route::get('/', [VorOrtController::class, 'seite'])->name('seite');
+    Route::get('/api/veranstaltungen', [VorOrtController::class, 'veranstaltungen'])->name('veranstaltungen');
+    Route::get('/api/veranstaltungen/{event}', [VorOrtController::class, 'veranstaltung'])->whereNumber('event')->name('veranstaltung');
+    Route::post('/api/ereignisse', [VorOrtController::class, 'ereignisse'])->name('ereignisse');
+});
+
 Route::get('/suche', SucheController::class)->middleware('throttle:30,1')->name('suche');
 
 // Veranstaltungen mit Anmeldung (F-EV, Pflichtenheft 11.1).

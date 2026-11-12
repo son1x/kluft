@@ -28,6 +28,7 @@ use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\TimePicker;
@@ -365,6 +366,20 @@ class EventForm
                         ->collapsible()
                         ->itemLabel(fn (array $state) => filled($state['label'] ?? null) ? $state['label'].' ('.(Event::EIGENE_TYPEN[$state['typ'] ?? ''] ?? '').')'.(($state['sensibel'] ?? false) ? ' · sensibel' : '') : null)
                         ->addActionLabel('Eigenes Feld hinzufügen'),
+                ]),
+
+            Section::make('Zusatzinfos fürs Team')
+                ->description('Angaben, die nicht im Anmeldeformular stehen, sondern das Team einträgt – z. B. Zimmer, Zelt, Platz oder Gruppe. Zu sehen und zu bearbeiten in der Teilnehmendenliste („Angaben bearbeiten“) und unter „Vor Ort“; wer den gleichen Wert hat (z. B. gleiches Zimmer), wird dort zusammen angezeigt.')
+                ->columnSpanFull()
+                ->collapsible()
+                ->components([
+                    TagsInput::make('zusatz_felder')->label('Felder')
+                        ->placeholder('z. B. Zimmer, Zelt, Platz – mit Enter bestätigen')
+                        ->splitKeys([',', 'Enter'])
+                        ->reorderable()
+                        ->nestedRecursiveRules(['string', 'max:60'])
+                        ->rules(['array', 'max:'.Event::ZUSATZ_MAX])
+                        ->helperText('Höchstens '.Event::ZUSATZ_MAX.'. Wird ein Feld umbenannt, sind die bisherigen Werte darunter nicht mehr zu sehen.'),
                 ]),
 
             Section::make('Datenschutz')

@@ -36,6 +36,14 @@ return array_replace([
     // der Veranstaltung löschen; der Rest der Anmeldung folgt der Löschfrist.
     'sensible_tage' => (int) env('SENSIBLE_TAGE', 14),
 
+    // Vor Ort (docs/vor-ort.md): Zahlungsarten beim Kassieren am Veranstaltungsort.
+    // Je Instanz anpassbar (z. B. ohne PayPal, wenn es kein Konto gibt).
+    'vor_ort_zahlwege' => $instanzConfig['vor_ort_zahlwege'] ?? [
+        'bar' => 'Bar',
+        'karte' => 'Karte (SumUp)',
+        'paypal' => 'PayPal',
+    ],
+
     // Ungenutzte Backend-Konten: nach so vielen Monaten ohne Anmeldung
     // sperren, einen Monat vorher warnen (0 = aus). Lokale Notfall-Admins nie.
     'konten_sperren_monate' => (int) env('KONTEN_SPERREN_MONATE', 12),

@@ -32,7 +32,7 @@ class AnmeldungBearbeitenTest extends TestCase
         Filament::setCurrentPanel('admin');
         Mail::fake();
         $this->event = Event::query()->create(['title' => 'Pfingstlager', 'slug' => 'pfingstlager', 'starts_at' => '2027-05-14 10:00', 'ends_at' => '2027-05-17 14:00',
-            'status' => 'open', 'stage' => $this->stufe(), 'form_fields' => ['tage' => 'optional', 'diet' => 'optional', 'comment' => 'optional']]);
+            'status' => 'open', 'stage' => $this->stufe(), 'form_fields' => ['tage' => 'optional', 'diet' => 'optional', 'comment' => 'optional'], 'zusatz_felder' => ['Zimmer']]);
     }
 
     /** Erste Stufe der Instanz (die Instanzen haben unterschiedliche Stufen). */
@@ -72,13 +72,14 @@ class AnmeldungBearbeitenTest extends TestCase
             ->assertSchemaStateSet(['first_name' => 'Mia', 'data.tage' => ['2027-05-14', '2027-05-15', '2027-05-16', '2027-05-17']]);
         $this->liste()->callAction(TestAction::make('bearbeiten')->table($mia), [
             'first_name' => 'Mia-Sophie', 'last_name' => 'Test', 'email' => 'mia@example.org',
-            'data' => ['tage' => ['2027-05-15', '2027-05-16'], 'diet' => 'vegan', 'comment' => 'Kommt erst Samstag'],
+            'data' => ['tage' => ['2027-05-15', '2027-05-16'], 'diet' => 'vegan', 'comment' => 'Kommt erst Samstag'], 'zusatz' => ['zimmer' => '12'],
         ])->assertHasNoFormErrors();
 
         $mia->refresh();
         $this->assertSame('Mia-Sophie', $mia->first_name);
         $this->assertSame(['2027-05-15', '2027-05-16'], $mia->data['tage']);
         $this->assertSame('vegan', $mia->data['diet']);
+        $this->assertSame(['zimmer' => '12'], $mia->zusatz);
         $this->assertSame('Kommt erst Samstag', $mia->data['comment']);
         $this->assertSame('bleibt', $mia->data['intern']);
         Mail::assertNothingSent();

@@ -13,6 +13,7 @@ use App\Models\VorOrtUnterschrift;
 use App\Services\Zuschuss\ZuschussPdf;
 use App\Support\Features;
 use App\Support\Unterschriften;
+use App\Support\VorOrt;
 use App\Support\Zuschuesse;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -198,5 +199,19 @@ class VorOrtUnterschriftTest extends TestCase
             ->callAction('anwesenheitUebernehmen', ['fehlende' => true]);
         $this->assertFalse($ole->fresh()->anwesend);
         $this->assertTrue(AuditLog::query()->where('action', 'zuschuss.anwesenheit_vor_ort:2+1')->exists());
+    }
+
+    #[TestDox('Anwesenheit übernehmen: Hinweis im Dialog, wenn die Teilnahmeliste schon festgeschrieben ist')]
+    public function test_hinweis_bei_festgeschriebener_liste(): void
+    {
+        $this->anmeldung('Mia');
+        $text = fn () => VorOrt::anwesenheitHinweis($this->event->fresh());
+
+        $this->assertStringContainsString('0 von 1 Teilnehmenden', $text());
+        $this->assertStringNotContainsString('bereits festgeschrieben', $text());
+
+        $this->event->update(['teilnahmeliste_am' => now(), 'teilnahmeliste_datei' => 'zuschuss/x.pdf']);
+        $this->assertStringContainsString('Die Teilnahmeliste ist bereits festgeschrieben', $text());
+        $this->assertStringContainsString('neu festschreiben', $text());
     }
 }

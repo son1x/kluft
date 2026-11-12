@@ -36,6 +36,8 @@ class CreateEvent extends CreateRecord
             'location' => $termin->location,
             'starts_at' => $termin->starts_at->format('Y-m-d H:i:s'),
             'ends_at' => $termin->all_day ? $ends?->copy()->setTime(23, 59)->format('Y-m-d H:i:s') : $ends?->format('Y-m-d H:i:s'),
+            'ganztaegig' => (bool) $termin->all_day,
+            ...EventForm::zeitFelder($termin->starts_at, $termin->all_day ? $ends?->copy()->setTime(23, 59) : $ends, (bool) $termin->all_day),
             'teaser' => filled($termin->description) ? Str::limit(Str::squish($termin->description), 490) : null,
             'stage' => $stage && array_key_exists($stage, EventForm::stageOptions()) ? $stage : ($this->data['stage'] ?? null),
             'calendar_uid' => $termin->uid,

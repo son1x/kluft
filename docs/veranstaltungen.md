@@ -3,6 +3,23 @@
 Backend → Veranstaltungen. Anforderungen: Pflichtenheft 6.7 (F-EV-01 ff.).
 Hier steht, was beim Pflegen einer Anmeldung wichtig ist.
 
+## Datum und Uhrzeit
+
+Wie im Apple-Kalender: **Beginn** und **Ende** jeweils mit Datum und Uhrzeit
+in getrennten Feldern, darüber der Schalter **Ganztägig**.
+
+- Beim Wählen des Beginns rückt das Ende mit (gleicher Tag); bei einer
+  Uhrzeit wird das Ende eine Stunde später vorgeschlagen.
+- **Ganztägig:** nur Datum, keine Uhrzeiten. Gespeichert als 0:00 bis 23:59
+  des letzten Tages. Die Website zeigt nur das Datum („5. – 9. Mai 2027“),
+  im Kalender und im Kalender-Abo (ICS) erscheint ein Ganztagstermin.
+- Ende vor Beginn wird abgelehnt.
+- Die Liste der Veranstaltungen zeigt ganztägige mit Datum bzw. Zeitraum und
+  dem Vermerk „ganztägig“.
+- Aus einem Nextcloud-Termin übernommen: „Ganztägig“ wird mitübernommen.
+- Ältere Veranstaltungen mit Uhrzeit 0:00 (der frühere Trick) wurden beim
+  Update als ganztägig markiert.
+
 ## Formular-Baukasten
 
 Veranstaltung bearbeiten → **Formular-Baukasten**. Name und E-Mail werden

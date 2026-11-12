@@ -27,7 +27,11 @@ class EventsTable
                 'registrations as pending_count' => fn (Builder $q) => $q->where('status', 'pending'),
             ]))
             ->columns([
-                TextColumn::make('starts_at')->label('Beginn')->dateTime('d.m.Y H:i')->sortable(),
+                TextColumn::make('starts_at')->label('Beginn')->sortable()
+                    ->formatStateUsing(fn (Event $record) => $record->ganztaegig
+                        ? $record->starts_at->format('d.m.Y').($record->ends_at && ! $record->ends_at->isSameDay($record->starts_at) ? ' – '.$record->ends_at->format('d.m.Y') : '')
+                        : $record->starts_at->format('d.m.Y H:i'))
+                    ->description(fn (Event $record) => $record->ganztaegig ? 'ganztägig' : null),
                 TextColumn::make('title')->label('Titel')->searchable()->wrap(),
                 TextColumn::make('scope')->label('Stufe/Sektion')->state(fn (Event $record) => $record->scopeLabel()),
                 TextColumn::make('status')->label('Status')->badge()

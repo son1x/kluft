@@ -5,10 +5,12 @@ namespace App\Filament\Resources\Events\Pages;
 use App\Filament\Actions\CopyForWhatsAppChannelAction;
 use App\Filament\Resources\Events\EventResource;
 use App\Filament\Resources\Events\Schemas\EventForm;
+use App\Support\VorOrt;
 use App\Support\Zuschuesse;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
+use Filament\Facades\Filament;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
@@ -58,6 +60,13 @@ class EditEvent extends EditRecord
                 ->icon('heroicon-o-arrow-top-right-on-square')
                 ->url(fn () => route('events.show', $this->record->slug), shouldOpenInNewTab: true)
                 ->visible(fn () => $this->record->status !== 'draft'),
+            // Vor Ort (docs/vor-ort.md): Tablet/Handy am Veranstaltungsort.
+            Action::make('vorOrt')
+                ->label('Vor Ort')
+                ->icon('heroicon-o-device-tablet')
+                ->color('gray')
+                ->url(fn () => route('vor-ort.seite', ['v' => $this->record->getKey()]))
+                ->visible(fn () => VorOrt::aktiv() && (bool) Filament::auth()->user()?->can('manageParticipants', $this->record)),
             Action::make('zuschussAntrag')
                 ->label('Zuschussantrag')
                 ->icon('heroicon-o-banknotes')

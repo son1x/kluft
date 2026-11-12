@@ -162,7 +162,7 @@ class EventForm
                         ->visible(fn () => self::stageOptions() !== [])
                         ->required(fn (Get $get) => ! self::isGlobal() && blank($get('section')))
                         ->live()
-                        ->helperText('Bestimmt, wer die Teilnehmerdaten sehen darf. Leer = '.config('dpsg.site.level').' (nur Verwaltung).'),
+                        ->helperText('Bestimmt, wer die Teilnehmerdaten sehen darf. Leer = '.config('dpsg.site.level').' (nur Verwaltung). „Leiter*innen“: für Leitende, dazu liest der Vorstand mit.'),
                     Select::make('section')
                         ->label('Sektion')
                         ->options(fn () => self::sectionOptions())
@@ -458,7 +458,9 @@ class EventForm
      */
     public static function stageOptions(): array
     {
-        $all = collect(config('dpsg.stages'))->map(fn (array $stage) => $stage['label']);
+        // „Leiter*innen“ nur für Personen mit Rechten auf der ganzen Website;
+        // Stufenadmins sehen nur ihre Stufen.
+        $all = collect(Event::stufen());
 
         return self::isGlobal()
             ? $all->all()

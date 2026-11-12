@@ -10,7 +10,8 @@ use App\Models\User;
  * Rechte-Matrix: „Veranstaltungen ansehen“ (samt sparsamer
  * Teilnehmendenliste), „Veranstaltungen bearbeiten“ (anlegen, Teilnehmende
  * verwalten) – je für einen Bereich oder die ganze Website – und „Alle
- * Veranstaltungen (ohne Teilnehmende)“ für den Vorstand.
+ * Veranstaltungen (ohne Teilnehmende)“ für den Vorstand. Veranstaltungen für
+ * Leiter*innen (Stufe „leitende“) liest der Vorstand mit.
  */
 class EventPolicy
 {
@@ -55,7 +56,10 @@ class EventPolicy
 
     private function lesen(User $user, Event $event): bool
     {
-        return $user->darfFuer('veranstaltungen.lesen', $event->stage, $event->section) || $this->schreiben($user, $event);
+        // Veranstaltungen für Leiter*innen: auch der Vorstand liest mit (sparsame Liste).
+        return $user->darfFuer('veranstaltungen.lesen', $event->stage, $event->section)
+            || ($event->stage === Event::LEITENDE && $user->hasRole('vorstand'))
+            || $this->schreiben($user, $event);
     }
 
     private function schreiben(User $user, Event $event): bool

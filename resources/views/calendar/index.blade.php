@@ -44,8 +44,8 @@
                 Stufe
                 <select name="stufe" class="mt-1 min-w-48 border border-dpsg-mittelbeige bg-white px-3 py-2 font-normal">
                     <option value="">Alle Stufen</option>
-                    @foreach (config('dpsg.stages') as $key => $s)
-                        <option value="{{ $key }}" @selected($stufe === $key)>{{ $s['label'] }}</option>
+                    @foreach (\App\Models\Event::stufen() as $key => $label)
+                        <option value="{{ $key }}" @selected($stufe === $key)>{{ $label }}</option>
                     @endforeach
                 </select>
             </label>
@@ -59,7 +59,7 @@
         {{-- Kalender-Abo (ICS) mit der gewählten Stufe bzw. nur Veranstaltungen (docs/plan-ehrenamt.md Nr. 2). --}}
         @php($abo = route('calendar.ics', array_filter(['stufe' => $stufe, 'kalender' => $kalender === 'veranstaltungen' ? 'veranstaltungen' : null])))
         <details class="mt-3 text-sm">
-            <summary class="flex min-h-11 cursor-pointer items-center font-bold text-dpsg-blau">Kalender abonnieren{{ $stufe ? ' ('.config("dpsg.stages.{$stufe}.label").')' : '' }}</summary>
+            <summary class="flex min-h-11 cursor-pointer items-center font-bold text-dpsg-blau">Kalender abonnieren{{ $stufe ? ' ('.\App\Models\Event::stufen()[$stufe].')' : '' }}</summary>
             <div class="mt-2 max-w-3xl space-y-2 bg-surface-muted p-4">
                 <p>Die Termine erscheinen dann im Kalender deines Handys oder in Outlook und bleiben von selbst aktuell.</p>
                 <p class="flex flex-wrap gap-3">

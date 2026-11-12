@@ -441,10 +441,23 @@ class Event extends Model
         return ($this->ends_at ?? $this->starts_at)->copy()->endOfDay()->addDays($this->retention_days ?: 90);
     }
 
+    /** Zielgruppe „Leiter*innen“: keine Altersstufe, nur bei Veranstaltungen. */
+    public const LEITENDE = 'leitende';
+
+    /**
+     * Auswahl „Stufe“ bei Veranstaltungen: die Altersstufen und Leiter*innen.
+     *
+     * @return array<string, string>
+     */
+    public static function stufen(): array
+    {
+        return [...collect((array) config('dpsg.stages'))->map(fn (array $s) => $s['label'])->all(), self::LEITENDE => 'Leiter*innen'];
+    }
+
     public function scopeLabel(): string
     {
         if ($this->stage) {
-            return config("dpsg.stages.{$this->stage}.label", $this->stage);
+            return self::stufen()[$this->stage] ?? $this->stage;
         }
         if ($this->section) {
             return config("dpsg.sections.{$this->section}.label", $this->section);

@@ -18,6 +18,6 @@ Anmeldeschluss.
 - Pflegen darf, wer „Website-Bausteine“ hat (Verwaltung, Bildungsreferent*innen,
   Admins).
 
-DV Trier: Der Hinweis zur Aufarbeitung (Link auf dpsg.de) wird beim Update
+DV Trier: Der Hinweis zur Aufarbeitung sexualisierter und spiritueller Gewalt (Link auf dpsg.de, mit Hilfe-Telefon) wird beim Update
 angelegt (`instanzen/dv-trier/migrations/2026_11_12_140100_…`) und lässt sich
 danach frei bearbeiten oder ausschalten.

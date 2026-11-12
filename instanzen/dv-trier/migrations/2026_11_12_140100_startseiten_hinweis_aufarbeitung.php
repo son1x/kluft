@@ -4,8 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Startseiten-Hinweis auf die Aufarbeitung sexualisierter Gewalt in der
- * DPSG (Bundesverband). Danach im Backend unter Inhalte → Startseiten-
+ * Startseiten-Hinweis auf die Aufarbeitung sexualisierter und spiritueller
+ * Gewalt in der DPSG (Seite des Bundesverbands). Danach im Backend unter Inhalte → Startseiten-
  * Hinweise bearbeitbar; läuft die Migration erneut, bleibt er unberührt.
  */
 return new class extends Migration
@@ -22,8 +22,9 @@ return new class extends Migration
         }
 
         DB::table('startseiten_hinweise')->insert([
-            'titel' => 'Aufarbeitung sexualisierter Gewalt in der DPSG',
-            'text' => 'Die DPSG stellt sich ihrer Verantwortung und arbeitet Fälle sexualisierter Gewalt im Verband auf. Informationen zur Aufarbeitung sowie zu Ansprech- und Beratungsstellen findest du beim Bundesverband.',
+            // Formulierungen nach der Seite des Bundesverbands (Stand 12.11.2026).
+            'titel' => 'Aufarbeitung sexualisierter und spiritueller Gewalt in der DPSG',
+            'text' => 'Es gab und gibt sexualisierte und spirituelle Gewalt in der DPSG. Dafür übernehmen wir Verantwortung. Ergebnisse der Aufarbeitungsstudie, Ansprechpersonen und Hilfsangebote findest du beim Bundesverband. Hilfe-Telefon Sexueller Missbrauch: 0800 22 55 530 (anonym und kostenfrei).',
             'link_url' => self::LINK,
             'link_text' => 'Zur Aufarbeitung auf dpsg.de',
             'farbe' => 'rot',

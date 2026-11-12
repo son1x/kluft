@@ -93,7 +93,7 @@ class StartseitenHinweiseTest extends TestCase
         $migration->up();
 
         $this->assertSame(1, StartseitenHinweis::query()->count());
-        $this->get('/')->assertOk()->assertSee('Aufarbeitung sexualisierter Gewalt in der DPSG')
+        $this->get('/')->assertOk()->assertSee('Aufarbeitung sexualisierter und spiritueller Gewalt in der DPSG')->assertSee('0800 22 55 530')
             ->assertSee('href="https://dpsg.de/de/verbandsleben/themen/kinder-und-jugendschutz/aufarbeitung"', false);
     }
 }

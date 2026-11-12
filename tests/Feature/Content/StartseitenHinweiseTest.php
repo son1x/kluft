@@ -55,7 +55,7 @@ class StartseitenHinweiseTest extends TestCase
     public function test_zeile(): void
     {
         $this->hinweis(['titel' => 'Wichtig', 'sort' => 1]);
-        $this->hinweis(['titel' => 'Digitales Treffen', 'art' => 'zeile', 'farbe' => 'blau', 'sort' => 2, 'text' => 'Am 25.11. um 19:30 Uhr', 'link_url' => '/veranstaltungen', 'link_text' => 'Zur Anmeldung']);
+        $this->hinweis(['titel' => 'Digitales Treffen', 'art' => 'zeile', 'farbe' => 'weiss', 'sort' => 2, 'text' => 'Am 25.11. um 19:30 Uhr', 'link_url' => '/veranstaltungen', 'link_text' => 'Zur Anmeldung']);
 
         $antwort = $this->get('/')->assertOk()
             ->assertSeeInOrder(['Wichtig', 'Digitales Treffen', 'Am 25.11. um 19:30 Uhr', 'Zur Anmeldung'])
@@ -63,6 +63,20 @@ class StartseitenHinweiseTest extends TestCase
         // Die Zeile ist schmal (text-sm, py-2), der Kasten groß (p-6, text-xl).
         $this->assertMatchesRegularExpression('/<article class="[^"]*py-2 text-sm[^"]*">\s*<svg[^>]*>.*?Digitales Treffen/s', $antwort->getContent());
         $this->assertMatchesRegularExpression('/<article class="[^"]*p-6[^"]*">\s*<div class="min-w-0">\s*<h2[^>]*text-xl[^>]*>Wichtig/s', $antwort->getContent());
+    }
+
+    #[TestDox('Abstufung nach Wichtigkeit: Rot (roter Knopf) › Beige (beige Fläche) › Weiß (umrandeter Knopf)')]
+    public function test_farben(): void
+    {
+        $this->assertSame(['rot', 'beige', 'weiss'], array_keys(StartseitenHinweis::FARBEN));
+        $this->hinweis(['titel' => 'Rot', 'farbe' => 'rot', 'sort' => 1, 'link_url' => '/a', 'link_text' => 'A']);
+        $this->hinweis(['titel' => 'Beige', 'farbe' => 'beige', 'sort' => 2, 'link_url' => '/b', 'link_text' => 'B']);
+        $this->hinweis(['titel' => 'Weiss', 'farbe' => 'weiss', 'sort' => 3, 'link_url' => '/c', 'link_text' => 'C']);
+
+        $html = $this->get('/')->assertOk()->getContent();
+        $this->assertMatchesRegularExpression('/border-dpsg-rot bg-white">.*?bg-dpsg-rot text-white/s', $html);
+        $this->assertMatchesRegularExpression('/border-dpsg-blau bg-dpsg-hellbeige">.*?bg-dpsg-blau text-white/s', $html);
+        $this->assertMatchesRegularExpression('/border-dpsg-mittelbeige bg-white">.*?border border-dpsg-blau bg-white text-dpsg-blau/s', $html);
     }
 
     #[TestDox('Ohne Hinweise kein leerer Kasten')]
@@ -89,9 +103,9 @@ class StartseitenHinweiseTest extends TestCase
             ->fillForm(['titel' => 'Test', 'link_url' => 'http://unsicher.example.org'])
             ->call('create')->assertHasFormErrors(['link_url', 'link_text']);
         Livewire::test(CreateStartseitenHinweis::class)
-            ->fillForm(['titel' => 'Büro geschlossen', 'art' => 'zeile', 'text' => 'Vom 23.12. bis 6.1.', 'link_url' => '/kontakt', 'link_text' => 'Kontakt', 'farbe' => 'blau', 'bis' => now()->addMonth()->toDateString()])
+            ->fillForm(['titel' => 'Büro geschlossen', 'art' => 'zeile', 'text' => 'Vom 23.12. bis 6.1.', 'link_url' => '/kontakt', 'link_text' => 'Kontakt', 'farbe' => 'weiss', 'bis' => now()->addMonth()->toDateString()])
             ->call('create')->assertHasNoFormErrors();
-        $this->assertSame(['blau', 'zeile'], [StartseitenHinweis::query()->sole()->farbe, StartseitenHinweis::query()->sole()->art]);
+        $this->assertSame(['weiss', 'zeile'], [StartseitenHinweis::query()->sole()->farbe, StartseitenHinweis::query()->sole()->art]);
     }
 
     #[Group('dv-trier')]

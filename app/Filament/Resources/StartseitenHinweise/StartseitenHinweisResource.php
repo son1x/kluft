@@ -90,7 +90,7 @@ class StartseitenHinweisResource extends Resource
                 TextColumn::make('farbe')->label('Farbe')->badge()
                     ->formatStateUsing(fn (string $state) => StartseitenHinweis::FARBEN[$state] ?? $state)
                     ->color(fn (string $state) => match ($state) {
-                        'rot' => 'danger', 'blau' => 'info', default => 'gray'
+                        'rot' => 'danger', 'beige' => 'warning', default => 'gray'
                     }),
                 IconColumn::make('aktiv')->label('An')->boolean(),
                 TextColumn::make('zeitraum')->label('Zeitraum')

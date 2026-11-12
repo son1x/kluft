@@ -56,6 +56,8 @@
 @section('content')
     @php($contact = config('dpsg.contact'))
 
+    @include('partials.startseiten-hinweise', ['hinweise' => $hinweise ?? collect()])
+
     {{-- Einstieg: Text links, Kontaktbox rechts (Raster wie der Teaser-
          Block unter der Navigation auf bistum-trier.de). --}}
     <section class="mx-auto mt-12 max-w-6xl px-4">

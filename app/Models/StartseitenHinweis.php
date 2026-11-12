@@ -26,8 +26,8 @@ class StartseitenHinweis extends Model
     /** Darstellung: auffälliger Kasten oder dezente Zeile. */
     public const ARTEN = ['kasten' => 'Kasten (auffällig)', 'zeile' => 'Zeile (dezent)'];
 
-    /** Akzentfarben (DPSG-Kernfarben). */
-    public const FARBEN = ['rot' => 'DPSG-Rot (wichtig)', 'blau' => 'DPSG-Blau', 'beige' => 'Beige (zurückhaltend)'];
+    /** Akzentfarben (DPSG-Kernfarben), nach Wichtigkeit: Rot › Beige › Blau. */
+    public const FARBEN = ['rot' => 'DPSG-Rot (wichtig)', 'beige' => 'Beige (zurückhaltend)', 'blau' => 'DPSG-Blau'];
 
     protected $fillable = ['titel', 'art', 'text', 'link_url', 'link_text', 'farbe', 'aktiv', 'ab', 'bis', 'sort'];
 

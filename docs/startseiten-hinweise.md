@@ -14,7 +14,7 @@ Anmeldeschluss.
 - **Darstellung:** **Kasten** (groß und farbig, für Wichtiges) oder **Zeile**
   (schmal und dezent mit Info-Symbol, z. B. für Termine wie ein digitales
   Treffen oder „Büro geschlossen“). Beide lassen sich mischen.
-- **Farbe:** DPSG-Rot (wichtig), DPSG-Blau oder Beige (zurückhaltend).
+- **Farbe** nach Wichtigkeit: DPSG-Rot (am auffälligsten), Beige, DPSG-Blau (weiße Fläche mit blauem Rand, am dezentesten).
 - **Auf der Startseite zeigen** an/aus, dazu optional **Zeigen ab** und
   **Zeigen bis** (jeweils einschließlich). Abgelaufene Hinweise verschwinden
   von selbst und können später wieder eingeschaltet werden.

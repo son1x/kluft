@@ -6,6 +6,7 @@ use App\Models\Event;
 use App\Models\EventRegistration;
 use App\Models\User;
 use App\Models\VorOrtEreignis;
+use App\Services\EventRegistrations;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -29,6 +30,9 @@ class VorOrt
             ->filter(fn ($label, $key) => is_string($key) && preg_match('/^[a-z_]{1,20}$/', $key) && filled($label))
             ->map(fn ($label) => mb_substr((string) $label, 0, 40))->all();
     }
+
+    /** Textversion bei Nachmeldung vor Ort (statt Online-Einwilligung). */
+    public const NACHMELDUNG = 'vor-ort';
 
     /** Wie lange nach dem Ende eine Veranstaltung noch erscheint (Nachträge). */
     public const TAGE_DANACH = 7;
@@ -127,11 +131,14 @@ class VorOrt
             'tage' => collect($tage)->map(fn (string $label, string $tag) => ['tag' => $tag, 'label' => $label])->values()->all(),
             'heute' => now()->toDateString(),
             'beitrag' => $beitrag,
+            // Nachmelden vor Ort: Preisstufen zur Auswahl (Reihenfolge = Nummer im Ereignis).
+            'preise' => collect($event->preise())->map(fn (array $p, int $i) => ['nr' => $i, 'bezeichnung' => $p['bezeichnung'], 'cent' => $p['cent']])->values()->all(),
+            'nachmelden' => $event->status !== 'draft',
             // Kassieren vor Ort: nur mit Teilnahmebeitrag und Funktion „Zahlungen“.
             'zahlwege' => $beitrag && Features::enabled(Features::ZAHLUNGEN) ? self::zahlwege() : (object) [],
             // Felder zum Korrigieren (Typ und Auswahl) – wie „Angaben bearbeiten“ im Backend.
             'felder' => collect($felder)->map(fn (array $f, string $k) => [
-                'schluessel' => $k, 'label' => $f['label'], 'typ' => $f['type'], 'sensibel' => (bool) ($f['sensibel'] ?? false),
+                'schluessel' => $k, 'label' => $f['label'], 'typ' => $f['type'], 'sensibel' => (bool) ($f['sensibel'] ?? false), 'pflicht' => (bool) ($f['required'] ?? false),
                 'optionen' => match ($f['type']) {
                     'days' => $tage,
                     'select', 'herkunft', 'mehrfach' => (array) ($f['options'] ?? []),
@@ -229,7 +236,10 @@ class VorOrt
 
         $typ = (string) ($e['typ'] ?? '');
         $daten = (array) ($e['daten'] ?? []);
-        $registration = EventRegistration::query()->with('event')->find((int) ($e['anmeldung'] ?? 0));
+        if ($typ === 'nachmeldung') {
+            return self::nachmeldung($user, $uuid, $e, $daten);
+        }
+        $registration = EventRegistration::query()->with('event')->find(self::anmeldungsId($e['anmeldung'] ?? null));
         $event = $registration?->event;
 
         $grund = match (true) {
@@ -268,6 +278,126 @@ class VorOrt
         }
 
         return $grund === null ? ['ergebnis' => 'ok'] : ['ergebnis' => 'abgelehnt', 'grund' => $grund];
+    }
+
+    /**
+     * Nummer der Anmeldung aus einem Ereignis. „neu:<Kennung>“ verweist auf eine
+     * Nachmeldung, die in derselben Warteschlange vorausging (Gerät ohne Netz).
+     */
+    private static function anmeldungsId(mixed $ref): int
+    {
+        $ref = (string) $ref;
+        if (str_starts_with($ref, 'neu:')) {
+            $id = Str::substr($ref, 4);
+
+            return Str::isUuid($id)
+                ? (int) VorOrtEreignis::query()->where('uuid', $id)->where('typ', 'nachmeldung')->where('ergebnis', 'ok')->value('event_registration_id')
+                : 0;
+        }
+
+        return ctype_digit($ref) ? (int) $ref : 0;
+    }
+
+    /**
+     * Nachmeldung vor Ort (docs/vor-ort.md): Person ist da, hat sich aber nicht
+     * angemeldet. Wird sofort bestätigt (auch über die Platzzahl hinaus), ohne
+     * Mail; ein Beitrag wird wie bei Eintragungen im Backend gefordert.
+     *
+     * @param  array<string, mixed>  $e
+     * @param  array<string, mixed>  $daten
+     * @return array{ergebnis: string, grund?: string, anmeldung?: int}
+     */
+    private static function nachmeldung(User $user, string $uuid, array $e, array $daten): array
+    {
+        $event = Event::query()->find((int) ($e['event'] ?? 0));
+        $registration = null;
+
+        $grund = match (true) {
+            $event === null => 'Veranstaltung nicht gefunden.',
+            ! $user->can('manageParticipants', $event) => 'Keine Berechtigung für diese Veranstaltung.',
+            $event->status === 'draft' => 'Die Veranstaltung ist noch nicht veröffentlicht.',
+            default => self::nachmeldungAnlegen($user, $event, $daten, $registration),
+        };
+
+        if ($event !== null) {
+            $erfasst = isset($e['zeit']) ? rescue(fn () => Carbon::parse((string) $e['zeit']), null, false) : null;
+            VorOrtEreignis::query()->create([
+                'uuid' => $uuid,
+                'event_id' => $event->getKey(),
+                'event_registration_id' => $registration?->getKey(),
+                'user_id' => $user->getKey(),
+                'typ' => 'nachmeldung',
+                // Keine Personendaten ins Protokoll: sie stehen in der Anmeldung selbst.
+                'daten' => ['preis' => $daten['preis'] ?? null],
+                'ergebnis' => $grund === null ? 'ok' : 'abgelehnt',
+                'erfasst_am' => $erfasst,
+            ]);
+        }
+
+        if ($grund !== null) {
+            return ['ergebnis' => 'abgelehnt', 'grund' => $grund];
+        }
+        AuditLogger::log('vor_ort.nachmeldung:'.$registration->getKey(), $user, Event::class, $event->getKey(), request());
+
+        return ['ergebnis' => 'ok', 'anmeldung' => $registration->getKey()];
+    }
+
+    /** @param  array<string, mixed>  $daten */
+    private static function nachmeldungAnlegen(User $user, Event $event, array $daten, ?EventRegistration &$registration): ?string
+    {
+        $vorname = trim((string) ($daten['first_name'] ?? ''));
+        $nachname = trim((string) ($daten['last_name'] ?? ''));
+        if ($vorname === '' || $nachname === '' || mb_strlen($vorname) > 255 || mb_strlen($nachname) > 255) {
+            return 'Vor- und Nachname dürfen nicht leer sein.';
+        }
+        if (($daten['einverstanden'] ?? false) !== true) {
+            return 'Das Einverständnis zur Anmeldung (bei Minderjährigen der Eltern) muss bestätigt sein.';
+        }
+
+        $felder = $event->formFields();
+        $data = [];
+        $jahr = null;
+        foreach ((array) ($daten['data'] ?? []) as $k => $wert) {
+            $feld = $felder[$k] ?? null;
+            if ($feld === null) {
+                return 'Unbekanntes Feld.';
+            }
+            $fehler = self::feldPruefen($event, $feld, $wert);
+            if ($fehler !== null) {
+                return $feld['label'].': '.$fehler;
+            }
+            if ($k === 'birth_year') {
+                $jahr = filled($wert) ? (int) $wert : null;
+            } elseif (filled($wert)) {
+                $data[$k] = $wert;
+            }
+        }
+        foreach ($felder as $k => $feld) {
+            $wert = $k === 'birth_year' ? $jahr : ($data[$k] ?? null);
+            if (($feld['required'] ?? false) && ! filled($wert) && $feld['type'] !== 'days') {
+                return $feld['label'].' ist ein Pflichtfeld.';
+            }
+        }
+
+        $preis = null;
+        if ($event->hatTeilnahmebeitrag()) {
+            $preis = $event->preise()[(int) ($daten['preis'] ?? -1)] ?? null;
+            if ($preis === null) {
+                return 'Bitte eine Preisstufe wählen.';
+            }
+        }
+
+        [$ergebnis, $neu] = app(EventRegistrations::class)->addManually($event, [
+            'first_name' => $vorname, 'last_name' => $nachname, 'birth_year' => $jahr, 'data' => $data, 'preis' => $preis,
+        ], 'confirmed', false, $user);
+        if ($ergebnis === 'duplicate') {
+            return "{$vorname} {$nachname} ist schon angemeldet.";
+        }
+        // Wie im Backend ohne Online-Einwilligung eingetragen, hier ausdrücklich vor Ort.
+        $neu->update(['consent_text_version' => self::NACHMELDUNG]);
+        $registration = $neu;
+
+        return null;
     }
 
     /**

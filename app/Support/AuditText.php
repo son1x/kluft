@@ -145,6 +145,7 @@ class AuditText
             'vor_ort.zahlung' => 'Vor Ort: Zahlung kassiert (Anmeldung Nr. '.$rest.')',
             'vor_ort.angaben' => 'Vor Ort: Angaben korrigiert (Anmeldung Nr. '.$rest.')',
             'vor_ort.zusatz' => 'Vor Ort: Zusatzinfo geändert (Anmeldung Nr. '.$rest.')',
+            'vor_ort.nachmeldung' => 'Vor Ort: nachgemeldet (Anmeldung Nr. '.$rest.')',
             'vor_ort.unterschrift' => 'Vor Ort: unterschrieben (Anmeldung Nr. '.$rest.')',
             'zuschuss.anwesenheit_vor_ort' => 'Anwesenheit aus Vor Ort übernommen: '.($teile[0] ?? 0).' Personen, '.($teile[1] ?? 0).' als nicht dabei',
             'zuschuss.liste_festgeschrieben' => 'Teilnahmeliste festgeschrieben ('.$rest.' Unterschriften)',

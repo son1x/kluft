@@ -36,6 +36,7 @@ Die Startseite zeigt die Veranstaltungen, deren Teilnehmende man verwalten darf 
 - **Suche** nach Name – auch nach Zusatzinfos, z. B. „12“ findet alle in Zimmer 12.
 - **Filter**: Alle · Nicht da · Nicht bezahlt · Ohne Unterschrift (die beiden letzten nur, wenn es Beitrag bzw. Zuschussantrag gibt).
 - **Ordnen**: nach Name oder nach einer Zusatzinfo (z. B. „nach Zimmer“) – dann mit Zwischenüberschriften „Zimmer 12 · 3“, ohne Wert am Ende („Ohne Zimmer“).
+- **„＋ Nachmelden“** über der Liste: Person ist da, war aber nicht angemeldet. Formular mit Name, Teilnahmebeitrag (Preisstufe, falls es welche gibt), den abgefragten Angaben (Pflichtfelder sind markiert) und dem Haken „Einverstanden“ (bei Minderjährigen die Eltern). Die Person ist sofort **bestätigt (auch über die Platzzahl hinaus), ohne E-Mail** und gilt für den gewählten Tag als da; ein Beitrag wird wie bei Eintragungen im Backend gefordert und lässt sich gleich kassieren. In der Anmeldung steht als Einwilligungstext `vor-ort`, das Protokoll heißt `vor_ort.nachmeldung`. Gleicher Name wie eine vorhandene Anmeldung wird abgelehnt.
 - **„da?“-Knopf** rechts in jeder Zeile: hakt die Person für den gewählten Tag ab (grün „✓ da“); nochmal tippen nimmt den Haken zurück.
 - In der Zeile: Jahrgang, Zusatzinfos, „heute nicht angemeldet“ (wer laut Tage-Auswahl an dem Tag nicht kommt) und der Zahlungsstand (grün bezahlt, rot offen mit Betrag).
 
@@ -103,13 +104,11 @@ Zur Wahl stehen standardmäßig **Bar**, **Karte (SumUp)** und **PayPal**. Kluft
 'vor_ort_zahlwege' => [
     'bar' => 'Bar',
     'karte' => 'Karte (SumUp)',
-    // 'paypal' => 'PayPal',  // weglassen, wenn es kein Konto gibt
+    'paypal' => 'PayPal',  // weglassen, wenn es kein Konto gibt
 ],
 ```
 
-**Später möglich** (nicht gebaut):
-- **SumUp**: Über die „Payment Switch“-Schnittstelle kann Kluft die SumUp-App mit dem Betrag öffnen und bekommt das Ergebnis zurück (braucht einen Affiliate-Schlüssel von SumUp).
-- **PayPal**: QR-Code mit dem Betrag zum Scannen (PayPal.me-Link oder PayPal-QR des Kontos); die Zahlung muss dann trotzdem bestätigt werden.
+**Entscheidung (13.11.2026):** Eine Anbindung an SumUp oder PayPal (Schnittstellen, QR-Codes) ist **nicht nötig**. Karte und PayPal sind nur Zahlungsarten zum Antippen, damit die Buchung später nachvollziehbar ist.
 
 ## Wer darf was
 
@@ -161,8 +160,9 @@ Jede Änderung schickt die Oberfläche als **Ereignis** mit eigener Kennung (UUI
 | `angaben` | `first_name`, `last_name`, `data` (nur abgefragte Felder) | Name nicht leer; Auswahl/Tage/Jahr/Zahl gültig | Anmeldung; Protokoll `vor_ort.angaben` |
 | `zusatz` | `feld`, `wert` | Feld gehört zur Veranstaltung, ≤ 100 Zeichen | Spalte `event_registrations.zusatz` (leer = entfernen); Protokoll `vor_ort.zusatz` |
 | `unterschrift` | `bild` (PNG als Data-URI) | Veranstaltung mit Zuschussantrag; gültiges PNG ≤ 300 KB | Tabelle `vor_ort_unterschriften` (ersetzt eine vorhandene); im Ereignis-Protokoll nur die Prüfsumme; Protokoll `vor_ort.unterschrift` |
+| `nachmeldung` | Feld `event` (statt `anmeldung`); `first_name`, `last_name`, `data`, `preis` (Nummer der Preisstufe), `einverstanden` (muss `true` sein) | Veranstaltung nicht im Entwurf; Name nicht leer; Pflichtfelder und Auswahlwerte gültig; Preisstufe, wenn es Beiträge gibt; kein Duplikat | legt die Anmeldung an (`EventRegistrations::addManually`, bestätigt, ohne Mail, Einwilligungstext `vor-ort`); Antwort enthält `anmeldung` (Nummer). Folge-Ereignisse im selben Paket verweisen mit `"anmeldung": "neu:<Kennung der Nachmeldung>"` darauf; Protokoll `vor_ort.nachmeldung` |
 
-Für alle gilt: Recht `manageParticipants`, Anmeldung bestätigt. Jede Kennung wird **genau einmal** verarbeitet (eindeutiger Index), erneutes Senden ergibt `doppelt`. Damit ist Offline vorbereitet: Haken und Zahlungen können sich beim Nachsenden nicht widersprechen; bei Angaben gilt die zuletzt verarbeitete Änderung.
+Für alle außer `nachmeldung` gilt: Recht `manageParticipants`, Anmeldung bestätigt. (Die Nachmeldung prüft das Recht für die Veranstaltung.) Jede Kennung wird **genau einmal** verarbeitet (eindeutiger Index), erneutes Senden ergibt `doppelt`. Damit ist Offline vorbereitet: Haken und Zahlungen können sich beim Nachsenden nicht widersprechen; bei Angaben gilt die zuletzt verarbeitete Änderung.
 
 Die Oberfläche wendet Änderungen sofort an (optimistisch), legt sie in eine Warteschlange, sendet in Paketen bis 20 und wiederholt automatisch (alle 3 s bei offener Warteschlange, sonst alle 15 s und beim Wiederverbinden).
 
@@ -203,7 +203,9 @@ Für die Datenschutzbewertung (`docs/datenschutz-bewertung.md`): keine neue Date
 | Digitale Unterschriften | **entschieden:** anerkannt; eine je Person und Veranstaltung; **die teilnehmende Person unterschreibt selbst** (auch Minderjährige); in der Zeile der Person; Standardtext „Ich bestätige meine Teilnahme …“ | – |
 | Aufbewahrung der Unterschriften | **entschieden:** festgeschriebene Liste genügt; Einzelunterschriften 14 Tage nach dem Festschreiben gelöscht | – |
 | Anwesenheit in den Zuschussantrag übernehmen | Knopf im Zuschussantrag (`VorOrt::anwesenheitUebernehmen`) | – |
-| Wartende/stornierte Anmeldungen | nicht in „Vor Ort“ | ggf. Nachmeldung vor Ort als eigene Funktion |
+| Wartende/stornierte Anmeldungen | nicht in „Vor Ort“ | – |
+| Nachmelden vor Ort | **gebaut** (13.11.2026): sofort bestätigt, ohne Mail, auch offline | – |
+| SumUp/PayPal | **entschieden:** nur als Zahlungsart zum Antippen, keine Schnittstelle | – |
 | Gerät | Tablet des Büros, Handy als Ausweich | – |
 
 ## Ausbauplan

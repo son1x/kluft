@@ -46,7 +46,9 @@ class VorOrtController extends Controller
             'ereignisse' => ['required', 'array', 'max:200'],
             'ereignisse.*.id' => ['required', 'uuid'],
             'ereignisse.*.typ' => ['required', 'string', 'max:30'],
-            'ereignisse.*.anmeldung' => ['required', 'integer'],
+            // Nummer der Anmeldung, oder „neu:<Kennung>“ für eine Person, die in derselben Warteschlange nachgemeldet wird.
+            'ereignisse.*.anmeldung' => ['nullable', 'regex:/^(\d+|neu:[0-9a-fA-F-]{36})$/'],
+            'ereignisse.*.event' => ['nullable', 'integer'],
             'ereignisse.*.daten' => ['nullable', 'array'],
             'ereignisse.*.zeit' => ['nullable', 'date'],
         ]);

@@ -27,9 +27,10 @@ Wünsche (November 2026):
 2. **Ereignisse statt Direktänderungen** von Anfang an: Jede Änderung ist ein Ereignis mit eigener Kennung, das Kluft genau einmal verarbeitet. Damit wird Offline später ohne Konfliktauflösung möglich (Haken und Zahlungen widersprechen sich nicht; bei Angaben gilt die zuletzt verarbeitete).
 3. **Reihenfolge**: Stufe 1 online → Stufe 2 Unterschriften → Stufe 3 installierbar und offline → Stufe 4 Datenschutz offline.
 4. **Zusatzinfos fürs Team** (Zimmer, Zelt, Platz …) als frei benennbare Felder je Veranstaltung; Zusammengehörige ergeben sich aus gleichen Werten.
-5. **Kassieren** dürfen alle aus dem Team mit `manageParticipants` – sie nehmen das Geld vor Ort entgegen. Zahlungsart wählbar: Bar, Karte (SumUp), PayPal (je Instanz einstellbar); Kluft vermerkt sie nur, eine Anbindung an SumUp/PayPal ist später möglich.
+5. **Kassieren** dürfen alle aus dem Team mit `manageParticipants` – sie nehmen das Geld vor Ort entgegen. Zahlungsart wählbar: Bar, Karte (SumUp), PayPal (je Instanz einstellbar); Kluft vermerkt sie nur. Eine Anbindung an SumUp/PayPal ist **nicht nötig** (Entscheidung 13.11.2026).
 6. **Unterschrift**: eine je Person und **Veranstaltung** (nicht je Tag); die **teilnehmende Person unterschreibt selbst**; das Bild steht in der Zuschuss-Teilnahmeliste in der Zeile der Person. Umsetzung mit signature_pad (Stufe 2).
 7. **Aufbewahrung**: Mit dem Erzeugen des Antrags genügt die fertige Liste – sie wird festgeschrieben (als PDF abgelegt); die Einzelunterschriften werden **14 Tage danach** gelöscht.
+8. **Nachmelden vor Ort** (13.11.2026): Wer da ist, aber nicht angemeldet war, wird im Begleiter nachgemeldet – sofort bestätigt (auch über die Platzzahl hinaus), ohne E-Mail, mit Haken „Einverstanden“ (bei Minderjährigen die Eltern), Einwilligungstext `vor-ort`. Funktioniert auch ohne Netz: Folge-Ereignisse verweisen mit `neu:<Kennung>` auf die Nachmeldung.
 
 ## Verworfen
 

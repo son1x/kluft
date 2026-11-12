@@ -89,6 +89,8 @@
                             <label class="sr-only" for="vo-suche">Name suchen</label>
                             <input id="vo-suche" type="search" x-model="suche" placeholder="Name suchen …" autocomplete="off"
                                    class="min-h-11 w-full rounded-lg border border-dpsg-mittelbeige bg-white px-3 text-base">
+                            <button type="button" x-show="v.nachmelden" x-on:click="nachmeldenStarten()"
+                                    class="min-h-11 w-full rounded-lg border border-dpsg-blau bg-white px-3 text-sm font-semibold text-dpsg-blau">＋ Nachmelden (nicht angemeldet, aber da)</button>
                             <div class="flex flex-wrap gap-2" role="group" aria-label="Filter">
                                 <template x-for="[k, l] in [['alle', 'Alle'], ['fehlt', 'Nicht da'], ['offen', 'Nicht bezahlt'], ['unterschrift', 'Ohne Unterschrift']]" x-bind:key="k">
                                     <button type="button" x-show="(k !== 'offen' || v.beitrag) && (k !== 'unterschrift' || v.unterschrift)" x-on:click="filter = k" x-bind:aria-pressed="filter === k"
@@ -239,35 +241,7 @@
                                                     <label class="block"><span class="text-sm font-semibold">Nachname</span>
                                                         <input type="text" x-model="bearbeiten.nachname" required maxlength="255" class="mt-1 min-h-11 w-full rounded-lg border border-dpsg-mittelbeige px-3"></label>
                                                 </div>
-                                                <template x-for="f in v.felder" x-bind:key="f.schluessel">
-                                                    <div>
-                                                        <p class="text-sm font-semibold"><span x-text="f.label"></span><span x-show="f.sensibel" class="ml-1 text-xs text-dpsg-rot">(sensibel)</span></p>
-                                                        <template x-if="['days', 'mehrfach'].includes(f.typ)">
-                                                            <div class="mt-1 flex flex-wrap gap-2">
-                                                                <template x-for="[k, l] in Object.entries(f.optionen || {})" x-bind:key="k">
-                                                                    <label class="flex min-h-11 items-center gap-2 rounded-lg border border-dpsg-mittelbeige px-3">
-                                                                        <input type="checkbox" class="size-5" x-bind:value="k" x-model="bearbeiten.werte[f.schluessel]"><span x-text="l"></span>
-                                                                    </label>
-                                                                </template>
-                                                            </div>
-                                                        </template>
-                                                        <template x-if="['select', 'herkunft'].includes(f.typ)">
-                                                            <select x-model="bearbeiten.werte[f.schluessel]" class="mt-1 min-h-11 w-full rounded-lg border border-dpsg-mittelbeige bg-white px-3">
-                                                                <option value="">– keine Angabe –</option>
-                                                                <template x-for="[k, l] in Object.entries(f.optionen || {})" x-bind:key="k">
-                                                                    <option x-bind:value="k" x-text="l" x-bind:selected="bearbeiten.werte[f.schluessel] === k"></option>
-                                                                </template>
-                                                            </select>
-                                                        </template>
-                                                        <template x-if="f.typ === 'textarea'">
-                                                            <textarea x-model="bearbeiten.werte[f.schluessel]" rows="3" maxlength="1000" class="mt-1 w-full rounded-lg border border-dpsg-mittelbeige px-3 py-2"></textarea>
-                                                        </template>
-                                                        <template x-if="!['days', 'mehrfach', 'select', 'herkunft', 'textarea'].includes(f.typ)">
-                                                            <input x-bind:type="['year', 'zahl'].includes(f.typ) ? 'number' : (f.typ === 'date' ? 'date' : 'text')" x-model="bearbeiten.werte[f.schluessel]" maxlength="1000"
-                                                                   class="mt-1 min-h-11 w-full rounded-lg border border-dpsg-mittelbeige px-3">
-                                                        </template>
-                                                    </div>
-                                                </template>
+                                                @include('vor-ort.felder', ['m' => 'bearbeiten', 'pflicht' => false])
                                                 <div class="flex flex-wrap gap-2">
                                                     <button type="submit" class="min-h-11 rounded-lg bg-dpsg-blau px-5 font-semibold text-white">Speichern</button>
                                                     <button type="button" x-on:click="bearbeiten = null" class="min-h-11 rounded-lg border border-dpsg-mittelbeige px-5 font-semibold">Abbrechen</button>
@@ -303,6 +277,38 @@
                 <button type="button" x-on:click="unterschriftAbbrechen()" class="min-h-12 rounded-lg px-5 font-semibold text-gray-700">Abbrechen</button>
             </div>
         </div>
+    </template>
+</div>
+
+{{-- Nachmelden: Person ist da, war aber nicht angemeldet. Funktioniert auch ohne Netz (Warteschlange). --}}
+<div x-show="nachmeldung" x-transition.opacity class="fixed inset-0 z-50 overflow-y-auto bg-surface" role="dialog" aria-modal="true" aria-labelledby="vo-n-titel">
+    <template x-if="nachmeldung">
+        <form x-on:submit.prevent="nachmeldenSpeichern()" class="mx-auto max-w-2xl space-y-4 p-4 sm:p-6">
+            <h2 id="vo-n-titel" class="text-2xl font-bold text-dpsg-blau">Nachmelden</h2>
+            <p class="text-sm text-gray-700">Die Person wird sofort als angemeldet eingetragen (auch über die Platzzahl hinaus), ohne E-Mail, und gilt für den gewählten Tag als da.</p>
+            <div class="grid gap-3 sm:grid-cols-2">
+                <label class="block"><span class="text-sm font-semibold">Vorname</span>
+                    <input type="text" x-model="nachmeldung.vorname" required maxlength="255" autocomplete="off" class="mt-1 min-h-11 w-full rounded-lg border border-dpsg-mittelbeige px-3"></label>
+                <label class="block"><span class="text-sm font-semibold">Nachname</span>
+                    <input type="text" x-model="nachmeldung.nachname" required maxlength="255" autocomplete="off" class="mt-1 min-h-11 w-full rounded-lg border border-dpsg-mittelbeige px-3"></label>
+            </div>
+            <label class="block" x-show="v.preise.length">
+                <span class="text-sm font-semibold">Teilnahmebeitrag</span>
+                <select x-model="nachmeldung.preis" x-bind:required="v.preise.length > 0" class="mt-1 min-h-11 w-full rounded-lg border border-dpsg-mittelbeige bg-white px-3">
+                    <option value="">– bitte wählen –</option>
+                    <template x-for="p in v.preise" x-bind:key="p.nr"><option x-bind:value="String(p.nr)" x-text="p.bezeichnung + ' · ' + euro(p.cent)"></option></template>
+                </select>
+            </label>
+            @include('vor-ort.felder', ['m' => 'nachmeldung', 'pflicht' => true])
+            <label class="flex items-start gap-3 rounded-lg border border-dpsg-mittelbeige bg-white p-3">
+                <input type="checkbox" x-model="nachmeldung.einverstanden" required class="mt-1 size-5">
+                <span class="text-sm">Die Person (bei Minderjährigen: die Eltern) ist mit der Anmeldung und der Speicherung der Angaben einverstanden.</span>
+            </label>
+            <div class="flex flex-wrap gap-2">
+                <button type="submit" class="min-h-12 flex-1 rounded-lg bg-dpsg-blau px-6 text-lg font-semibold text-white sm:flex-none">Nachmelden</button>
+                <button type="button" x-on:click="nachmeldung = null" class="min-h-12 rounded-lg border border-dpsg-mittelbeige bg-white px-5 font-semibold">Abbrechen</button>
+            </div>
+        </form>
     </template>
 </div>
 </body>

@@ -51,6 +51,20 @@ class StartseitenHinweiseTest extends TestCase
             ->assertDontSee('Ausgeschaltet')->assertDontSee('Abgelaufen')->assertDontSee('Zukünftig');
     }
 
+    #[TestDox('Zwei Arten: Kasten (auffällig) und Zeile (dezent), in der gewählten Reihenfolge')]
+    public function test_zeile(): void
+    {
+        $this->hinweis(['titel' => 'Wichtig', 'sort' => 1]);
+        $this->hinweis(['titel' => 'Digitales Treffen', 'art' => 'zeile', 'farbe' => 'blau', 'sort' => 2, 'text' => 'Am 25.11. um 19:30 Uhr', 'link_url' => '/veranstaltungen', 'link_text' => 'Zur Anmeldung']);
+
+        $antwort = $this->get('/')->assertOk()
+            ->assertSeeInOrder(['Wichtig', 'Digitales Treffen', 'Am 25.11. um 19:30 Uhr', 'Zur Anmeldung'])
+            ->assertDontSee('öffnet eine andere Website');
+        // Die Zeile ist schmal (text-sm, py-2), der Kasten groß (p-6, text-xl).
+        $this->assertMatchesRegularExpression('/<article class="[^"]*py-2 text-sm[^"]*">\s*<svg[^>]*>.*?Digitales Treffen/s', $antwort->getContent());
+        $this->assertMatchesRegularExpression('/<article class="[^"]*p-6[^"]*">\s*<div class="min-w-0">\s*<h2[^>]*text-xl[^>]*>Wichtig/s', $antwort->getContent());
+    }
+
     #[TestDox('Ohne Hinweise kein leerer Kasten')]
     public function test_ohne(): void
     {
@@ -75,9 +89,9 @@ class StartseitenHinweiseTest extends TestCase
             ->fillForm(['titel' => 'Test', 'link_url' => 'http://unsicher.example.org'])
             ->call('create')->assertHasFormErrors(['link_url', 'link_text']);
         Livewire::test(CreateStartseitenHinweis::class)
-            ->fillForm(['titel' => 'Büro geschlossen', 'text' => 'Vom 23.12. bis 6.1.', 'link_url' => '/kontakt', 'link_text' => 'Kontakt', 'farbe' => 'blau', 'bis' => now()->addMonth()->toDateString()])
+            ->fillForm(['titel' => 'Büro geschlossen', 'art' => 'zeile', 'text' => 'Vom 23.12. bis 6.1.', 'link_url' => '/kontakt', 'link_text' => 'Kontakt', 'farbe' => 'blau', 'bis' => now()->addMonth()->toDateString()])
             ->call('create')->assertHasNoFormErrors();
-        $this->assertSame('blau', StartseitenHinweis::query()->sole()->farbe);
+        $this->assertSame(['blau', 'zeile'], [StartseitenHinweis::query()->sole()->farbe, StartseitenHinweis::query()->sole()->art]);
     }
 
     #[Group('dv-trier')]

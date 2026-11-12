@@ -10,6 +10,7 @@ use Illuminate\Support\Carbon;
  * Hinweis auf der Startseite (Verwaltung → Inhalte → Startseiten-Hinweise).
  *
  * @property string $titel
+ * @property string $art
  * @property string|null $text
  * @property string|null $link_url
  * @property string|null $link_text
@@ -22,10 +23,13 @@ class StartseitenHinweis extends Model
 {
     protected $table = 'startseiten_hinweise';
 
+    /** Darstellung: auffälliger Kasten oder dezente Zeile. */
+    public const ARTEN = ['kasten' => 'Kasten (auffällig)', 'zeile' => 'Zeile (dezent)'];
+
     /** Akzentfarben (DPSG-Kernfarben). */
     public const FARBEN = ['rot' => 'DPSG-Rot (wichtig)', 'blau' => 'DPSG-Blau', 'beige' => 'Beige (zurückhaltend)'];
 
-    protected $fillable = ['titel', 'text', 'link_url', 'link_text', 'farbe', 'aktiv', 'ab', 'bis', 'sort'];
+    protected $fillable = ['titel', 'art', 'text', 'link_url', 'link_text', 'farbe', 'aktiv', 'ab', 'bis', 'sort'];
 
     protected function casts(): array
     {

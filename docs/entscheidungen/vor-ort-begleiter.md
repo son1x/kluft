@@ -39,4 +39,4 @@ Wünsche (November 2026):
 
 ## Offen
 
-- Anwesenheit aus „Vor Ort“ in den Zuschussantrag übernehmen.
+- (keine; Anwesenheit wird per Knopf im Zuschussantrag übernommen)

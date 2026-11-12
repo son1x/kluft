@@ -9,6 +9,7 @@ use App\Services\Zuschuss\ZuschussExcel;
 use App\Services\Zuschuss\ZuschussPdf;
 use App\Support\AuditLogger;
 use App\Support\Unterschriften;
+use App\Support\VorOrt;
 use App\Support\Zuschuesse;
 use App\Support\Zuschuesse\Antrag;
 use App\Support\Zuschuesse\Foerderrechner;
@@ -187,6 +188,32 @@ class ZuschussAntrag extends EditRecord
                     }),
             ])->label('Unterlagen')->icon('heroicon-o-printer')->button()
                 ->visible(fn () => $this->event()->zuschussAktiv() && $this->darfUnterlagen()),
+            // Vor Ort (docs/vor-ort.md): abgehakte Anwesenheit übernehmen.
+            Action::make('anwesenheitUebernehmen')
+                ->label('Anwesenheit aus „Vor Ort“ übernehmen')
+                ->icon('heroicon-o-check-badge')->color('gray')
+                ->visible(fn () => VorOrt::aktiv() && $this->event()->zuschussAktiv() && $this->darfUnterlagen())
+                ->modalHeading('Anwesenheit aus „Vor Ort“ übernehmen?')
+                ->modalDescription(function () {
+                    $event = $this->event();
+                    $abgehakt = $event->registrations()->where('status', 'confirmed')->whereNotNull('vor_ort_tage')->count();
+                    $bestaetigt = $event->registrations()->where('status', 'confirmed')->count();
+
+                    return "{$abgehakt} von {$bestaetigt} Teilnehmenden wurden unter „Vor Ort“ mindestens einmal als da abgehakt. "
+                        .'Sie gelten im Zuschussantrag an genau diesen Tagen als anwesend; bisherige Angaben zu ihnen werden ersetzt.';
+                })
+                ->schema([
+                    Toggle::make('fehlende')->label('Wer nie abgehakt wurde, gilt als „nicht dabei“')
+                        ->helperText('Aus: Diese Personen bleiben, wie sie sind (Standard: alle Tage anwesend).'),
+                ])
+                ->modalSubmitActionLabel('Übernehmen')
+                ->action(function (array $data) {
+                    abort_unless($this->darfUnterlagen() && $this->event()->zuschussAktiv(), 403);
+                    $z = VorOrt::anwesenheitUebernehmen($this->event(), (bool) ($data['fehlende'] ?? false));
+                    AuditLogger::log("zuschuss.anwesenheit_vor_ort:{$z['uebernommen']}+{$z['nicht_da']}", Filament::auth()->user(), Event::class, $this->event()->getKey(), request());
+                    Notification::make()->success()->title("Anwesenheit übernommen: {$z['uebernommen']} Personen")
+                        ->body(($z['nicht_da'] ? "{$z['nicht_da']} als nicht dabei markiert. " : '').($z['unveraendert'] ? "{$z['unveraendert']} unverändert." : ''))->send();
+                }),
             // Vor Ort, Stufe 2 (docs/vor-ort.md): Liste mit digitalen Unterschriften ablegen.
             Action::make('festschreiben')
                 ->label(fn () => $this->event()->teilnahmeliste_am ? 'Teilnahmeliste neu festschreiben' : 'Teilnahmeliste festschreiben')

@@ -175,4 +175,28 @@ class VorOrtUnterschriftTest extends TestCase
         ])->render();
         $this->assertStringContainsString('<img class="unterschrift-bild" src="data:image/png;base64,', $html);
     }
+
+    #[TestDox('Anwesenheit aus Vor Ort in den Zuschussantrag übernehmen: abgehakte Tage, alle Tage = Standard, Fehlende auf Wunsch „nicht dabei“')]
+    public function test_anwesenheit_uebernehmen(): void
+    {
+        $tage = array_keys($this->event->days());
+        $mia = $this->anmeldung('Mia');
+        $ben = $this->anmeldung('Ben');
+        $ole = $this->anmeldung('Ole');
+        $mia->update(['vor_ort_tage' => [$tage[0], $tage[1]]]);
+        $ben->update(['vor_ort_tage' => $tage]);
+        $this->actingAs($this->verwaltung());
+
+        Livewire::test(ZuschussAntrag::class, ['record' => $this->event->getRouteKey()])
+            ->callAction('anwesenheitUebernehmen', ['fehlende' => false])
+            ->assertNotified('Anwesenheit übernommen: 2 Personen');
+        $this->assertSame([true, [$tage[0], $tage[1]]], [$mia->fresh()->anwesend, $mia->fresh()->anwesend_tage]);
+        $this->assertSame([true, null], [$ben->fresh()->anwesend, $ben->fresh()->anwesend_tage]);
+        $this->assertNull($ole->fresh()->anwesend);
+
+        Livewire::test(ZuschussAntrag::class, ['record' => $this->event->getRouteKey()])
+            ->callAction('anwesenheitUebernehmen', ['fehlende' => true]);
+        $this->assertFalse($ole->fresh()->anwesend);
+        $this->assertTrue(AuditLog::query()->where('action', 'zuschuss.anwesenheit_vor_ort:2+1')->exists());
+    }
 }

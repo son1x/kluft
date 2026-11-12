@@ -168,6 +168,35 @@ class VorOrt
     }
 
     /**
+     * Anwesenheit aus „Vor Ort“ in den Zuschussantrag übernehmen: Wer
+     * abgehakt wurde, gilt an diesen Tagen als anwesend. Wer nie abgehakt
+     * wurde, bleibt unverändert – oder gilt auf Wunsch als nicht dabei.
+     *
+     * @return array{uebernommen: int, nicht_da: int, unveraendert: int}
+     */
+    public static function anwesenheitUebernehmen(Event $event, bool $fehlendeNichtDa = false): array
+    {
+        $alle = array_keys($event->days()) ?: [$event->starts_at->toDateString()];
+        $zahl = ['uebernommen' => 0, 'nicht_da' => 0, 'unveraendert' => 0];
+
+        foreach ($event->registrations()->where('status', 'confirmed')->get() as $r) {
+            $tage = array_values(array_intersect($alle, (array) $r->vor_ort_tage));
+            if ($tage !== []) {
+                // Alle Tage = Standard, dann nichts speichern (wie im Zuschuss-Dialog).
+                $r->update(['anwesend' => true, 'anwesend_tage' => count($alle) > 1 && $tage !== $alle ? $tage : null]);
+                $zahl['uebernommen']++;
+            } elseif ($fehlendeNichtDa) {
+                $r->update(['anwesend' => false, 'anwesend_tage' => null]);
+                $zahl['nicht_da']++;
+            } else {
+                $zahl['unveraendert']++;
+            }
+        }
+
+        return $zahl;
+    }
+
+    /**
      * Ereignisse verarbeiten. Jede Kennung genau einmal; Ergebnis je Kennung:
      * „ok“, „doppelt“ (schon verbucht) oder „abgelehnt“ mit Grund.
      *

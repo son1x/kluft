@@ -140,6 +140,7 @@ class AuditText
             'konto.vorwarnung' => 'Vorwarnung: Konto wird mangels Anmeldung bald gesperrt',
             'konto.inaktiv_gesperrt' => 'Konto gesperrt: ein Jahr nicht angemeldet',
             'backup.download' => 'Backup heruntergeladen: '.$rest,
+            'registration.geloescht' => 'Anmeldungen endgültig gelöscht: '.$rest,
             'rechte.geprueft' => 'Rechte-Prüfung abgeschlossen: '.$rest.' Personen mit sensiblen Rechten',
             'registrations.purge' => 'Automatisch gelöscht: '.($teile[0] ?? 0).' unbestätigte und '.($teile[1] ?? 0).' abgelaufene Anmeldungen',
             'privacy.delete' => count($teile) >= 4

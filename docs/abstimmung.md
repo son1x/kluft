@@ -35,6 +35,12 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-13 – Haupt → Stammes, Bezirk: Datenschutzerklärung zu „Vor Ort“ (Textbausteine)
+Status: offen (nur wenn ihr „Vor Ort“ einschaltet)
+
+- `docs/datenschutz-textbausteine.md` hat drei neue Bausteine: **Nachmelden vor Ort**, **Digitale Unterschrift**, **Offline-Nutzung auf Geräten des Teams**. Bitte in eure Datenschutzerklärung übernehmen, bevor die Funktion bei euch an ist (mit der bzw. dem Datenschutzbeauftragten abstimmen).
+- DV Trier: Ergänzung in `instanzen/dv-trier/dateien/datenschutz.html` und Migration `2026_11_13_150000_datenschutz_vor_ort` (ersetzt nur, wenn der Absatz zu den Teilnahmebescheinigungen noch wörtlich dasteht). PR wartet auf Abstimmung mit dem Datenschutz.
+
 ### 2026-11-13 – Haupt → Stammes, Bezirk: Vor Ort: Nachmelden, installierbar und offline (gemeinsamer Kern)
 Status: offen (Hinweis, PR #85 und #86 noch nicht gemergt)
 Branch: `feature/vor-ort-nachmelden`, `feature/vor-ort-offline`

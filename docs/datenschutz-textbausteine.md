@@ -87,6 +87,34 @@ immer. Abgleichen unter Verwaltung → Funktionen.
 > Mitgliederverwaltung der DPSG (NaMi) ab, um den Teilnahmebeitrag bzw. die
 > Teilnahmeberechtigung zu prüfen.
 
+**Nachmelden vor Ort** (Funktion „Vor Ort“, docs/vor-ort.md):
+
+> Wer bei einer Veranstaltung vor Ort ist, aber nicht angemeldet war, kann vom
+> Team der Veranstaltung nachträglich eingetragen werden. Dabei erfassen wir
+> dieselben Angaben wie im Anmeldeformular, ohne Bestätigungs-E-Mail;
+> stattdessen bestätigt das Team, dass die Person (bei Minderjährigen die
+> Sorgeberechtigten) mit der Anmeldung und der Speicherung der Angaben
+> einverstanden ist. Wer die Eintragung vorgenommen hat, wird protokolliert.
+
+**Digitale Unterschrift** (Funktion „Vor Ort“, nur bei Zuschussanträgen):
+
+> Für Zuschussabrechnungen unterschreiben Teilnehmende die Teilnahmeliste auf
+> Wunsch digital auf dem Tablet des Teams. Das Bild der Unterschrift speichern
+> wir verschlüsselt mit Zeitpunkt und Prüfsumme und setzen es in die
+> Teilnahmeliste ein. Die einzelne Unterschrift löschen wir 14 Tage nach dem
+> Festschreiben der Liste; die Liste bewahren wir nach den Vorgaben des
+> Zuschussgebers auf.
+
+**Offline-Nutzung auf Geräten des Teams** (Funktion „Vor Ort“):
+
+> Das Team nutzt vor Ort ein Tablet oder Handy. Damit auch ohne Internet
+> gearbeitet werden kann, können die Daten der Veranstaltung auf diesem Gerät
+> zeitweise zwischengespeichert werden, ausschließlich verschlüsselt und
+> durch einen Code geschützt. Besonders geschützte Angaben werden nur nach
+> ausdrücklicher Freigabe durch das Team zwischengespeichert. Wir löschen
+> diese Daten beim Abmelden, nach mehrfach falscher Code-Eingabe und
+> spätestens ‹sieben› Tage nach dem Ende der Veranstaltung.
+
 **Teilnahmebeiträge / Zahlungen** (wenn eingeschaltet):
 
 > Für Teilnahmebeiträge speichern wir Betrag, Verwendungszweck und

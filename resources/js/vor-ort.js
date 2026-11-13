@@ -3,6 +3,7 @@
 // (noch) nicht ankommt, bleibt in der Warteschlange und wird erneut geschickt.
 import Alpine from 'alpinejs';
 import SignaturePad from 'signature_pad';
+import { IdbSpeicher, Tresor } from './vor-ort-tresor';
 
 const csrf = () => document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
 
@@ -55,6 +56,46 @@ function zuschneiden(canvas) {
     return ziel.toDataURL('image/png');
 }
 
+// Gerätespeicher (Stufe 3/4): verschlüsselt, Schlüssel nur im Arbeitsspeicher; außerhalb von Alpine halten.
+const tresor = new Tresor(new IdbSpeicher());
+
+const LEERLAUF_MS = 10 * 60 * 1000;
+
+// Kopie für das Gerät: ohne sensible Angaben, wenn sie nicht ausdrücklich freigegeben wurden.
+function fuerGeraet(v, mitSensibel) {
+    const kopie = JSON.parse(JSON.stringify(v));
+    if (!mitSensibel) {
+        const sensibel = new Set(kopie.felder.filter((f) => f.sensibel).map((f) => f.schluessel));
+        kopie.felder = kopie.felder.filter((f) => !sensibel.has(f.schluessel));
+        kopie.personen.forEach((p) => {
+            p.angaben = p.angaben.filter((a) => !a.sensibel);
+            sensibel.forEach((k) => delete p.werte[k]);
+        });
+    }
+
+    return kopie;
+}
+
+// Programmdateien für den Start ohne Netz bereitstellen (Service Worker, Stufe 3). Daten nie.
+async function appBereitstellen() {
+    if (!('serviceWorker' in navigator)) {
+        return;
+    }
+    try {
+        await navigator.serviceWorker.register('/vor-ort/sw.js', { scope: '/vor-ort/' });
+        await navigator.serviceWorker.ready;
+        const cache = await caches.open('vor-ort-v1');
+        const urls = performance.getEntriesByType('resource').map((r) => new URL(r.name)).filter((u) => u.origin === location.origin && u.pathname.startsWith('/build/assets/'));
+        await cache.addAll([...new Set(urls.map((u) => u.href))]);
+        const seite = await fetch('/vor-ort', { credentials: 'same-origin' });
+        if (seite.ok && !seite.redirected) {
+            await cache.put('/vor-ort', seite);
+        }
+    } catch (e) {
+        // Ohne Service Worker läuft alles online weiter.
+    }
+}
+
 const euro = (cent) => (cent / 100).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
 
 function kennung() {
@@ -88,11 +129,32 @@ Alpine.data('vorOrt', () => ({
     meldung: '',
     nachSenden: false,
 
+    // Offline (Stufe 3/4)
+    tresorStatus: 'unbekannt', // keiner | gesperrt | offen
+    offlineVe: [],
+    nurOffline: false,
+    lokal: false,
+    imGeraet: false,
+    mitSensibel: false,
+    codeDialog: null,
+    codeFeld: '',
+    codeWiederholung: '',
+    codeFehler: '',
+    ausstehendGeraet: 0,
+    sichernTimer: null,
+    leerlaufTimer: null,
+
     async init() {
         window.addEventListener('online', () => { this.online = true; this.senden(); });
         window.addEventListener('offline', () => { this.online = false; });
         window.addEventListener('popstate', () => this.ausAdresse());
         setInterval(() => this.senden(), 15000);
+        window.addEventListener('load', () => setTimeout(appBereitstellen, 2000));
+        ['pointerdown', 'keydown'].forEach((e) => window.addEventListener(e, () => this.leerlaufNeu(), { passive: true }));
+        this.$watch('warteschlange', () => this.sichernSpaeter());
+        this.$watch('v', () => this.sichernSpaeter());
+        setInterval(() => this.aufraeumen(), 60 * 60 * 1000);
+        await this.tresorPruefen();
         await this.listeLaden();
         await this.ausAdresse();
     },
@@ -113,8 +175,10 @@ Alpine.data('vorOrt', () => ({
             const d = await holen('/vor-ort/api/veranstaltungen');
             this.person = d.person;
             this.veranstaltungen = d.veranstaltungen;
+            this.nurOffline = false;
         } catch (e) {
-            this.fehler = 'Die Veranstaltungen ließen sich nicht laden. Bitte Verbindung prüfen.';
+            this.nurOffline = true;
+            this.fehler = this.offlineVe.length ? '' : 'Die Veranstaltungen ließen sich nicht laden. Bitte Verbindung prüfen.';
         }
         this.laden = false;
     },
@@ -124,6 +188,10 @@ Alpine.data('vorOrt', () => ({
         this.fehler = '';
         try {
             this.v = await holen('/vor-ort/api/veranstaltungen/' + id);
+            this.lokal = false;
+            const kopie = this.offlineVe.find((x) => x.id === id);
+            this.imGeraet = !!kopie && tresor.offen;
+            this.mitSensibel = !!kopie?.sensibel;
             const tage = this.v.tage.map((t) => t.tag);
             this.tag = tage.includes(this.v.heute) ? this.v.heute : tage[0];
             this.auswahlId = null;
@@ -136,7 +204,12 @@ Alpine.data('vorOrt', () => ({
                 history.pushState({}, '', '?v=' + id);
             }
         } catch (e) {
-            this.fehler = 'Die Veranstaltung ließ sich nicht laden.';
+            // Ohne Netz: Kopie vom Gerät, falls vorhanden.
+            if (this.offlineVe.some((x) => x.id === id)) {
+                await this.lokalOeffnen(id, merken);
+            } else {
+                this.fehler = 'Die Veranstaltung ließ sich nicht laden.';
+            }
         }
         this.laden = false;
     },
@@ -271,7 +344,7 @@ Alpine.data('vorOrt', () => ({
 
     // Ereignis lokal anwenden und in die Warteschlange legen.
     ereignis(p, typ, daten) {
-        this.warteschlange.push({ id: kennung(), typ, anmeldung: p.id, daten, zeit: new Date().toISOString(), name: p.vorname + ' ' + p.nachname });
+        this.warteschlange.push({ id: kennung(), typ, anmeldung: p.id, daten, zeit: new Date().toISOString(), name: p.vorname + ' ' + p.nachname, veranstaltung: this.v.id });
         this.senden();
     },
 
@@ -392,7 +465,7 @@ Alpine.data('vorOrt', () => ({
         };
         this.v.personen = [...this.v.personen, person].sort((a, b) => (a.nachname + a.vorname).localeCompare(b.nachname + b.vorname, 'de'));
         this.warteschlange.push({
-            id: uuid, typ: 'nachmeldung', event: this.v.id, zeit: new Date().toISOString(), name: vorname + ' ' + nachname,
+            id: uuid, typ: 'nachmeldung', event: this.v.id, zeit: new Date().toISOString(), name: vorname + ' ' + nachname, veranstaltung: this.v.id,
             daten: { first_name: vorname, last_name: nachname, data, preis: preis ? preis.nr : null, einverstanden: true },
         });
         this.nachSenden = true;
@@ -466,6 +539,235 @@ Alpine.data('vorOrt', () => ({
         this.nachSenden = true;
     },
 
+    // ---- Offline: Gerätespeicher (Stufe 3 und 4) -------------------------------------------------
+
+    async tresorPruefen() {
+        this.tresorStatus = (await tresor.vorhanden()) ? 'gesperrt' : 'keiner';
+        await this.offlineListeLaden();
+        this.ausstehendGeraet = this.tresorStatus === 'gesperrt' ? await tresor.ausstehend() : 0;
+        if (this.ausstehendGeraet > 0) {
+            this.codeFrage('nichts');
+        }
+        await this.aufraeumen();
+    },
+
+    async offlineListeLaden() {
+        this.offlineVe = this.tresorStatus === 'keiner' ? [] : await tresor.veranstaltungen();
+    },
+
+    // Code abfragen (erster Start: festlegen; sonst entsperren). `danach` = was nach dem Entsperren geschieht.
+    codeFrage(danach = 'nichts', id = null) {
+        this.codeFeld = '';
+        this.codeWiederholung = '';
+        this.codeFehler = '';
+        this.codeDialog = { art: this.tresorStatus === 'keiner' ? 'neu' : 'entsperren', danach, id };
+    },
+
+    async codeBestaetigen() {
+        const d = this.codeDialog;
+        this.codeFehler = '';
+        if (d.art === 'neu') {
+            if (this.codeFeld.length < 6) {
+                this.codeFehler = 'Der Code braucht mindestens 6 Zeichen.';
+
+                return;
+            }
+            if (this.codeFeld !== this.codeWiederholung) {
+                this.codeFehler = 'Die beiden Eingaben passen nicht zusammen.';
+
+                return;
+            }
+            await tresor.anlegen(this.codeFeld);
+        } else {
+            const r = await tresor.entsperren(this.codeFeld);
+            if (r.geloescht) {
+                this.tresorStatus = 'keiner';
+                this.offlineVe = [];
+                this.codeDialog = null;
+                this.meldung = 'Zu viele falsche Codes: Alle Offline-Daten auf diesem Gerät wurden gelöscht.';
+
+                return;
+            }
+            if (!r.ok) {
+                this.codeFehler = 'Falscher Code. Noch ' + r.rest + ' Versuch(e), danach werden die Offline-Daten gelöscht.';
+
+                return;
+            }
+        }
+        this.codeFeld = '';
+        this.codeWiederholung = '';
+        this.codeDialog = null;
+        this.tresorStatus = 'offen';
+        this.leerlaufNeu();
+        // Ungesendetes vom letzten Mal wieder aufnehmen und senden.
+        const gespeichert = await tresor.warteschlangeLaden();
+        this.warteschlange = [...gespeichert, ...this.warteschlange.filter((e) => !gespeichert.some((g) => g.id === e.id))];
+        this.ausstehendGeraet = 0;
+        await this.aufraeumen();
+        this.nachSenden = this.warteschlange.length > 0;
+        this.senden();
+        if (d.danach === 'speichern') {
+            await this.offlineSpeichern(this.mitSensibel);
+        } else if (d.danach === 'oeffnen' && d.id) {
+            if (!this.v) {
+                await this.oeffnen(d.id);
+            }
+        } else if (d.danach === 'lokal' && d.id) {
+            await this.lokalOeffnen(d.id);
+        }
+    },
+
+    async lokalOeffnen(id, merken = true) {
+        if (!tresor.offen) {
+            this.codeFrage('lokal', id);
+
+            return;
+        }
+        const d = await tresor.laden(id);
+        if (!d) {
+            this.fehler = 'Zu dieser Veranstaltung gibt es keine Offline-Daten.';
+
+            return;
+        }
+        this.v = d;
+        this.lokal = true;
+        this.imGeraet = true;
+        this.mitSensibel = !!this.offlineVe.find((x) => x.id === id)?.sensibel;
+        const tage = d.tage.map((t) => t.tag);
+        this.tag = tage.includes(d.heute) ? d.heute : tage[0];
+        this.auswahlId = null;
+        this.fehler = '';
+        if (merken) {
+            history.pushState({}, '', '?v=' + id);
+        }
+    },
+
+    async offlineSpeichern(mitSensibel = false) {
+        if (!this.v) {
+            return;
+        }
+        this.mitSensibel = mitSensibel;
+        if (!tresor.offen) {
+            this.codeFrage('speichern');
+
+            return;
+        }
+        this.imGeraet = true;
+        await this.sichern();
+        await this.offlineListeLaden();
+        this.meldung = 'Für die Nutzung ohne Netz auf diesem Gerät gespeichert (verschlüsselt'
+            + (mitSensibel ? ', mit sensiblen Angaben' : ', ohne sensible Angaben') + ').';
+    },
+
+    sichernSpaeter() {
+        if (!tresor.offen) {
+            return;
+        }
+        clearTimeout(this.sichernTimer);
+        this.sichernTimer = setTimeout(() => this.sichern(), 800);
+    },
+
+    async sichern() {
+        if (!tresor.offen) {
+            return;
+        }
+        try {
+            if (this.v && this.imGeraet) {
+                await tresor.speichern(this.v.id, {
+                    titel: this.v.titel, gespeichertAm: new Date().toISOString(), loeschenAm: this.v.loeschen_am, sensibel: this.mitSensibel,
+                }, fuerGeraet(this.v, this.mitSensibel));
+            }
+            await tresor.warteschlangeSpeichern(JSON.parse(JSON.stringify(this.warteschlange)));
+            await this.offlineListeLaden();
+        } catch (e) {
+            this.meldung = 'Das Speichern auf dem Gerät hat nicht geklappt.';
+        }
+    },
+
+    // Abgelaufene Offline-Daten löschen (Frist: 7 Tage nach dem Ende der Veranstaltung).
+    async aufraeumen() {
+        if (this.tresorStatus === 'keiner') {
+            return;
+        }
+        const r = await tresor.aufraeumen();
+        if (r.geloescht.length) {
+            this.meldung = 'Offline-Daten gelöscht (Frist abgelaufen): ' + r.geloescht.map((g) => g.titel).join(', ')
+                + (r.verworfen ? ' – ' + r.verworfen + ' nicht gesendete Änderung(en) verworfen.' : '.');
+            const weg = new Set(r.geloescht.map((g) => g.id));
+            this.warteschlange = this.warteschlange.filter((e) => !weg.has(e.veranstaltung));
+            if (this.v && weg.has(this.v.id)) {
+                this.imGeraet = false;
+            }
+        }
+        await this.offlineListeLaden();
+    },
+
+    // Sperren: Schlüssel vergessen; Daten bleiben verschlüsselt, Ungesendetes ebenfalls.
+    async sperren() {
+        if (!tresor.offen) {
+            return;
+        }
+        clearTimeout(this.sichernTimer);
+        await this.sichern();
+        tresor.sperren();
+        this.tresorStatus = 'gesperrt';
+        this.ausstehendGeraet = this.warteschlange.length;
+        this.warteschlange = [];
+        this.v = null;
+        this.auswahlId = null;
+        this.unterschriftAbbrechen();
+        history.pushState({}, '', window.location.pathname);
+        this.codeFrage('oeffnen');
+        this.codeDialog.id = null;
+    },
+
+    leerlaufNeu() {
+        clearTimeout(this.leerlaufTimer);
+        if (tresor.offen) {
+            this.leerlaufTimer = setTimeout(() => this.sperren(), LEERLAUF_MS);
+        }
+    },
+
+    async geraetedatenLoeschen() {
+        if (!window.confirm('Alle Offline-Daten auf diesem Gerät löschen?' + (this.warteschlange.length ? ' Noch nicht gesendete Änderungen gehen verloren, wenn die App geschlossen wird.' : ''))) {
+            return;
+        }
+        clearTimeout(this.sichernTimer);
+        await tresor.loeschenAlles();
+        this.tresorStatus = 'keiner';
+        this.offlineVe = [];
+        this.imGeraet = false;
+        this.ausstehendGeraet = 0;
+        this.meldung = 'Alle Offline-Daten auf diesem Gerät sind gelöscht.';
+    },
+
+    async abmelden() {
+        const offen = this.warteschlange.length + this.ausstehendGeraet;
+        if (offen > 0 && !window.confirm(offen + ' Änderung(en) wurden noch nicht gesendet und gehen beim Abmelden verloren. Trotzdem abmelden?')) {
+            return;
+        }
+        clearTimeout(this.sichernTimer);
+        await tresor.loeschenAlles();
+        try {
+            await fetch('/admin/logout', { method: 'POST', credentials: 'same-origin', headers: { 'X-CSRF-TOKEN': csrf() } });
+        } catch (e) {
+            // Ohne Netz bleibt die Anmeldung bestehen; die Gerätedaten sind trotzdem gelöscht.
+        }
+        window.location.href = '/admin/login';
+    },
+
+    get standText() {
+        return this.v?.stand ? new Date(this.v.stand).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' }) : '';
+    },
+
+    get ablaufText() {
+        return this.v?.loeschen_am ? new Date(this.v.loeschen_am).toLocaleDateString('de-DE') : '';
+    },
+
+    kopieText(k) {
+        return new Date(k.gespeichertAm).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' });
+    },
+
     async senden() {
         if (this.sendet || this.warteschlange.length === 0 || !navigator.onLine) {
             return;
@@ -478,7 +780,7 @@ Alpine.data('vorOrt', () => ({
                 method: 'POST',
                 credentials: 'same-origin',
                 headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': csrf() },
-                body: JSON.stringify({ ereignisse: paket.map(({ name, ...e }) => e) }),
+                body: JSON.stringify({ ereignisse: paket.map(({ name, veranstaltung, ...e }) => e) }),
             });
             if (antwort.status === 401 || antwort.status === 419) {
                 this.meldung = 'Abgemeldet – bitte neu anmelden. ' + this.warteschlange.length + ' Änderung(en) warten.';
@@ -516,6 +818,7 @@ Alpine.data('vorOrt', () => ({
         try {
             const frisch = await holen('/vor-ort/api/veranstaltungen/' + this.v.id);
             this.v = { ...frisch };
+            this.lokal = false;
             if (this.auswahlId !== null && !this.v.personen.some((p) => p.id === this.auswahlId)) {
                 this.auswahlId = null;
             }

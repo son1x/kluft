@@ -56,9 +56,30 @@ Antippen öffnet die Person (Tablet: rechte Spalte; Handy: eigene Ansicht mit �
 |---|---|
 | Verbunden | alles gespeichert |
 | n werden gesendet … | Änderungen sind unterwegs |
-| Offline · n warten | keine Verbindung; die Änderungen werden automatisch nachgesendet, sobald das Netz zurück ist – **die Seite dafür offen lassen** (noch nicht neu laden, siehe Ausbauplan) |
+| Offline · n warten | keine Verbindung; die Änderungen werden automatisch nachgesendet, sobald das Netz zurück ist. Mit dem **Gerätespeicher** (unten) überstehen sie auch das Schließen der App |
 
 Lehnt Kluft eine Änderung ab (z. B. Anmeldung inzwischen storniert), erscheint ein Hinweis mit Grund, und die Daten werden neu geladen.
+
+## Installieren und ohne Netz nutzen (Stufe 3 und 4)
+
+**Installieren:** Im Browser des Tablets (Safari: „Teilen → Zum Home-Bildschirm“, Chrome: „App installieren“) wird „Vor Ort“ zur App mit eigenem Symbol (Logo der Gliederung). Ein Service Worker (`/vor-ort/sw.js`, Geltungsbereich `/vor-ort/`) hält die **Programmdateien** bereit, damit die App auch ohne Netz startet. **Daten** speichert er nie (`/vor-ort/api/…` geht immer direkt ans Netz).
+
+**Offline vorbereiten (mit Netz, vor der Veranstaltung):**
+1. Veranstaltung öffnen, oben „Offline nutzen“ aufklappen.
+2. Beim ersten Mal einen **Code** (mindestens 6 Zeichen) für den Gerätespeicher festlegen. Er wird nirgends gespeichert und lässt sich nicht zurücksetzen.
+3. Entscheiden, ob **sensible Angaben** (z. B. Allergien, Gesundheit) mit offline gespeichert werden. Standard: nein; sie fehlen dann offline, ebenso ihre Felder im Korrekturformular und beim Nachmelden.
+4. **„Auf diesem Gerät speichern“.** Die Kopie wird bei jeder Änderung aktuell gehalten; „Kopie aktualisieren“ holt den Stand vom Server.
+
+**Ohne Netz:** App öffnen → Start zeigt „Auf diesem Gerät gespeichert“ → Code eingeben → Veranstaltung öffnen. Oben steht „Offline-Stand von …“. Alles geht wie online (da abhaken, kassieren, unterschreiben, Zusatzinfos, Korrigieren, Nachmelden); die Änderungen liegen verschlüsselt in der Warteschlange auf dem Gerät und werden gesendet, sobald Netz da ist – auch nach Schließen und späterem Öffnen der App (dann zuerst Code eingeben; die App sagt, wie viele Änderungen warten). Danach wird der Stand neu vom Server geholt.
+
+**Schutz der Daten auf dem Gerät (Stufe 4):**
+- **Verschlüsselt:** AES-GCM 256; der Schlüssel entsteht aus dem Code (PBKDF2-SHA-256, 600.000 Runden) und bleibt nur im Arbeitsspeicher. Auf dem Gerät liegen nur verschlüsselte Daten; offen sind lediglich Titel der Veranstaltung, Zeitpunkte und die Anzahl wartender Änderungen.
+- **Sperren:** Knopf „🔒 Sperren“ oben; außerdem sperrt die App nach **10 Minuten ohne Bedienung**. Gesperrt heißt: Schlüssel vergessen, Ansicht leer; ungesendete Änderungen bleiben verschlüsselt erhalten.
+- **Falscher Code:** Nach **10 Fehlversuchen** werden alle Offline-Daten gelöscht.
+- **Löschen:** „Abmelden“ löscht alle Offline-Daten des Geräts und meldet ab (mit Warnung, wenn noch Änderungen warten). „Alle Offline-Daten löschen“ tut das ohne Abmelden. **Automatisch:** 7 Tage nach dem Ende der Veranstaltung (stündlich und beim Start geprüft), samt noch nicht gesendeten Änderungen dazu – die App meldet es.
+- **Grenzen:** Der Code schützt ein verlorenes oder gestohlenes Gerät mit geschlossener App. Bei geöffneter, entsperrter App sieht, wer das Gerät in der Hand hält, die Daten. Ein schwacher Code (z. B. 123456) lässt sich durch Probieren knacken, wenn jemand die Browser-Daten kopiert. Deshalb: gesperrtes Gerät (Bildschirmsperre), ein Code, der nicht erratbar ist.
+
+Technik: `resources/js/vor-ort-tresor.js` (Verschlüsselung, IndexedDB, Aufräumen; Tests `npm run test:js`), `resources/js/vor-ort-sw.js` (Service Worker), `VorOrtController::manifest/serviceWorker/symbol`, `VorOrt::symbol()`. Die Daten der Veranstaltung enthalten `stand` und `loeschen_am`.
 
 ## Digitale Unterschrift (Zuschuss-Teilnahmeliste)
 
@@ -183,14 +204,14 @@ Migrationen: `2026_11_13_100000_create_vor_ort`, `2026_11_13_110000_add_zusatz_f
 
 ## Datenschutz
 
-- **Gerät**: Stufe 1 speichert nichts dauerhaft auf dem Gerät; die Daten kommen bei jedem Öffnen frisch vom Server. Die Warteschlange lebt nur, solange die Seite offen ist.
+- **Gerät**: Ohne „Auf diesem Gerät speichern“ liegt nichts dauerhaft auf dem Gerät; die Daten kommen bei jedem Öffnen frisch vom Server, die Warteschlange lebt nur, solange die Seite offen ist. Mit dem Gerätespeicher (Stufe 3 und 4, siehe oben) liegen Teilnehmende, Angaben und ungesendete Änderungen **verschlüsselt** auf dem Gerät, sensible Angaben nur nach ausdrücklicher Freigabe, Löschung beim Abmelden, nach 10 falschen Codes und 7 Tage nach Ende der Veranstaltung.
 - **Ereignisse** enthalten nur, was geändert wurde (verschlüsselt gespeichert). Sensible Angaben (z. B. Allergien) stehen dort nicht im Klartext, sondern nur „(sensibel, geändert)“. Die Ereignisse werden mit der Anmeldung gelöscht (Löschfristen der Veranstaltung).
 - **Unterschriften**: verschlüsselt mit Prüfsumme; im Ereignis-Protokoll nur die Prüfsumme. Gelöscht 14 Tage nach dem Festschreiben der Teilnahmeliste, spätestens mit der Anmeldung. Danach existiert die Unterschrift nur noch in der festgeschriebenen PDF, die zum Zuschussantrag gehört (Aufbewahrung wie der Antrag) und mit der Veranstaltung gelöscht wird.
 - **Protokoll**: Zahlungen, Korrekturen, Zusatzinfos, Unterschriften und Festschreiben stehen mit Namen im Protokoll (`vor_ort.*`, `registration.bearbeitet`).
 - **Anzeige**: Sensible Angaben zeigt „Vor Ort“ wie die Detailansicht im Backend, gekennzeichnet – für dieselben Personen.
 - Seite mit `noindex`, gleiche Sicherheits-Header (CSP) wie die Website.
 
-Für die Datenschutzbewertung (`docs/datenschutz-bewertung.md`): keine neue Datenkategorie und kein neuer Empfänger; neu ist der Verarbeitungsort Tablet/Handy des Teams. Mit Stufe 3 (offline) kommt eine Speicherung auf dem Gerät hinzu – dann Bewertung ergänzen.
+Für die Datenschutzbewertung (`docs/datenschutz-bewertung.md`): keine neue Datenkategorie und kein neuer Empfänger; neu ist der Verarbeitungsort Tablet/Handy des Teams. Mit Stufe 3 und 4 kommt eine verschlüsselte, befristete Speicherung auf dem Gerät hinzu (in der Bewertung ergänzt).
 
 ## Entscheidungen und offene Punkte
 
@@ -199,7 +220,7 @@ Für die Datenschutzbewertung (`docs/datenschutz-bewertung.md`): keine neue Date
 | Wer darf Zahlungen verbuchen? | **entschieden:** alle mit `manageParticipants` – das Team vor Ort nimmt das Geld entgegen; protokolliert mit Namen | – |
 | Zahlungsarten | Bar, Karte (SumUp), PayPal – nur vermerkt, keine Anbindung | Anbindung an SumUp/PayPal (siehe unten) |
 | Eigene App oder Bereich in Kluft? | Bereich in Kluft (gleiche Anmeldung, Rechte, Daten; kein App-Store) | – |
-| Offline nötig? | ja – ein zentraler Platz ist ohne Internet | Stufe 3 |
+| Offline nötig? | ja – ein zentraler Platz ist ohne Internet | **gebaut** (Stufe 3 und 4, 13.11.2026); auf einem echten Tablet ausprobieren |
 | Digitale Unterschriften | **entschieden:** anerkannt; eine je Person und Veranstaltung; **die teilnehmende Person unterschreibt selbst** (auch Minderjährige); in der Zeile der Person; Standardtext „Ich bestätige meine Teilnahme …“ | – |
 | Aufbewahrung der Unterschriften | **entschieden:** festgeschriebene Liste genügt; Einzelunterschriften 14 Tage nach dem Festschreiben gelöscht | – |
 | Anwesenheit in den Zuschussantrag übernehmen | Knopf im Zuschussantrag (`VorOrt::anwesenheitUebernehmen`) | – |
@@ -212,5 +233,5 @@ Für die Datenschutzbewertung (`docs/datenschutz-bewertung.md`): keine neue Date
 
 1. ~~**Stufe 1 – online**: Auswahl, Anwesenheit je Tag, Zahlungsstand und Barzahlung, Verpflegung, Angaben korrigieren, Zusatzinfos.~~ (PR „Vor Ort, Stufe 1“)
 2. ~~**Stufe 2 – digitale Unterschrift** je Person und **Veranstaltung** (mit Finger oder Stift auf dem Tablet, Bibliothek [signature_pad](https://github.com/szimek/signature_pad), MIT, über Vite gebündelt), gespeichert als PNG (verschlüsselt, mit Zeitpunkt, bedienender Person und Prüfsumme) als Ereignis `unterschrift`, eingesetzt in die Zuschuss-Teilnahmeliste (PDF) in der Spalte „Unterschrift“; Festschreiben der Liste, Einzelunterschriften 14 Tage danach gelöscht.~~ (PR „Vor Ort, Stufe 2“)
-3. **Stufe 3 – installierbar und offline**: Web-App-Manifest und Service Worker, Liste der gewählten Veranstaltung auf dem Gerät, Warteschlange dauerhaft (IndexedDB), Nachsenden beim Wiederverbinden, Anzeige „Stand von …“.
-4. **Stufe 4 – Datenschutz offline**: Gerätespeicher verschlüsselt, Löschen beim Abmelden und nach der Veranstaltung, sensible Angaben offline nur nach ausdrücklicher Freigabe, Ergänzung der Datenschutzbewertung.
+3. ~~**Stufe 3 – installierbar und offline**: Web-App-Manifest und Service Worker, Liste der gewählten Veranstaltung auf dem Gerät, Warteschlange dauerhaft (IndexedDB), Nachsenden beim Wiederverbinden, Anzeige „Stand von …“.~~ (PR „Vor Ort, Stufe 3 und 4“)
+4. ~~**Stufe 4 – Datenschutz offline**: Gerätespeicher verschlüsselt, Löschen beim Abmelden und nach der Veranstaltung, sensible Angaben offline nur nach ausdrücklicher Freigabe, Ergänzung der Datenschutzbewertung.~~ (PR „Vor Ort, Stufe 3 und 4“)

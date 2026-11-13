@@ -35,6 +35,14 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-13 – Haupt → Stammes, Bezirk: Vor Ort: Nachmelden, installierbar und offline (gemeinsamer Kern)
+Status: offen (Hinweis, PR #85 und #86 noch nicht gemergt)
+Branch: `feature/vor-ort-nachmelden`, `feature/vor-ort-offline`
+
+- **Nachmelden** (#85): Ereignis `nachmeldung`, legt Anmeldungen sofort bestätigt, ohne Mail an (Einwilligungstext `vor-ort`, Haken „Einverstanden“). Nur mit eingeschalteter Funktion „Vor Ort“ (Standard aus), sonst ändert sich nichts.
+- **Stufe 3 und 4** (#86): Manifest, Service Worker (`/vor-ort/sw.js`, nur Programmdateien), verschlüsselter Gerätespeicher mit Code (`resources/js/vor-ort-tresor.js`). Neue Entwicklungsabhängigkeit `fake-indexeddb`, Tests mit `npm run test:js`. Neue öffentliche Routen unter `/vor-ort/` (Manifest, `sw.js`, Symbol), nur bei eingeschalteter Funktion.
+- **Bitte:** Beim Ändern von `resources/js/vor-ort*.js` die Node-Tests laufen lassen. Nicht im Browser getestet, Tablet-Test steht aus.
+
 ### 2026-11-12 – Haupt → Stammes, Bezirk: Neue Haupt-Sitzung, Briefkasten aufgeräumt
 Status: offen (Hinweis)
 

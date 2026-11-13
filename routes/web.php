@@ -116,6 +116,12 @@ Route::get('/einspielen/stand/{token}', BackupStandController::class)->where('to
 
 // Suche auf der Website (docs/plan-ehrenamt.md Nr. 3).
 // Vor Ort: Begleiter für die Durchführung von Veranstaltungen (docs/vor-ort.md).
+// App-Bausteine ohne Anmeldung (Browser holt sie ohne Cookies): Manifest, Service Worker, Symbol.
+Route::prefix('vor-ort')->name('vor-ort.')->middleware('throttle:60,1')->group(function () {
+    Route::get('/manifest.webmanifest', [VorOrtController::class, 'manifest'])->name('manifest');
+    Route::get('/sw.js', [VorOrtController::class, 'serviceWorker'])->name('sw');
+    Route::get('/symbol/{groesse}.png', [VorOrtController::class, 'symbol'])->whereIn('groesse', ['180', '192', '512'])->name('symbol');
+});
 Route::middleware(['auth', 'throttle:240,1'])->prefix('vor-ort')->name('vor-ort.')->group(function () {
     Route::get('/', [VorOrtController::class, 'seite'])->name('seite');
     Route::get('/api/veranstaltungen', [VorOrtController::class, 'veranstaltungen'])->name('veranstaltungen');

@@ -31,6 +31,40 @@ class VorOrt
             ->map(fn ($label) => mb_substr((string) $label, 0, 40))->all();
     }
 
+    /**
+     * Symbol für die installierte App: Logo der Gliederung (config dpsg.site.logo)
+     * auf weißem Quadrat; ohne PNG-Logo eine blaue Fläche. Null ohne GD.
+     */
+    public static function symbol(int $groesse): ?string
+    {
+        if (! function_exists('imagecreatetruecolor')) {
+            return null;
+        }
+        $logo = (string) config('dpsg.site.logo');
+        $datei = collect([$logo, $logo.'.png'])->map(fn (string $f) => public_path($f))->first(fn (string $f) => is_file($f) && str_ends_with($f, '.png'));
+        $quelle = $datei === null ? false : @imagecreatefrompng($datei);
+        $leinwand = imagecreatetruecolor($groesse, $groesse);
+        if ($quelle === false) {
+            imagefill($leinwand, 0, 0, (int) imagecolorallocate($leinwand, 0, 48, 86));
+            ob_start();
+            imagepng($leinwand);
+
+            return (string) ob_get_clean();
+        }
+        imagefill($leinwand, 0, 0, (int) imagecolorallocate($leinwand, 255, 255, 255));
+        $b = imagesx($quelle);
+        $h = imagesy($quelle);
+        $faktor = min($groesse * 0.8 / $b, $groesse * 0.8 / $h);
+        $zb = max(1, (int) round($b * $faktor));
+        $zh = max(1, (int) round($h * $faktor));
+        imagealphablending($leinwand, true);
+        imagecopyresampled($leinwand, $quelle, (int) (($groesse - $zb) / 2), (int) (($groesse - $zh) / 2), 0, 0, $zb, $zh, $b, $h);
+        ob_start();
+        imagepng($leinwand);
+
+        return (string) ob_get_clean();
+    }
+
     /** Textversion bei Nachmeldung vor Ort (statt Online-Einwilligung). */
     public const NACHMELDUNG = 'vor-ort';
 
@@ -130,6 +164,9 @@ class VorOrt
             ...self::uebersicht($event),
             'tage' => collect($tage)->map(fn (string $label, string $tag) => ['tag' => $tag, 'label' => $label])->values()->all(),
             'heute' => now()->toDateString(),
+            // Stufe 3/4: Stand der Daten und Zeitpunkt, bis zu dem sie auf Geräten bleiben dürfen.
+            'stand' => now()->toIso8601String(),
+            'loeschen_am' => ($event->ends_at ?? $event->starts_at)->copy()->endOfDay()->addDays(self::TAGE_DANACH)->toIso8601String(),
             'beitrag' => $beitrag,
             // Nachmelden vor Ort: Preisstufen zur Auswahl (Reihenfolge = Nummer im Ereignis).
             'preise' => collect($event->preise())->map(fn (array $p, int $i) => ['nr' => $i, 'bezeichnung' => $p['bezeichnung'], 'cent' => $p['cent']])->values()->all(),

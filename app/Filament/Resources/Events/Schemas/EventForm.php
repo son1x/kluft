@@ -382,6 +382,15 @@ class EventForm
                         ->helperText('Höchstens '.Event::ZUSATZ_MAX.'. Wird ein Feld umbenannt, sind die bisherigen Werte darunter nicht mehr zu sehen.'),
                 ]),
 
+            Section::make('Teilnahmeliste mit Unterschriften')
+                ->description('Für Veranstaltungen mit Zuschussantrag ist das immer an. Sonst hier einschalten, wenn die Teilnehmenden unter „Vor Ort“ auf dem Tablet unterschreiben sollen.')
+                ->columnSpanFull()
+                ->collapsible()
+                ->components([
+                    Toggle::make('unterschriftenliste')->label('Teilnahmeliste mit digitalen Unterschriften (Vor Ort)')
+                        ->helperText('Die Liste gibt es dann unter „Teilnehmende → Teilnahmeliste (PDF)“; mit „Festschreiben“ wird sie samt Unterschriften abgelegt, die Einzelunterschriften werden danach gelöscht.'),
+                ]),
+
             Section::make('Datenschutz')
                 ->columnSpanFull()
                 ->components([

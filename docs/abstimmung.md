@@ -35,6 +35,13 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-13 – Haupt → Stammes, Bezirk: Teilnahmeliste mit Unterschriften auch ohne Zuschussantrag (gemeinsamer Kern)
+Status: offen (Hinweis)
+Branch: `feature/teilnahmeliste-ohne-zuschuss`
+
+- Neue Spalte `events.unterschriftenliste` (Schalter in der Veranstaltung, Standard aus). `Unterschriften::moeglich()` gilt jetzt bei Zuschussantrag **oder** Schalter. Mit Zuschussantrag ändert sich nichts.
+- Ohne Zuschussantrag: Teilnehmende → „Teilnahmeliste mit Unterschriften (PDF)“ und „Teilnahmeliste festschreiben“ (`TeilnehmendeListePdf::teilnahmeliste`, Ablage `teilnahmelisten/`). Nur mit eingeschalteter Funktion „Vor Ort“ sichtbar.
+
 ### 2026-11-13 – Haupt → Stammes, Bezirk: Datenschutzerklärung zu „Vor Ort“ (Textbausteine)
 Status: offen (nur wenn ihr „Vor Ort“ einschaltet)
 

@@ -3,7 +3,7 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<title>Teilnehmende – {{ $event->title }}</title>
+<title>{{ $titelText ?? 'Teilnehmende' }} – {{ $event->title }}</title>
 <style>
     @font-face { font-family: 'Arvo'; font-weight: bold; src: url('{{ $fonts }}/Arvo-Bold.ttf') format('truetype'); }
     @font-face { font-family: 'Carlito'; font-weight: normal; src: url('{{ $fonts }}/Carlito-Regular.ttf') format('truetype'); }
@@ -20,6 +20,8 @@
     th { text-align: left; background: #ecdfcb; font-size: 9pt; padding: 1.5mm 1.5mm; }
     td { border-bottom: 0.2mm solid #c7bdad; padding: 2mm 1.5mm; vertical-align: top; }
     td.nr { width: 7mm; color: #5c6670; }
+    td.sig { width: 55mm; height: 11mm; }
+    .unterschrift-bild { max-width: 50mm; max-height: 9mm; }
     th.tag, td.tag { width: 14mm; text-align: center; white-space: nowrap; }
     th.tag { font-size: 8pt; }
     .kasten { display: inline-block; width: 4mm; height: 4mm; border: 0.3mm solid #1c1f26; }
@@ -32,7 +34,11 @@
     <h1>{{ $event->title }}</h1>
     @php($wl = $personen->where('warteliste', true)->count())
     <p class="klein">{{ $event->dateLabel() }}{{ $event->location ? ' · '.$event->location : '' }} · Stand {{ now()->format('d.m.Y H:i') }} · {{ $personen->count() - $wl }} bestätigt{{ $wl > 0 ? ', '.$wl.' auf der Warteliste' : '' }}</p>
-    <p class="vertraulich">Vertraulich: nur für die Leitung der Veranstaltung. Nicht weitergeben, nach der Veranstaltung vernichten.</p>
+    @if ($unterschriften === null)
+        <p class="vertraulich">Vertraulich: nur für die Leitung der Veranstaltung. Nicht weitergeben, nach der Veranstaltung vernichten.</p>
+    @else
+        <p class="klein" style="margin: 3mm 0">{{ $bestaetigung }} Wer nicht digital unterschrieben hat, unterschreibt hier von Hand.</p>
+    @endif
 
     <table>
         <thead>
@@ -42,6 +48,7 @@
                 @foreach ($spalten as $spalte)<th>{{ $spalte }}</th>@endforeach
                 @if ($mitSorge)<th>Angemeldet von (sorgeberechtigt)</th>@endif
                 @foreach ($tage as $tag)<th class="tag">{{ $tag === 'anwesend' ? 'Da' : $tag }}</th>@endforeach
+                @if ($unterschriften !== null)<th>Unterschrift</th>@endif
             </tr>
         </thead>
         <tbody>
@@ -52,9 +59,10 @@
                     @foreach ($p['werte'] as $wert)<td>{{ $wert }}</td>@endforeach
                     @if ($mitSorge)<td>{{ $p['sorge'] }}</td>@endif
                     @foreach ($tage as $tag)<td class="tag"><span class="kasten"></span></td>@endforeach
+                    @if ($unterschriften !== null)<td class="sig">{!! isset($unterschriften[$p['id']]) ? '<img class="unterschrift-bild" src="'.e($unterschriften[$p['id']]).'" alt="">' : '' !!}</td>@endif
                 </tr>
             @empty
-                <tr><td colspan="{{ 2 + count($spalten) + ($mitSorge ? 1 : 0) + count($tage) }}">Noch keine bestätigten Anmeldungen.</td></tr>
+                <tr><td colspan="{{ 2 + count($spalten) + ($mitSorge ? 1 : 0) + count($tage) + ($unterschriften !== null ? 1 : 0) }}">Noch keine bestätigten Anmeldungen.</td></tr>
             @endforelse
         </tbody>
     </table>
@@ -62,6 +70,6 @@
     @if ($event->contact_name || $event->contact_email)
         <p class="klein" style="margin-top: 5mm">Veranstaltungsleitung: {{ $event->contact_name }}{{ $event->contact_email ? ' · '.$event->contact_email : '' }}</p>
     @endif
-    <div class="fuss">{{ config('dpsg.site.name') }} · Teilnehmendenliste „{{ $event->title }}“ · vertraulich</div>
+    <div class="fuss">{{ config('dpsg.site.name') }} · {{ $titelText ?? 'Teilnehmendenliste' }} „{{ $event->title }}“ · vertraulich</div>
 </body>
 </html>

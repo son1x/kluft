@@ -27,6 +27,7 @@ use App\Support\Features;
 use App\Support\NamiAmpel;
 use App\Support\Teilnahmebeitraege;
 use App\Support\TeilnehmendeNachrichten;
+use App\Support\Unterschriften;
 use App\Support\Zahlungen;
 use BackedEnum;
 use Filament\Actions\Action;
@@ -442,6 +443,43 @@ class RegistrationsRelationManager extends RelationManager
                         $nachricht->empfaenger === 0
                             ? Notification::make()->warning()->title('Niemand mit E-Mail-Adresse in der Auswahl.')->send()
                             : Notification::make()->success()->title('Nachricht an '.$nachricht->empfaenger.' '.($nachricht->empfaenger === 1 ? 'Person' : 'Personen').' unterwegs.')->send();
+                    }),
+                // Teilnahmeliste mit digitalen Unterschriften ohne Zuschussantrag (docs/vor-ort.md).
+                Action::make('teilnahmeliste')
+                    ->label('Teilnahmeliste mit Unterschriften (PDF)')
+                    ->icon('heroicon-o-pencil-square')
+                    ->visible(fn () => Unterschriften::moeglich($this->getOwnerRecord()) && ! $this->getOwnerRecord()->zuschussAktiv())
+                    ->action(function (TeilnehmendeListePdf $liste): StreamedResponse {
+                        $event = $this->getOwnerRecord();
+                        abort_unless(Filament::auth()->user()?->can('manageParticipants', $event) && Unterschriften::moeglich($event), 403);
+                        AuditLogger::log('event.liste', Filament::auth()->user(), Event::class, $event->getKey(), request());
+                        $pdf = $liste->teilnahmeliste($event);
+
+                        return response()->streamDownload(fn () => print ($pdf), 'Teilnahmeliste-'.$event->slug.'-'.now()->format('Y-m-d').'.pdf', ['Content-Type' => 'application/pdf']);
+                    }),
+                Action::make('teilnahmelisteFestschreiben')
+                    ->label(fn () => $this->getOwnerRecord()->teilnahmeliste_am ? 'Teilnahmeliste neu festschreiben' : 'Teilnahmeliste festschreiben')
+                    ->icon('heroicon-o-lock-closed')
+                    ->visible(fn () => Unterschriften::moeglich($this->getOwnerRecord()) && ! $this->getOwnerRecord()->zuschussAktiv())
+                    ->requiresConfirmation()
+                    ->modalHeading('Teilnahmeliste mit Unterschriften festschreiben?')
+                    ->modalDescription(function () {
+                        $event = $this->getOwnerRecord();
+                        $anzahl = count(Unterschriften::fuerListe($event));
+                        $bestaetigt = $event->registrations()->where('status', 'confirmed')->count();
+
+                        return "{$anzahl} von {$bestaetigt} Teilnehmenden haben digital unterschrieben (unter „Vor Ort“). "
+                            .'Die Liste wird mit diesen Unterschriften als PDF abgelegt; „Teilnahmeliste mit Unterschriften (PDF)“ liefert ab dann diese Fassung. '
+                            .'Die Einzelunterschriften werden '.Unterschriften::loeschTage().' Tage danach gelöscht – bis dahin lässt sich nachunterschreiben und neu festschreiben.'
+                            .($event->teilnahmeliste_am ? ' Zuletzt festgeschrieben am '.$event->teilnahmeliste_am->format('d.m.Y H:i').'.' : '');
+                    })
+                    ->modalSubmitActionLabel('Festschreiben')
+                    ->action(function () {
+                        $event = $this->getOwnerRecord();
+                        abort_unless(Filament::auth()->user()?->can('manageParticipants', $event) && Unterschriften::moeglich($event) && ! $event->zuschussAktiv(), 403);
+                        $anzahl = Unterschriften::festschreiben($event, Filament::auth()->user());
+                        Notification::make()->success()->title("Teilnahmeliste festgeschrieben ({$anzahl} Unterschriften).")
+                            ->body('Die Einzelunterschriften werden in '.Unterschriften::loeschTage().' Tagen gelöscht.')->send();
                     }),
                 Action::make('liste')
                     ->label('Liste für unterwegs (PDF)')

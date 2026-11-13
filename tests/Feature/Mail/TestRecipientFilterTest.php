@@ -133,6 +133,11 @@ class TestRecipientFilterTest extends TestCase
         $this->assertSame(['secret@example.org', 'neu@example.org'], TestRecipientFilter::allowlist());
         $this->assertSame(['neu@example.org'], $this->to($this->send(['neu@example.org'])));
 
+        // Der Knopf „Entfernen“ muss gültiges JavaScript enthalten (früher stand „@js(…)“ wörtlich im Attribut).
+        $html = Livewire::actingAs($admin)->test(MailQueue::class)->html();
+        $this->assertStringContainsString('wire:click="testEmpfaengerEntfernen(&#039;neu@example.org&#039;)"', $html);
+        $this->assertStringNotContainsString('@js(', $html);
+
         Livewire::actingAs($admin)->test(MailQueue::class)->call('testEmpfaengerEntfernen', 'neu@example.org');
         $this->assertSame(['secret@example.org'], TestRecipientFilter::allowlist());
     }

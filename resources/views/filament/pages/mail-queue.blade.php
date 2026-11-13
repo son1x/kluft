@@ -41,7 +41,7 @@
                             <td style="padding: .4rem; opacity: .7;">hier ergänzt{{ in_array($eintrag, $testWirksam, true) ? '' : ' (über der Grenze, wirkt nicht)' }}</td>
                             <td style="text-align: right;">
                                 @if ($istAdmin)
-                                    <x-filament::link tag="button" color="danger" wire:click="testEmpfaengerEntfernen(@js($eintrag))" wire:confirm="Diese Adresse wieder umleiten?">Entfernen</x-filament::link>
+                                    <x-filament::link tag="button" color="danger" :wire:click="'testEmpfaengerEntfernen('.\Illuminate\Support\Js::from($eintrag).')'" wire:confirm="Diese Adresse wieder umleiten?">Entfernen</x-filament::link>
                                 @endif
                             </td>
                         </tr>

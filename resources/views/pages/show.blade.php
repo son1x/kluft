@@ -34,6 +34,10 @@
         </div>
     </article>
 
+    @if ($page->slug === 'chronik')
+        @include('partials.chronik')
+    @endif
+
     {{-- Übersichtsseiten (z. B. Diözesanverband): Unterpunkte als Kacheln,
          dazu weitere Seiten aus config dpsg.overview_extra --}}
     @php($extraSlugs = config('dpsg.overview_extra.'.$page->slug, []))

@@ -72,6 +72,9 @@ return [
         'dioezesanverband' => ['dioezesanbuero'],
     ],
 
+    // Chronik der Diözesanleitung (Seite „chronik“).
+    'chronik' => require __DIR__.'/chronik.php',
+
     // Feld „Stamm“ der Veranstaltungsanmeldung.
     'event_stamm_label' => 'Stamm / Bezirk / Verband',
     'event_herkunft' => [

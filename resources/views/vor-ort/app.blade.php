@@ -6,6 +6,11 @@
     <meta name="csrf-token" content="{{ csrf_token() }}" />
     <meta name="robots" content="noindex, nofollow" />
     <meta name="theme-color" content="#003056" />
+    <link rel="manifest" href="{{ route('vor-ort.manifest', [], false) }}" />
+    <link rel="apple-touch-icon" href="{{ route('vor-ort.symbol', '180', false) }}" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Vor Ort" />
     <title>Vor Ort – {{ config('dpsg.site.name') }}</title>
     <link rel="icon" href="{{ asset(config('dpsg.site.favicon', 'favicon.ico')) }}" />
     @vite(['resources/css/app.css', 'resources/js/vor-ort.js'])
@@ -23,6 +28,8 @@
                 <h1 class="truncate text-lg font-bold leading-tight" x-text="v ? v.titel : 'Veranstaltung wählen'"></h1>
             </div>
             <span class="hidden text-sm text-white/80 sm:inline" x-text="person"></span>
+            <button type="button" x-show="tresorStatus === 'offen'" x-on:click="sperren()" class="min-h-11 rounded-lg px-3 text-sm font-semibold hover:bg-white/10" title="Gerätespeicher sperren">🔒 Sperren</button>
+            <button type="button" x-on:click="abmelden()" class="min-h-11 rounded-lg px-3 text-sm font-semibold hover:bg-white/10" title="Abmelden und Offline-Daten dieses Geräts löschen">Abmelden</button>
             <span class="rounded-full px-2.5 py-1 text-xs font-semibold"
                   x-bind:class="!online ? 'bg-dpsg-yellow text-dpsg-blau' : (warteschlange.length ? 'bg-white/20' : 'bg-white/10')"
                   x-text="!online ? 'Offline · ' + warteschlange.length + ' warten' : (warteschlange.length ? warteschlange.length + ' werden gesendet …' : 'Verbunden')"
@@ -41,6 +48,24 @@
 
         {{-- Auswahl der Veranstaltung --}}
         <section x-show="!v && !laden" class="mx-auto w-full max-w-3xl p-4">
+            <div x-show="nurOffline" class="mb-4 rounded-xl bg-dpsg-hellbeige p-4 text-sm" role="status">
+                <p class="font-semibold text-dpsg-blau">Kein Netz</p>
+                <p x-show="offlineVe.length === 0" class="mt-1">Es sind keine Offline-Daten auf diesem Gerät gespeichert. Sobald wieder Netz da ist, geht es weiter.</p>
+                <p x-show="offlineVe.length > 0" class="mt-1">Die Veranstaltungen unten sind auf diesem Gerät gespeichert und lassen sich ohne Netz nutzen. Änderungen werden gesendet, sobald wieder Netz da ist.</p>
+            </div>
+            <div x-show="offlineVe.length > 0" class="mb-6">
+                <h2 class="mb-2 font-semibold text-dpsg-blau">Auf diesem Gerät gespeichert <span class="text-xs font-normal text-gray-600" x-text="tresorStatus === 'gesperrt' ? '(gesperrt – Code nötig)' : '(entsperrt)'"></span></h2>
+                <ul class="grid gap-3 sm:grid-cols-2">
+                    <template x-for="k in offlineVe" x-bind:key="'k' + k.id">
+                        <li>
+                            <button type="button" x-on:click="lokalOeffnen(k.id)" class="flex min-h-20 w-full flex-col items-start gap-1 rounded-xl border border-dpsg-mittelbeige bg-white p-4 text-left shadow-sm hover:border-dpsg-blau">
+                                <span class="text-lg font-bold text-dpsg-blau" x-text="'📥 ' + k.titel"></span>
+                                <span class="text-sm text-gray-700" x-text="'Stand von ' + kopieText(k) + (k.sensibel ? ' · mit sensiblen Angaben' : ' · ohne sensible Angaben')"></span>
+                            </button>
+                        </li>
+                    </template>
+                </ul>
+            </div>
             <p class="mb-4 text-gray-700">Veranstaltungen, deren Teilnehmende du verwalten darfst – laufende, kommende (60 Tage) und gerade beendete (7 Tage).</p>
             <ul class="grid gap-3 sm:grid-cols-2">
                 <template x-for="e in veranstaltungen" x-bind:key="e.id">
@@ -62,6 +87,26 @@
         {{-- Veranstaltung --}}
         <template x-if="v">
             <section class="flex min-h-0 flex-1 flex-col">
+                <p x-show="lokal" class="bg-dpsg-yellow px-4 py-2 text-sm font-semibold text-dpsg-blau" role="status">
+                    Offline-Stand von <span x-text="standText"></span> – Änderungen werden gesendet, sobald wieder Netz da ist.
+                </p>
+                <details class="border-b border-dpsg-mittelbeige bg-white px-3 py-2 text-sm sm:px-4" x-bind:class="auswahl ? 'max-md:hidden' : ''">
+                    <summary class="flex min-h-11 cursor-pointer items-center gap-2 font-semibold text-dpsg-blau">
+                        <span x-text="imGeraet ? '📥 Auf diesem Gerät gespeichert' : 'Offline nutzen'"></span>
+                        <span x-show="imGeraet && !lokal" class="text-xs font-normal text-gray-600" x-text="'(Stand von ' + standText + ')'"></span>
+                    </summary>
+                    <div class="space-y-3 py-2">
+                        <p class="text-gray-700">Mit „Auf diesem Gerät speichern“ bleiben Teilnehmende, Angaben und noch nicht gesendete Änderungen <strong>verschlüsselt</strong> auf diesem Gerät. Der Code (mindestens 6 Zeichen) schützt sie; wer die App schließt oder sich abmeldet, muss ihn neu eingeben. Die Daten werden spätestens am <strong x-text="ablaufText"></strong> (7 Tage nach Ende) gelöscht.</p>
+                        <label class="flex items-start gap-2 rounded-lg border border-dpsg-mittelbeige p-3">
+                            <input type="checkbox" class="mt-0.5 size-5" x-model="mitSensibel">
+                            <span>Auch <strong>sensible Angaben</strong> (z. B. Allergien, Gesundheit) offline speichern. Ohne Haken fehlen sie offline.</span>
+                        </label>
+                        <div class="flex flex-wrap gap-2">
+                            <button type="button" x-on:click="offlineSpeichern(mitSensibel)" class="min-h-11 rounded-lg bg-dpsg-blau px-4 font-semibold text-white" x-text="imGeraet ? 'Kopie aktualisieren' : 'Auf diesem Gerät speichern'"></button>
+                            <button type="button" x-show="tresorStatus !== 'keiner'" x-on:click="geraetedatenLoeschen()" class="min-h-11 rounded-lg border border-dpsg-rot px-4 font-semibold text-dpsg-rot">Alle Offline-Daten löschen</button>
+                        </div>
+                    </div>
+                </details>
                 <div class="border-b border-dpsg-mittelbeige bg-white px-3 py-3 sm:px-4" x-bind:class="auswahl ? 'max-md:hidden' : ''">
                     <div class="flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label="Tag">
                         <template x-for="t in v.tage" x-bind:key="t.tag">
@@ -307,6 +352,29 @@
             <div class="flex flex-wrap gap-2">
                 <button type="submit" class="min-h-12 flex-1 rounded-lg bg-dpsg-blau px-6 text-lg font-semibold text-white sm:flex-none">Nachmelden</button>
                 <button type="button" x-on:click="nachmeldung = null" class="min-h-12 rounded-lg border border-dpsg-mittelbeige bg-white px-5 font-semibold">Abbrechen</button>
+            </div>
+        </form>
+    </template>
+</div>
+
+{{-- Gerätecode: erster Start festlegen, sonst entsperren. --}}
+<div x-show="codeDialog" x-transition.opacity class="fixed inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-black/60 p-4" role="dialog" aria-modal="true" aria-labelledby="vo-c-titel">
+    <template x-if="codeDialog">
+        <form x-on:submit.prevent="codeBestaetigen()" class="w-full max-w-md space-y-3 rounded-2xl bg-white p-5 shadow-xl">
+            <h2 id="vo-c-titel" class="text-xl font-bold text-dpsg-blau" x-text="codeDialog.art === 'neu' ? 'Code für diesen Gerätespeicher festlegen' : 'Gerätespeicher entsperren'"></h2>
+            <p x-show="codeDialog.art === 'neu'" class="text-sm text-gray-700">Der Code verschlüsselt, was auf diesem Gerät gespeichert wird. Er wird nirgends gespeichert und lässt sich nicht zurücksetzen – bei Verlust bleibt nur „Alle Offline-Daten löschen“. Zu viele falsche Eingaben löschen die Offline-Daten.</p>
+            <p x-show="codeDialog.art === 'entsperren' && ausstehendGeraet > 0" class="rounded-lg bg-dpsg-hellbeige p-3 text-sm" x-text="ausstehendGeraet + ' Änderung(en) warten auf dem Gerät auf das Senden. Nach dem Entsperren werden sie gesendet.'"></p>
+            <label class="block"><span class="text-sm font-semibold" x-text="codeDialog.art === 'neu' ? 'Neuer Code (mindestens 6 Zeichen)' : 'Code'"></span>
+                <input type="password" x-model="codeFeld" required minlength="6" autocomplete="off" autocapitalize="off" x-ref="codeEingabe"
+                       x-effect="codeDialog && $nextTick(() => $refs.codeEingabe?.focus())"
+                       class="mt-1 min-h-12 w-full rounded-lg border border-dpsg-mittelbeige px-3 text-lg"></label>
+            <label class="block" x-show="codeDialog.art === 'neu'"><span class="text-sm font-semibold">Code wiederholen</span>
+                <input type="password" x-model="codeWiederholung" x-bind:required="codeDialog.art === 'neu'" autocomplete="off" autocapitalize="off"
+                       class="mt-1 min-h-12 w-full rounded-lg border border-dpsg-mittelbeige px-3 text-lg"></label>
+            <p x-show="codeFehler" class="text-sm font-semibold text-dpsg-rot" x-text="codeFehler" role="alert"></p>
+            <div class="flex flex-wrap gap-2">
+                <button type="submit" class="min-h-12 flex-1 rounded-lg bg-dpsg-blau px-6 font-semibold text-white" x-text="codeDialog.art === 'neu' ? 'Festlegen' : 'Entsperren'"></button>
+                <button type="button" x-show="ausstehendGeraet === 0 || codeDialog.art === 'neu'" x-on:click="codeDialog = null" class="min-h-12 rounded-lg border border-dpsg-mittelbeige px-5 font-semibold">Abbrechen</button>
             </div>
         </form>
     </template>

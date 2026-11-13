@@ -1,4 +1,6 @@
 {{-- Teilnehmendenliste für unterwegs (App\Services\TeilnehmendeListePdf). Gerendert mit dompdf. --}}
+@php($unterschriften = $unterschriften ?? null)
+@php($bestaetigung = $bestaetigung ?? null)
 <!DOCTYPE html>
 <html lang="de">
 <head>

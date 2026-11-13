@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\VorOrtUnterschrift;
 use App\Services\TeilnehmendeListePdf;
 use App\Support\Features;
+use App\Support\Teilnahmelisten;
 use App\Support\Unterschriften;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -107,10 +108,11 @@ class VorOrtTeilnahmelisteTest extends TestCase
         $liste = app(TeilnehmendeListePdf::class);
         $this->assertStringStartsWith('%PDF', $liste->teilnahmeliste($this->event));
 
-        $html = view('pdf.teilnehmende-liste', [
-            'fonts' => resource_path('fonts/pdf'), 'logo' => null, 'event' => $this->event, 'spalten' => [], 'tage' => [], 'mitSorge' => false,
-            'personen' => collect([['id' => $mia->getKey(), 'name' => 'Muster, Mia', 'warteliste' => false, 'werte' => [], 'sorge' => null]]),
-            'unterschriften' => Unterschriften::fuerListe($this->event), 'titelText' => 'Teilnahmeliste', 'bestaetigung' => Unterschriften::text($this->event),
+        $modell = Teilnahmelisten::modell(null);
+        $html = view('pdf.teilnahmeliste-modell', [
+            'fonts' => resource_path('fonts/pdf'), 'logo' => null, 'event' => $this->event, 'modell' => $modell, 'kopf' => Teilnahmelisten::kopf($this->event),
+            'zeilen' => Teilnahmelisten::zeilen($this->event, $modell),
+            'unterschriften' => Unterschriften::fuerListe($this->event), 'bestaetigung' => Unterschriften::text($this->event),
         ])->render();
         $this->assertStringContainsString('<th>Unterschrift</th>', $html);
         $this->assertStringContainsString('<img class="unterschrift-bild" src="data:image/png;base64,', $html);

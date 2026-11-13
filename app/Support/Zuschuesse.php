@@ -55,17 +55,17 @@ class Zuschuesse
      *
      * @return Collection<int, array{id: int, vorname: string, nachname: string, strasse: ?string, plz: ?string, wohnort: ?string, geburtsdatum: ?Carbon, alter: ?int, geschlecht: ?string, funktion: string, kreis: string, juleica: bool, tage: list<string>}>
      */
-    public static function personen(Event $event, bool $nurAnwesende = true): Collection
+    public static function personen(Event $event, bool $nurAnwesende = true, bool $vorOrtTage = false): Collection
     {
         $alleTage = array_keys($event->days()) ?: [$event->starts_at->toDateString()];
 
         return $event->registrations()->where('status', 'confirmed')->get()
             ->when($nurAnwesende, fn (Collection $c) => $c->filter(fn (EventRegistration $r) => $r->anwesend !== false))
-            ->map(function (EventRegistration $r) use ($event, $alleTage) {
+            ->map(function (EventRegistration $r) use ($event, $alleTage, $vorOrtTage) {
                 $data = (array) $r->data;
                 $geburt = filled($data['geburtsdatum'] ?? null) ? Carbon::parse((string) $data['geburtsdatum']) : null;
                 // Anwesenheit je Tag: von Hand erfasst, sonst aus der Anmeldung, sonst alle Tage.
-                $tage = $r->anwesend_tage ?: (is_array($data['tage'] ?? null) && $data['tage'] !== [] ? $data['tage'] : $alleTage);
+                $tage = $r->anwesend_tage ?: ($vorOrtTage && $r->vor_ort_tage ? $r->vor_ort_tage : (is_array($data['tage'] ?? null) && $data['tage'] !== [] ? $data['tage'] : $alleTage));
 
                 return [
                     'id' => $r->id,
@@ -75,6 +75,7 @@ class Zuschuesse
                     'plz' => $data['plz'] ?? null,
                     'wohnort' => $data['wohnort'] ?? null,
                     'geburtsdatum' => $geburt,
+                    'geburtsjahr' => $geburt?->year ?? ($r->birth_year ?: null),
                     // Alter zu Beginn der Veranstaltung; ohne Datum aus dem Geburtsjahr (ungefähr).
                     'alter' => $geburt ? (int) $geburt->diffInYears($event->starts_at) : ($r->birth_year ? $event->starts_at->year - $r->birth_year : null),
                     'geschlecht' => $data['geschlecht'] ?? null,

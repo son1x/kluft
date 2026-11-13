@@ -35,6 +35,13 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-13 – Haupt → Stammes, Bezirk: Chronik-Seite mit Zeitstrahl (gemeinsamer Kern, nur DV Trier befüllt)
+Status: offen (Hinweis)
+Branch: `feature/chronik-dioezesanleitung`
+
+- Seite mit dem Slug `chronik` bindet `partials/chronik.blade.php` ein (`pages/show.blade.php`): Zeitstrahl nach Jahrzehnten, Vorsitz links, Kurat*innen rechts, Filter. Daten kommen aus dem Konfigurationsschlüssel `dpsg.chronik.eintraege` (DV: `instanzen/dv-trier/chronik.php`). Ohne Schlüssel bleibt der Zeitstrahl leer, nichts ändert sich.
+- Wer eine eigene Chronik will: `chronik.php` im Instanz-Ordner anlegen, in `config.php` als `'chronik' => require …` eintragen und die Seite `chronik` im Backend anlegen.
+
 ### 2026-11-13 – Haupt → Stammes, Bezirk: Modelle der Teilnahmeliste (Landesjugendring RLP), Kopf mit Veranstalter, Ort, Datum (gemeinsamer Kern)
 Status: offen (Hinweis)
 Branch: `feature/teilnahmeliste-modelle`

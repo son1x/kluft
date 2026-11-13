@@ -245,6 +245,15 @@ class DemoContentSeeder extends Seeder
                 'body' => DownloadsAbrechnungsformulare::BODY,
             ],
             [
+                'slug' => 'chronik',
+                'title' => 'Chronik der Diözesanleitung',
+                'parent' => 'dioezesanverband',
+                'seo_description' => 'Wer den Diözesanverband Trier seit 1947 geführt hat: Vorstände und Kuraten im Zeitstrahl',
+                'show_in_nav' => true,
+                'nav_sort' => 25,
+                'body' => '<p>Seit 1947 führen ehrenamtliche Vorstände den Diözesanverband Trier, begleitet von Kuratinnen und Kuraten. Hier steht, wer wann dabei war – soweit sich das rekonstruieren ließ.</p>',
+            ],
+            [
                 'slug' => 'georgsbote',
                 'title' => 'Georgsbote',
                 'parent' => 'dioezesanverband',

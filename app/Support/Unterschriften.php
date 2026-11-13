@@ -6,11 +6,13 @@ use App\Models\Event;
 use App\Models\EventRegistration;
 use App\Models\User;
 use App\Models\VorOrtUnterschrift;
+use App\Services\TeilnehmendeListePdf;
 use App\Services\Zuschuss\ZuschussPdf;
 use Illuminate\Support\Facades\Storage;
 
 /**
- * Digitale Unterschriften für die Zuschuss-Teilnahmeliste (docs/vor-ort.md,
+ * Digitale Unterschriften für die Teilnahmeliste (Zuschussantrag oder Schalter
+ * „Unterschriftenliste“ der Veranstaltung, docs/vor-ort.md,
  * Stufe 2): Die teilnehmende Person unterschreibt einmal je Veranstaltung
  * auf dem Tablet. Mit „Teilnahmeliste festschreiben“ wird die Liste samt
  * Unterschriften als PDF abgelegt; die Einzelunterschriften werden danach
@@ -23,10 +25,10 @@ class Unterschriften
 
     private const PREFIX = 'data:image/png;base64,';
 
-    /** Unterschreiben ist möglich, wenn die Veranstaltung einen Zuschussantrag hat. */
+    /** Unterschreiben ist möglich bei Zuschussantrag oder wenn die Veranstaltung die Unterschriftenliste eingeschaltet hat. */
     public static function moeglich(Event $event): bool
     {
-        return $event->zuschussAktiv();
+        return $event->zuschussAktiv() || (bool) $event->unterschriftenliste;
     }
 
     public static function text(Event $event): string
@@ -92,7 +94,7 @@ class Unterschriften
 
     public static function pfad(Event $event): string
     {
-        return 'zuschuss/teilnahmeliste-'.$event->getKey().'.pdf';
+        return ($event->zuschussAktiv() ? 'zuschuss' : 'teilnahmelisten').'/teilnahmeliste-'.$event->getKey().'.pdf';
     }
 
     /**
@@ -103,7 +105,9 @@ class Unterschriften
     public static function festschreiben(Event $event, ?User $user): int
     {
         $anzahl = count(self::fuerListe($event));
-        $pdf = app(ZuschussPdf::class)->teilnahmeliste($event, festschreiben: true);
+        $pdf = $event->zuschussAktiv()
+            ? app(ZuschussPdf::class)->teilnahmeliste($event, festschreiben: true)
+            : app(TeilnehmendeListePdf::class)->teilnahmeliste($event, festschreiben: true);
         Storage::disk('local')->put(self::pfad($event), $pdf);
         $event->forceFill(['teilnahmeliste_datei' => self::pfad($event), 'teilnahmeliste_am' => now()])->saveQuietly();
 

@@ -111,7 +111,7 @@ class VorOrtUnterschriftTest extends TestCase
         $this->assertSame(1, VorOrtUnterschrift::query()->count());
     }
 
-    #[TestDox('Abgelehnt: kein Bild, kein PNG, Veranstaltung ohne Zuschussantrag')]
+    #[TestDox('Abgelehnt: kein Bild, kein PNG, Veranstaltung ohne Zuschussantrag und ohne eingeschaltete Unterschriftenliste')]
     public function test_abgelehnt(): void
     {
         $mia = $this->anmeldung('Mia');
@@ -120,7 +120,7 @@ class VorOrtUnterschriftTest extends TestCase
         $this->assertSame('abgelehnt', $this->unterschreiben($mia, null)['ergebnis']);
         $this->assertSame('abgelehnt', $this->unterschreiben($mia, 'data:image/png;base64,'.base64_encode('kein bild'))['ergebnis']);
         $this->event->update(['zuschuss' => false]);
-        $this->assertStringContainsString('kein Zuschussantrag', $this->unterschreiben($mia, $this->bild())['grund']);
+        $this->assertStringContainsString('keine Unterschriftenliste eingeschaltet', $this->unterschreiben($mia, $this->bild())['grund']);
         $this->assertSame(0, VorOrtUnterschrift::query()->count());
         $this->assertNull($this->getJson('/vor-ort/api/veranstaltungen/'.$this->event->getKey())->json('unterschrift'));
     }

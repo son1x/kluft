@@ -518,7 +518,7 @@ class VorOrt
     private static function unterschrift(User $user, EventRegistration $r, array $daten, mixed $zeit): ?string
     {
         if (! Unterschriften::moeglich($r->event)) {
-            return 'Für diese Veranstaltung gibt es keine Unterschriftenliste (kein Zuschussantrag).';
+            return 'Für diese Veranstaltung ist keine Unterschriftenliste eingeschaltet (weder Zuschussantrag noch Schalter in der Veranstaltung).';
         }
         $fehler = Unterschriften::pruefen($daten['bild'] ?? null);
         if ($fehler !== null) {

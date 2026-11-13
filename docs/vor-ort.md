@@ -46,7 +46,7 @@ Antippen öffnet die Person (Tablet: rechte Spalte; Handy: eigene Ansicht mit �
 
 - **Anwesenheit**: alle Tage zum Abhaken; gestrichelt = an diesem Tag nicht angemeldet.
 - **Zusatzinfos** (nur Team): Felder direkt bearbeiten, gespeichert beim Verlassen des Felds oder mit Enter. Darunter „Mit dabei: …“ – alle mit dem gleichen Wert (z. B. die Zimmermitbewohnenden).
-- **Unterschrift** (nur bei Veranstaltungen mit Zuschussantrag): „Unterschreiben“ öffnet das Unterschriftsfeld im Vollbild; danach „✍ Unterschrieben am …“ und „Neu unterschreiben“. Siehe [Digitale Unterschrift](#digitale-unterschrift-zuschuss-teilnahmeliste).
+- **Unterschrift** (bei Veranstaltungen mit Zuschussantrag oder eingeschaltetem Schalter „Teilnahmeliste mit digitalen Unterschriften“): „Unterschreiben“ öffnet das Unterschriftsfeld im Vollbild; danach „✍ Unterschrieben am …“ und „Neu unterschreiben“. Siehe [Digitale Unterschrift](#digitale-unterschrift-zuschuss-teilnahmeliste).
 - **Teilnahmebeitrag**: Stand und **„45,00 € erhalten …“** → Zahlungsart wählen (Bar · Karte (SumUp) · PayPal) oder Abbrechen. Bucht den offenen Betrag als Zahlungseingang mit Zahlungsart und Namen der kassierenden Person.
 - **Angaben**: alle abgefragten Angaben; sensible sind markiert. **„Korrigieren“** öffnet ein Formular für Name, Verpflegung, Tage, Anmerkungen, eigene Felder. Die Person bekommt keine Mail.
 
@@ -83,7 +83,7 @@ Technik: `resources/js/vor-ort-tresor.js` (Verschlüsselung, IndexedDB, Aufräum
 
 ## Digitale Unterschrift (Zuschuss-Teilnahmeliste)
 
-Für Veranstaltungen **mit Zuschussantrag**: Die **teilnehmende Person unterschreibt selbst**, **einmal je Veranstaltung** (nicht je Tag), auf dem Tablet. Die Unterschrift erscheint in der Zuschuss-Teilnahmeliste (PDF) **in der Zeile der Person** (Name, Anschrift, Geburtsdatum …) im Feld „Unterschrift“.
+Für Veranstaltungen **mit Zuschussantrag** – oder, wenn dort der Schalter **„Teilnahmeliste mit digitalen Unterschriften (Vor Ort)“** (Abschnitt „Teilnahmeliste mit Unterschriften“ in der Veranstaltung) eingeschaltet ist: Die **teilnehmende Person unterschreibt selbst**, **einmal je Veranstaltung** (nicht je Tag), auf dem Tablet. Die Unterschrift erscheint in der Zuschuss-Teilnahmeliste (PDF) **in der Zeile der Person** (Name, Anschrift, Geburtsdatum …) im Feld „Unterschrift“.
 
 ### Ablauf
 
@@ -91,6 +91,10 @@ Für Veranstaltungen **mit Zuschussantrag**: Die **teilnehmende Person unterschr
 2. Die Person unterschreibt mit Finger oder Stift. **„Löschen“** setzt das Feld zurück, **„Abbrechen“** schließt ohne Speichern, **„Fertig“** speichert.
 3. In der Liste steht dann „✍ unterschrieben“; der Filter **„Ohne Unterschrift“** zeigt, wer noch fehlt. „Neu unterschreiben“ ersetzt eine Unterschrift.
 4. Im Backend unter **Zuschussantrag → Unterlagen → Teilnahmeliste (PDF)** stehen die Unterschriften in den Zeilen; wer nicht digital unterschrieben hat, unterschreibt auf dem Ausdruck nach. Die Bestätigung unten („Die Richtigkeit der Angaben …“) unterschreibt weiter die antragstellende Person.
+
+### Ohne Zuschussantrag
+
+Mit dem Schalter in der Veranstaltung gibt es die Teilnahmeliste auch **ohne Zuschussantrag**: unter **Teilnehmende → „Teilnahmeliste mit Unterschriften (PDF)“** (Spalten: Name, Geburtsjahr und Stamm, soweit abgefragt, Unterschrift; oben der Satz „Ich bestätige meine Teilnahme …“; wer nicht digital unterschrieben hat, unterschreibt auf dem Ausdruck). **„Teilnahmeliste festschreiben“** steht an derselben Stelle. Festschreiben und Löschen funktionieren wie unten beschrieben; die PDF liegt unter `storage/app/private/teilnahmelisten/`. Bei Veranstaltungen mit Zuschussantrag bleibt alles im Zuschussantrag (Unterlagen, Spalten mit Anschrift und Geburtsdatum).
 
 ### Festschreiben und Löschen
 

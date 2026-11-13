@@ -110,7 +110,7 @@ class VorOrtTeilnahmelisteTest extends TestCase
 
         $modell = Teilnahmelisten::modell(null);
         $html = view('pdf.teilnahmeliste-modell', [
-            'fonts' => resource_path('fonts/pdf'), 'logo' => null, 'event' => $this->event, 'modell' => $modell, 'kopf' => Teilnahmelisten::kopf($this->event),
+            'fonts' => resource_path('fonts/pdf'), 'logo' => null, 'event' => $this->event, 'modell' => $modell, 'kopf' => Teilnahmelisten::kopf($this->event, $modell),
             'zeilen' => Teilnahmelisten::zeilen($this->event, $modell),
             'unterschriften' => Unterschriften::fuerListe($this->event), 'bestaetigung' => Unterschriften::text($this->event),
         ])->render();

@@ -22,6 +22,9 @@
     th { text-align: left; background: #ecdfcb; font-size: 9pt; padding: 1.5mm; }
     td { border-bottom: 0.2mm solid #c7bdad; padding: 2mm 1.5mm; vertical-align: middle; }
     td.nr { width: 7mm; color: #5c6670; }
+    tr.betreuung td { background: #e3edf5; }
+    .legende { margin-top: 3mm; font-size: 9pt; color: #5c6670; }
+    .legende .farbe { display: inline-block; width: 6mm; height: 3.5mm; background: #e3edf5; border: 0.2mm solid #9db4c7; vertical-align: middle; }
     td.sig { width: 55mm; height: 11mm; }
     .unterschrift-bild { max-width: 50mm; max-height: 9mm; }
     .fuss { position: fixed; bottom: -10mm; left: 0; right: 0; font-size: 8pt; color: #5c6670; }
@@ -31,8 +34,12 @@
     @if ($logo)<img class="logo" src="{{ $logo }}" alt="">@endif
     <h1>Teilnahmeliste</h1>
     <table class="kopf">
-        @foreach ($kopf as [$label, $wert])
-            <tr><td class="k">{{ $label }}</td><td><strong>{{ $wert }}</strong></td></tr>
+        @foreach ($kopf as $zeile)
+            <tr>
+                @foreach ($zeile as [$label, $wert])
+                    <td class="k">{{ $label }}:</td><td @if (count($zeile) === 1 && count($kopf) > 1 && $kopf[0] !== $zeile) colspan="3" @endif><strong>{{ $wert }}</strong></td>
+                @endforeach
+            </tr>
         @endforeach
     </table>
     <p class="klein" style="margin-bottom: 3mm">{{ $bestaetigung }} Wer nicht digital unterschrieben hat, unterschreibt hier von Hand.</p>
@@ -47,7 +54,7 @@
         </thead>
         <tbody>
             @forelse ($zeilen as $zeile)
-                <tr>
+                <tr @class(['betreuung' => $modell['betreuung_markieren'] && $zeile['betreuung']])>
                     <td class="nr">{{ $loop->iteration }}</td>
                     @foreach ($zeile['werte'] as $wert)<td>{{ $wert }}</td>@endforeach
                     <td class="sig">{!! isset($unterschriften[$zeile['id']]) ? '<img class="unterschrift-bild" src="'.e($unterschriften[$zeile['id']]).'" alt="">' : '' !!}</td>
@@ -58,6 +65,9 @@
         </tbody>
     </table>
 
+    @if ($modell['betreuung_markieren'] && collect($zeilen)->contains('betreuung', true))
+        <p class="legende"><span class="farbe"></span> = Betreuer*innen</p>
+    @endif
     <p class="klein" style="margin-top: 5mm">Stand {{ now()->format('d.m.Y H:i') }} · {{ count($zeilen) }} Personen · Modell: {{ $modell['name'] }}@if ($event->contact_name || $event->contact_email) · Veranstaltungsleitung: {{ $event->contact_name }}{{ $event->contact_email ? ' · '.$event->contact_email : '' }}@endif</p>
     <div class="fuss">{{ config('dpsg.site.name') }} · Teilnahmeliste „{{ $event->title }}“ · vertraulich</div>
 </body>

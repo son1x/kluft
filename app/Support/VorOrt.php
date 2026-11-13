@@ -129,9 +129,12 @@ class VorOrt
         $beitrag = $event->hatTeilnahmebeitrag();
 
         $unterschrift = Unterschriften::moeglich($event);
+        // Teilnahmeliste: Was das Modell braucht und noch fehlt, lässt sich vor Ort (beim Unterschreiben) nachtragen.
+        $modell = Teilnahmelisten::modell($event->teilnahmeliste_modell);
+        $listePersonen = $unterschrift ? Zuschuesse::personen($event, false, true)->keyBy('id') : collect();
         $personen = $event->registrations()->where('status', 'confirmed')->with(['zahlungen', 'unterschrift'])
             ->orderBy('last_name')->orderBy('first_name')->get()
-            ->map(function (EventRegistration $r) use ($event, $felder, $tage, $tageFeld, $beitrag, $unterschrift) {
+            ->map(function (EventRegistration $r) use ($event, $felder, $tage, $tageFeld, $beitrag, $unterschrift, $modell, $listePersonen) {
                 $data = (array) $r->data;
                 $zahlung = $beitrag ? $r->zahlung() : null;
 
@@ -147,6 +150,7 @@ class VorOrt
                     'da' => array_values((array) $r->vor_ort_tage),
                     'zusatz' => (object) array_intersect_key((array) $r->zusatz, $event->zusatzFelder()),
                     'unterschrieben' => $unterschrift ? $r->unterschrift?->unterschrieben_am?->toIso8601String() : null,
+                    'fehlt' => $unterschrift ? self::fehlt($r, $felder, $modell, $listePersonen->get($r->getKey())) : [],
                     'zahlung' => $zahlung === null ? null : [
                         'stand' => $zahlung->status,
                         'offen_cent' => $zahlung->offenCent(),
@@ -182,6 +186,10 @@ class VorOrt
                     default => null,
                 },
             ])->values()->all(),
+            // Felder, die das Modell der Teilnahmeliste braucht, auch wenn das Anmeldeformular sie nicht abfragt.
+            'liste_felder' => $unterschrift ? collect(Teilnahmelisten::modellFelder($event, $modell))->map(fn (array $f, string $k) => [
+                'schluessel' => $k, 'label' => $f['label'], 'typ' => $f['type'], 'sensibel' => false, 'pflicht' => false, 'optionen' => null,
+            ])->values()->all() : [],
             // Digitale Unterschrift (Stufe 2): nur mit Zuschussantrag.
             'unterschrift' => $unterschrift ? [
                 'text' => Unterschriften::text($event),
@@ -192,6 +200,29 @@ class VorOrt
             'verpflegung' => self::verpflegung($event, $felder, $personen->all()),
             'personen' => $personen->all(),
         ];
+    }
+
+    /**
+     * Fehlende Angaben einer Person: Pflichtangaben des Modells der Teilnahmeliste und leere
+     * Pflichtfelder des Anmeldeformulars (Schlüssel der Felder).
+     *
+     * @param  array<string, array<string, mixed>>  $felder
+     * @param  array<string, mixed>  $modell
+     * @param  array<string, mixed>|null  $person  Zeile aus Zuschuesse::personen()
+     * @return list<string>
+     */
+    private static function fehlt(EventRegistration $r, array $felder, array $modell, ?array $person): array
+    {
+        $fehlt = $person === null ? [] : Teilnahmelisten::fehlendeFelder($modell, $person);
+        $data = (array) $r->data;
+        foreach ($felder as $k => $f) {
+            $wert = $k === 'birth_year' ? $r->birth_year : ($data[$k] ?? null);
+            if (($f['required'] ?? false) && $f['type'] !== 'days' && blank($wert)) {
+                $fehlt[] = $k;
+            }
+        }
+
+        return array_values(array_unique($fehlt));
     }
 
     /**
@@ -555,7 +586,8 @@ class VorOrt
     /** @param  array<string, mixed>  $daten */
     private static function angaben(EventRegistration $r, array $daten): ?string
     {
-        $felder = $r->event->formFields();
+        // Auch Felder, die nur das Modell der Teilnahmeliste braucht (z. B. PLZ, wenn das Formular sie nicht abfragt).
+        $felder = $r->event->formFields() + Teilnahmelisten::modellFelder($r->event);
         $neu = [];
         foreach (['first_name', 'last_name'] as $k) {
             if (array_key_exists($k, $daten)) {
@@ -601,6 +633,8 @@ class VorOrt
             'mehrfach' => is_array($wert) && array_diff($wert, array_keys((array) ($feld['options'] ?? []))) === [] ? null : 'ungültige Auswahl.',
             'days' => is_array($wert) && array_diff($wert, array_keys($event->days())) === [] ? null : 'ungültige Tage.',
             'year' => is_numeric($wert) && (int) $wert >= 1900 && (int) $wert <= (int) date('Y') ? null : 'ungültiges Jahr.',
+            'plz' => is_string($wert) && preg_match('/^[0-9A-Za-z -]{3,10}$/', trim($wert)) ? null : 'ungültige Postleitzahl.',
+            'date' => is_string($wert) && ($d = rescue(fn () => Carbon::createFromFormat('!Y-m-d', $wert), null, false)) && $d->year >= 1900 && $d->lte(now()) ? null : 'ungültiges Datum.',
             'zahl' => is_numeric($wert) && (int) $wert >= 0 ? null : 'ungültige Zahl.',
             default => is_scalar($wert) && mb_strlen((string) $wert) <= 1000 ? null : 'zu lang.',
         };

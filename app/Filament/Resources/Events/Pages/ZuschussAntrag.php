@@ -194,14 +194,7 @@ class ZuschussAntrag extends EditRecord
                 ->icon('heroicon-o-check-badge')->color('gray')
                 ->visible(fn () => VorOrt::aktiv() && $this->event()->zuschussAktiv() && $this->darfUnterlagen())
                 ->modalHeading('Anwesenheit aus „Vor Ort“ übernehmen?')
-                ->modalDescription(function () {
-                    $event = $this->event();
-                    $abgehakt = $event->registrations()->where('status', 'confirmed')->whereNotNull('vor_ort_tage')->count();
-                    $bestaetigt = $event->registrations()->where('status', 'confirmed')->count();
-
-                    return "{$abgehakt} von {$bestaetigt} Teilnehmenden wurden unter „Vor Ort“ mindestens einmal als da abgehakt. "
-                        .'Sie gelten im Zuschussantrag an genau diesen Tagen als anwesend; bisherige Angaben zu ihnen werden ersetzt.';
-                })
+                ->modalDescription(fn () => VorOrt::anwesenheitHinweis($this->event()))
                 ->schema([
                     Toggle::make('fehlende')->label('Wer nie abgehakt wurde, gilt als „nicht dabei“')
                         ->helperText('Aus: Diese Personen bleiben, wie sie sind (Standard: alle Tage anwesend).'),

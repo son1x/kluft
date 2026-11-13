@@ -167,6 +167,20 @@ class VorOrt
             ->map(fn (int $n, string $label) => ['label' => $label, 'anzahl' => $n])->sortByDesc('anzahl')->values()->all();
     }
 
+    /** Text des Bestätigungsdialogs „Anwesenheit übernehmen“ (mit Warnung bei festgeschriebener Liste). */
+    public static function anwesenheitHinweis(Event $event): string
+    {
+        $bestaetigt = $event->registrations()->where('status', 'confirmed')->count();
+        $abgehakt = $event->registrations()->where('status', 'confirmed')->whereNotNull('vor_ort_tage')->count();
+
+        return "{$abgehakt} von {$bestaetigt} Teilnehmenden wurden unter „Vor Ort“ mindestens einmal als da abgehakt. "
+            .'Sie gelten im Zuschussantrag an genau diesen Tagen als anwesend; bisherige Angaben zu ihnen werden ersetzt.'
+            .($event->teilnahmeliste_am
+                ? ' Achtung: Die Teilnahmeliste ist bereits festgeschrieben ('.$event->teilnahmeliste_am->format('d.m.Y H:i').'). '
+                    .'Sie bleibt, wie sie ist – danach bitte „Teilnahmeliste neu festschreiben“ wählen.'
+                : '');
+    }
+
     /**
      * Anwesenheit aus „Vor Ort“ in den Zuschussantrag übernehmen: Wer
      * abgehakt wurde, gilt an diesen Tagen als anwesend. Wer nie abgehakt

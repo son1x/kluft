@@ -14,7 +14,7 @@ class VorOrtEreignis extends Model
 {
     protected $table = 'vor_ort_ereignisse';
 
-    public const TYPEN = ['anwesend', 'zahlung', 'angaben', 'zusatz', 'unterschrift'];
+    public const TYPEN = ['anwesend', 'zahlung', 'angaben', 'zusatz', 'unterschrift', 'nachmeldung'];
 
     protected $fillable = ['uuid', 'event_id', 'event_registration_id', 'user_id', 'typ', 'daten', 'ergebnis', 'erfasst_am'];
 

@@ -326,6 +326,85 @@ Alpine.data('vorOrt', () => ({
         this.meldung = 'Unterschrift von ' + p.vorname + ' ' + p.nachname + ' gespeichert.';
     },
 
+    // Nachmelden: Person ist da, war aber nicht angemeldet. Lokal sofort sichtbar (Kennung „neu:…“),
+    // der Server legt die Anmeldung beim Senden an; Folge-Ereignisse verweisen auf dieselbe Kennung.
+    nachmeldung: null,
+
+    nachmeldenStarten() {
+        const werte = {};
+        this.v.felder.forEach((f) => {
+            werte[f.schluessel] = ['days', 'mehrfach'].includes(f.typ) ? [] : '';
+        });
+        this.nachmeldung = { vorname: '', nachname: '', werte, preis: this.v.preise.length === 1 ? '0' : '', einverstanden: false };
+    },
+
+    wertText(f, wert) {
+        if (Array.isArray(wert)) {
+            return wert.map((w) => f.optionen?.[w] ?? w).join(', ');
+        }
+
+        return f.optionen ? (f.optionen[wert] ?? wert) : wert;
+    },
+
+    nachmeldenSpeichern() {
+        const n = this.nachmeldung;
+        const vorname = n.vorname.trim();
+        const nachname = n.nachname.trim();
+        if (!vorname || !nachname) {
+            this.meldung = 'Vor- und Nachname dürfen nicht leer sein.';
+
+            return;
+        }
+        if (this.v.preise.length && n.preis === '') {
+            this.meldung = 'Bitte einen Teilnahmebeitrag wählen.';
+
+            return;
+        }
+        const fehlt = this.v.felder.find((f) => f.pflicht && f.typ !== 'days' && (n.werte[f.schluessel] === '' || n.werte[f.schluessel] == null || n.werte[f.schluessel]?.length === 0));
+        if (fehlt) {
+            this.meldung = fehlt.label + ' ist ein Pflichtfeld.';
+
+            return;
+        }
+        const data = {};
+        this.v.felder.forEach((f) => {
+            const w = n.werte[f.schluessel];
+            if (w !== '' && w != null && !(Array.isArray(w) && w.length === 0)) {
+                data[f.schluessel] = w;
+            }
+        });
+        const preis = this.v.preise.find((p) => String(p.nr) === n.preis) ?? null;
+        const uuid = kennung();
+        const alleTage = this.v.tage.map((t) => t.tag);
+        const person = {
+            id: 'neu:' + uuid,
+            vorname,
+            nachname,
+            jahrgang: data.birth_year ?? null,
+            erwartet: Array.isArray(data.tage) && data.tage.length ? data.tage : alleTage,
+            da: [],
+            zusatz: {},
+            unterschrieben: null,
+            zahlung: preis ? { stand: 'offen', offen_cent: preis.cent, betrag_cent: preis.cent } : null,
+            werte: { ...n.werte },
+            angaben: this.v.felder.filter((f) => data[f.schluessel] !== undefined)
+                .map((f) => ({ schluessel: f.schluessel, label: f.label, sensibel: f.sensibel, wert: this.wertText(f, data[f.schluessel]) })),
+        };
+        this.v.personen = [...this.v.personen, person].sort((a, b) => (a.nachname + a.vorname).localeCompare(b.nachname + b.vorname, 'de'));
+        this.warteschlange.push({
+            id: uuid, typ: 'nachmeldung', event: this.v.id, zeit: new Date().toISOString(), name: vorname + ' ' + nachname,
+            daten: { first_name: vorname, last_name: nachname, data, preis: preis ? preis.nr : null, einverstanden: true },
+        });
+        this.nachSenden = true;
+        if (alleTage.includes(this.tag)) {
+            this.anwesend(person);
+        }
+        this.nachmeldung = null;
+        this.auswahlId = person.id;
+        this.meldung = vorname + ' ' + nachname + ' nachgemeldet' + (this.online ? '.' : ' – wird gesendet, sobald wieder Netz da ist.');
+        this.senden();
+    },
+
     // Kassieren: Zahlungsart wählen (bar, Karte, PayPal …), dann bestätigen.
     kassieren: null,
 
@@ -437,6 +516,9 @@ Alpine.data('vorOrt', () => ({
         try {
             const frisch = await holen('/vor-ort/api/veranstaltungen/' + this.v.id);
             this.v = { ...frisch };
+            if (this.auswahlId !== null && !this.v.personen.some((p) => p.id === this.auswahlId)) {
+                this.auswahlId = null;
+            }
         } catch (e) {
             // Später erneut.
         }

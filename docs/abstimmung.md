@@ -35,6 +35,14 @@ Was geändert wurde bzw. was gebraucht wird, in wenigen Zeilen.
 
 ## Einträge
 
+### 2026-11-13 – Haupt → Stammes, Bezirk: Modelle der Teilnahmeliste (Landesjugendring RLP), Kopf mit Veranstalter, Ort, Datum (gemeinsamer Kern)
+Status: offen (Hinweis)
+Branch: `feature/teilnahmeliste-modelle`
+
+- Neue Spalten `events.teilnahmeliste_modell`, `veranstalter`, `liste_mit_behinderung`; neuer `App\Support\Teilnahmelisten` (Modelle: Standard, LJR RLP), `ExcelVorlage` füllt `resources/vorlagen/ljr-rlp-teilnahmeliste.xlsx`.
+- `Zuschuesse::personen()` liefert zusätzlich `geburtsjahr` und kann auf Wunsch die Vor-Ort-Tage verwenden (Parameter, Standard unverändert).
+- Der Kopf der PDF-Liste nennt Veranstalter, Veranstaltung, Ort und Datum.
+
 ### 2026-11-13 – Haupt → Stammes, Bezirk: Teilnahmeliste mit Unterschriften auch ohne Zuschussantrag (gemeinsamer Kern)
 Status: offen (Hinweis)
 Branch: `feature/teilnahmeliste-ohne-zuschuss`

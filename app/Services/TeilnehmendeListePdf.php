@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Event;
 use App\Models\EventRegistration;
 use App\Services\Zuschuss\ZuschussPdf;
+use App\Support\Teilnahmelisten;
 use App\Support\Unterschriften;
 
 /**
@@ -51,7 +52,7 @@ class TeilnehmendeListePdf
     /**
      * @param  list<string>  $felder
      */
-    public function pdf(Event $event, array $felder, bool $anwesenheit, bool $warteliste, ?array $unterschriften = null, string $titel = 'Teilnehmende'): string
+    public function pdf(Event $event, array $felder, bool $anwesenheit, bool $warteliste): string
     {
         $alle = $event->formFields();
         $spalten = array_values(array_intersect_key(self::felder($event), array_flip($felder)));
@@ -64,7 +65,6 @@ class TeilnehmendeListePdf
             ->orderBy('last_name')->orderBy('first_name')
             ->get()
             ->map(fn (EventRegistration $r) => [
-                'id' => $r->getKey(),
                 'name' => $r->last_name.', '.$r->first_name,
                 'warteliste' => $r->status === 'waitlist',
                 'keineFotos' => $event->foto_einwilligung && $r->foto_einwilligung !== true,
@@ -79,26 +79,30 @@ class TeilnehmendeListePdf
             'spalten' => $spalten,
             'tage' => $tage,
             'personen' => $personen,
-            'unterschriften' => $unterschriften,
-            'titelText' => $titel,
-            'bestaetigung' => $unterschriften === null ? null : Unterschriften::text($event),
             'mitSorge' => ! $event->adults_only && $personen->contains(fn (array $p) => filled($p['sorge'])),
-        ], count($spalten) + count($tage) > 4 ? 'landscape' : 'portrait', $titel.' – '.$event->title);
+        ], count($spalten) + count($tage) > 4 ? 'landscape' : 'portrait', 'Teilnehmende – '.$event->title);
     }
 
     /**
-     * Teilnahmeliste mit den digitalen Unterschriften aus „Vor Ort“ (Veranstaltung ohne Zuschussantrag).
-     * Ist sie festgeschrieben, kommt die abgelegte Fassung.
+     * Teilnahmeliste im Modell der Veranstaltung (App\Support\Teilnahmelisten) mit Kopf zu
+     * Veranstalter, Ort und Datum und den digitalen Unterschriften aus „Vor Ort“. Ist sie
+     * festgeschrieben, kommt die abgelegte Fassung.
      */
     public function teilnahmeliste(Event $event, bool $festschreiben = false): string
     {
         if (! $festschreiben && ($abgelegt = Unterschriften::festgeschrieben($event)) !== null) {
             return $abgelegt;
         }
-        $felder = self::felder($event);
-        $spalten = array_values(array_filter(['birth_year', 'stamm'], fn (string $k) => isset($felder[$k])));
+        $modell = Teilnahmelisten::modell($event->teilnahmeliste_modell);
 
-        return $this->pdf($event, $spalten, false, false, Unterschriften::fuerListe($event), 'Teilnahmeliste');
+        return app(ZuschussPdf::class)->render('pdf.teilnahmeliste-modell', [
+            'event' => $event,
+            'modell' => $modell,
+            'kopf' => Teilnahmelisten::kopf($event),
+            'zeilen' => Teilnahmelisten::zeilen($event, $modell),
+            'unterschriften' => Unterschriften::fuerListe($event),
+            'bestaetigung' => Unterschriften::text($event),
+        ], count($modell['spalten']) > 4 ? 'landscape' : 'portrait', 'Teilnahmeliste – '.$event->title);
     }
 
     /**

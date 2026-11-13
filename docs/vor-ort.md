@@ -92,9 +92,21 @@ Für Veranstaltungen **mit Zuschussantrag** – oder, wenn dort der Schalter **�
 3. In der Liste steht dann „✍ unterschrieben“; der Filter **„Ohne Unterschrift“** zeigt, wer noch fehlt. „Neu unterschreiben“ ersetzt eine Unterschrift.
 4. Im Backend unter **Zuschussantrag → Unterlagen → Teilnahmeliste (PDF)** stehen die Unterschriften in den Zeilen; wer nicht digital unterschrieben hat, unterschreibt auf dem Ausdruck nach. Die Bestätigung unten („Die Richtigkeit der Angaben …“) unterschreibt weiter die antragstellende Person.
 
-### Ohne Zuschussantrag
+### Ohne Zuschussantrag und Modelle der Teilnahmeliste
 
-Mit dem Schalter in der Veranstaltung gibt es die Teilnahmeliste auch **ohne Zuschussantrag**: unter **Teilnehmende → „Teilnahmeliste mit Unterschriften (PDF)“** (Spalten: Name, Geburtsjahr und Stamm, soweit abgefragt, Unterschrift; oben der Satz „Ich bestätige meine Teilnahme …“; wer nicht digital unterschrieben hat, unterschreibt auf dem Ausdruck). **„Teilnahmeliste festschreiben“** steht an derselben Stelle. Festschreiben und Löschen funktionieren wie unten beschrieben; die PDF liegt unter `storage/app/private/teilnahmelisten/`. Bei Veranstaltungen mit Zuschussantrag bleibt alles im Zuschussantrag (Unterlagen, Spalten mit Anschrift und Geburtsdatum).
+Mit dem Schalter in der Veranstaltung gibt es die Teilnahmeliste auch **ohne Zuschussantrag**: unter **Teilnehmende → „Teilnahmeliste mit Unterschriften (PDF)“**. **„Teilnahmeliste festschreiben“** steht an derselben Stelle. Festschreiben und Löschen funktionieren wie unten beschrieben; die PDF liegt unter `storage/app/private/teilnahmelisten/`. Bei Veranstaltungen mit Zuschussantrag bleibt alles im Zuschussantrag (Unterlagen, Spalten mit Anschrift und Geburtsdatum).
+
+**Kopf der Liste:** Veranstalter (Feld „Veranstalter“ der Veranstaltung, leer = Name der Gliederung), Veranstaltung, Veranstaltungsort und Datum. Darunter der Satz „Ich bestätige meine Teilnahme …“.
+
+**Modelle:** Je Zuschussgeber oder Aktion kann die Liste andere Spalten haben. Das Modell wählst du in der Veranstaltung (Abschnitt „Teilnahmeliste mit Unterschriften“, Feld „Modell der Teilnahmeliste“):
+
+| Modell | Spalten | Excel |
+|---|---|---|
+| Standard | Name, Geburtsjahr, Wohnort, Unterschrift | – |
+| Landesjugendring Rheinland-Pfalz | Name, Vorname, Wohnort (Deutschland/Ausland nach PLZ), PLZ, Ort, Teilgenommen als, Anwesenheitstage, Geburtsjahr, Unterschrift | ja: die LJR-Vorlage (`resources/vorlagen/ljr-rlp-teilnahmeliste.xlsx`), Kopfzeile, Format und Auswahllisten unverändert, Daten ab Zeile 2 |
+
+- **LJR:** „Teilgenommen als“ ist *Teilnehmer:in* oder *Betreuer:in für Teilnehmende ohne/mit Behinderung* (Leitung, Betreuung und Referent*innen gelten als Betreuung; „mit Behinderung“ über den Schalter in der Veranstaltung). Die Anwesenheitstage kommen aus „Vor Ort“ (abgehakte Tage), sonst aus Tage-Auswahl bzw. allen Tagen. Das Anmeldeformular muss PLZ, Wohnort und Geburtsjahr (oder Geburtsdatum) abfragen; fehlt etwas, warnt der Download mit Namen. Die Excel-Datei hat keinen Kopf mit Veranstalter, Ort und Datum (die Vorlage beginnt mit der Kopfzeile); den Kopf hat die PDF.
+- **Neues Modell:** ein Eintrag in `App\Support\Teilnahmelisten::alle()` (Name, Beschreibung, Spalten als `label` und `wert`-Funktion, Pflichtangaben, optional eine Excel-Vorlage unter `resources/vorlagen/`). Dann erscheint es in der Auswahl, in der PDF und, mit Vorlage, als Excel; `ExcelVorlage` füllt Vorlagen mit einem Blatt und der Kopfzeile in Zeile 1.
 
 ### Festschreiben und Löschen
 

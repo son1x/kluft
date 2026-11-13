@@ -60,7 +60,7 @@ class Event extends Model
         'status', 'extern_freigegeben', 'form_fields', 'retention_days', 'created_by', 'calendar_uid',
         'certificate_enabled', 'certificate_text', 'certificate_signer', 'preise', 'zahlungsfrist_tage',
         'zuschuss', 'zuschuss_art', 'zuschuss_geber', 'zuschuss_finanzen', 'zuschuss_fern', 'zuschuss_bericht', 'zuschuss_antrag', 'zuschuss_stand',
-        'foto_einwilligung', 'ganztaegig', 'zusatz_felder', 'unterschriftenliste', 'teilnahmeliste_datei', 'teilnahmeliste_am',
+        'foto_einwilligung', 'ganztaegig', 'zusatz_felder', 'unterschriftenliste', 'teilnahmeliste_modell', 'veranstalter', 'liste_mit_behinderung', 'teilnahmeliste_datei', 'teilnahmeliste_am',
     ];
 
     protected function casts(): array
@@ -87,6 +87,7 @@ class Event extends Model
             'preise' => 'array',
             'zusatz_felder' => 'array',
             'unterschriftenliste' => 'boolean',
+            'liste_mit_behinderung' => 'boolean',
             'teilnahmeliste_am' => 'datetime',
             'zahlungsfrist_tage' => 'integer',
             'zuschuss' => 'boolean',

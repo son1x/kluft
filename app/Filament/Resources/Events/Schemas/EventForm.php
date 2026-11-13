@@ -14,6 +14,7 @@ use App\Support\PersonenSuche;
 use App\Support\RoleCatalog;
 use App\Support\Slug;
 use App\Support\Teilnahmebeitraege;
+use App\Support\Teilnahmelisten;
 use App\Support\TeilnehmendeNachrichten;
 use App\Support\Testsystem;
 use App\Support\Zuschuesse;
@@ -387,6 +388,15 @@ class EventForm
                 ->columnSpanFull()
                 ->collapsible()
                 ->components([
+                    Select::make('teilnahmeliste_modell')->label('Modell der Teilnahmeliste')
+                        ->options(fn () => Teilnahmelisten::auswahl())->default(Teilnahmelisten::STANDARD)->native(false)->live()
+                        ->helperText(fn (?string $state) => Teilnahmelisten::modell($state)['beschreibung']),
+                    TextInput::make('veranstalter')->label('Veranstalter (für den Kopf der Liste)')->maxLength(150)
+                        ->placeholder(fn () => (string) config('dpsg.site.name'))
+                        ->helperText('Leer = Name der Gliederung. Veranstaltungsort und Datum kommen aus der Veranstaltung.'),
+                    Toggle::make('liste_mit_behinderung')->label('Betreuung für Teilnehmende mit Behinderung')
+                        ->helperText('Landesjugendring: „Betreuer:in für Teilnehmende mit (statt ohne) Behinderung“.')
+                        ->visible(fn (Get $get) => $get('teilnahmeliste_modell') === Teilnahmelisten::LJR_RLP),
                     Toggle::make('unterschriftenliste')->label('Teilnahmeliste mit digitalen Unterschriften (Vor Ort)')
                         ->helperText('Die Liste gibt es dann unter „Teilnehmende → Teilnahmeliste (PDF)“; mit „Festschreiben“ wird sie samt Unterschriften abgelegt, die Einzelunterschriften werden danach gelöscht.'),
                 ]),

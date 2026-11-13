@@ -20,12 +20,14 @@ use App\Services\Mitglieder\MitgliederverzeichnisException;
 use App\Services\Mitglieder\NamiVerzeichnis;
 use App\Services\ParticipantExport;
 use App\Services\Teilnahmebescheinigung;
+use App\Services\Teilnahmelisten\ExcelVorlage;
 use App\Services\TeilnehmendeListePdf;
 use App\Services\TeilnehmendenListe;
 use App\Support\AuditLogger;
 use App\Support\Features;
 use App\Support\NamiAmpel;
 use App\Support\Teilnahmebeitraege;
+use App\Support\Teilnahmelisten;
 use App\Support\TeilnehmendeNachrichten;
 use App\Support\Unterschriften;
 use App\Support\Zahlungen;
@@ -171,6 +173,20 @@ class RegistrationsRelationManager extends RelationManager
             ->color(fn (string $state) => ['ja' => 'success', 'nein' => 'danger', 'offen' => 'gray'][$state])
             ->tooltip(fn (string $state) => $state === 'nein' ? 'Keine Fotos zeigen, auf denen die Person zu erkennen ist.' : null)
             ->visible((bool) $event->foto_einwilligung);
+    }
+
+    /** Hinweistext, wenn für das Modell der Teilnahmeliste Pflichtangaben einzelner Personen fehlen; sonst null. */
+    private function listeFehlt(): ?string
+    {
+        $event = $this->getOwnerRecord();
+        $fehlend = Teilnahmelisten::fehlend($event, Teilnahmelisten::modell($event->teilnahmeliste_modell));
+        if ($fehlend === []) {
+            return null;
+        }
+        $beispiele = collect($fehlend)->take(5)->map(fn (array $f) => $f['name'].' ('.implode(', ', $f['fehlt']).')')->implode('; ');
+
+        return count($fehlend).' von '.Teilnahmelisten::personen($event)->count().' Personen fehlen Angaben für dieses Modell: '.$beispiele.(count($fehlend) > 5 ? ' …' : '')
+            .'. Angaben lassen sich in der Anmeldung nachtragen („Angaben bearbeiten“ oder unter „Vor Ort“).';
     }
 
     public function table(Table $table): Table
@@ -449,13 +465,37 @@ class RegistrationsRelationManager extends RelationManager
                     ->label('Teilnahmeliste mit Unterschriften (PDF)')
                     ->icon('heroicon-o-pencil-square')
                     ->visible(fn () => Unterschriften::moeglich($this->getOwnerRecord()) && ! $this->getOwnerRecord()->zuschussAktiv())
+                    ->requiresConfirmation(fn () => $this->listeFehlt() !== null)
+                    ->modalHeading('Angaben fehlen')
+                    ->modalDescription(fn () => $this->listeFehlt())
+                    ->modalSubmitActionLabel('Trotzdem herunterladen')
                     ->action(function (TeilnehmendeListePdf $liste): StreamedResponse {
                         $event = $this->getOwnerRecord();
                         abort_unless(Filament::auth()->user()?->can('manageParticipants', $event) && Unterschriften::moeglich($event), 403);
                         AuditLogger::log('event.liste', Filament::auth()->user(), Event::class, $event->getKey(), request());
                         $pdf = $liste->teilnahmeliste($event);
 
-                        return response()->streamDownload(fn () => print ($pdf), 'Teilnahmeliste-'.$event->slug.'-'.now()->format('Y-m-d').'.pdf', ['Content-Type' => 'application/pdf']);
+                        return response()->streamDownload(fn () => print ($pdf), Teilnahmelisten::dateiname($event, 'pdf'), ['Content-Type' => 'application/pdf']);
+                    }),
+                Action::make('teilnahmelisteExcel')
+                    ->label(fn () => 'Teilnahmeliste als Excel ('.Teilnahmelisten::modell($this->getOwnerRecord()->teilnahmeliste_modell)['name'].')')
+                    ->icon('heroicon-o-table-cells')
+                    ->visible(fn () => Unterschriften::moeglich($this->getOwnerRecord()) && ! $this->getOwnerRecord()->zuschussAktiv()
+                        && filled(Teilnahmelisten::modell($this->getOwnerRecord()->teilnahmeliste_modell)['excel']))
+                    ->requiresConfirmation(fn () => $this->listeFehlt() !== null)
+                    ->modalHeading('Angaben fehlen')
+                    ->modalDescription(fn () => $this->listeFehlt())
+                    ->modalSubmitActionLabel('Trotzdem herunterladen')
+                    ->action(function (ExcelVorlage $vorlage): StreamedResponse {
+                        $event = $this->getOwnerRecord();
+                        abort_unless(Filament::auth()->user()?->can('manageParticipants', $event) && Unterschriften::moeglich($event), 403);
+                        $modell = Teilnahmelisten::modell($event->teilnahmeliste_modell);
+                        abort_if(blank($modell['excel']), 404);
+                        AuditLogger::log('event.liste', Filament::auth()->user(), Event::class, $event->getKey(), request());
+                        $datei = $vorlage->erzeugen($event, $modell);
+
+                        return response()->streamDownload(fn () => print ($datei), Teilnahmelisten::dateiname($event, 'xlsx'),
+                            ['Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']);
                     }),
                 Action::make('teilnahmelisteFestschreiben')
                     ->label(fn () => $this->getOwnerRecord()->teilnahmeliste_am ? 'Teilnahmeliste neu festschreiben' : 'Teilnahmeliste festschreiben')

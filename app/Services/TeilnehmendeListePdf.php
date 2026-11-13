@@ -98,11 +98,11 @@ class TeilnehmendeListePdf
         return app(ZuschussPdf::class)->render('pdf.teilnahmeliste-modell', [
             'event' => $event,
             'modell' => $modell,
-            'kopf' => Teilnahmelisten::kopf($event),
+            'kopf' => Teilnahmelisten::kopf($event, $modell),
             'zeilen' => Teilnahmelisten::zeilen($event, $modell),
             'unterschriften' => Unterschriften::fuerListe($event),
             'bestaetigung' => Unterschriften::text($event),
-        ], count($modell['spalten']) > 4 ? 'landscape' : 'portrait', 'Teilnahmeliste – '.$event->title);
+        ], $modell['ausrichtung'], 'Teilnahmeliste – '.$event->title);
     }
 
     /**

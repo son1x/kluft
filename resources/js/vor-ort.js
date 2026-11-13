@@ -359,6 +359,7 @@ Alpine.data('vorOrt', () => ({
 
     unterschreibenStarten(p) {
         this.unterschreiben = { id: p.id, name: p.vorname + ' ' + p.nachname };
+        this.fehltEingabe = {};
         this.$nextTick(() => {
             const canvas = this.$refs.unterschriftFeld;
             const dpr = Math.max(window.devicePixelRatio || 1, 1);
@@ -393,15 +394,18 @@ Alpine.data('vorOrt', () => ({
 
             return;
         }
+        this.fehltSpeichern(p, false);
         p.unterschrieben = new Date().toISOString();
         this.ereignis(p, 'unterschrift', { bild });
         this.unterschriftAbbrechen();
-        this.meldung = 'Unterschrift von ' + p.vorname + ' ' + p.nachname + ' gespeichert.';
+        this.meldung = 'Unterschrift von ' + p.vorname + ' ' + p.nachname + ' gespeichert.'
+            + (p.fehlt?.length ? ' Es fehlt noch: ' + this.fehltDefs(p).map((f) => f.label).join(', ') + '.' : '');
     },
 
     // Nachmelden: Person ist da, war aber nicht angemeldet. Lokal sofort sichtbar (Kennung „neu:…“),
     // der Server legt die Anmeldung beim Senden an; Folge-Ereignisse verweisen auf dieselbe Kennung.
     nachmeldung: null,
+    fehltEingabe: {},
 
     nachmeldenStarten() {
         const werte = {};
@@ -409,6 +413,44 @@ Alpine.data('vorOrt', () => ({
             werte[f.schluessel] = ['days', 'mehrfach'].includes(f.typ) ? [] : '';
         });
         this.nachmeldung = { vorname: '', nachname: '', werte, preis: this.v.preise.length === 1 ? '0' : '', einverstanden: false };
+    },
+
+    // Fehlende Angaben (Pflichtangaben der Teilnahmeliste und Pflichtfelder): direkt nachtragen.
+    fehltDefs(p) {
+        const alle = [...(this.v?.felder ?? []), ...(this.v?.liste_felder ?? [])];
+
+        return (p?.fehlt ?? []).map((k) => alle.find((f) => f.schluessel === k)).filter(Boolean);
+    },
+
+    get unterschreibenPerson() {
+        return this.v?.personen.find((x) => x.id === this.unterschreiben?.id) ?? null;
+    },
+
+    // Eingetragenes als Ereignis „angaben“ senden. Gibt zurück, ob etwas eingetragen wurde.
+    fehltSpeichern(p, melden = true) {
+        const data = {};
+        this.fehltDefs(p).forEach((f) => {
+            const w = String(this.fehltEingabe[f.schluessel] ?? '').trim();
+            if (w !== '') {
+                data[f.schluessel] = w;
+            }
+        });
+        if (Object.keys(data).length === 0) {
+            return false;
+        }
+        p.werte = { ...p.werte, ...data };
+        p.fehlt = p.fehlt.filter((k) => !(k in data));
+        if (data.birth_year) {
+            p.jahrgang = Number(data.birth_year);
+        }
+        this.ereignis(p, 'angaben', { data });
+        this.fehltEingabe = {};
+        this.nachSenden = true;
+        if (melden) {
+            this.meldung = 'Nachgetragen für ' + p.vorname + ' ' + p.nachname + (p.fehlt.length ? ' – es fehlt noch: ' + this.fehltDefs(p).map((f) => f.label).join(', ') + '.' : '.');
+        }
+
+        return true;
     },
 
     wertText(f, wert) {

@@ -8,6 +8,7 @@ use App\Models\Event;
 use App\Models\EventRegistration;
 use App\Models\User;
 use App\Services\Teilnahmelisten\ExcelVorlage;
+use App\Services\TeilnehmendeListePdf;
 use App\Support\Features;
 use App\Support\Teilnahmelisten;
 use Filament\Facades\Filament;
@@ -84,9 +85,9 @@ class TeilnahmelistenModelleTest extends TestCase
         $this->assertSame([['name' => 'Ole Muster', 'fehlt' => ['PLZ', 'Wohnort']]], $fehlend);
         $this->assertSame([], Teilnahmelisten::fehlend($this->event, Teilnahmelisten::modell(null)));
 
-        $this->assertSame([['Veranstalter', 'DPSG Stamm Beispiel'], ['Veranstaltung', 'Pfingstlager'], ['Veranstaltungsort', 'Zeltplatz Hunsrück'], ['Datum', $this->event->dateLabel()]], Teilnahmelisten::kopf($this->event));
+        $this->assertSame([[['Veranstalter', 'DPSG Stamm Beispiel']], [['Veranstaltung', 'Pfingstlager']], [['Veranstaltungsort', 'Zeltplatz Hunsrück']], [['Datum', $this->event->dateLabel()]]], Teilnahmelisten::kopf($this->event, $modell));
         $this->event->veranstalter = null;
-        $this->assertSame(config('dpsg.site.name'), Teilnahmelisten::kopf($this->event)[0][1]);
+        $this->assertSame(config('dpsg.site.name'), Teilnahmelisten::kopf($this->event, $modell)[0][0][1]);
     }
 
     private function blatt(string $xlsx): array
@@ -145,5 +146,37 @@ class TeilnahmelistenModelleTest extends TestCase
 
         $this->event->update(['teilnahmeliste_modell' => Teilnahmelisten::STANDARD]);
         $manager()->assertTableActionHidden('teilnahmelisteExcel');
+    }
+
+    #[TestDox('Modell Roden: Kopf mit Beginn/Ende und Aktion/Ort, Spalten des Vordrucks, Betreuung markiert, Querformat, Pflichtangaben')]
+    public function test_roden(): void
+    {
+        $this->event->update(['teilnahmeliste_modell' => Teilnahmelisten::RODEN, 'location' => 'Rodenackerstr., 66773 Schwalbach']);
+        $event = $this->event->fresh();
+        $this->anmeldung('Mia', ['strasse' => 'Am Bahndamm 8', 'plz' => '', 'wohnort' => '', 'geburtsdatum' => '2010-05-17']);
+        $this->anmeldung('Ben', ['strasse' => 'Lindenstraße 52', 'plz' => '66740', 'wohnort' => 'Saarlouis', 'geburtsdatum' => '1998-01-02'], ['funktion' => 'L']);
+        $modell = Teilnahmelisten::modell(Teilnahmelisten::RODEN);
+
+        $this->assertSame('landscape', $modell['ausrichtung']);
+        $this->assertSame(['Vorname', 'Nachname', 'Straße, Nr.', 'PLZ', 'Ort', 'Geburtsdatum'], array_column($modell['spalten'], 'label'));
+        $kopf = Teilnahmelisten::kopf($event, $modell);
+        $this->assertSame([['Beginn', $event->starts_at->format('d.m.Y')], ['Aktion', 'Pfingstlager']], $kopf[0]);
+        $this->assertSame([['Ende', $event->ends_at->format('d.m.Y')], ['Ort', 'Rodenackerstr., 66773 Schwalbach']], $kopf[1]);
+
+        $zeilen = Teilnahmelisten::zeilen($event, $modell);
+        $this->assertSame(['Ben', 'Muster', 'Lindenstraße 52', '66740', 'Saarlouis', '02.01.1998'], $zeilen[0]['werte']);
+        $this->assertTrue($zeilen[0]['betreuung']);
+        $this->assertFalse($zeilen[1]['betreuung']);
+        $this->assertSame([['name' => 'Mia Muster', 'fehlt' => ['PLZ', 'Wohnort']]], Teilnahmelisten::fehlend($event, $modell));
+
+        $html = view('pdf.teilnahmeliste-modell', [
+            'fonts' => resource_path('fonts/pdf'), 'logo' => null, 'event' => $event, 'modell' => $modell, 'kopf' => $kopf, 'zeilen' => $zeilen,
+            'unterschriften' => [], 'bestaetigung' => 'Ich bestätige meine Teilnahme.',
+        ])->render();
+        $this->assertStringContainsString('Beginn:', $html);
+        $this->assertStringContainsString('Aktion:', $html);
+        $this->assertStringContainsString('<tr class="betreuung">', $html);
+        $this->assertStringContainsString('= Betreuer*innen', $html);
+        $this->assertStringStartsWith('%PDF', app(TeilnehmendeListePdf::class)->teilnahmeliste($event, true));
     }
 }

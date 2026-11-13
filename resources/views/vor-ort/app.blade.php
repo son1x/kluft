@@ -168,6 +168,7 @@
                                             <template x-for="z in zusatzText(p)" x-bind:key="z"><span class="rounded border border-dpsg-mittelbeige bg-white px-1.5 text-dpsg-blau" x-text="z"></span></template>
                                             <span x-show="!erwartet(p)" class="rounded bg-gray-100 px-1.5">heute nicht angemeldet</span>
                                             <span x-show="v.unterschrift && p.unterschrieben" class="rounded bg-green-100 px-1.5 text-green-900">✍ unterschrieben</span>
+                                            <span x-show="v.unterschrift && p.fehlt && p.fehlt.length" class="rounded bg-amber-100 px-1.5 text-amber-900" x-text="'⚠ ' + p.fehlt.length + ' Angabe(n) fehlen'"></span>
                                             <span x-show="p.zahlung" class="rounded px-1.5" x-bind:class="zahlungFarbe(p)" x-text="zahlungText(p)"></span>
                                         </span>
                                     </button>
@@ -212,6 +213,8 @@
                                     </div>
                                     <p class="mt-2 text-xs text-gray-600">Gestrichelt: an diesem Tag nicht angemeldet.</p>
                                 </section>
+
+                                @include('vor-ort.fehlt', ['p' => 'auswahl', 'knopf' => true])
 
                                 <section x-show="v.unterschrift" class="rounded-xl bg-white p-4 shadow-sm">
                                     <div class="flex flex-wrap items-center justify-between gap-2">
@@ -311,6 +314,9 @@
         <div class="flex min-h-0 flex-1 flex-col p-4 sm:p-6">
             <h2 id="vo-u-titel" class="text-2xl font-bold text-dpsg-blau" x-text="unterschreiben.name"></h2>
             <p class="mt-1 text-gray-800" x-text="v.unterschrift.text"></p>
+            <div class="mt-3 max-h-48 overflow-y-auto" x-show="fehltDefs(unterschreibenPerson).length">
+                @include('vor-ort.fehlt', ['p' => 'unterschreibenPerson', 'knopf' => false])
+            </div>
             <div class="relative mt-4 min-h-48 flex-1 rounded-xl border-2 border-dashed border-dpsg-mittelbeige bg-surface">
                 <canvas x-ref="unterschriftFeld" class="absolute inset-0 size-full touch-none" aria-label="Unterschriftsfeld"></canvas>
                 <div class="pointer-events-none absolute inset-x-6 bottom-10 border-b border-gray-400"></div>

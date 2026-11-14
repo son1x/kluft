@@ -19,6 +19,15 @@
             @endif
             · Tageslimit Brevo: {{ $dailyLimit }} Mails
         </p>
+        @if ($pending > 0)
+            <div style="margin-top: .75rem;">
+                <x-filament::button size="sm" wire:click="jetztSenden" wire:loading.attr="disabled" wire:target="jetztSenden" icon="heroicon-o-paper-airplane">
+                    <span wire:loading.remove wire:target="jetztSenden">Jetzt senden ({{ $pending }})</span>
+                    <span wire:loading wire:target="jetztSenden">Sende …</span>
+                </x-filament::button>
+                <span style="font-size: .75rem; opacity: .7; margin-left: .5rem;">Arbeitet die Warteschlange sofort ab, ohne auf den Cronjob zu warten.</span>
+            </div>
+        @endif
         @if ($pending > 0 && $oldestPending && $oldestPending < now()->subMinutes(10)->timestamp)
             <p style="margin-top: .75rem; font-size: .875rem;" class="text-danger-600">Mails warten seit über zehn Minuten. Läuft der Cronjob? Oder ist das Tageslimit erreicht? @if (\App\Support\Features::enabled('roadmap'))(Siehe /roadmap → Cronjob.)@endif</p>
         @endif

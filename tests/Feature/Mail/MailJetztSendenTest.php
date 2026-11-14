@@ -55,6 +55,25 @@ class MailJetztSendenTest extends TestCase
         $this->assertTrue(AuditLog::query()->where('action', 'mail.jetzt_senden:2')->exists());
     }
 
+    #[TestDox('Auch bei hohem Speicherverbrauch (große Prozesse, z. B. die ganze Suite) werden alle Mails abgearbeitet')]
+    public function test_bei_hohem_speicherverbrauch(): void
+    {
+        Filament::setCurrentPanel('admin');
+        config(['queue.default' => 'database']);
+        $ballast = str_repeat('x', 160 * 1024 * 1024);
+        dispatch(function () {
+            Cache::put('mail-jetzt-speicher-1', 'ok');
+        });
+        dispatch(function () {
+            Cache::put('mail-jetzt-speicher-2', 'ok');
+        });
+
+        Livewire::actingAs($this->nutzer('verwaltung'))->test(MailQueue::class)->call('jetztSenden')->assertNotified('Alle 2 wartenden Mails sind abgearbeitet.');
+
+        $this->assertSame(0, DB::table('jobs')->count());
+        $this->assertSame(160 * 1024 * 1024, strlen($ballast));
+    }
+
     #[TestDox('Ohne wartende Mails meldet der Klick das')]
     public function test_nichts_wartet(): void
     {

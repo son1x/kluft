@@ -131,7 +131,9 @@ class MailQueue extends Page
         abort_unless(static::canAccess(), 403);
         $vorher = DB::table('jobs')->count();
         @set_time_limit(60);
-        Artisan::call('queue:work', ['--stop-when-empty' => true, '--max-time' => 25, '--sleep' => 1, '--tries' => 5]);
+        // --memory hoch setzen: der Worker beendet sich sonst schon bei 128 MB (Voreinstellung) nach dem ersten Auftrag;
+        // die Grenze setzt hier PHP (memory_limit) für den Web-Aufruf.
+        Artisan::call('queue:work', ['--stop-when-empty' => true, '--max-time' => 25, '--sleep' => 1, '--tries' => 5, '--memory' => 1024]);
         $nachher = DB::table('jobs')->count();
         AuditLogger::log('mail.jetzt_senden:'.max(0, $vorher - $nachher), Filament::auth()->user(), request: request());
 

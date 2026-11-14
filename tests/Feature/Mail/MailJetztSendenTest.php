@@ -53,8 +53,15 @@ class MailJetztSendenTest extends TestCase
         $this->assertSame(0, DB::table('jobs')->count());
         $this->assertSame(['ok', 'ok'], [Cache::get('mail-jetzt-test-1'), Cache::get('mail-jetzt-test-2')]);
         $this->assertTrue(AuditLog::query()->where('action', 'mail.jetzt_senden:2')->exists());
+    }
 
-        Livewire::actingAs($verwaltung)->test(MailQueue::class)->call('jetztSenden')->assertNotified('Es warten keine Mails.');
+    #[TestDox('Ohne wartende Mails meldet der Klick das')]
+    public function test_nichts_wartet(): void
+    {
+        Filament::setCurrentPanel('admin');
+        config(['queue.default' => 'database']);
+
+        Livewire::actingAs($this->nutzer('verwaltung'))->test(MailQueue::class)->call('jetztSenden')->assertNotified('Es warten keine Mails.');
     }
 
     #[TestDox('Ohne Berechtigung (Autor*in) kein Zugriff')]

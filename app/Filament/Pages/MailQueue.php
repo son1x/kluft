@@ -122,6 +122,26 @@ class MailQueue extends Page
         Notification::make()->title('Mail wird erneut versucht (innerhalb einer Minute).')->success()->send();
     }
 
+    /**
+     * Wartende Mails sofort abarbeiten (statt auf den Cronjob zu warten): ein Worker im Web-Aufruf, höchstens
+     * etwa eine halbe Minute. Gleiche Regeln wie der Cronjob (Wiederholungen, Tageslimit, Testumleitung).
+     */
+    public function jetztSenden(): void
+    {
+        abort_unless(static::canAccess(), 403);
+        $vorher = DB::table('jobs')->count();
+        @set_time_limit(60);
+        Artisan::call('queue:work', ['--stop-when-empty' => true, '--max-time' => 25, '--sleep' => 1, '--tries' => 5]);
+        $nachher = DB::table('jobs')->count();
+        AuditLogger::log('mail.jetzt_senden:'.max(0, $vorher - $nachher), Filament::auth()->user(), request: request());
+
+        $versendet = max(0, $vorher - $nachher);
+        $titel = $vorher === 0
+            ? 'Es warten keine Mails.'
+            : ($nachher === 0 ? "Alle {$vorher} wartenden Mails sind abgearbeitet." : "{$versendet} von {$vorher} Mails abgearbeitet, {$nachher} warten noch (Knopf nochmal drücken).");
+        Notification::make()->title($titel)->{$nachher === 0 ? 'success' : 'warning'}()->send();
+    }
+
     public function retryAll(): void
     {
         abort_unless(static::canAccess(), 403);
